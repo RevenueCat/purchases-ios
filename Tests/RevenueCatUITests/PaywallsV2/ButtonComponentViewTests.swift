@@ -243,6 +243,39 @@ final class ButtonComponentViewTests: TestCase {
         XCTAssertEqual(fallbackAppearances, 0)
     }
 
+    func testNativeBackRegistrationWaitsForConfiguredTransitionDelay() async throws {
+        let coordinator = NativePaywallCloseCoordinator()
+        let decoder = JSONDecoder()
+        decoder.keyDecodingStrategy = .convertFromSnakeCase
+        let transition = try decoder.decode(
+            PaywallComponent.Transition.self,
+            from: Data("""
+            {
+                "type": "fade",
+                "displacement_strategy": "greedy",
+                "animation": { "ms_delay": 500, "ms_duration": 0, "type": "linear" }
+            }
+            """.utf8)
+        )
+        let viewModel = try Self.makeViewModel(component: .init(
+            action: .navigateBack,
+            stack: Self.makeButtonStack(label: "Close"),
+            transition: transition,
+            useNativeIfPossible: true
+        ))
+        let view = Self.nativeTestView(viewModel: viewModel, onDismiss: {})
+            .environment(\.workflowRenderingContext, .init(canNavigateBack: true))
+            .environment(\.nativePaywallCloseCoordinator, coordinator)
+        let (window, _) = Self.host(view)
+        defer { window.isHidden = true; window.rootViewController = nil }
+
+        XCTAssertTrue(coordinator.actions.isEmpty)
+        let registered = XCTNSPredicateExpectation(predicate: NSPredicate { _, _ in
+            coordinator.action(for: .back) != nil
+        }, object: nil)
+        await fulfillment(of: [registered], timeout: 2)
+    }
+
     func testNativeButtonsDoNotLeaveFlexStackSpacers() async throws {
         try XCTSkipIf(UIApplication.shared.connectedScenes.isEmpty, "Requires UnitTestsHostApp")
         let markers: [PaywallComponent] = ["#FF0000", "#0000FF"].map { color in

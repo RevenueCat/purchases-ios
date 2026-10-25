@@ -1104,7 +1104,7 @@ private extension RemoteConfigIntegrationTests {
         verificationResult: SignatureVerificationResult = .verified
     ) {
         self.httpClient.mock(
-            requestPath: HTTPRequest.FallbackPath.remoteConfig(domain: RemoteConfiguration.defaultDomain),
+            requestPath: HTTPRequest.Path.remoteConfigFallback(domain: RemoteConfiguration.defaultDomain),
             response: .init(statusCode: statusCode, body: body, verificationResult: verificationResult)
         )
     }
@@ -1118,7 +1118,7 @@ private extension RemoteConfigIntegrationTests {
 
     func mockRemoteConfigFallbackError(_ error: NetworkError) {
         self.httpClient.mock(
-            requestPath: HTTPRequest.FallbackPath.remoteConfig(domain: RemoteConfiguration.defaultDomain),
+            requestPath: HTTPRequest.Path.remoteConfigFallback(domain: RemoteConfiguration.defaultDomain),
             response: .init(error: error)
         )
     }
@@ -1135,7 +1135,7 @@ private extension RemoteConfigIntegrationTests {
     }
 
     var remoteConfigFallbackRequestCount: Int {
-        let fallbackURL = HTTPRequest.FallbackPath.remoteConfig(domain: RemoteConfiguration.defaultDomain)
+        let fallbackURL = HTTPRequest.Path.remoteConfigFallback(domain: RemoteConfiguration.defaultDomain)
                                                   .url(preferIAMPath: false)
         return self.httpClient.calls.filter {
             $0.request.path.url(preferIAMPath: false) == fallbackURL

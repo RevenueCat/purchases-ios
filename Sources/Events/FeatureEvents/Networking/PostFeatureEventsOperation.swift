@@ -18,13 +18,13 @@ final class PostFeatureEventsOperation: NetworkOperation {
 
     private let configuration: Configuration
     private let request: FeatureEventsRequest
-    private let path: HTTPRequestPath
+    private let path: HTTPRequest.Path
     private let responseHandler: CustomerAPI.SimpleResponseHandler?
 
     init(
         configuration: Configuration,
         request: FeatureEventsRequest,
-        path: HTTPRequestPath,
+        path: HTTPRequest.Path,
         responseHandler: CustomerAPI.SimpleResponseHandler?
     ) {
         self.request = request
@@ -36,7 +36,7 @@ final class PostFeatureEventsOperation: NetworkOperation {
     }
 
     override func begin(completion: @escaping () -> Void) {
-        let httpRequest = HTTPRequest(method: .post(self.request), requestPath: self.path)
+        let httpRequest = HTTPRequest(method: .post(self.request), path: self.path)
 
         self.httpClient.perform(httpRequest) { (response: VerifiedHTTPResponse<HTTPEmptyResponseBody>.Result) in
             defer {

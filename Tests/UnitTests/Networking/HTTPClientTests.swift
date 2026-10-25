@@ -1262,7 +1262,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
     }
 
     func testRemoteConfigFallbackSendsETagHeaders() {
-        let path = HTTPRequest.FallbackPath.remoteConfig(domain: "app")
+        let path = HTTPRequest.Path.remoteConfigFallback(domain: "app")
         let request = HTTPRequest(method: .get, path: path)
         let responseData = "{\"domain\":\"app\",\"manifest\":\"test\",\"active_topics\":[],\"topics\":{}}".asData
         let eTag = "fallback-etag"
@@ -1297,7 +1297,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
     }
 
     func testRemoteConfigFallbackGetsCachedResponseWhenStatusCodeIsNotModified() {
-        let path = HTTPRequest.FallbackPath.remoteConfig(domain: "app")
+        let path = HTTPRequest.Path.remoteConfigFallback(domain: "app")
         let request = HTTPRequest(method: .get, path: path)
         let cachedResponseData = """
         {"domain":"app","manifest":"cached","active_topics":[],"topics":{}}
@@ -1969,8 +1969,9 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
         // The domain layer aims this path at a fallback host, so even with API sources enabled it must
         // get the flat fallback tier rather than the aggressive main-source tiers.
         let client = self.createClient(self.systemInfoUsingAPISources())
-        let request = HTTPRequest(method: .get, path: HTTPRequest.FallbackPath.remoteConfig(domain: "app"))
-        let host = try XCTUnwrap(HTTPRequest.FallbackPath.serverHostURL.host)
+        let path = HTTPRequest.Path.remoteConfigFallback(domain: "app")
+        let request = HTTPRequest(method: .get, path: path)
+        let host = try XCTUnwrap(path.serverHostURL.host)
 
         let url = try XCTUnwrap(request.path.url(preferIAMPath: self.tokenManager.enabled)?.absoluteString)
         stub(condition: isAbsoluteURLString(url)) { request in
@@ -1998,8 +1999,9 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
 
     func testRemoteConfigFallbackSuccessDoesNotClearMainSourceMemory() throws {
         let client = self.createClient(self.systemInfoUsingAPISources())
-        let request = HTTPRequest(method: .get, path: HTTPRequest.FallbackPath.remoteConfig(domain: "app"))
-        let host = try XCTUnwrap(HTTPRequest.FallbackPath.serverHostURL.host)
+        let path = HTTPRequest.Path.remoteConfigFallback(domain: "app")
+        let request = HTTPRequest(method: .get, path: path)
+        let host = try XCTUnwrap(path.serverHostURL.host)
 
         timeoutManager.recordRequestResult(host: host, .mainSourceTimedOut)
 
@@ -2139,37 +2141,41 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
 
     func testFullHTTPRequestTimeoutFlow() async {
 
-        enum MainBackendTimeoutRequestPath: HTTPRequestPath {
+        enum MainBackendTimeoutRequestPath {
+
+            static let first = HTTPRequest.Path(name: "Test",
+                                                serverHostURL: serverHostURL,
+                                                authenticated: false,
+                                                etagBehavior: .ignore,
+                                                supportsSignatureVerification: false,
+                                                needsNonceForSigning: false,
+                                                pathComponent: "/first",
+                                                fallbackURLs: [
+                                                    URL(string: "https://this-is-a-fallback.com/first-fallback")!
+                                                ])
+
+            static let second = HTTPRequest.Path(name: "Test",
+                                                 serverHostURL: serverHostURL,
+                                                 authenticated: false,
+                                                 etagBehavior: .ignore,
+                                                 supportsSignatureVerification: false,
+                                                 needsNonceForSigning: false,
+                                                 pathComponent: "/second",
+                                                 fallbackURLs: [
+                                                     URL(string: "https://this-is-a-fallback.com/second-fallback")!
+                                                 ])
+
             static let serverHostURL = URL(string: "http://this-is-a-main-host.com")!
-
-            case first
-            case second
-
-            var authenticated: Bool { false }
-            var shouldSendEtag: Bool { false }
-            var supportsSignatureVerification: Bool { false }
-            var needsNonceForSigning: Bool { false }
-            var name: String { "Test" }
-            var relativePath: String {
-                switch self {
-                case .first: return "/first"
-                case .second: return "/second"
-                }
-            }
-
-            var fallbackUrls: [URL] {
-                [URL(string: "https://this-is-a-fallback.com/\(relativePath)-fallback")!]
-            }
         }
 
         let firstRequest = HTTPRequest(
             method: .get,
-            requestPath: MainBackendTimeoutRequestPath.first
+            path: MainBackendTimeoutRequestPath.first
         )
 
         let secondRequest = HTTPRequest(
             method: .get,
-            requestPath: MainBackendTimeoutRequestPath.second
+            path: MainBackendTimeoutRequestPath.second
         )
 
         let host = MainBackendTimeoutRequestPath.serverHostURL.host!
@@ -4528,7 +4534,7 @@ private func matchTrackParams(
 // swiftlint:enable large_tuple
 // swiftlint:enable line_length
 
-func isPath(_ path: HTTPRequestPath) -> HTTPStubsTestBlock {
+func isPath(_ path: HTTPRequest.Path) -> HTTPStubsTestBlock {
     return isPath(path.relativePath)
 }
 
