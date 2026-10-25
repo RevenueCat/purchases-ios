@@ -31,9 +31,9 @@ final class SubscriptionGroupIntroEligibilityCache: Sendable {
         log: IntroEligibilityLog,
         check: @escaping @Sendable (String) async -> Bool
     ) async -> Bool {
-        let (entry, reused) = self.entriesByGroupID.modify { entries -> (Entry, Bool) in
+        let entry = self.entriesByGroupID.modify { entries -> Entry in
             if let entry = entries[groupID] {
-                return (entry, true)
+                return entry
             }
 
             let id = UUID()
@@ -49,17 +49,13 @@ final class SubscriptionGroupIntroEligibilityCache: Sendable {
             }
             let entry = Entry.pending(id: id, task: task)
             entries[groupID] = entry
-            return (entry, false)
+            return entry
         }
 
         switch entry {
         case .cached(let eligible):
-            log.reusedEligibility(forSubscriptionGroup: groupID, isPending: false)
             return eligible
         case .pending(_, let task):
-            if reused {
-                log.reusedEligibility(forSubscriptionGroup: groupID, isPending: true)
-            }
             return await task.value
         }
     }

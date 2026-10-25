@@ -62,20 +62,24 @@ final class PriorityRecordingGroupCheck: Sendable {
     let initialPriority = Atomic<TaskPriority?>(nil)
     let currentPriority = Atomic<TaskPriority?>(nil)
     let invocations = Atomic(0)
-    private let released = Atomic(false)
+    let wasCancelled = Atomic(false)
+    private let result = Atomic<Bool?>(nil)
 
     func call(_ groupID: String) async -> Bool {
         self.invocations.modify { $0 += 1 }
         self.initialPriority.value = Task.currentPriority
-        while !self.released.value {
+        while true {
             self.currentPriority.value = Task.currentPriority
+            if let result = self.result.value {
+                self.wasCancelled.value = Task.isCancelled
+                return result
+            }
             try? await Task.sleep(nanoseconds: 1_000_000)
         }
-        return true
     }
 
-    func release() {
-        self.released.value = true
+    func release(eligible: Bool = true) {
+        self.result.value = eligible
     }
 
 }

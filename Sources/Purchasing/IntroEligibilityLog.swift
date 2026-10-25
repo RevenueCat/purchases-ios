@@ -87,10 +87,4 @@ struct IntroEligibilityLog: Sendable {
         ))
     }
 
-    func reusedEligibility(forSubscriptionGroup groupID: String, isPending: Bool) {
-        Logger.debug(Strings.eligibility.reusing_subscription_group_check(
-            requestID: self.requestID, groupID: groupID, isPending: isPending
-        ))
-    }
-
 }
