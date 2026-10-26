@@ -407,6 +407,111 @@ final class WorkflowPresenterTests: TestCase {
         }
     }
 
+    func testNotPassedGateBacksOutDespiteARecordedPurchase() throws {
+        let presenter = WorkflowPresenter { _ in true }
+        let presentation = Self.presentation()
+        try presenter.startPresentation(presentation)
+
+        presenter.stage(.outcome(.completed(customerInfo: TestData.customerInfo)))
+        presenter.makeCheckpointGateContext(for: presentation).onOutcomeChanged(.notPassed)
+        let execution = presenter.presentationDidDismiss(reason: .navigatedBack)
+
+        guard case .backedOut? = execution else {
+            return XCTFail("Expected an unpassed gate to suppress the recorded purchase")
+        }
+    }
+
+    func testNotPassedGateBacksOutOnCloseDespiteAGrantingRestore() throws {
+        let presenter = WorkflowPresenter { _ in true }
+        let presentation = Self.presentation()
+        try presenter.startPresentation(presentation)
+
+        presenter.paywallViewController(
+            PaywallViewController(offering: nil),
+            didFinishRestoringWith: try Self.customerInfo(activeEntitlements: ["unrelated"])
+        )
+        presenter.makeCheckpointGateContext(for: presentation).onOutcomeChanged(.notPassed)
+        let execution = presenter.presentationDidDismiss(reason: .close)
+
+        guard case .backedOut? = execution else {
+            return XCTFail("Expected an unpassed gate to suppress the granting restore")
+        }
+    }
+
+    func testNotPassedGateBacksOutDespiteAStagedError() throws {
+        let presenter = WorkflowPresenter { _ in true }
+        let presentation = Self.presentation()
+        try presenter.startPresentation(presentation)
+
+        presenter.stage(.outcome(.failed))
+        presenter.makeCheckpointGateContext(for: presentation).onOutcomeChanged(.notPassed)
+        let execution = presenter.presentationDidDismiss()
+
+        guard case .backedOut? = execution else {
+            return XCTFail("Expected an unpassed gate to back out")
+        }
+    }
+
+    func testPassedGateCompletesOnBackWithoutARecordedOutcome() throws {
+        let presenter = WorkflowPresenter { _ in true }
+        let presentation = Self.presentation()
+        try presenter.startPresentation(presentation)
+
+        let context = presenter.makeCheckpointGateContext(for: presentation)
+        context.onOutcomeChanged(.notPassed)
+        context.onOutcomeChanged(.passed)
+        let execution = presenter.presentationDidDismiss(reason: .navigatedBack)
+
+        guard case .completed(nil)? = execution else {
+            return XCTFail("Expected a passed gate not to back out")
+        }
+    }
+
+    func testNotApplicableGateKeepsPurchasePassageOnBack() throws {
+        let presenter = WorkflowPresenter { _ in true }
+        let presentation = Self.presentation()
+        try presenter.startPresentation(presentation)
+
+        let context = presenter.makeCheckpointGateContext(for: presentation)
+        context.onOutcomeChanged(.notPassed)
+        context.onOutcomeChanged(.notApplicable)
+        presenter.stage(.outcome(.completed(customerInfo: TestData.customerInfo)))
+        let execution = presenter.presentationDidDismiss(reason: .navigatedBack)
+
+        guard case .completed(.some)? = execution else {
+            return XCTFail("Expected the purchase to pass the checkpoint")
+        }
+    }
+
+    func testAbandonedGateContextCannotChangeTheReplacementPresentation() throws {
+        let presenter = WorkflowPresenter { _ in true }
+        let presentation = Self.presentation()
+        try presenter.startPresentation(presentation)
+        let abandonedContext = presenter.makeCheckpointGateContext(for: presentation)
+        _ = presenter.presentationDidDismiss()
+
+        try presenter.startPresentation(presentation)
+        abandonedContext.onOutcomeChanged(.notPassed)
+        let execution = presenter.presentationDidDismiss()
+
+        guard case .completed(nil)? = execution else {
+            return XCTFail("Expected the abandoned context not to back out the replacement")
+        }
+    }
+
+    func testGateContextCarriesTheCheckpointIdentityAndEntitlements() throws {
+        let presenter = WorkflowPresenter { _ in true }
+        let presentation = Self.presentation(
+            initialAppUserID: "customer-b",
+            initialActiveEntitlementIdentifiers: ["pro"]
+        )
+
+        let context = presenter.makeCheckpointGateContext(for: presentation)
+
+        XCTAssertEqual(context.initialAppUserID, "customer-b")
+        XCTAssertEqual(context.initialActiveEntitlementIdentifiers, ["pro"])
+    }
+
     func testNavigatingBackAfterRestoreCompletesWithRestoredOutcome() throws {
         let presenter = WorkflowPresenter { _ in true }
 
@@ -637,6 +742,7 @@ final class WorkflowPresenterTests: TestCase {
 
     private static func presentation(
         customVariables: [String: CustomVariableValue] = [:],
+        initialAppUserID: String = "customer-a",
         initialActiveEntitlementIdentifiers: Set<String> = [],
         errorPresentationHandler: @escaping ErrorPresentationHandler = { _, completion in
             completion.complete()
@@ -647,6 +753,7 @@ final class WorkflowPresenterTests: TestCase {
             workflow: self.workflow(),
             customVariables: customVariables,
             presentationMode: .modalSheet,
+            initialAppUserID: initialAppUserID,
             initialActiveEntitlementIdentifiers: initialActiveEntitlementIdentifiers,
             errorPresentationHandler: errorPresentationHandler
         )
@@ -685,6 +792,7 @@ final class WorkflowPresenterTests: TestCase {
             ),
             customVariables: customVariables,
             presentationMode: .modalSheet,
+            initialAppUserID: "customer-a",
             initialActiveEntitlementIdentifiers: [],
             errorPresentationHandler: errorPresentationHandler
         )
