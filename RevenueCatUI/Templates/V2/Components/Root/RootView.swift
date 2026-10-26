@@ -111,9 +111,8 @@ struct RootView: View {
                     additionalPadding: EdgeInsets(top: 0, leading: 0, bottom: overlaidFooterHeight, trailing: 0)
                 )
                 .environment(\.overlaidHeaderHeight, overlaidHeaderHeight)
-                .environment(\.nativePaywallBodyHeroIdentifier,
-                             viewModel.firstItemIsFullWidthMedia
-                                 ? viewModel.stackViewModel.viewModels.first?.firstNativeMediaIdentifier : nil)
+                .environment(\.nativePaywallBodyHeroIdentifier, viewModel.bodyHeroMediaIdentifier)
+                .environment(\.paywallHeroMediaIdentifier, viewModel.bodyHeroMediaIdentifier)
                 .environment(\.nativePaywallBodySafeAreaRestored, self.restoresBodyTopInset)
                 .onPreferenceChange(NativePaywallVisibleBodyHeroKey.self) { self.visibleBodyHero = $0 }
                 // An authored hero can be hidden by a rule. Once its native-only header collapses,
@@ -248,11 +247,22 @@ private struct NativePaywallBodyHeroIdentifierKey: EnvironmentKey {
     static let defaultValue: ObjectIdentifier? = nil
 }
 
+private struct PaywallHeroMediaIdentifierKey: EnvironmentKey {
+    static let defaultValue: ObjectIdentifier? = nil
+}
+
 private struct NativePaywallBodySafeAreaRestoredKey: EnvironmentKey {
     static let defaultValue = false
 }
 
 extension EnvironmentValues {
+    /// The hero media that bleeds into the top safe area. ZStacks whose first child leads to it push their
+    /// other children, the overlays, below the safe area.
+    var paywallHeroMediaIdentifier: ObjectIdentifier? {
+        get { self[PaywallHeroMediaIdentifierKey.self] }
+        set { self[PaywallHeroMediaIdentifierKey.self] = newValue }
+    }
+
     var nativePaywallBodySafeAreaRestored: Bool {
         get { self[NativePaywallBodySafeAreaRestoredKey.self] }
         set { self[NativePaywallBodySafeAreaRestoredKey.self] = newValue }

@@ -54,6 +54,9 @@ struct StackComponentView: View {
     @Environment(\.paywallStateDefaults)
     private var paywallStateDefaults
 
+    @Environment(\.paywallHeroMediaIdentifier)
+    private var heroMediaIdentifier
+
     @Environment(\.paywallRootStackIsZLayer)
     private var paywallRootStackIsZLayer
 
@@ -215,7 +218,9 @@ struct StackComponentView: View {
                 ZStack(alignment: alignment.stackAlignment) {
                     ComponentsView(
                         componentViewModels: self.viewModel.viewModels,
-                        pushNonFirstChildrenBelowSafeArea: self.viewModel.pushesNonFirstChildrenBelowSafeArea,
+                        pushNonFirstChildrenBelowSafeArea: self.viewModel.firstChildLeadsToHero(
+                            self.heroMediaIdentifier
+                        ),
                         onDismiss: self.onDismiss
                     )
                 }
@@ -1076,8 +1081,7 @@ extension StackComponentViewModel {
             component: component,
             viewModels: viewModels,
             badgeViewModels: badgeViewModelPairs,
-            uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
-            isOnHeroPath: false
+            uiConfigProvider: .init(uiConfig: PreviewUIConfig.make())
         )
     }
 

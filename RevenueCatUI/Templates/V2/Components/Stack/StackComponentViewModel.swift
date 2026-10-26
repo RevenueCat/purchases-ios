@@ -60,11 +60,11 @@ class StackComponentViewModel: OfferEligibilityVisibilityDependency {
         return identifiers
     }
 
-    /// Whether this is a ZStack on the path to a hero that bleeds into the top safe area.
-    /// Its first child contains the hero, so the remaining children are overlays to push below the safe area.
-    var pushesNonFirstChildrenBelowSafeArea: Bool {
-        guard case .zlayer = self.component.dimension else { return false }
-        return self.isOnHeroPath
+    /// Whether this stack's first child leads to the paywall's hero media, which bleeds into the top safe area.
+    /// The remaining children are then overlays that ZStack rendering pushes below the safe area.
+    func firstChildLeadsToHero(_ heroIdentifier: ObjectIdentifier?) -> Bool {
+        guard let heroIdentifier else { return false }
+        return self.viewModels.first?.firstNativeMediaIdentifier == heroIdentifier
     }
 
     /// Whether this stack renders anything a screen reader can announce, at any depth.
@@ -99,22 +99,19 @@ class StackComponentViewModel: OfferEligibilityVisibilityDependency {
     }
 
     private let discardRules: Bool
-    private let isOnHeroPath: Bool
 
     init(
         component: PaywallComponent.StackComponent,
         viewModels: [PaywallComponentViewModel],
         badgeViewModels: [BadgeContents],
         uiConfigProvider: UIConfigProvider,
-        discardRules: Bool = false,
-        isOnHeroPath: Bool
+        discardRules: Bool = false
     ) {
         self.component = component
         self.viewModels = viewModels
         self.uiConfigProvider = uiConfigProvider
         self.badgeViewModels = badgeViewModels
         self.discardRules = discardRules
-        self.isOnHeroPath = isOnHeroPath
         let presentedOverrides = component.overrides?.toPresentedOverrides(discardRules: discardRules)
         self.presentedOverrides = presentedOverrides
         self.dependsOnOfferEligibility = presentedOverrides?.contains(where: \.dependsOnOfferEligibility) ?? false
@@ -126,8 +123,7 @@ class StackComponentViewModel: OfferEligibilityVisibilityDependency {
             viewModels: newViewModels,
             badgeViewModels: self.badgeViewModels,
             uiConfigProvider: self.uiConfigProvider,
-            discardRules: self.discardRules,
-            isOnHeroPath: self.isOnHeroPath
+            discardRules: self.discardRules
         )
     }
 

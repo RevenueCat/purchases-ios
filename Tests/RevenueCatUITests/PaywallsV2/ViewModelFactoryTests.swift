@@ -810,8 +810,10 @@ class ViewModelFactoryTests: TestCase {
         expect(root.firstItemIsFullWidthMedia).to(beTrue())
     }
 
+    // MARK: - Hero overlays
+
     @MainActor
-    func testZLayerOnHeroPathWithFullWidthWebViewPushesOverlays() throws {
+    func testZLayerLeadingToFullWidthWebViewHeroPushesOverlays() throws {
         let zStack = PaywallComponent.StackComponent(
             components: [
                 .webView(Self.webViewComponent(width: .fill)),
@@ -822,11 +824,12 @@ class ViewModelFactoryTests: TestCase {
 
         let root = try Self.makeRootViewModel(stack: zStack)
 
-        expect(root.stackViewModel.pushesNonFirstChildrenBelowSafeArea).to(beTrue())
+        expect(root.bodyHeroMediaIdentifier).toNot(beNil())
+        expect(root.stackViewModel.firstChildLeadsToHero(root.bodyHeroMediaIdentifier)).to(beTrue())
     }
 
     @MainActor
-    func testZLayerWithNonFullWidthWebViewDoesNotPushOverlays() throws {
+    func testZLayerWithNonFullWidthWebViewHasNoHero() throws {
         let zStack = PaywallComponent.StackComponent(
             components: [
                 .webView(Self.webViewComponent(width: .fixed(100))),
@@ -837,7 +840,8 @@ class ViewModelFactoryTests: TestCase {
 
         let root = try Self.makeRootViewModel(stack: zStack)
 
-        expect(root.stackViewModel.pushesNonFirstChildrenBelowSafeArea).to(beFalse())
+        expect(root.bodyHeroMediaIdentifier).to(beNil())
+        expect(root.stackViewModel.firstChildLeadsToHero(root.bodyHeroMediaIdentifier)).to(beFalse())
     }
 
     @MainActor
@@ -852,17 +856,18 @@ class ViewModelFactoryTests: TestCase {
         let rootStack = PaywallComponent.StackComponent(components: [.stack(zStack)])
 
         let root = try Self.makeRootViewModel(stack: rootStack)
+        let hero = root.bodyHeroMediaIdentifier
 
-        expect(root.firstItemIsFullWidthMedia).to(beTrue())
-        expect(root.stackViewModel.pushesNonFirstChildrenBelowSafeArea).to(beFalse())
+        expect(hero).toNot(beNil())
         let zStackViewModel = try XCTUnwrap(Self.stackViewModel(root.stackViewModel.viewModels.first))
-        expect(zStackViewModel.pushesNonFirstChildrenBelowSafeArea).to(beTrue())
+        expect(zStackViewModel.firstChildLeadsToHero(hero)).to(beTrue())
         let wrapperViewModel = try XCTUnwrap(Self.stackViewModel(zStackViewModel.viewModels.first))
-        expect(wrapperViewModel.pushesNonFirstChildrenBelowSafeArea).to(beFalse())
+        expect(wrapperViewModel.firstChildLeadsToHero(hero)).to(beTrue())
+        expect(zStackViewModel.viewModels.first?.firstNativeMediaIdentifier).to(equal(hero))
     }
 
     @MainActor
-    func testEveryZLayerOnHeroPathPushesOverlays() throws {
+    func testEveryZLayerLeadingToHeroPushesOverlays() throws {
         let innerZStack = PaywallComponent.StackComponent(
             components: [
                 .image(Self.fullWidthImageComponent()),
@@ -879,10 +884,11 @@ class ViewModelFactoryTests: TestCase {
         )
 
         let root = try Self.makeRootViewModel(stack: outerZStack)
+        let hero = root.bodyHeroMediaIdentifier
 
-        expect(root.stackViewModel.pushesNonFirstChildrenBelowSafeArea).to(beTrue())
+        expect(root.stackViewModel.firstChildLeadsToHero(hero)).to(beTrue())
         let innerViewModel = try XCTUnwrap(Self.stackViewModel(root.stackViewModel.viewModels.first))
-        expect(innerViewModel.pushesNonFirstChildrenBelowSafeArea).to(beTrue())
+        expect(innerViewModel.firstChildLeadsToHero(hero)).to(beTrue())
     }
 
     @MainActor
@@ -902,8 +908,97 @@ class ViewModelFactoryTests: TestCase {
         let root = try Self.makeRootViewModel(stack: rootStack)
 
         expect(root.firstItemIsFullWidthMedia).to(beFalse())
+        expect(root.bodyHeroMediaIdentifier).to(beNil())
         let zStackViewModel = try XCTUnwrap(Self.stackViewModel(root.stackViewModel.viewModels.last))
-        expect(zStackViewModel.pushesNonFirstChildrenBelowSafeArea).to(beFalse())
+        expect(zStackViewModel.firstChildLeadsToHero(root.bodyHeroMediaIdentifier)).to(beFalse())
+    }
+
+    @MainActor
+    func testOnlyTheHeroZLayerPushesWhenAnotherMediaZLayerFollows() throws {
+        func mediaZStack() -> PaywallComponent.StackComponent {
+            .init(
+                components: [
+                    .image(Self.fullWidthImageComponent()),
+                    .text(.init(text: "text_lid", color: Self.black))
+                ],
+                dimension: .zlayer(.top)
+            )
+        }
+        let rootStack = PaywallComponent.StackComponent(components: [
+            .stack(mediaZStack()),
+            .stack(mediaZStack())
+        ])
+
+        let root = try Self.makeRootViewModel(stack: rootStack)
+        let hero = root.bodyHeroMediaIdentifier
+
+        let first = try XCTUnwrap(Self.stackViewModel(root.stackViewModel.viewModels.first))
+        let second = try XCTUnwrap(Self.stackViewModel(root.stackViewModel.viewModels.last))
+        expect(first.firstChildLeadsToHero(hero)).to(beTrue())
+        expect(second.firstChildLeadsToHero(hero)).to(beFalse())
+    }
+
+    @MainActor
+    func testStickyFooterMediaZLayerDoesNotLeadToTheBodyHero() throws {
+        let footerZStack = PaywallComponent.StackComponent(
+            components: [
+                .image(Self.fullWidthImageComponent()),
+                .text(.init(text: "text_lid", color: Self.black))
+            ],
+            dimension: .zlayer(.top)
+        )
+        let body = PaywallComponent.StackComponent(components: [.image(Self.fullWidthImageComponent())])
+
+        let root = try Self.makeRootViewModel(stack: body, stickyFooter: footerZStack)
+
+        let footer = try XCTUnwrap(root.stickyFooterViewModel?.stackViewModel)
+        expect(root.bodyHeroMediaIdentifier).toNot(beNil())
+        expect(footer.firstChildLeadsToHero(root.bodyHeroMediaIdentifier)).to(beFalse())
+    }
+
+    @MainActor
+    func testFallbackHeaderBeforeHeroDoesNotHideTheHero() throws {
+        let zStack = PaywallComponent.StackComponent(
+            components: [
+                .fallbackHeader,
+                .image(Self.fullWidthImageComponent()),
+                .text(.init(text: "text_lid", color: Self.black))
+            ],
+            dimension: .zlayer(.top)
+        )
+
+        let root = try Self.makeRootViewModel(stack: .init(components: [.stack(zStack)]))
+
+        let zStackViewModel = try XCTUnwrap(Self.stackViewModel(root.stackViewModel.viewModels.first))
+        expect(root.firstItemIsFullWidthMedia).to(beTrue())
+        expect(zStackViewModel.firstChildLeadsToHero(root.bodyHeroMediaIdentifier)).to(beTrue())
+    }
+
+    @MainActor
+    func testHeaderImageHeroIsPushedOnlyForImages() throws {
+        func headerZStack(_ media: PaywallComponent) -> PaywallComponent.StackComponent {
+            .init(
+                components: [media, .text(.init(text: "text_lid", color: Self.black))],
+                dimension: .zlayer(.top)
+            )
+        }
+        let body = PaywallComponent.StackComponent(components: [
+            .text(.init(text: "text_lid", color: Self.black))
+        ])
+
+        let image = try Self.makeRootViewModel(
+            stack: body, header: headerZStack(.image(Self.fullWidthImageComponent()))
+        )
+        let imageHeader = try XCTUnwrap(image.headerViewModel)
+        expect(imageHeader.heroMediaIdentifier).toNot(beNil())
+        expect(imageHeader.stackViewModel.firstChildLeadsToHero(imageHeader.heroMediaIdentifier)).to(beTrue())
+
+        let webView = try Self.makeRootViewModel(
+            stack: body, header: headerZStack(.webView(Self.webViewComponent(width: .fill)))
+        )
+        let webViewHeader = try XCTUnwrap(webView.headerViewModel)
+        expect(webViewHeader.heroMediaIdentifier).to(beNil())
+        expect(webViewHeader.stackViewModel.firstChildLeadsToHero(webViewHeader.heroMediaIdentifier)).to(beFalse())
     }
 
     // MARK: - Layout Tests
@@ -1104,12 +1199,17 @@ class ViewModelFactoryTests: TestCase {
     }
 
     @MainActor
-    private static func makeRootViewModel(stack: PaywallComponent.StackComponent) throws -> RootViewModel {
+    private static func makeRootViewModel(
+        stack: PaywallComponent.StackComponent,
+        header: PaywallComponent.StackComponent? = nil,
+        stickyFooter: PaywallComponent.StackComponent? = nil
+    ) throws -> RootViewModel {
         var factory = ViewModelFactory()
         return try factory.toRootViewModel(
             componentsConfig: .init(
                 stack: stack,
-                stickyFooter: nil,
+                header: header.map { .init(stack: $0) },
+                stickyFooter: stickyFooter.map { .init(stack: $0) },
                 background: .color(.init(light: .hex("#FFFFFF")))
             ),
             offering: Self.mockOffering,
