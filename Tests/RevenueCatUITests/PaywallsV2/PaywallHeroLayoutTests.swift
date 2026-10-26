@@ -142,7 +142,8 @@ final class PaywallHeroLayoutTests: TestCase {
             let layout = PaywallHeroLayoutResolver(
                 state: .default, condition: .compact,
                 isEligibleForIntroOffer: true, isEligibleForPromoOffer: false,
-                conditionContext: context, discardRules: discardRules
+                conditionContext: context, discardRules: discardRules,
+                eligibilityForPackage: { _ in (intro: false, promo: false) }
             ).resolve(stack)
             XCTAssertEqual(layout.heroIdentifier != nil, discardRules)
         }
@@ -165,7 +166,8 @@ final class PaywallHeroLayoutTests: TestCase {
         let layout = PaywallHeroLayoutResolver(
             state: .default, condition: .compact,
             isEligibleForIntroOffer: false, isEligibleForPromoOffer: false,
-            conditionContext: ConditionContext(stateValues: stateValues), discardRules: false
+            conditionContext: ConditionContext(stateValues: stateValues), discardRules: false,
+            eligibilityForPackage: { _ in (intro: false, promo: false) }
         ).resolve(stack)
         var renderedVisible: Bool?
         _ = video.styles(
@@ -197,6 +199,91 @@ final class PaywallHeroLayoutTests: TestCase {
         XCTAssertNil(self.resolve(stack, width: 900).heroIdentifier)
     }
 
+    func testSelectedPackageVisibilityMatchesPackageRenderer() throws {
+        let package = TestData.monthlyPackage
+        for visible in [false, true] {
+            let component = PaywallComponent.package(.init(
+                packageID: package.identifier, isSelectedByDefault: false, visible: visible,
+                applePromoOfferProductCode: nil, stack: .init(components: [self.text]),
+                overrides: [.init(conditions: [.selected], properties: .init(visible: !visible))]
+            ))
+            let stack = try self.makeStack([component, self.image()], packages: [package])
+            guard case .package(let model) = stack.viewModels[0] else { return XCTFail("Expected package") }
+            for selected in [false, true] {
+                let selectedID = selected ? package.identifier : nil
+                let renderedVisible = model.visible(
+                    state: selected ? .selected : .default, condition: .compact,
+                    isEligibleForIntroOffer: false, isEligibleForPromoOffer: false,
+                    selectedPackageId: selectedID, customVariables: [:]
+                )
+                let layout = self.resolve(stack, context: ConditionContext(selectedPackageId: selectedID))
+                XCTAssertEqual(layout.heroIdentifier != nil, !renderedVisible)
+            }
+        }
+    }
+
+    func testCompositeStateRulesMatchRendererVisibilityInBothDirections() throws {
+        for visible in [false, true] {
+            for component in self.compositesWithStateRule(visible: visible) {
+                let stack = try self.makeStack([component, self.image()], packages: [TestData.monthlyPackage])
+                let renderedVisible = try self.renderedCompositeVisibility(stack.viewModels[0])
+                XCTAssertEqual(renderedVisible, visible)
+                for context in [
+                    ConditionContext(stateValues: ["toggle": .bool(true)]),
+                    ConditionContext(stateDefaults: ["toggle": .bool(true)])
+                ] {
+                    let layout = self.resolve(stack, context: context)
+                    XCTAssertEqual(layout.heroIdentifier != nil, !renderedVisible, "\(component)")
+                }
+            }
+        }
+    }
+
+    func testMissingPackageDoesNotPreventHeroBleed() throws {
+        let stack = try self.makeStack([
+            .package(.init(
+                packageID: "missing", isSelectedByDefault: false, applePromoOfferProductCode: nil,
+                stack: .init(components: [self.text])
+            )),
+            self.image()
+        ])
+        XCTAssertNotNil(self.resolve(stack).heroIdentifier)
+    }
+
+    func testPackageUsesItsOwnIntroAndPromoEligibility() throws {
+        let package = TestData.monthlyPackage
+        let selectedPackage = TestData.annualPackage
+        for condition in [PaywallComponent.ExtendedCondition.introOffer, .promoOffer] {
+            for eligible in [false, true] {
+                let stack = try self.makeStack([
+                    .package(.init(
+                        packageID: package.identifier, isSelectedByDefault: false, visible: false,
+                        applePromoOfferProductCode: nil, stack: .init(components: [self.text]),
+                        overrides: [.init(extendedConditions: [condition], properties: .init(visible: true))]
+                    )),
+                    self.image()
+                ], packages: [package, selectedPackage])
+                guard case .package(let model) = stack.viewModels[0] else { return XCTFail("Expected package") }
+                let layout = PaywallHeroLayoutResolver(
+                    state: .default, condition: .compact,
+                    isEligibleForIntroOffer: !eligible, isEligibleForPromoOffer: !eligible,
+                    conditionContext: ConditionContext(selectedPackageId: selectedPackage.identifier),
+                    discardRules: false,
+                    eligibilityForPackage: { candidate in
+                        XCTAssertEqual(candidate.identifier, package.identifier)
+                        return (intro: eligible, promo: eligible)
+                    }
+                ).resolve(stack)
+                let renderedVisible = model.visible(
+                    state: .default, condition: .compact,
+                    isEligibleForIntroOffer: eligible, isEligibleForPromoOffer: eligible,
+                    selectedPackageId: selectedPackage.identifier, customVariables: [:]
+                )
+                XCTAssertEqual(layout.heroIdentifier != nil, !renderedVisible)
+            }
+        }
+    }
+
     private var text: PaywallComponent {
         .text(.init(text: "text", color: .init(light: .hex("#000000"))))
     }
@@ -215,7 +302,8 @@ final class PaywallHeroLayoutTests: TestCase {
     private func makeStack(
         _ components: [PaywallComponent],
         dimension: PaywallComponent.Dimension = .zlayer(.top),
-        overrides: PaywallComponent.ComponentOverrides<PaywallComponent.PartialStackComponent>? = nil
+        overrides: PaywallComponent.ComponentOverrides<PaywallComponent.PartialStackComponent>? = nil,
+        packages: [Package] = []
     ) throws -> StackComponentViewModel {
         let factory = ViewModelFactory()
         return try factory.toStackViewModel(
@@ -223,17 +311,72 @@ final class PaywallHeroLayoutTests: TestCase {
             packageValidator: factory.packageValidator, purchaseButtonCollector: nil,
             localizationProvider: .init(locale: .current, localizedStrings: ["text": .string("Text")]),
             uiConfigProvider: UIConfigProvider(uiConfig: PreviewUIConfig.make()),
-            offering: .init(identifier: "hero-test", serverDescription: "", availablePackages: [], webCheckoutUrl: nil),
+            offering: .init(
+                identifier: "hero-test", serverDescription: "", availablePackages: packages, webCheckoutUrl: nil
+            ),
             colorScheme: .light
         )
     }
 
-    private func resolve(_ stack: StackComponentViewModel, width: CGFloat = 400) -> PaywallHeroLayout {
+    private func resolve(
+        _ stack: StackComponentViewModel, width: CGFloat = 400, context: ConditionContext? = nil
+    ) -> PaywallHeroLayout {
         return PaywallHeroLayoutResolver(
             state: .default, condition: .compact,
             isEligibleForIntroOffer: false, isEligibleForPromoOffer: false,
-            conditionContext: ConditionContext(windowSize: CGSize(width: width, height: 800)), discardRules: false
+            conditionContext: context ?? ConditionContext(windowSize: CGSize(width: width, height: 800)),
+            discardRules: false,
+            eligibilityForPackage: { _ in (intro: false, promo: false) }
         ).resolve(stack)
+    }
+
+    private func compositesWithStateRule(visible: Bool) -> [PaywallComponent] {
+        let conditions = [PaywallComponent.ExtendedCondition.state(
+            operator: .equals, name: "toggle", value: .bool(true)
+        )]
+        let content = PaywallComponent.StackComponent(components: [self.text])
+        return [
+            .button(.init(
+                visible: visible, action: .restorePurchases, stack: content,
+                overrides: [.init(extendedConditions: conditions, properties: .init(visible: !visible))]
+            )),
+            .package(.init(
+                packageID: TestData.monthlyPackage.identifier, isSelectedByDefault: false, visible: visible,
+                applePromoOfferProductCode: nil, stack: content,
+                overrides: [.init(extendedConditions: conditions, properties: .init(visible: !visible))]
+            )),
+            .carousel(.init(
+                visible: visible, pages: [content],
+                overrides: [.init(extendedConditions: conditions, properties: .init(visible: !visible))]
+            )),
+            .tabs(.init(
+                visible: visible, control: .init(type: .buttons, stack: .init(components: [])),
+                tabs: [.init(id: "tab", stack: content)],
+                overrides: [.init(extendedConditions: conditions, properties: .init(visible: !visible))]
+            )),
+            .timeline(.init(
+                visible: visible, iconAlignment: nil, itemSpacing: nil, textSpacing: nil, columnGutter: nil,
+                size: .init(width: .fill, height: .fit(nil)), padding: .zero, margin: .zero, items: [],
+                overrides: [.init(extendedConditions: conditions, properties: .init(
+                    visible: !visible, iconAlignment: nil, itemSpacing: nil, textSpacing: nil,
+                    columnGutter: nil, size: nil, padding: nil, margin: nil
+                ))]
+            ))
+        ]
+    }
+
+    private func renderedCompositeVisibility(_ viewModel: PaywallComponentViewModel) throws -> Bool {
+        let visible: (ComponentViewState, ScreenCondition, Bool, Bool, String?,
+                      [String: CustomVariableValue], CGSize?) -> Bool
+        switch viewModel {
+        case .button(let model): visible = model.visible
+        case .package(let model): visible = model.visible
+        case .carousel(let model): visible = model.visible
+        case .tabs(let model): visible = model.visible
+        case .timeline(let model): visible = model.visible
+        default: throw NSError(domain: "Expected composite component", code: 1)
+        }
+        return visible(.default, .compact, false, false, nil, [:], nil)
     }
 
 }

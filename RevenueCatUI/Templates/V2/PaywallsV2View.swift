@@ -769,7 +769,13 @@ struct LoadedPaywallsV2View: View {
                 stateDefaults: self.paywallStateDefaults,
                 windowSize: self.paywallWindowSize
             ),
-            discardRules: self.paywallState.viewModelFactory.discardRules
+            discardRules: self.paywallState.viewModelFactory.discardRules,
+            eligibilityForPackage: { package in
+                (
+                    intro: self.introOfferEligibilityContext.isEligible(package: package),
+                    promo: self.paywallPromoOfferCache.isMostLikelyEligible(for: package)
+                )
+            }
         ).resolve(self.paywallState.rootViewModel.stackViewModel)
     }
 

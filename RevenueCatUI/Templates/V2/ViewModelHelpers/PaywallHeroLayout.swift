@@ -35,6 +35,7 @@ struct PaywallHeroLayoutResolver {
     let isEligibleForPromoOffer: Bool
     let conditionContext: ConditionContext
     let discardRules: Bool
+    let eligibilityForPackage: (Package) -> (intro: Bool, promo: Bool)
 
     func resolve(_ root: StackComponentViewModel) -> PaywallHeroLayout {
         return self.firstVisibleLeaf(in: root) ?? .none
@@ -57,6 +58,9 @@ private extension PaywallHeroLayoutResolver {
             if case .stack(let child) = pair.1 {
                 guard let leaf = self.firstVisibleLeaf(in: child) else { continue }
                 result = leaf
+            } else if let visible = self.compositeVisibility(for: pair.1) {
+                guard visible else { continue }
+                result = .none
             } else {
                 let childProperties = self.properties(for: pair.0)
                 guard childProperties.visible != false else { continue }
@@ -73,7 +77,7 @@ private extension PaywallHeroLayoutResolver {
         return PaywallHeroLayout.none
     }
 
-    // swiftlint:disable:next cyclomatic_complexity function_body_length
+    // swiftlint:disable:next function_body_length
     func properties(for component: PaywallComponent) -> LayoutProperties {
         switch component {
         case .stack(let component):
@@ -98,20 +102,39 @@ private extension PaywallHeroLayoutResolver {
             return self.visibility(component.visible, overrides: component.overrides, keyPath: \.visible)
         case .icon(let component):
             return self.visibility(component.visible, overrides: component.overrides, keyPath: \.visible)
-        case .button(let component):
-            return self.visibility(component.visible, overrides: component.overrides, keyPath: \.visible)
-        case .package(let component):
-            return self.visibility(component.visible, overrides: component.overrides, keyPath: \.visible)
-        case .timeline(let component):
-            return self.visibility(component.visible, overrides: component.overrides, keyPath: \.visible)
-        case .tabs(let component):
-            return self.visibility(component.visible, overrides: component.overrides, keyPath: \.visible)
-        case .carousel(let component):
-            return self.visibility(component.visible, overrides: component.overrides, keyPath: \.visible)
-        case .purchaseButton, .stickyFooter, .tabControl, .tabControlButton, .tabControlToggle, .countdown,
-             .fallbackHeader:
+        case .button, .package, .timeline, .tabs, .carousel, .purchaseButton, .stickyFooter,
+             .tabControl, .tabControlButton, .tabControlToggle, .countdown, .fallbackHeader:
             return .init(visible: true, width: nil, dimension: nil)
         }
+    }
+
+    /// Composite renderers own their visibility context, including which condition inputs they support.
+    func compositeVisibility(for viewModel: PaywallComponentViewModel) -> Bool? {
+        let component: any CompositeComponentVisibility
+        var state = self.state
+        var intro = self.isEligibleForIntroOffer
+        var promo = self.isEligibleForPromoOffer
+        switch viewModel {
+        case .button(let model): component = model
+        case .carousel(let model): component = model
+        case .tabs(let model): component = model
+        case .timeline(let model): component = model
+        case .package(let model):
+            guard let package = model.package else { return false }
+            component = model
+            state = package.identifier == self.conditionContext.selectedPackageId ? .selected : .default
+            let eligibility = self.eligibilityForPackage(package)
+            intro = eligibility.intro
+            promo = eligibility.promo
+        default: return nil
+        }
+        return component.visible(
+            state: state, condition: self.condition,
+            isEligibleForIntroOffer: intro, isEligibleForPromoOffer: promo,
+            selectedPackageId: self.conditionContext.selectedPackageId,
+            customVariables: self.conditionContext.customVariables,
+            windowSize: self.conditionContext.windowSize
+        )
     }
 
     func visibility<Partial: PaywallPartialComponent>(
@@ -143,6 +166,37 @@ private extension PaywallHeroLayoutResolver {
     }
 
 }
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private protocol CompositeComponentVisibility {
+
+    // swiftlint:disable:next function_parameter_count
+    func visible(
+        state: ComponentViewState,
+        condition: ScreenCondition,
+        isEligibleForIntroOffer: Bool,
+        isEligibleForPromoOffer: Bool,
+        selectedPackageId: String?,
+        customVariables: [String: CustomVariableValue],
+        windowSize: CGSize?
+    ) -> Bool
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension ButtonComponentViewModel: CompositeComponentVisibility { }
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension PackageComponentViewModel: CompositeComponentVisibility { }
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension CarouselComponentViewModel: CompositeComponentVisibility { }
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension TabsComponentViewModel: CompositeComponentVisibility { }
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension TimelineComponentViewModel: CompositeComponentVisibility { }
 
 private struct LayoutProperties: PresentedPartial {
 
