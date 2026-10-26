@@ -1475,6 +1475,7 @@
 		DB001008AAAA0001AAAA0001 /* WorkflowEventsRequestTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB001007AAAA0001AAAA0001 /* WorkflowEventsRequestTests.swift */; };
 		DB1FC9512F9A1B23009A95EA /* WorkflowScreenMapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB1FC9502F9A1B23009A95EA /* WorkflowScreenMapper.swift */; };
 		DB3395D52F840A570079250C /* WorkflowsResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB3395D42F840A570079250C /* WorkflowsResponse.swift */; };
+		A18C47900B744E1891DD1081 /* WorkflowStepGating.swift in Sources */ = {isa = PBXBuildFile; fileRef = A18C47900B744E1891DD1082 /* WorkflowStepGating.swift */; };
 		DB36994E2F435CDC00B1F049 /* PriceFormatterExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB36994D2F435CDC00B1F049 /* PriceFormatterExtensions.swift */; };
 		DB55E6262ECE012600636909 /* FlexSpacer.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB55E6252ECE012600636909 /* FlexSpacer.swift */; };
 		DB7EA7762F964CA200BCC082 /* WorkflowResponseTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB7EA7742F964CA200BCC082 /* WorkflowResponseTests.swift */; };
@@ -3434,6 +3435,7 @@
 		DB1FC9572F9A1B63009A95EA /* PaywallViewConfigurationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallViewConfigurationTests.swift; sourceTree = "<group>"; };
 		DB1FC9592F9A1B74009A95EA /* WorkflowScreenMapperTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkflowScreenMapperTests.swift; sourceTree = "<group>"; };
 		DB3395D42F840A570079250C /* WorkflowsResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkflowsResponse.swift; sourceTree = "<group>"; };
+		A18C47900B744E1891DD1082 /* WorkflowStepGating.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkflowStepGating.swift; sourceTree = "<group>"; };
 		DB36994D2F435CDC00B1F049 /* PriceFormatterExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PriceFormatterExtensions.swift; sourceTree = "<group>"; };
 		DB55E6252ECE012600636909 /* FlexSpacer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlexSpacer.swift; sourceTree = "<group>"; };
 		DB7EA7742F964CA200BCC082 /* WorkflowResponseTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkflowResponseTests.swift; sourceTree = "<group>"; };
@@ -6254,6 +6256,7 @@
 				537B4B2D2DA9662700CEFF4C /* HealthReportResponse.swift */,
 				FDE57A9F2DF8785000101CE2 /* VirtualCurrenciesResponse.swift */,
 				DB3395D42F840A570079250C /* WorkflowsResponse.swift */,
+				A18C47900B744E1891DD1082 /* WorkflowStepGating.swift */,
 				A7D300000000000000000001 /* WorkflowBranch.swift */,
 				A7D300000000000000000003 /* WorkflowTriggerAction.swift */,
 				755C26A32E310B19006DD0AE /* WebBillingProductsResponse.swift */,
@@ -8493,6 +8496,7 @@
 				35F82BAB26A84E130051DF03 /* Dictionary+Extensions.swift in Sources */,
 				4D2C7D0B2CC40A35002562BC /* PurchaseParams.swift in Sources */,
 				DB3395D52F840A570079250C /* WorkflowsResponse.swift in Sources */,
+				A18C47900B744E1891DD1081 /* WorkflowStepGating.swift in Sources */,
 				9A65E0A02591A23200DE00B0 /* OfferingStrings.swift in Sources */,
 				5774F9B62805E6CC00997128 /* CustomerInfoResponse.swift in Sources */,
 				03A98D302D240C41009BCA61 /* UIConfig.swift in Sources */,
