@@ -45,10 +45,30 @@ class StackComponentViewModel: OfferEligibilityVisibilityDependency {
 
     let badgeViewModels: [BadgeContents]
 
+    /// Preserves the authored header-overlay layout, which does not change after rules resolve.
+    var firstChildIsFullWidthMedia: Bool {
+        guard case .zlayer = self.component.dimension,
+              let first = self.component.components.first(where: {
+                  if case .fallbackHeader = $0 { return false }
+                  return true
+              }) else {
+            return false
+        }
+        switch first {
+        case .image(let image): return image.size.width.isFill
+        case .video(let video): return video.size.width.isFill
+        case .webView(let webView): return webView.size.width.isFill
+        default: return false
+        }
+    }
+
     /// Skip hidden root siblings without changing visibility inside nested hero containers.
     func firstVisibleMedia(
         isStackVisible: (StackComponentViewModel) -> Bool,
         resolvedMedia: (PaywallComponentViewModel) -> ResolvedMedia?,
+        resolvedStackDimension: (StackComponentViewModel) -> PaywallComponent.Dimension = {
+            $0.component.dimension
+        },
         requireDirectZLayerMedia: Bool = false
     ) -> ViewModelFactory.FirstMediaType? {
         let firstIndex = requireDirectZLayerMedia
@@ -59,11 +79,12 @@ class StackComponentViewModel: OfferEligibilityVisibilityDependency {
         }
         if case .stack(let stack) = self.viewModels[index] {
             // A newly exposed nested ZLayer must already inset its own overlay content.
-            if requireDirectZLayerMedia, case .zlayer = self.component.dimension { return nil }
+            if requireDirectZLayerMedia, case .zlayer = resolvedStackDimension(self) { return nil }
             let promotingHero = requireDirectZLayerMedia || index > 0
             let media = stack.firstVisibleMedia(
                 isStackVisible: { !promotingHero || isStackVisible($0) },
                 resolvedMedia: resolvedMedia,
+                resolvedStackDimension: resolvedStackDimension,
                 requireDirectZLayerMedia: promotingHero
             )
             return media
@@ -74,7 +95,10 @@ class StackComponentViewModel: OfferEligibilityVisibilityDependency {
     func safeAreaExemptChildIndex(
         dimension: PaywallComponent.Dimension,
         isStackVisible: (StackComponentViewModel) -> Bool,
-        resolvedMedia: (PaywallComponentViewModel) -> ResolvedMedia?
+        resolvedMedia: (PaywallComponentViewModel) -> ResolvedMedia?,
+        resolvedStackDimension: (StackComponentViewModel) -> PaywallComponent.Dimension = {
+            $0.component.dimension
+        }
     ) -> Int? {
         guard case .zlayer = dimension,
               let index = firstVisibleChildIndex(
@@ -88,6 +112,7 @@ class StackComponentViewModel: OfferEligibilityVisibilityDependency {
            stack.firstVisibleMedia(
                isStackVisible: isStackVisible,
                resolvedMedia: resolvedMedia,
+               resolvedStackDimension: resolvedStackDimension,
                requireDirectZLayerMedia: true
            ) != nil {
             return index
@@ -99,10 +124,30 @@ class StackComponentViewModel: OfferEligibilityVisibilityDependency {
         isStackVisible: (StackComponentViewModel) -> Bool,
         resolvedMedia: (PaywallComponentViewModel) -> ResolvedMedia?
     ) -> Int? {
-        self.viewModels.firstIndex {
-            if case .stack(let stack) = $0 { return isStackVisible(stack) }
-            if let media = resolvedMedia($0) { return media.visible }
+        self.viewModels.indices.first {
+            if self.isExplicitlyHidden(at: $0) { return false }
+            let viewModel = self.viewModels[$0]
+            if case .stack(let stack) = viewModel { return isStackVisible(stack) }
+            if let media = resolvedMedia(viewModel) { return media.visible }
             return true
+        }
+    }
+
+    private func isExplicitlyHidden(at index: Int) -> Bool {
+        let components = self.component.components.filter {
+            if case .fallbackHeader = $0 { return false }
+            return true
+        }
+        guard components.indices.contains(index) else { return false }
+        switch (self.viewModels[index], components[index]) {
+        case (.text, .text(let component)): return component.visible == false
+        case (.icon, .icon(let component)): return component.visible == false
+        case (.button, .button(let component)): return component.visible == false
+        case (.package, .package(let component)): return component.visible == false
+        case (.timeline, .timeline(let component)): return component.visible == false
+        case (.tabs, .tabs(let component)): return component.visible == false
+        case (.carousel, .carousel(let component)): return component.visible == false
+        default: return false
         }
     }
 

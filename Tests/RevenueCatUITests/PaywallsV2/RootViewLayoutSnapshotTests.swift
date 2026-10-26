@@ -154,6 +154,10 @@ final class RootViewLayoutSnapshotTests: BaseSnapshotTest {
         try assertPWENG317ResponsiveHero(layout: .overlay, withHeader: true)
     }
 
+    func testPWENG317HiddenHeroKeepsOverlaidHeaderClearance() throws {
+        try assertPWENG317ResponsiveHero(layout: .hiddenHeroWithHeader, withHeader: true)
+    }
+
     func testPWENG317PreservesLeadingNestedZLayerInsets() throws {
         try assertPWENG317ResponsiveHero(layout: .leadingNestedCard)
     }
@@ -163,7 +167,7 @@ final class RootViewLayoutSnapshotTests: BaseSnapshotTest {
     }
 
     private enum HeroLayout {
-        case vertical, overlay, nestedCard, leadingNestedCard, heroContainer
+        case vertical, overlay, nestedCard, leadingNestedCard, heroContainer, hiddenHeroWithHeader
     }
 
     private func assertPWENG317ResponsiveHero(
@@ -174,8 +178,13 @@ final class RootViewLayoutSnapshotTests: BaseSnapshotTest {
         let leadingNestedZLayer = layout == .leadingNestedCard
         let redURL = try Self.pweng317ImageURL(color: .red, name: "hero")
         let greenURL = try Self.pweng317ImageURL(color: .green, name: "side")
-        func image(_ url: URL, width: PaywallComponent.SizeConstraint) -> PaywallComponent {
+        func image(
+            _ url: URL,
+            width: PaywallComponent.SizeConstraint,
+            visible: Bool? = nil
+        ) -> PaywallComponent {
             .image(.init(
+                visible: visible,
                 source: .init(light: .init(width: 400, height: 240, original: url, heic: url, heicLowRes: url)),
                 size: .init(width: width, height: .fixed(240)), fitMode: .fill
             ))
@@ -197,7 +206,11 @@ final class RootViewLayoutSnapshotTests: BaseSnapshotTest {
         let components = [side, image(redURL, width: .fill)] + (zlayer ? [textOverlay] : [])
             + (checkViewIdentity ? [carousel] : [])
         let rootComponents = Self.pweng317RootComponents(
-            layout: layout, components: components, hero: image(redURL, width: .fill), text: textOverlay
+            layout: layout,
+            components: components,
+            hero: image(redURL, width: .fill),
+            hiddenHero: image(redURL, width: .fill, visible: false),
+            text: textOverlay
         )
         let config = PaywallComponentsData.PaywallComponentsConfig(
             stack: .init(
@@ -299,7 +312,11 @@ final class RootViewLayoutSnapshotTests: BaseSnapshotTest {
     }
 
     private static func pweng317RootComponents(
-        layout: HeroLayout, components: [PaywallComponent], hero: PaywallComponent, text: PaywallComponent
+        layout: HeroLayout,
+        components: [PaywallComponent],
+        hero: PaywallComponent,
+        hiddenHero: PaywallComponent,
+        text: PaywallComponent
     ) -> [PaywallComponent] {
         switch layout {
         case .nestedCard, .leadingNestedCard:
@@ -310,6 +327,16 @@ final class RootViewLayoutSnapshotTests: BaseSnapshotTest {
             return [components[0], .stack(.init(components: [.stack(.init(
                 components: [hero, text], dimension: .zlayer(.top)
             ))])), text]
+        case .hiddenHeroWithHeader:
+            return [
+                hiddenHero,
+                .stack(.init(
+                    components: [],
+                    size: .init(width: .fill, height: .fixed(240)),
+                    backgroundColor: .init(light: .hex("#FF0000"))
+                )),
+                text
+            ]
         default:
             return components
         }

@@ -80,6 +80,7 @@ class ViewModelFactoryTests: TestCase {
             ([.fallbackHeader, hero], true, 0),
             ([.webView(Self.webViewComponent(width: .fixed(200))), hero], false, nil),
             ([text, hero], false, nil),
+            ([.text(.init(visible: false, text: "text", color: Self.black)), hero], true, 1),
             ([.stack(.init(components: [])), hero], false, nil),
             ([.stack(.init(components: [hero]))], true, nil),
             ([.stack(.init(visible: false, components: [text])), hero], true, 1),
@@ -204,6 +205,73 @@ class ViewModelFactoryTests: TestCase {
             isStackVisible: { _ in true },
             resolvedMedia: resolvedMedia
         ))
+    }
+
+    @MainActor
+    func testHeroDetectionUsesRenderedNestedStackDimension() throws {
+        let hero = PaywallComponent.webView(Self.webViewComponent(width: .fill))
+        let hiddenSibling = PaywallComponent.stack(.init(visible: false, components: []))
+        let responsiveStack = PaywallComponent.stack(.init(
+            components: [.stack(.init(components: [hero]))],
+            dimension: .zlayer(.top),
+            overrides: [.init(
+                extendedConditions: [.windowWidth(operator: .lessThan, value: 800)],
+                properties: .init(dimension: .vertical(.center, .start))
+            )]
+        ))
+        let factory = ViewModelFactory()
+        let stack = try factory.toStackViewModel(
+            component: .init(components: [hiddenSibling, responsiveStack], dimension: .zlayer(.top)),
+            packageValidator: factory.packageValidator,
+            purchaseButtonCollector: nil,
+            localizationProvider: .init(locale: .current, localizedStrings: [:]),
+            uiConfigProvider: try Self.createUIConfigProvider(),
+            offering: Self.mockOffering,
+            colorScheme: .light
+        )
+        let windowSize = CGSize(width: 400, height: 700)
+        let visible: (StackComponentViewModel) -> Bool = { stack in
+            stack.styles(
+                state: .default,
+                condition: .compact,
+                isEligibleForIntroOffer: false,
+                isEligibleForPromoOffer: false,
+                selectedPackageId: nil,
+                customVariables: [:],
+                windowSize: windowSize,
+                colorScheme: .light
+            ).visible
+        }
+        let resolvedMedia: (PaywallComponentViewModel) -> StackComponentViewModel.ResolvedMedia? = {
+            self.resolvedMedia(for: $0, windowWidth: windowSize.width)
+        }
+        let resolvedDimension: (StackComponentViewModel) -> PaywallComponent.Dimension = {
+            $0.styles(
+                state: .default,
+                condition: .compact,
+                isEligibleForIntroOffer: false,
+                isEligibleForPromoOffer: false,
+                selectedPackageId: nil,
+                customVariables: [:],
+                windowSize: windowSize,
+                colorScheme: .light
+            ).dimension
+        }
+
+        XCTAssertNotNil(stack.firstVisibleMedia(
+            isStackVisible: visible,
+            resolvedMedia: resolvedMedia,
+            resolvedStackDimension: resolvedDimension
+        ))
+        XCTAssertEqual(
+            stack.safeAreaExemptChildIndex(
+                dimension: stack.component.dimension,
+                isStackVisible: visible,
+                resolvedMedia: resolvedMedia,
+                resolvedStackDimension: resolvedDimension
+            ),
+            1
+        )
     }
 
     // MARK: - Unsupported Condition Tests

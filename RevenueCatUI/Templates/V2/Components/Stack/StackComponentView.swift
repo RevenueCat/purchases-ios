@@ -80,6 +80,12 @@ struct StackComponentView: View {
     @Environment(\.nativePaywallHeaderCollapsed) private var suppressNativeHeaderLayout
 
     private func isStackVisible(_ stack: StackComponentViewModel) -> Bool {
+        self.resolvedStackStyle(stack).visible
+    }
+
+    private func resolvedStackStyle(
+        _ stack: StackComponentViewModel
+    ) -> StackComponentStyle {
         stack.styles(
             state: self.componentViewState,
             condition: self.screenCondition,
@@ -91,7 +97,7 @@ struct StackComponentView: View {
             stateDefaults: self.paywallStateDefaults,
             windowSize: self.paywallWindowSize,
             colorScheme: self.colorScheme
-        ).visible
+        )
     }
 
     private func resolvedMedia(
@@ -251,11 +257,16 @@ struct StackComponentView: View {
                     ComponentsView(
                         componentViewModels: self.viewModel.viewModels,
                         onDismiss: self.onDismiss,
-                        safeAreaExemptChildIndex: self.viewModel.safeAreaExemptChildIndex(
-                            dimension: style.dimension,
-                            isStackVisible: { !self.resolveHeroFromVisibleStacks || self.isStackVisible($0) },
-                            resolvedMedia: self.resolvedMedia
-                        )
+                        safeAreaExemptChildIndex: self.resolveHeroFromVisibleStacks
+                            ? self.viewModel.safeAreaExemptChildIndex(
+                                dimension: style.dimension,
+                                isStackVisible: self.isStackVisible,
+                                resolvedMedia: self.resolvedMedia,
+                                resolvedStackDimension: { self.resolvedStackStyle($0).dimension }
+                            )
+                            : (self.viewModel.firstChildIsFullWidthMedia
+                               ? self.viewModel.viewModels.indices.first
+                               : nil)
                     )
                 }
                 // These alignments define the position of inner components inside the ZStack
