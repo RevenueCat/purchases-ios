@@ -375,8 +375,6 @@ import Foundation
         /// not guarantee a particular response time from StoreKit.
         ///
         /// This setting only affects eligibility warm-up. Asset and font warm-ups remain at `.background`.
-        ///
-        /// - Note: This method is available only in Swift because `TaskPriority` is not Objective-C compatible.
         @discardableResult
         @_spi(Experimental)
         public func with(introEligibilityWarmupPriority: TaskPriority) -> Builder {
