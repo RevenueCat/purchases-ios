@@ -74,6 +74,34 @@ final class WorkflowScreenMapperTests: TestCase {
         expect(result.data.componentsLocalizations) == screen.componentsLocalizations
     }
 
+    func testPassesThroughComponentsVideoLocalizations() throws {
+        let decodedScreen = try Self.makeScreen()
+        let videoLocalizations: [PaywallComponent.LocaleID: PaywallComponent.VideoLocalizationDictionary] = [
+            "es_ES": ["video_lid": .init(light: .init(
+                width: 100,
+                height: 100,
+                url: try XCTUnwrap(URL(string: "https://assets.pawwalls.com/video_es.mp4")),
+                checksum: nil,
+                urlLowRes: nil,
+                checksumLowRes: nil
+            ))]
+        ]
+        let screen = RevenueCat.WorkflowScreen(
+            name: decodedScreen.name,
+            templateName: decodedScreen.templateName,
+            assetBaseURL: decodedScreen.assetBaseURL,
+            componentsConfig: decodedScreen.componentsConfig,
+            componentsLocalizations: decodedScreen.componentsLocalizations,
+            defaultLocale: decodedScreen.defaultLocale,
+            offeringIdentifier: decodedScreen.offeringIdentifier,
+            componentsVideoLocalizations: videoLocalizations
+        )
+
+        let result = WorkflowScreenMapper.toPaywallComponents(screen: screen, uiConfig: try Self.makeUIConfig())
+
+        expect(result.data.componentsVideoLocalizations) == videoLocalizations
+    }
+
     func testPassesThroughExitOffers() throws {
         let screen = try Self.makeScreen(exitOfferOfferingId: "exit_offering_a")
         let uiConfig = try Self.makeUIConfig()

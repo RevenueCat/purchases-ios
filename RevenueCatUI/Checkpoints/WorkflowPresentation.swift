@@ -19,21 +19,27 @@ import Foundation
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct WorkflowPresentationRequest {
 
+    let checkpointIdentifier: String
     let workflow: ResolvedCheckpointWorkflow
     let customVariables: [String: CustomVariableValue]
     let presentationMode: FlowPresentationMode
-    let initialActiveEntitlementIdentifiers: Set<String>?
+    let initialActiveEntitlementIdentifiers: Set<String>
+    let errorPresentationHandler: ErrorPresentationHandler
 
     init(
+        checkpointIdentifier: String,
         workflow: ResolvedCheckpointWorkflow,
         customVariables: [String: CustomVariableValue],
         presentationMode: FlowPresentationMode,
-        initialActiveEntitlementIdentifiers: Set<String>? = nil
+        initialActiveEntitlementIdentifiers: Set<String>,
+        errorPresentationHandler: @escaping ErrorPresentationHandler
     ) {
+        self.checkpointIdentifier = checkpointIdentifier
         self.workflow = workflow
         self.customVariables = customVariables
         self.presentationMode = presentationMode
         self.initialActiveEntitlementIdentifiers = initialActiveEntitlementIdentifiers
+        self.errorPresentationHandler = errorPresentationHandler
     }
 
 }
@@ -44,6 +50,7 @@ enum CheckpointPresentationOutcome {
     case completed(customerInfo: CustomerInfo?)
     case backedOut
     case failed
+    case synchronizationFailed(any Error)
 
     var hasCustomerInfo: Bool {
         guard case .completed(.some) = self else { return false }

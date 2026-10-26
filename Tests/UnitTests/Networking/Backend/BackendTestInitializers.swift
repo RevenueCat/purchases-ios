@@ -25,9 +25,48 @@ extension BackendLanes {
 
 extension Backend {
 
+    convenience init(lanes: BackendLanes, attributionFetcher: AttributionFetcher) {
+        self.init(
+            lanes: lanes,
+            attributionFetcher: attributionFetcher,
+            subscriberDimensionsStore: MockSubscriberDimensionsStore()
+        )
+    }
+
     convenience init(backendConfig: BackendConfiguration,
                      attributionFetcher: AttributionFetcher) {
         self.init(lanes: BackendLanes(configuration: backendConfig), attributionFetcher: attributionFetcher)
+    }
+
+}
+
+extension CustomerAPI {
+
+    convenience init(backendConfig: BackendConfiguration, attributionFetcher: AttributionFetcher) {
+        self.init(
+            backendConfig: backendConfig,
+            attributionFetcher: attributionFetcher,
+            subscriberDimensionsStore: MockSubscriberDimensionsStore()
+        )
+    }
+
+}
+
+extension PostReceiptDataOperation {
+
+    static func createFactory(
+        configuration: UserSpecificConfiguration,
+        postData: PostData,
+        customerInfoCallbackCache: CallbackCache<CustomerInfoCallback>,
+        offlineCustomerInfoCreator: OfflineCustomerInfoCreator?
+    ) -> CacheableNetworkOperationFactory<PostReceiptDataOperation> {
+        return Self.createFactory(
+            configuration: configuration,
+            postData: postData,
+            customerInfoCallbackCache: customerInfoCallbackCache,
+            offlineCustomerInfoCreator: offlineCustomerInfoCreator,
+            subscriberDimensionsStore: MockSubscriberDimensionsStore()
+        )
     }
 
 }

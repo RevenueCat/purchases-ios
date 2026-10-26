@@ -69,7 +69,33 @@ enum ExitOfferHelper {
         currentOfferingId: String,
         from offerings: Offerings
     ) -> Offering? {
-        guard let exitOffering = Self.exitOffer(offeringId: offeringId, from: offerings),
+        return Self.validExitOffer(
+            offeringId: offeringId,
+            currentOfferingId: currentOfferingId,
+            resolve: offerings.offering(identifier:)
+        )
+    }
+
+    /// Workflow variant: resolves through ``WorkflowOfferings`` so a developer-supplied offering
+    /// wins for its identifier.
+    static func validExitOffer(
+        offeringId: String,
+        currentOfferingId: String,
+        from offerings: WorkflowOfferings
+    ) -> Offering? {
+        return Self.validExitOffer(
+            offeringId: offeringId,
+            currentOfferingId: currentOfferingId,
+            resolve: offerings.offering(identifier:)
+        )
+    }
+
+    private static func validExitOffer(
+        offeringId: String,
+        currentOfferingId: String,
+        resolve: (String) -> Offering?
+    ) -> Offering? {
+        guard let exitOffering = resolve(offeringId),
               exitOffering.identifier != currentOfferingId else {
             return nil
         }

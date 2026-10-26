@@ -32,6 +32,7 @@ final public class AdTracker : ObjectiveC.NSObject {
   final public func trackAdDisplayed(_ data: RevenueCat.AdDisplayed)
   final public func trackAdOpened(_ data: RevenueCat.AdOpened)
   final public func trackAdRevenue(_ data: RevenueCat.AdRevenue)
+  final public func trackAdRewardEarnedUnverified(_ data: RevenueCat.AdRewardEarnedUnverified)
   @objc deinit
 }
 @objc final public class MediatorName : ObjectiveC.NSObject, Swift.Codable, @unchecked Swift.Sendable {
@@ -39,6 +40,7 @@ final public class AdTracker : ObjectiveC.NSObject {
   public init(rawValue: Swift.String)
   public static let adMob: RevenueCat.MediatorName
   public static let appLovin: RevenueCat.MediatorName
+  public static let revenueCat: RevenueCat.MediatorName
   @objc override final public func isEqual(_ object: Any?) -> Swift.Bool
   @objc override final public var hash: Swift.Int {
     @objc get
@@ -196,6 +198,20 @@ extension RevenueCat.AdRevenue {
     public init(from decoder: any Swift.Decoder) throws
   }
 }
+public struct AdRewardEarnedUnverified : Swift.Codable, Swift.Equatable, Swift.Sendable {
+  public let networkName: Swift.String?
+  public let mediatorName: RevenueCat.MediatorName
+  public let adFormat: RevenueCat.AdFormat
+  public let placement: Swift.String?
+  public let adUnitId: Swift.String
+  public let impressionId: Swift.String
+  public let rewardVerificationEnabled: Swift.Bool
+  public init(networkName: Swift.String?, mediatorName: RevenueCat.MediatorName, adFormat: RevenueCat.AdFormat, placement: Swift.String?, adUnitId: Swift.String, impressionId: Swift.String, rewardVerificationEnabled: Swift.Bool = false)
+  public init(networkName: Swift.String?, mediatorName: RevenueCat.MediatorName, adFormat: RevenueCat.AdFormat, adUnitId: Swift.String, impressionId: Swift.String, rewardVerificationEnabled: Swift.Bool = false)
+  public static func == (a: RevenueCat.AdRewardEarnedUnverified, b: RevenueCat.AdRewardEarnedUnverified) -> Swift.Bool
+  public func encode(to encoder: any Swift.Encoder) throws
+  public init(from decoder: any Swift.Decoder) throws
+}
 public struct AdReward : Swift.Sendable, Swift.Equatable {
   public static let noReward: RevenueCat.AdReward
   public static let unsupportedReward: RevenueCat.AdReward
@@ -206,6 +222,36 @@ public struct AdReward : Swift.Sendable, Swift.Equatable {
     get
   }
   public static func == (a: RevenueCat.AdReward, b: RevenueCat.AdReward) -> Swift.Bool
+}
+public struct ConfiguredAdRewards : Swift.Sendable, Swift.Equatable {
+  public static let noConfiguredReward: RevenueCat.ConfiguredAdRewards
+  public var reward: RevenueCat.AdRewardConfiguration? {
+    get
+  }
+  public var moreRewards: [RevenueCat.AdRewardConfiguration] {
+    get
+  }
+  public static func == (a: RevenueCat.ConfiguredAdRewards, b: RevenueCat.ConfiguredAdRewards) -> Swift.Bool
+}
+public struct AdRewardConfiguration : Swift.Sendable, Swift.Equatable {
+  public var virtualCurrency: RevenueCat.VirtualCurrencyRewardConfiguration? {
+    get
+  }
+  public var entitlement: RevenueCat.EntitlementRewardConfiguration? {
+    get
+  }
+  public static let unsupportedReward: RevenueCat.AdRewardConfiguration
+  public static func == (a: RevenueCat.AdRewardConfiguration, b: RevenueCat.AdRewardConfiguration) -> Swift.Bool
+}
+public struct VirtualCurrencyRewardConfiguration : Swift.Sendable, Swift.Equatable {
+  public let code: Swift.String
+  public let amount: Swift.Int
+  public static func == (a: RevenueCat.VirtualCurrencyRewardConfiguration, b: RevenueCat.VirtualCurrencyRewardConfiguration) -> Swift.Bool
+}
+public struct EntitlementRewardConfiguration : Swift.Sendable, Swift.Equatable {
+  public let identifier: Swift.String
+  public let duration: Foundation.TimeInterval
+  public static func == (a: RevenueCat.EntitlementRewardConfiguration, b: RevenueCat.EntitlementRewardConfiguration) -> Swift.Bool
 }
 public struct EntitlementReward : Swift.Sendable, Swift.Equatable {
   public let identifier: Swift.String
@@ -2101,7 +2147,7 @@ extension RevenueCat.Offerings {
   }
   @objc(currentOfferingForPlacement:) final public func currentOffering(forPlacement placementIdentifier: Swift.String) -> RevenueCat.Offering?
 }
-@objc(RCPresentedOfferingContext) final public class PresentedOfferingContext : ObjectiveC.NSObject {
+@_hasMissingDesignatedInitializers @objc(RCPresentedOfferingContext) final public class PresentedOfferingContext : ObjectiveC.NSObject {
   @objc(RCTargetingContext) final public class TargetingContext : ObjectiveC.NSObject {
     @objc final public let revision: Swift.Int
     @objc final public let ruleId: Swift.String
@@ -2187,6 +2233,7 @@ extension RevenueCat.PackageType : Swift.Codable {
   case purchased = 0
   case familyShared = 1
   case unknown = 2
+  case assigned = 3
   public init?(rawValue: Swift.Int)
   public typealias RawValue = Swift.Int
   public var rawValue: Swift.Int {
@@ -2415,6 +2462,10 @@ extension RevenueCat.Purchases {
 extension RevenueCat.Purchases {
   @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
   public static let paywallImageDownloadSession: Foundation.URLSession
+}
+extension RevenueCat.Purchases {
+  @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+  final public func adRewards(forAdUnitId adUnitId: Swift.String) async -> RevenueCat.ConfiguredAdRewards?
 }
 extension RevenueCat.Purchases {
   @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)

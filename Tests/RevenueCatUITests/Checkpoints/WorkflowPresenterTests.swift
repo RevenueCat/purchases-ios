@@ -40,18 +40,293 @@ final class WorkflowPresenterTests: TestCase {
     }
 
     func testWorkflowPresentationErrorProducesErrorOutcomeAfterDismissal() throws {
-        let presentation = try Self.renderablePresentation(customVariables: [:])
+        var receivedParams: ErrorPresentationParams?
+        let presentation = try Self.renderablePresentation(
+            customVariables: ["source": "test"],
+            errorPresentationHandler: { params, _ in receivedParams = params }
+        )
         let presenter = WorkflowPresenter { _ in true }
         let error = NSError(domain: ErrorCode.errorDomain, code: ErrorCode.configurationError.rawValue)
 
         try presenter.startPresentation(presentation)
         let viewController = try presenter.makePaywallViewController(for: presentation)
-        viewController.simulateWorkflowPresentationError(error)
+        viewController.simulateWorkflowPresentationError(error, behavior: .endFlow)
         let execution = presenter.presentationDidDismiss()
 
         guard case .failed? = execution else {
             return XCTFail("Expected a configuration error outcome")
         }
+        XCTAssertEqual(receivedParams?.checkpointIdentifier, "test_checkpoint")
+        XCTAssertEqual(receivedParams?.customVariables, ["source": "test"])
+        XCTAssertEqual(receivedParams?.error as NSError?, error)
+        XCTAssertEqual(receivedParams?.kind, .flowCouldNotBeShown)
+    }
+
+    func testCompletionAfterWorkflowPresentationErrorTerminatesDuringFlow() throws {
+        var completion: ErrorPresentationCompletion?
+        let presentation = try Self.renderablePresentation(
+            customVariables: [:],
+            errorPresentationHandler: { _, value in completion = value }
+        )
+        let presenter = WorkflowPresenter { _ in true }
+        let error = NSError(domain: ErrorCode.errorDomain, code: ErrorCode.configurationError.rawValue)
+
+        try presenter.startPresentation(presentation)
+        let viewController = try presenter.makePaywallViewController(for: presentation)
+        viewController.simulateWorkflowPresentationError(error, behavior: .endFlow)
+        completion?.complete()
+
+        guard case .failed? = presenter.presentationDidDismiss() else {
+            return XCTFail("Expected completing a terminal error to preserve the failure outcome")
+        }
+    }
+
+    // A later screen failure is an action failure and does not replace the workflow outcome.
+    func testCompletionAfterLaterScreenPresentationErrorPreservesWorkflowOutcome() throws {
+        var receivedParams: ErrorPresentationParams?
+        var completion: ErrorPresentationCompletion?
+        let presentation = try Self.renderablePresentation(
+            customVariables: [:],
+            errorPresentationHandler: { params, value in
+                receivedParams = params
+                completion = value
+            }
+        )
+        let presenter = WorkflowPresenter { _ in true }
+        let error = NSError(domain: ErrorCode.errorDomain, code: ErrorCode.configurationError.rawValue)
+
+        try presenter.startPresentation(presentation)
+        let viewController = try presenter.makePaywallViewController(for: presentation)
+        viewController.simulateWorkflowPresentationError(error, behavior: .keepCurrentScreen)
+        completion?.complete()
+
+        XCTAssertEqual(receivedParams?.kind, .flowActionFailed)
+        guard case .completed(nil)? = presenter.presentationDidDismiss() else {
+            return XCTFail("Expected the handled navigation error to preserve the workflow outcome")
+        }
+    }
+
+    func testPurchaseAndRestoreErrorsDoNotReplaceWorkflowPresentationError() throws {
+        var presentedErrors: [ErrorPresentationParams] = []
+        var completions: [ErrorPresentationCompletion] = []
+        let presentation = try Self.renderablePresentation(
+            customVariables: [:],
+            errorPresentationHandler: { params, completion in
+                presentedErrors.append(params)
+                completions.append(completion)
+            }
+        )
+        let presenter = WorkflowPresenter { _ in true }
+        let workflowError = NSError(domain: ErrorCode.errorDomain, code: ErrorCode.configurationError.rawValue)
+        let purchaseError = NSError(domain: ErrorCode.errorDomain, code: ErrorCode.purchaseInvalidError.rawValue)
+
+        try presenter.startPresentation(presentation)
+        let viewController = try presenter.makePaywallViewController(for: presentation)
+        viewController.simulateWorkflowPresentationError(workflowError, behavior: .endFlow)
+        presenter.paywallViewController(viewController, didFailPurchasingWith: purchaseError)
+        presenter.paywallViewController(viewController, didFailRestoringWith: purchaseError)
+
+        XCTAssertEqual(presentedErrors.map(\.kind), [.flowCouldNotBeShown])
+        try XCTUnwrap(completions.first).complete()
+        guard case .failed? = presenter.presentationDidDismiss() else {
+            return XCTFail("Expected the terminal error completion to remain active")
+        }
+    }
+
+    func testPurchaseErrorIsRoutedWhileWorkflowRemainsPresented() throws {
+        var receivedParams: ErrorPresentationParams?
+        let presentation = Self.presentation(
+            customVariables: ["source": "test"],
+            errorPresentationHandler: { params, _ in receivedParams = params }
+        )
+        let presenter = WorkflowPresenter { _ in true }
+        let error = NSError(domain: ErrorCode.errorDomain, code: ErrorCode.purchaseInvalidError.rawValue)
+
+        try presenter.startPresentation(presentation)
+        presenter.paywallViewController(
+            PaywallViewController(offering: nil),
+            didFailPurchasingWith: error
+        )
+
+        XCTAssertEqual(receivedParams?.checkpointIdentifier, "test_checkpoint")
+        XCTAssertEqual(receivedParams?.customVariables, ["source": "test"])
+        XCTAssertEqual(receivedParams?.error as NSError?, error)
+        XCTAssertEqual(receivedParams?.kind, .flowActionFailed)
+    }
+
+    func testPurchaseErrorIsRoutedAfterRestoreWithoutNewEntitlements() throws {
+        var receivedParams: ErrorPresentationParams?
+        let customerInfo = try Self.customerInfo(activeEntitlements: ["pro"])
+        let error = NSError(domain: ErrorCode.errorDomain, code: ErrorCode.purchaseInvalidError.rawValue)
+        let presentation = Self.presentation(
+            initialActiveEntitlementIdentifiers: ["pro"],
+            errorPresentationHandler: { params, _ in receivedParams = params }
+        )
+        let presenter = WorkflowPresenter { _ in true }
+        let controller = PaywallViewController(offering: nil)
+
+        try presenter.startPresentation(presentation)
+        presenter.paywallViewController(controller, didFinishRestoringWith: customerInfo)
+        presenter.paywallViewController(controller, didFailPurchasingWith: error)
+
+        XCTAssertEqual(receivedParams?.error as NSError?, error)
+        XCTAssertEqual(receivedParams?.kind, .flowActionFailed)
+        guard case .failed? = presenter.presentationDidDismiss() else {
+            return XCTFail("Expected the purchase failure outcome")
+        }
+    }
+
+    func testPurchaseCancellationIsNotRoutedToErrorPresenter() throws {
+        var presentationCount = 0
+        let presentation = Self.presentation(
+            errorPresentationHandler: { _, _ in presentationCount += 1 }
+        )
+        let presenter = WorkflowPresenter { _ in true }
+
+        try presenter.startPresentation(presentation)
+        presenter.paywallViewController(
+            PaywallViewController(offering: nil),
+            didFailPurchasingWith: NSError(
+                domain: ErrorCode.errorDomain,
+                code: ErrorCode.purchaseCancelledError.rawValue
+            )
+        )
+
+        XCTAssertEqual(presentationCount, 0)
+        guard case .completed(nil)? = presenter.presentationDidDismiss() else {
+            return XCTFail("Expected cancellation to leave the workflow outcome unchanged")
+        }
+    }
+
+    func testCompletionAfterPurchaseErrorKeepsWorkflowPresented() throws {
+        var completion: ErrorPresentationCompletion?
+        let presenter = WorkflowPresenter { _ in true }
+        let controller = self.makePaywallViewControllerForDismissalRecording()
+        let presentation = Self.presentation(
+            errorPresentationHandler: { _, value in completion = value }
+        )
+
+        try presenter.startPresentation(presentation)
+        presenter.paywallViewController(
+            controller,
+            didFailPurchasingWith: NSError(domain: ErrorCode.errorDomain, code: ErrorCode.purchaseInvalidError.rawValue)
+        )
+        completion?.complete()
+
+        XCTAssertEqual(controller.dismissCallCount, 0)
+        guard case .completed(nil)? = presenter.presentationDidDismiss() else {
+            return XCTFail("Expected the handled error to leave a completed workflow outcome")
+        }
+    }
+
+    func testWorkflowErrorIsPresentedAfterCompletingPurchaseError() throws {
+        var presentedErrors: [ErrorPresentationParams] = []
+        var completions: [ErrorPresentationCompletion] = []
+        let presentation = try Self.renderablePresentation(
+            customVariables: [:],
+            errorPresentationHandler: { params, completion in
+                presentedErrors.append(params)
+                completions.append(completion)
+            }
+        )
+        let presenter = WorkflowPresenter { _ in true }
+        let controller = try presenter.makePaywallViewController(for: presentation)
+
+        try presenter.startPresentation(presentation)
+        presenter.paywallViewController(
+            controller,
+            didFailPurchasingWith: NSError(
+                domain: ErrorCode.errorDomain,
+                code: ErrorCode.purchaseInvalidError.rawValue
+            )
+        )
+        try XCTUnwrap(completions.first).complete()
+
+        controller.simulateWorkflowPresentationError(
+            NSError(domain: ErrorCode.errorDomain, code: ErrorCode.configurationError.rawValue),
+            behavior: .endFlow
+        )
+
+        XCTAssertEqual(presentedErrors.map(\.kind), [.flowActionFailed, .flowCouldNotBeShown])
+        XCTAssertEqual(completions.count, 2)
+        try XCTUnwrap(completions.last).complete()
+
+        guard case .failed? = presenter.presentationDidDismiss() else {
+            return XCTFail("Expected the handled terminal error to preserve the failure outcome")
+        }
+    }
+
+    func testWorkflowBackNavigationBridgeWaitsForActiveTransitionToFinish() {
+        let navigationBridge = WorkflowBackNavigationBridge()
+        navigationBridge.workflowDidAppear()
+
+        XCTAssertTrue(navigationBridge.navigateBack())
+        XCTAssertTrue(navigationBridge.hasPendingBackNavigationRequest)
+        XCTAssertFalse(navigationBridge.takePendingBackNavigationRequest(isTransitioning: true))
+        XCTAssertTrue(navigationBridge.hasPendingBackNavigationRequest)
+        XCTAssertTrue(navigationBridge.takePendingBackNavigationRequest(isTransitioning: false))
+        XCTAssertFalse(navigationBridge.hasPendingBackNavigationRequest)
+        XCTAssertFalse(navigationBridge.takePendingBackNavigationRequest(isTransitioning: false))
+    }
+
+    func testNewerWorkflowErrorPresentationSupersedesEarlierCompletion() throws {
+        var completions: [ErrorPresentationCompletion] = []
+        let presenter = WorkflowPresenter { _ in true }
+        let controller = self.makePaywallViewControllerForDismissalRecording()
+        let presentation = Self.presentation(
+            errorPresentationHandler: { _, completion in completions.append(completion) }
+        )
+        let error = NSError(domain: ErrorCode.errorDomain, code: ErrorCode.purchaseInvalidError.rawValue)
+
+        try presenter.startPresentation(presentation)
+        presenter.paywallViewController(controller, didFailPurchasingWith: error)
+        presenter.paywallViewController(controller, didFailPurchasingWith: error)
+
+        let firstCompletion = try XCTUnwrap(completions.first)
+        let secondCompletion = try XCTUnwrap(completions.last)
+        XCTAssertFalse(firstCompletion === secondCompletion)
+        firstCompletion.complete()
+        XCTAssertEqual(controller.dismissCallCount, 0)
+        secondCompletion.complete()
+        XCTAssertEqual(controller.dismissCallCount, 0)
+    }
+
+    func testOnlyFirstErrorPresentationCompletionIsHandled() throws {
+        var completion: ErrorPresentationCompletion?
+        let presenter = WorkflowPresenter { _ in true }
+        let controller = self.makePaywallViewControllerForDismissalRecording()
+        let presentation = Self.presentation(
+            errorPresentationHandler: { _, value in completion = value }
+        )
+
+        try presenter.startPresentation(presentation)
+        presenter.paywallViewController(
+            controller,
+            didFailPurchasingWith: NSError(domain: ErrorCode.errorDomain, code: ErrorCode.purchaseInvalidError.rawValue)
+        )
+        completion?.complete()
+        completion?.complete()
+
+        XCTAssertEqual(controller.dismissCallCount, 0)
+    }
+
+    func testErrorPresentationCompletionAfterWorkflowDismissalIsIgnored() throws {
+        var completion: ErrorPresentationCompletion?
+        let presenter = WorkflowPresenter { _ in true }
+        let controller = self.makePaywallViewControllerForDismissalRecording()
+        let presentation = Self.presentation(
+            errorPresentationHandler: { _, value in completion = value }
+        )
+
+        try presenter.startPresentation(presentation)
+        presenter.paywallViewController(
+            controller,
+            didFailPurchasingWith: NSError(domain: ErrorCode.errorDomain, code: ErrorCode.purchaseInvalidError.rawValue)
+        )
+        _ = presenter.presentationDidDismiss()
+        completion?.complete()
+
+        XCTAssertEqual(controller.dismissCallCount, 0)
     }
 
     func testWorkflowPresentationErrorDoesNotReplaceEarlierPurchaseOutcome() throws {
@@ -67,7 +342,7 @@ final class WorkflowPresenterTests: TestCase {
             didFinishPurchasingWith: TestData.customerInfo,
             transaction: transaction
         )
-        controller.simulateWorkflowPresentationError(error)
+        controller.simulateWorkflowPresentationError(error, behavior: .endFlow)
         let execution = presenter.presentationDidDismiss()
 
         guard case let .completed(customerInfo)? = execution else {
@@ -85,7 +360,7 @@ final class WorkflowPresenterTests: TestCase {
 
         try presenter.startPresentation(presentation)
         presenter.paywallViewController(controller, didFinishRestoringWith: restoredCustomerInfo)
-        controller.simulateWorkflowPresentationError(error)
+        controller.simulateWorkflowPresentationError(error, behavior: .endFlow)
         let execution = presenter.presentationDidDismiss()
 
         guard case let .completed(customerInfo)? = execution else {
@@ -102,7 +377,7 @@ final class WorkflowPresenterTests: TestCase {
 
         try presenter.startPresentation(presentation)
         presenter.paywallViewControllerDidOpenWebCheckout(controller)
-        controller.simulateWorkflowPresentationError(error)
+        controller.simulateWorkflowPresentationError(error, behavior: .endFlow)
         let execution = presenter.presentationDidDismiss()
 
         guard case .completed(nil)? = execution else {
@@ -176,39 +451,6 @@ final class WorkflowPresenterTests: TestCase {
             return XCTFail("Expected a restore that grants a new entitlement to complete")
         }
         XCTAssertEqual(reportedCustomerInfo, customerInfo)
-    }
-
-    func testRestoreTreatsActiveEntitlementAsNewWithoutInitialCustomerInfo() throws {
-        let presenter = WorkflowPresenter { _ in true }
-        let customerInfo = try Self.customerInfo(activeEntitlements: ["pro"])
-
-        try presenter.startPresentation(Self.presentation(initialActiveEntitlementIdentifiers: nil))
-        presenter.paywallViewController(
-            PaywallViewController(offering: nil),
-            didFinishRestoringWith: customerInfo
-        )
-        let execution = presenter.presentationDidDismiss(reason: .navigatedBack)
-
-        guard case let .completed(reportedCustomerInfo)? = execution else {
-            return XCTFail("Expected active entitlements to be new without an initial snapshot")
-        }
-        XCTAssertEqual(reportedCustomerInfo, customerInfo)
-    }
-
-    func testRestoreWithoutActiveEntitlementsDoesNotOverrideBackWhenInitialCustomerInfoIsMissing() throws {
-        let presenter = WorkflowPresenter { _ in true }
-        let customerInfo = try Self.customerInfo(activeEntitlements: [])
-
-        try presenter.startPresentation(Self.presentation(initialActiveEntitlementIdentifiers: nil))
-        presenter.paywallViewController(
-            PaywallViewController(offering: nil),
-            didFinishRestoringWith: customerInfo
-        )
-        let execution = presenter.presentationDidDismiss(reason: .navigatedBack)
-
-        guard case .backedOut? = execution else {
-            return XCTFail("Expected an empty restore not to override back navigation")
-        }
     }
 
     func testInteractiveDismissalIsNotReportedAsBackingOut() throws {
@@ -289,15 +531,15 @@ final class WorkflowPresenterTests: TestCase {
 
     #if canImport(UIKit) && !os(tvOS) && !os(watchOS)
 
-    func testRejectedPresentationThrowsAndCleansStoredCall() {
+    func testUnavailablePresentationContextThrowsAndCleansStoredCall() {
         var shouldAcceptPresentation = false
         let presenter = WorkflowPresenter { _ in shouldAcceptPresentation }
 
         XCTAssertThrowsError(
             try presenter.startPresentation(Self.presentation())
         ) { error in
-            guard case CheckpointError.presentationFailed = error else {
-                return XCTFail("Expected presentationFailed, got \(error)")
+            guard case CheckpointError.presentationContextUnavailable = error else {
+                return XCTFail("Expected presentationContextUnavailable, got \(error)")
             }
         }
 
@@ -382,20 +624,39 @@ final class WorkflowPresenterTests: TestCase {
         XCTAssertNil(viewController.exitOfferOfferingForTesting)
     }
 
+    private func makePaywallViewControllerForDismissalRecording() -> DismissRecordingPaywallViewController {
+        return DismissRecordingPaywallViewController(
+            offering: Offering(
+                identifier: "offering-id",
+                serverDescription: "Test offering",
+                availablePackages: [],
+                webCheckoutUrl: nil
+            )
+        )
+    }
+
     private static func presentation(
         customVariables: [String: CustomVariableValue] = [:],
-        initialActiveEntitlementIdentifiers: Set<String>? = nil
+        initialActiveEntitlementIdentifiers: Set<String> = [],
+        errorPresentationHandler: @escaping ErrorPresentationHandler = { _, completion in
+            completion.complete()
+        }
     ) -> WorkflowPresentationRequest {
         return WorkflowPresentationRequest(
+            checkpointIdentifier: "test_checkpoint",
             workflow: self.workflow(),
             customVariables: customVariables,
             presentationMode: .modalSheet,
-            initialActiveEntitlementIdentifiers: initialActiveEntitlementIdentifiers
+            initialActiveEntitlementIdentifiers: initialActiveEntitlementIdentifiers,
+            errorPresentationHandler: errorPresentationHandler
         )
     }
 
     private static func renderablePresentation(
-        customVariables: [String: CustomVariableValue]
+        customVariables: [String: CustomVariableValue],
+        errorPresentationHandler: @escaping ErrorPresentationHandler = { _, completion in
+            completion.complete()
+        }
     ) throws -> WorkflowPresentationRequest {
         let resolvedWorkflow = self.workflow()
         let screen = WorkflowScreen(
@@ -416,13 +677,16 @@ final class WorkflowPresenterTests: TestCase {
             screens: ["screen-id": screen]
         )
         return WorkflowPresentationRequest(
+            checkpointIdentifier: "test_checkpoint",
             workflow: ResolvedCheckpointWorkflow(
                 workflow: workflow,
                 uiConfig: resolvedWorkflow.uiConfig,
                 offerings: resolvedWorkflow.offerings
             ),
             customVariables: customVariables,
-            presentationMode: .modalSheet
+            presentationMode: .modalSheet,
+            initialActiveEntitlementIdentifiers: [],
+            errorPresentationHandler: errorPresentationHandler
         )
     }
 
@@ -481,6 +745,266 @@ final class WorkflowPresenterTests: TestCase {
 @MainActor
 final class DefaultPaywallPresenterTests: TestCase {
 
+    // Missing presentation context: route the startup error before reporting presentation failure.
+    func testMissingPresentationContextRoutesErrorBeforeReportingFailure() throws {
+        var receivedParams: ErrorPresentationParams?
+        var errorCompletion: ErrorPresentationCompletion?
+        var presentationResult: PaywallPresentationResult?
+        let presenter = DefaultPaywallPresenter(presentationContextProvider: { nil })
+
+        presenter.present(
+            params: .init(
+                checkpointIdentifier: "test_checkpoint",
+                customVariables: ["source": "test"],
+                offering: Self.offering(),
+                errorPresentationHandler: { params, completion in
+                    receivedParams = params
+                    errorCompletion = completion
+                }
+            ),
+            completion: { presentationResult = $0 }
+        )
+
+        XCTAssertNil(presentationResult)
+        XCTAssertEqual(receivedParams?.checkpointIdentifier, "test_checkpoint")
+        XCTAssertEqual(receivedParams?.customVariables, ["source": "test"])
+        XCTAssertEqual(receivedParams?.kind, .flowCouldNotBeShown)
+        let error = try XCTUnwrap(receivedParams?.error as? CheckpointError)
+        guard case .noPresentationContext = error else {
+            return XCTFail("Expected noPresentationContext, got \(error)")
+        }
+
+        errorCompletion?.complete()
+
+        XCTAssertEqual(presentationResult, .failed)
+    }
+
+    func testPurchaseErrorIsRoutedWhilePaywallRemainsPresented() {
+        var receivedParams: ErrorPresentationParams?
+        let presenter = DefaultPaywallPresenter()
+        let controller = self.makePaywallViewController()
+        let error = NSError(domain: ErrorCode.errorDomain, code: ErrorCode.purchaseInvalidError.rawValue)
+        let params = PaywallPresentationParams(
+            checkpointIdentifier: "test_checkpoint",
+            customVariables: ["source": "test"],
+            offering: Self.offering(),
+            errorPresentationHandler: { params, _ in receivedParams = params }
+        )
+
+        presenter.prepareForPresentation(params: params)
+        presenter.paywallViewController(controller, didFailPurchasingWith: error)
+
+        XCTAssertEqual(receivedParams?.checkpointIdentifier, "test_checkpoint")
+        XCTAssertEqual(receivedParams?.customVariables, ["source": "test"])
+        XCTAssertEqual(receivedParams?.error as NSError?, error)
+        XCTAssertEqual(receivedParams?.kind, .flowActionFailed)
+    }
+
+    func testPurchaseCancellationIsNotRoutedToErrorPresenter() {
+        var presentationCount = 0
+        let presenter = DefaultPaywallPresenter()
+        let controller = self.makePaywallViewController()
+        presenter.prepareForPresentation(params: .init(
+            checkpointIdentifier: "test_checkpoint",
+            offering: Self.offering(),
+            errorPresentationHandler: { _, _ in presentationCount += 1 }
+        ))
+
+        presenter.paywallViewController(
+            controller,
+            didFailPurchasingWith: NSError(
+                domain: ErrorCode.errorDomain,
+                code: ErrorCode.purchaseCancelledError.rawValue
+            )
+        )
+
+        XCTAssertEqual(presentationCount, 0)
+    }
+
+    func testCompletionAfterPurchaseErrorKeepsPaywallPresented() {
+        var completion: ErrorPresentationCompletion?
+        let presenter = DefaultPaywallPresenter()
+        let controller = self.makePaywallViewControllerForDismissalRecording()
+        presenter.prepareForPresentation(params: .init(
+            checkpointIdentifier: "test_checkpoint",
+            offering: Self.offering(),
+            errorPresentationHandler: { _, value in completion = value }
+        ))
+
+        presenter.paywallViewController(
+            controller,
+            didFailPurchasingWith: NSError(domain: ErrorCode.errorDomain, code: ErrorCode.purchaseInvalidError.rawValue)
+        )
+        completion?.complete()
+
+        XCTAssertEqual(controller.dismissCallCount, 0)
+    }
+
+    // A later screen failure is an action failure and leaves the current valid screen presented.
+    func testCompletionAfterLaterScreenPresentationErrorKeepsPaywallPresented() {
+        var receivedParams: ErrorPresentationParams?
+        var errorCompletion: ErrorPresentationCompletion?
+        var presentationResult: PaywallPresentationResult?
+        let presenter = DefaultPaywallPresenter()
+        presenter.prepareForPresentation(
+            params: .init(
+                checkpointIdentifier: "test_checkpoint",
+                offering: Self.offering(),
+                errorPresentationHandler: { params, completion in
+                    receivedParams = params
+                    errorCompletion = completion
+                }
+            ),
+            completion: { presentationResult = $0 }
+        )
+        let error = NSError(domain: ErrorCode.errorDomain, code: ErrorCode.configurationError.rawValue)
+
+        presenter.handleWorkflowPresentationError(error, behavior: .keepCurrentScreen)
+        errorCompletion?.complete()
+
+        XCTAssertEqual(receivedParams?.kind, .flowActionFailed)
+        XCTAssertNil(presentationResult)
+    }
+
+    func testErrorPresentationCompletionAfterPaywallDismissalIsIgnored() {
+        var completion: ErrorPresentationCompletion?
+        let presenter = DefaultPaywallPresenter()
+        let controller = self.makePaywallViewControllerForDismissalRecording()
+        presenter.prepareForPresentation(params: .init(
+            checkpointIdentifier: "test_checkpoint",
+            offering: Self.offering(),
+            errorPresentationHandler: { _, value in completion = value }
+        ))
+
+        presenter.paywallViewController(
+            controller,
+            didFailPurchasingWith: NSError(domain: ErrorCode.errorDomain, code: ErrorCode.purchaseInvalidError.rawValue)
+        )
+        presenter.paywallViewControllerWasDismissed(controller)
+        completion?.complete()
+
+        XCTAssertEqual(controller.dismissCallCount, 0)
+    }
+
+    func testNewerPaywallErrorPresentationSupersedesEarlierCompletion() throws {
+        var completions: [ErrorPresentationCompletion] = []
+        let presenter = DefaultPaywallPresenter()
+        let controller = self.makePaywallViewControllerForDismissalRecording()
+        presenter.prepareForPresentation(params: .init(
+            checkpointIdentifier: "test_checkpoint",
+            offering: Self.offering(),
+            errorPresentationHandler: { _, completion in completions.append(completion) }
+        ))
+        let error = NSError(domain: ErrorCode.errorDomain, code: ErrorCode.purchaseInvalidError.rawValue)
+
+        presenter.paywallViewController(controller, didFailPurchasingWith: error)
+        presenter.paywallViewController(controller, didFailPurchasingWith: error)
+
+        let firstCompletion = try XCTUnwrap(completions.first)
+        let secondCompletion = try XCTUnwrap(completions.last)
+        XCTAssertFalse(firstCompletion === secondCompletion)
+        firstCompletion.complete()
+        XCTAssertEqual(controller.dismissCallCount, 0)
+        secondCompletion.complete()
+        XCTAssertEqual(controller.dismissCallCount, 0)
+    }
+
+    // A terminal rendering error releases the presentation only after the paywall finishes dismissing.
+    func testTerminalWorkflowErrorCompletesOnlyAfterPaywallDismissal() throws {
+        var errorCompletion: ErrorPresentationCompletion?
+        var result: PaywallPresentationResult?
+        let presenter = DefaultPaywallPresenter()
+        let controller = self.makePaywallViewControllerForDismissalRecording()
+        presenter.prepareForPresentation(
+            params: .init(
+                checkpointIdentifier: "test_checkpoint",
+                offering: Self.offering(),
+                errorPresentationHandler: { params, completion in
+                    XCTAssertEqual(params.kind, .flowCouldNotBeShown)
+                    errorCompletion = completion
+                }
+            ),
+            completion: { result = $0 },
+            presentedViewController: controller
+        )
+
+        presenter.handleWorkflowPresentationError(
+            NSError(domain: ErrorCode.errorDomain, code: ErrorCode.configurationError.rawValue),
+            behavior: .endFlow
+        )
+        try XCTUnwrap(errorCompletion).complete()
+
+        XCTAssertEqual(controller.dismissCallCount, 1)
+        XCTAssertNil(result)
+
+        presenter.paywallViewControllerWasDismissed(controller)
+
+        XCTAssertEqual(result, .failed)
+    }
+
+    // A successful purchase takes precedence over a later terminal rendering error.
+    func testPurchaseTakesPrecedenceOverLaterTerminalWorkflowError() throws {
+        var errorCompletion: ErrorPresentationCompletion?
+        var result: PaywallPresentationResult?
+        let presenter = DefaultPaywallPresenter()
+        let controller = self.makePaywallViewControllerForDismissalRecording()
+        presenter.prepareForPresentation(
+            params: .init(
+                checkpointIdentifier: "test_checkpoint",
+                offering: Self.offering(),
+                errorPresentationHandler: { _, completion in errorCompletion = completion }
+            ),
+            completion: { result = $0 },
+            presentedViewController: controller
+        )
+
+        presenter.paywallViewController(
+            controller,
+            didFinishPurchasingWith: TestData.customerInfo,
+            transaction: nil
+        )
+        presenter.handleWorkflowPresentationError(
+            NSError(domain: ErrorCode.errorDomain, code: ErrorCode.configurationError.rawValue),
+            behavior: .endFlow
+        )
+        try XCTUnwrap(errorCompletion).complete()
+        presenter.paywallViewControllerWasDismissed(controller)
+
+        XCTAssertEqual(result, .continued)
+    }
+
+    // A successful restore takes precedence over a later terminal rendering error.
+    func testRestoreTakesPrecedenceOverLaterTerminalWorkflowError() throws {
+        var errorCompletion: ErrorPresentationCompletion?
+        var result: PaywallPresentationResult?
+        let presenter = DefaultPaywallPresenter(
+            cachedCustomerInfoProvider: { try? Self.customerInfo(activeEntitlements: ["pro"]) }
+        )
+        let controller = self.makePaywallViewControllerForDismissalRecording()
+        presenter.prepareForPresentation(
+            params: .init(
+                checkpointIdentifier: "test_checkpoint",
+                offering: Self.offering(),
+                errorPresentationHandler: { _, completion in errorCompletion = completion }
+            ),
+            completion: { result = $0 },
+            presentedViewController: controller
+        )
+
+        presenter.paywallViewController(
+            controller,
+            didFinishRestoringWith: try Self.customerInfo(activeEntitlements: ["premium", "pro"])
+        )
+        presenter.handleWorkflowPresentationError(
+            NSError(domain: ErrorCode.errorDomain, code: ErrorCode.configurationError.rawValue),
+            behavior: .endFlow
+        )
+        try XCTUnwrap(errorCompletion).complete()
+        presenter.paywallViewControllerWasDismissed(controller)
+
+        XCTAssertEqual(result, .continued)
+    }
+
     func testNavigatingBackWithoutPurchaseOrRestoreReportsNavigatedBack() {
         let presenter = DefaultPaywallPresenter()
 
@@ -492,7 +1016,7 @@ final class DefaultPaywallPresenterTests: TestCase {
         let controller = self.makePaywallViewController()
         let delegate: PaywallViewControllerDelegate = presenter
 
-        presenter.prepareForPresentation()
+        presenter.prepareForPresentation(params: Self.presentationParams)
 
         delegate.paywallViewController?(
             controller,
@@ -510,7 +1034,7 @@ final class DefaultPaywallPresenterTests: TestCase {
         let controller = self.makePaywallViewControllerForDismissalRecording()
         let delegate: PaywallViewControllerDelegate = presenter
 
-        presenter.prepareForPresentation()
+        presenter.prepareForPresentation(params: Self.presentationParams)
         delegate.paywallViewController?(
             controller,
             didFinishRestoringWith: try Self.customerInfo(activeEntitlements: ["premium", "pro"])
@@ -527,7 +1051,7 @@ final class DefaultPaywallPresenterTests: TestCase {
         let controller = self.makePaywallViewControllerForDismissalRecording()
         let delegate: PaywallViewControllerDelegate = presenter
 
-        presenter.prepareForPresentation()
+        presenter.prepareForPresentation(params: Self.presentationParams)
         delegate.paywallViewController?(
             controller,
             didFinishRestoringWith: try Self.customerInfo(activeEntitlements: ["pro"])
@@ -544,7 +1068,7 @@ final class DefaultPaywallPresenterTests: TestCase {
         let controller = self.makePaywallViewControllerForDismissalRecording()
         let delegate: PaywallViewControllerDelegate = presenter
 
-        presenter.prepareForPresentation()
+        presenter.prepareForPresentation(params: Self.presentationParams)
         delegate.paywallViewController?(
             controller,
             didFinishRestoringWith: try Self.customerInfo(activeEntitlements: ["pro"])
@@ -559,7 +1083,7 @@ final class DefaultPaywallPresenterTests: TestCase {
         let controller = self.makePaywallViewControllerForDismissalRecording()
         let delegate: PaywallViewControllerDelegate = presenter
 
-        presenter.prepareForPresentation()
+        presenter.prepareForPresentation(params: Self.presentationParams)
         delegate.paywallViewController?(
             controller,
             didFinishRestoringWith: try Self.customerInfo(activeEntitlements: ["pro"])
@@ -574,7 +1098,7 @@ final class DefaultPaywallPresenterTests: TestCase {
         let controller = self.makePaywallViewControllerForDismissalRecording()
         let delegate: PaywallViewControllerDelegate = presenter
 
-        presenter.prepareForPresentation()
+        presenter.prepareForPresentation(params: Self.presentationParams)
         delegate.paywallViewController?(
             controller,
             didFinishRestoringWith: try Self.customerInfo(activeEntitlements: [])
@@ -589,7 +1113,7 @@ final class DefaultPaywallPresenterTests: TestCase {
         let controller = self.makePaywallViewController()
         let delegate: PaywallViewControllerDelegate = presenter
 
-        presenter.prepareForPresentation()
+        presenter.prepareForPresentation(params: Self.presentationParams)
         delegate.paywallViewController?(
             controller,
             didFinishPurchasingWith: TestData.customerInfo,
@@ -597,7 +1121,7 @@ final class DefaultPaywallPresenterTests: TestCase {
         )
         XCTAssertEqual(presenter.presentationResult(dismissalReason: .navigatedBack), .continued)
 
-        presenter.prepareForPresentation()
+        presenter.prepareForPresentation(params: Self.presentationParams)
 
         XCTAssertEqual(presenter.presentationResult(dismissalReason: .navigatedBack), .navigatedBack)
     }
@@ -629,6 +1153,19 @@ final class DefaultPaywallPresenterTests: TestCase {
                 webCheckoutUrl: nil
             )
         )
+    }
+
+    private static func offering() -> Offering {
+        return Offering(
+            identifier: "offering-id",
+            serverDescription: "Test offering",
+            availablePackages: [],
+            webCheckoutUrl: nil
+        )
+    }
+
+    private static var presentationParams: PaywallPresentationParams {
+        return .init(checkpointIdentifier: "test_checkpoint", offering: Self.offering())
     }
 
     private func makePaywallViewControllerForDismissalRecording() -> DismissRecordingPaywallViewController {

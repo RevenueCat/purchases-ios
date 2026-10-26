@@ -37,7 +37,7 @@ final class Signing: SigningType {
     /// Parameters used for signature creation / verification.
     struct SignatureParameters {
 
-        var path: HTTPRequestPath
+        var path: HTTPRequest.Path
         var iamEnabled: Bool
         var message: Data?
         var requestHeaders: HTTPRequest.Headers
@@ -46,6 +46,28 @@ final class Signing: SigningType {
         var etag: String?
         var requestDate: UInt64
         var useFallbackPath: Bool
+
+        init(
+            path: HTTPRequest.Path,
+            iamEnabled: Bool,
+            message: Data? = nil,
+            requestHeaders: HTTPRequest.Headers = [:],
+            requestBody: HTTPRequestBody? = nil,
+            nonce: Data? = nil,
+            etag: String? = nil,
+            requestDate: UInt64,
+            useFallbackPath: Bool = false
+        ) {
+            self.path = path
+            self.iamEnabled = iamEnabled
+            self.message = message
+            self.requestHeaders = requestHeaders
+            self.requestBody = requestBody
+            self.nonce = nonce
+            self.etag = etag
+            self.requestDate = requestDate
+            self.useFallbackPath = useFallbackPath
+        }
 
     }
 
@@ -257,28 +279,6 @@ extension Signing {
 }
 
 extension Signing.SignatureParameters {
-
-    init(
-        path: HTTPRequest.Path,
-        iamEnabled: Bool,
-        message: Data? = nil,
-        requestHeaders: HTTPRequest.Headers = [:],
-        requestBody: HTTPRequestBody? = nil,
-        nonce: Data? = nil,
-        etag: String? = nil,
-        requestDate: UInt64,
-        useFallbackPath: Bool = false
-    ) {
-        self.path = path
-        self.iamEnabled = iamEnabled
-        self.message = message
-        self.requestHeaders = requestHeaders
-        self.requestBody = requestBody
-        self.nonce = nonce
-        self.etag = etag
-        self.requestDate = requestDate
-        self.useFallbackPath = useFallbackPath
-    }
 
     func signature(salt: Data, authValue: String) -> Data {
         let auth = self.path.authenticated ? authValue : ""

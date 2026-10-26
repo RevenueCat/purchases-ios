@@ -118,6 +118,74 @@ final class SizeModifierTests: TestCase {
         XCTAssertEqual(Self.fittingSize(of: view, in: .init(width: 100, height: 100)).width, 40)
     }
 
+    func testShortScrollingFitHeightHugsContent() throws {
+        try Self.requireFitScrollAvailability()
+        let view = Color.clear.frame(width: 100, height: 100)
+            .scrollableIfNecessaryWhenAvailable(.vertical, size: .fit(nil), alignment: .center)
+
+        XCTAssertEqual(Self.fittingSize(of: view, in: .init(width: 100, height: 600)),
+                       .init(width: 100, height: 100))
+    }
+
+    func testScrollingFitHeightPreservesWrappedTextSize() throws {
+        try Self.requireFitScrollAvailability()
+        let content = Text("Unlock everything with a subscription. This offer wraps across several lines.")
+            .font(.system(size: 30))
+            .frame(width: 120)
+        let proposal = CGSize(width: 120, height: 1000)
+        let naturalSize = Self.fittingSize(of: content, in: proposal)
+        let scrollingSize = Self.fittingSize(
+            of: content.scrollableIfNecessaryWhenAvailable(.vertical, size: .fit(nil), alignment: .center),
+            in: proposal
+        )
+
+        XCTAssertGreaterThan(naturalSize.height, 30)
+        XCTAssertLessThan(naturalSize.height, proposal.height)
+        XCTAssertEqual(scrollingSize, naturalSize)
+    }
+
+    func testTallScrollingFitHeightUsesBoundedViewport() throws {
+        try Self.requireFitScrollAvailability()
+        let view = Color.clear.frame(width: 100, height: 1000)
+            .scrollableIfNecessaryWhenAvailable(.vertical, size: .fit(nil), alignment: .center)
+
+        XCTAssertEqual(Self.fittingSize(of: view, in: .init(width: 100, height: 600)),
+                       .init(width: 100, height: 600))
+    }
+
+    func testShortScrollingFitWidthHugsContent() throws {
+        try Self.requireFitScrollAvailability()
+        let view = Color.clear.frame(width: 100, height: 100)
+            .scrollableIfNecessaryWhenAvailable(.horizontal, size: .fit(nil), alignment: .center)
+
+        XCTAssertEqual(Self.fittingSize(of: view, in: .init(width: 600, height: 100)),
+                       .init(width: 100, height: 100))
+    }
+
+    func testWideScrollingFitWidthUsesBoundedViewport() throws {
+        try Self.requireFitScrollAvailability()
+        let view = Color.clear.frame(width: 1000, height: 100)
+            .scrollableIfNecessaryWhenAvailable(.horizontal, size: .fit(nil), alignment: .center)
+
+        XCTAssertEqual(Self.fittingSize(of: view, in: .init(width: 600, height: 100)),
+                       .init(width: 600, height: 100))
+    }
+
+    func testScrollingFixedHeightKeepsExistingViewport() throws {
+        try Self.requireFitScrollAvailability()
+        let view = Color.clear.frame(width: 100, height: 100)
+            .scrollableIfNecessaryWhenAvailable(.vertical, size: .fixed(100), alignment: .center)
+
+        XCTAssertEqual(Self.fittingSize(of: view, in: .init(width: 100, height: 600)),
+                       .init(width: 100, height: 600))
+    }
+
+    private static func requireFitScrollAvailability() throws {
+        guard #available(iOS 16.0, *) else {
+            throw XCTSkip("FIT scrolling uses ViewThatFits on iOS 16 and later")
+        }
+    }
+
     private static func fittingSize<Content: View>(of view: Content, in proposal: CGSize) -> CGSize {
         UIHostingController(rootView: view).sizeThatFits(in: proposal)
     }

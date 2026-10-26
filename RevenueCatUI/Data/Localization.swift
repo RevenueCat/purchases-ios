@@ -116,14 +116,21 @@ enum Localization {
         return path.flatMap(Bundle.init(path:)) ?? containerBundle
     }
 
+    static func discountPercentage(_ discount: Decimal) -> Int {
+        var percentage = discount * 100
+        var rounded = Decimal()
+        NSDecimalRound(&rounded, &percentage, 0, .plain)
+        return NSDecimalNumber(decimal: rounded).intValue
+    }
+
     /// - Returns: localized string for a discount. Example: "37% off"
     static func localized(
-        discount: Double,
+        discount: Decimal,
         locale: Locale
     ) -> String {
         assert(discount >= 0, "Invalid discount: \(discount)")
 
-        let number = Int((discount * 100).rounded(.toNearestOrAwayFromZero))
+        let number = Self.discountPercentage(discount)
         let format = self.localizedBundle(locale)
             .localizedString(forKey: "%d%% off", value: nil, table: nil)
 
@@ -314,27 +321,6 @@ extension Locale {
                 ? .rightToLeft
                 : .leftToRight
         }
-    }
-
-    /// Selects the best-matching locale from `availableLocales` given `preferredLocales`.
-    ///
-    /// Matches on language first, then picks the closest region/script within language matches.
-    /// Returns `nil` if no language match exists for any preferred locale.
-    static func selectPreferredLocale(from availableLocales: [Locale],
-                                      preferredLocales: [Locale]) -> Locale? {
-        for preferred in preferredLocales {
-            let languageMatches = availableLocales
-                .filter { $0.languageCodeIdentifier == preferred.languageCodeIdentifier }
-                .sorted { $0.identifier < $1.identifier }
-            guard let firstMatch = languageMatches.first else { continue }
-
-            let bestIdentifier = Bundle.preferredLocalizations(
-                from: languageMatches.map(\.identifier),
-                forPreferences: [preferred.identifier]
-            ).first
-            return languageMatches.first { $0.identifier == bestIdentifier } ?? firstMatch
-        }
-        return nil
     }
 
 }

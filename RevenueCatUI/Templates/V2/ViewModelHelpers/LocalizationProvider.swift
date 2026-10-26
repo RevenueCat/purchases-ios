@@ -20,6 +20,7 @@ struct LocalizationProvider {
 
     let locale: Locale
     let localizedStrings: PaywallComponent.LocalizationDictionary
+    var localizedVideos: PaywallComponent.VideoLocalizationDictionary = [:]
 
 }
 

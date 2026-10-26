@@ -29,3 +29,12 @@
 "Your purchase was successful." = "Ostoksesi onnistui.";
 "Purchase unavailable" = "Osto ei ole saatavilla";
 "This purchase isn't available in your region." = "Tämä osto ei ole saatavilla alueellasi.";
+"Couldn't connect. Check your internet connection and try again." = "Yhteyden muodostaminen epäonnistui. Tarkista internetyhteytesi ja yritä uudelleen.";
+"This content couldn't be loaded. Please try again later." = "Tätä sisältöä ei voitu ladata. Yritä myöhemmin uudelleen.";
+"There was a problem with the store. Please try again later." = "Kaupassa ilmeni ongelma. Yritä myöhemmin uudelleen.";
+"Purchases aren't allowed on this device." = "Ostokset eivät ole sallittuja tällä laitteella.";
+"This product isn't available right now." = "Tämä tuote ei ole juuri nyt saatavilla.";
+"You already own this product." = "Omistat jo tämän tuotteen.";
+"Your payment is pending. You'll get access once it's approved." = "Maksusi on odottamassa. Saat käyttöoikeuden, kun se on hyväksytty.";
+"Something went wrong. Please try again." = "Jokin meni pieleen. Yritä uudelleen.";
+"Your purchases couldn't be verified. Please try again later." = "Ostoksiasi ei voitu vahvistaa. Yritä myöhemmin uudelleen.";

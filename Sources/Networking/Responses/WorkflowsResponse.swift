@@ -99,17 +99,26 @@ import Foundation
         }
     }
 
-    public var experimentId: String? { self.stringParam(Self.experimentIdParam) }
+    /// Set on khepri's `<id>~f` fallback copies: the id of the step they were copied from.
+    public var fallbackOriginalStepId: String? { Self.string(self.metadata?[Self.fallbackOriginalStepIdKey]) }
 
-    public var experimentVariant: String? { self.stringParam(Self.experimentVariantParam) }
+    /// `metadata` first, `param_values` for blobs published before khepri moves them to `metadata`.
+    public var experimentId: String? { self.experimentValueFromMetadataOrParams(Self.experimentIdParam) }
 
-    private func stringParam(_ key: String) -> String? {
-        guard case let .string(value)? = self.paramValues[key] else { return nil }
-        return value
+    public var experimentVariant: String? { self.experimentValueFromMetadataOrParams(Self.experimentVariantParam) }
+
+    private func experimentValueFromMetadataOrParams(_ key: String) -> String? {
+        return Self.string(self.metadata?[key]) ?? Self.string(self.paramValues[key])
+    }
+
+    private static func string(_ value: AnyDecodable?) -> String? {
+        guard case let .string(string)? = value else { return nil }
+        return string
     }
 
     private static let experimentIdParam = "experiment_id"
     private static let experimentVariantParam = "experiment_variant"
+    private static let fallbackOriginalStepIdKey = "fallback_original_step_id"
 
     // `paramValues`, `outputs`, and `metadata` carry backend step config that the renderer doesn't
     // read directly (`metadata` via `stepScreenType`, `paramValues` via the experiment
@@ -144,6 +153,12 @@ import Foundation
     public let assetBaseURL: URL
     public let componentsConfig: PaywallComponentsData.ComponentsConfig
     public let componentsLocalizations: [PaywallComponent.LocaleID: PaywallComponent.LocalizationDictionary]
+    @DefaultDecodable.EmptyDictionary
+    // swiftlint:disable:next identifier_name
+    var _componentsVideoLocalizations: [PaywallComponent.LocaleID: PaywallComponent.VideoLocalizationDictionary]
+    public var componentsVideoLocalizations: [PaywallComponent.LocaleID: PaywallComponent.VideoLocalizationDictionary] {
+        _componentsVideoLocalizations
+    }
     @DefaultValue<PaywallComponent.DefaultLocaleFallback>
     // swiftlint:disable:next identifier_name
     var _defaultLocale: PaywallComponent.LocaleID
@@ -183,7 +198,8 @@ import Foundation
         exitOffers: ExitOffers? = nil,
         automaticallyScaleFontSize: Bool = true,
         stateDeclarations: [String: PaywallComponent.StateDeclaration]? = nil,
-        zeroDecimalPlaceCountries: [String] = []
+        zeroDecimalPlaceCountries: [String] = [],
+        componentsVideoLocalizations: [PaywallComponent.LocaleID: PaywallComponent.VideoLocalizationDictionary] = [:]
     ) {
         self.name = name
         self.templateName = templateName
@@ -191,6 +207,7 @@ import Foundation
         self.assetBaseURL = assetBaseURL
         self.componentsConfig = componentsConfig
         self.componentsLocalizations = componentsLocalizations
+        self._componentsVideoLocalizations = componentsVideoLocalizations
         self._defaultLocale = defaultLocale
         self.config = [:]
         self.offeringIdentifier = offeringIdentifier
@@ -300,6 +317,8 @@ extension WorkflowScreen: Decodable, Equatable, Sendable {
         case assetBaseURL = "assetBaseUrl"
         case componentsConfig
         case componentsLocalizations
+        // swiftlint:disable:next identifier_name
+        case _componentsVideoLocalizations = "componentsVideoLocalizations"
         // swiftlint:disable:next identifier_name
         case _defaultLocale = "defaultLocale"
         case config

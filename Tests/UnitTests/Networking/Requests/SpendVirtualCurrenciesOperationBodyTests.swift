@@ -18,9 +18,9 @@ import XCTest
 
 // NOTE: These tests intentionally exercise `SpendVirtualCurrenciesOperation.Body`'s `Encodable`
 // conformance directly rather than driving the operation through `MockHTTPClient`. As written,
-// `HTTPRequestPath.pathComponent`'s `.spendVirtualCurrencies` case calls `assertionFailure(...)`,
+// `HTTPRequest.Path.pathComponent`'s `.spendVirtualCurrencies` case calls `assertionFailure(...)`,
 // and `MockHTTPClient.perform` always resolves the mock lookup URL with `preferIAMPath: false`
-// (see `HTTPRequestPath.url(preferIAMPath:)`), which means `pathComponent` (not `iamPathComponent`)
+// (see `HTTPRequest.Path.url(preferIAMPath:)`), which means `pathComponent` (not `iamPathComponent`)
 // is always evaluated. Any test that performs an actual `.spendVirtualCurrencies` HTTP request
 // through `MockHTTPClient` would therefore always hit that `assertionFailure`, crashing the test
 // process. Until the test double is updated to honor `tokenManager.enabled` (mirroring what

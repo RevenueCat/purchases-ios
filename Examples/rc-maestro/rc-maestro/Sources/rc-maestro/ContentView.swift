@@ -6,6 +6,7 @@ import StoreKit
 public struct ContentView: View {
     @State private var presentCustomerCenter = false
     @State private var pushCustomerCenter = false
+    @State private var presentCustomerCenterWithHistory = false
 
     @State private var manageSubscriptions = false
     @State private var actionSheetIsPresented = false
@@ -27,6 +28,13 @@ public struct ContentView: View {
                     pushCustomerCenter = true
                 }
                 .buttonStyle(.borderedProminent)
+
+                #if DEBUG
+                Button("Customer Center with history") {
+                    presentCustomerCenterWithHistory = true
+                }
+                .buttonStyle(.borderedProminent)
+                #endif
                 
                 Spacer()
             }
@@ -48,6 +56,11 @@ public struct ContentView: View {
                     Action \(actionIdentifier) triggered for \(purchase)
                     """)
             })
+            #if DEBUG
+            .sheet(isPresented: $presentCustomerCenterWithHistory) {
+                CustomerCenterWithHistoryView()
+            }
+            #endif
             .manageSubscriptionsSheet(isPresented: $manageSubscriptions)
             .confirmationDialog(
                 "Buy something",

@@ -246,7 +246,9 @@ final class PackageValidatorTests: TestCase {
 
         let reconciled = validator.reconciledSelection(
             current: seeded,
-            in: Self.context(customVariables: ["can_trial": .bool(false)])
+            in: Self.context(customVariables: ["can_trial": .bool(false)]),
+            offerEligibilityLoading: [],
+            offerEligibilityAvailability: .unknown
         )
         XCTAssertEqual(reconciled?.identifier, TestData.monthlyPackage.identifier)
     }
@@ -259,7 +261,9 @@ final class PackageValidatorTests: TestCase {
         XCTAssertNil(
             validator.reconciledSelection(
                 current: TestData.annualPackage,
-                in: Self.context(customVariables: ["can_trial": .bool(true)])
+                in: Self.context(customVariables: ["can_trial": .bool(true)]),
+                offerEligibilityLoading: [],
+                offerEligibilityAvailability: .unknown
             )
         )
     }
@@ -272,9 +276,135 @@ final class PackageValidatorTests: TestCase {
         XCTAssertNil(
             validator.reconciledSelection(
                 current: TestData.monthlyPackage,
-                in: Self.context(customVariables: ["can_trial": .bool(false)])
+                in: Self.context(customVariables: ["can_trial": .bool(false)]),
+                offerEligibilityLoading: [],
+                offerEligibilityAvailability: .unknown
             )
         )
+    }
+
+    func testReconcileKeepsSelectionThatCanReappearAfterPendingEligibility() {
+        let validator = PackageValidator()
+        validator.add(Self.makePackageInfo(
+            package: TestData.annualPackage,
+            isSelectedByDefault: true,
+            visible: true,
+            overrides: [
+                Self.offerVisibilityOverride(.introOffer, visible: false),
+                Self.offerVisibilityOverride(.promoOffer, visible: true)
+            ]
+        ))
+        validator.add(Self.makePackageInfo(
+            package: TestData.monthlyPackage,
+            isSelectedByDefault: false,
+            visible: true
+        ))
+
+        let context = Self.context(
+            isEligibleForIntroOffer: { _ in true },
+            isEligibleForPromoOffer: { _ in false }
+        )
+
+        XCTAssertNil(
+            validator.reconciledSelection(
+                current: TestData.annualPackage,
+                in: context,
+                offerEligibilityLoading: [.promo],
+                offerEligibilityAvailability: .unknown
+            )
+        )
+    }
+
+    func testReconcileMovesSelectionWhenPendingEligibilityCannotRestoreIt() {
+        let validator = PackageValidator()
+        validator.add(Self.makePackageInfo(
+            package: TestData.annualPackage,
+            isSelectedByDefault: true,
+            visible: true,
+            overrides: [Self.offerVisibilityOverride(.introOffer, visible: false)]
+        ))
+        validator.add(Self.makePackageInfo(
+            package: TestData.monthlyPackage,
+            isSelectedByDefault: false,
+            visible: true
+        ))
+
+        let context = Self.context(
+            isEligibleForIntroOffer: { _ in true },
+            isEligibleForPromoOffer: { _ in false }
+        )
+
+        XCTAssertEqual(
+            validator.reconciledSelection(
+                current: TestData.annualPackage,
+                in: context,
+                offerEligibilityLoading: [.promo],
+                offerEligibilityAvailability: .unknown
+            )?.identifier,
+            TestData.monthlyPackage.identifier
+        )
+    }
+
+    func testReconcileDoesNotWaitForIntroOfferTheHiddenPackageCannotHave() {
+        let package = TestData.lifetimePackage
+        let fallback = TestData.monthlyPackage
+        let availability = OfferEligibilityAvailability(packageInfos: [(package, nil), (fallback, nil)])
+
+        let validator = PackageValidator()
+        validator.add(Self.makePackageInfo(
+            package: package,
+            isSelectedByDefault: true,
+            visible: false,
+            overrides: [Self.offerVisibilityOverride(.introOffer, visible: true)]
+        ))
+        validator.add(Self.makePackageInfo(
+            package: fallback,
+            isSelectedByDefault: false,
+            visible: true
+        ))
+
+        XCTAssertEqual(
+            validator.reconciledSelection(
+                current: package,
+                in: Self.context(),
+                offerEligibilityLoading: [.intro, .promo],
+                offerEligibilityAvailability: availability
+            )?.identifier,
+            fallback.identifier
+        )
+    }
+
+    func testReconcilePreservesSelectionWhileSubscriptionHistoryCanRevealPackageWithoutPromo() {
+        let package = TestData.lifetimePackage
+        let fallback = TestData.monthlyPackage
+        let availability = OfferEligibilityAvailability(packageInfos: [(package, nil), (fallback, nil)])
+        let validator = PackageValidator()
+        validator.add(Self.makePackageInfo(
+            package: package,
+            isSelectedByDefault: true,
+            visible: false,
+            overrides: [Self.offerVisibilityOverride(.promoOffer, visible: true)]
+        ))
+        validator.add(Self.makePackageInfo(package: fallback, isSelectedByDefault: false, visible: true))
+
+        // Visibility uses subscription history even though neither package has a configured promo.
+        for hasHistory in [false, true] {
+            XCTAssertNil(
+                validator.reconciledSelection(
+                    current: package,
+                    in: Self.context(isEligibleForPromoOffer: { _ in hasHistory }),
+                    offerEligibilityLoading: hasHistory ? [] : [.promo],
+                    offerEligibilityAvailability: availability
+                )
+            )
+        }
+
+        XCTAssertEqual(validator.reconciledSelection(
+            current: package,
+            in: Self.context(),
+            offerEligibilityLoading: [],
+            offerEligibilityAvailability: availability
+        )?.identifier, fallback.identifier)
     }
 
     func testReconcileReturnsNilWhenNothingIsVisible() {
@@ -289,7 +419,9 @@ final class PackageValidatorTests: TestCase {
         XCTAssertNil(
             validator.reconciledSelection(
                 current: TestData.annualPackage,
-                in: Self.context(customVariables: ["can_trial": .bool(false)])
+                in: Self.context(customVariables: ["can_trial": .bool(false)]),
+                offerEligibilityLoading: [],
+                offerEligibilityAvailability: .unknown
             )
         )
     }
@@ -354,7 +486,12 @@ final class PackageValidatorTests: TestCase {
         // so there is nothing to reconcile and the selection stays put. No bug to observe here.
         let seeded = validator.defaultSelectedPackage(in: .provisional)
         XCTAssertEqual(seeded?.identifier, TestData.annualPackage.identifier)
-        XCTAssertNil(validator.reconciledSelection(current: seeded, in: context))
+        XCTAssertNil(validator.reconciledSelection(
+            current: seeded,
+            in: context,
+            offerEligibilityLoading: [],
+            offerEligibilityAvailability: .unknown
+        ))
     }
 
     /// The fixture shape that does reproduce the bug: the group shown when `can_trial=false` shares no
@@ -398,7 +535,12 @@ final class PackageValidatorTests: TestCase {
         XCTAssertEqual(seeded?.identifier, TestData.annualPackage.identifier)
 
         XCTAssertEqual(
-            validator.reconciledSelection(current: seeded, in: context)?.identifier,
+            validator.reconciledSelection(
+                current: seeded,
+                in: context,
+                offerEligibilityLoading: [],
+                offerEligibilityAvailability: .unknown
+            )?.identifier,
             TestData.monthlyPackage.identifier
         )
     }
@@ -525,7 +667,9 @@ final class PackageValidatorTests: TestCase {
         XCTAssertEqual(
             validator.reconciledSelection(
                 current: TestData.annualPackage,
-                in: Self.context(customVariables: ["can_trial": .bool(false)])
+                in: Self.context(customVariables: ["can_trial": .bool(false)]),
+                offerEligibilityLoading: [],
+                offerEligibilityAvailability: .unknown
             )?.identifier,
             TestData.monthlyPackage.identifier
         )
@@ -543,7 +687,9 @@ final class PackageValidatorTests: TestCase {
         XCTAssertNil(
             validator.reconciledSelection(
                 current: TestData.weeklyPackage,
-                in: Self.context(customVariables: ["can_trial": .bool(false)])
+                in: Self.context(customVariables: ["can_trial": .bool(false)]),
+                offerEligibilityLoading: [],
+                offerEligibilityAvailability: .unknown
             )
         )
     }
@@ -567,7 +713,9 @@ final class PackageValidatorTests: TestCase {
         XCTAssertNil(
             validator.reconciledSelection(
                 current: TestData.annualPackage,
-                in: Self.context(customVariables: ["can_trial": .bool(false)])
+                in: Self.context(customVariables: ["can_trial": .bool(false)]),
+                offerEligibilityLoading: [],
+                offerEligibilityAvailability: .unknown
             )
         )
     }
@@ -591,7 +739,9 @@ final class PackageValidatorTests: TestCase {
         XCTAssertNil(
             validator.reconciledSelection(
                 current: TestData.annualPackage,
-                in: Self.context(customVariables: ["can_trial": .bool(false)])
+                in: Self.context(customVariables: ["can_trial": .bool(false)]),
+                offerEligibilityLoading: [],
+                offerEligibilityAvailability: .unknown
             )
         )
     }
@@ -608,7 +758,9 @@ final class PackageValidatorTests: TestCase {
         XCTAssertNil(
             validator.reconciledSelection(
                 current: TestData.annualPackage,
-                in: Self.context(customVariables: ["can_trial": .bool(true)])
+                in: Self.context(customVariables: ["can_trial": .bool(true)]),
+                offerEligibilityLoading: [],
+                offerEligibilityAvailability: .unknown
             )
         )
     }
@@ -685,6 +837,16 @@ private extension PackageValidatorTests {
             extendedConditions: [
                 .variable(operator: .equals, variable: "can_trial", value: .bool(canTrial))
             ],
+            properties: .init(visible: visible)
+        )
+    }
+
+    static func offerVisibilityOverride(
+        _ condition: PaywallComponent.ExtendedCondition,
+        visible: Bool
+    ) -> PaywallComponent.ComponentOverride<PaywallComponent.PartialPackageComponent> {
+        return .init(
+            extendedConditions: [condition],
             properties: .init(visible: visible)
         )
     }

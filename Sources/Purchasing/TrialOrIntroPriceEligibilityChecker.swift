@@ -101,17 +101,18 @@ class TrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCheckerTy
 
         let startTime = self.dateProvider.now()
 
-        // Extracting and wrapping the completion block from the async call
-        // to avoid having to mark ReceiveIntroEligibilityBlock as @Sendable
-        // up to the public API thus making a breaking change.
+        // Wrap the async completion to avoid making the public completion handler @Sendable.
         let completionBlock: ([String: IntroEligibility], Error?, StoreKitVersion) -> Void =
         { [weak self] (result, error, storeKitVersion) in
-            self?.trackTrialOrIntroEligibilityRequestIfNeeded(startTime: startTime,
-                                                              requestedProductIds: productIdentifiers,
-                                                              result: result,
-                                                              error: error,
-                                                              storeKitVersion: storeKitVersion)
-            self?.operationDispatcher.dispatchOnMainActor {
+            guard let self = self else { return }
+            self.trackTrialOrIntroEligibilityRequestIfNeeded(startTime: startTime,
+                                                             requestedProductIds: productIdentifiers,
+                                                             result: result,
+                                                             error: error,
+                                                             storeKitVersion: storeKitVersion)
+            let logDelivery = IntroEligibilityLog.deliveryLogger(clock: self.systemInfo.clock)
+            self.operationDispatcher.dispatchOnMainActor {
+                logDelivery(result)
                 completion(result)
             }
         }
@@ -163,58 +164,59 @@ class TrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCheckerTy
             }
         }
     }
-
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func sk2CheckEligibility(_ compoundProductIdentifiers: Set<String>) async throws -> [String: IntroEligibility] {
         var introDictionary: [String: IntroEligibility] = compoundProductIdentifiers.dictionaryWithValues { _ in
                 .init(eligibilityStatus: .unknown)
         }
-
-        let products = try await self.productsManager.sk2Products(withIdentifiers: compoundProductIdentifiers)
-        for sk2StoreProduct in products {
-            let eligibilityStatus: IntroEligibilityStatus = await checkEligibility(for: sk2StoreProduct)
-            introDictionary[sk2StoreProduct.id] = .init(eligibilityStatus: eligibilityStatus)
+        let log = IntroEligibilityLog(clock: self.systemInfo.clock)
+        let products = try await log.products(identifiers: compoundProductIdentifiers,
+                                              fetch: self.productsManager.products(withIdentifiers:))
+        var productIdentifiersByGroup: [String: [String]] = [:]
+        for product in products.compactMap({ $0.product as? SK2StoreProduct }) {
+            if let subscriptionGroupID = product.subscriptionGroupIDForIntroEligibilityCheck {
+                productIdentifiersByGroup[subscriptionGroupID, default: []].append(product.id)
+            } else {
+                introDictionary[product.id] = .init(eligibilityStatus: .noIntroOfferExists)
+            }
         }
 
+        await withTaskGroup(of: (String, Bool).self) { group in
+            for subscriptionGroupID in productIdentifiersByGroup.keys {
+                group.addTask {
+                    let isEligible = await log.eligibility(forSubscriptionGroup: subscriptionGroupID) {
+                        await SK2Product.SubscriptionInfo.isEligibleForIntroOffer(for: $0)
+                    }
+                    return (subscriptionGroupID, isEligible)
+                }
+            }
+            for await (subscriptionGroupID, isEligible) in group {
+                let status: IntroEligibilityStatus = isEligible ? .eligible : .ineligible
+                for productIdentifier in productIdentifiersByGroup[subscriptionGroupID] ?? [] {
+                    introDictionary[productIdentifier] = .init(eligibilityStatus: status)
+                }
+            }
+        }
+        log.finished(introDictionary)
         return introDictionary
     }
 
-    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-    private func checkEligibility(for sk2StoreProduct: SK2StoreProduct) async -> IntroEligibilityStatus {
-        let sk2Product = sk2StoreProduct.underlyingSK2Product
+}
 
+@available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+private extension SK2StoreProduct {
+
+    /// Group to ask StoreKit about, or `nil` when the product has no introductory offer.
+    var subscriptionGroupIDForIntroEligibilityCheck: String? {
+        guard let subscription = self.underlyingSK2Product.subscription else { return nil }
         #if compiler(>=6.3.2)
-        if sk2StoreProduct.representsBillingPlan,
-           let subscription = sk2Product.subscription {
-            let billingPlanContainsIntroOffer = sk2StoreProduct.containsSubscriptionOfferTypeOnBillingPlan(
-                subscriptionOfferType: .introductory
-            )
-
-            guard billingPlanContainsIntroOffer else {
-                return .noIntroOfferExists
-            }
-
-            let isEligible = await TimingUtil.measureAndLogIfTooSlow(
-                threshold: .introEligibility,
-                message: Strings.eligibility.sk2_intro_eligibility_too_slow.description) {
-                    return await subscription.isEligibleForIntroOffer
-                }
-            return isEligible ? .eligible : .ineligible
+        if self.representsBillingPlan {
+            let hasIntroOffer = self.containsSubscriptionOfferTypeOnBillingPlan(subscriptionOfferType: .introductory)
+            return hasIntroOffer ? subscription.subscriptionGroupID : nil
         }
         #endif
-
-        if let subscription = sk2Product.subscription, subscription.introductoryOffer != nil {
-            let isEligible = await TimingUtil.measureAndLogIfTooSlow(
-                threshold: .introEligibility,
-                message: Strings.eligibility.sk2_intro_eligibility_too_slow.description) {
-                    return await subscription.isEligibleForIntroOffer
-                }
-            return isEligible ? .eligible : .ineligible
-        } else {
-            return .noIntroOfferExists
-        }
+        return subscription.introductoryOffer == nil ? nil : subscription.subscriptionGroupID
     }
-
 }
 
 /// Default overload implementation that takes a single `StoreProductType`.

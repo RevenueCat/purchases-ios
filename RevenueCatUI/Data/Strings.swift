@@ -18,6 +18,7 @@ import RevenueCat
 
 enum Strings {
 
+    case customer_center_preview_action_failed(Error)
     case package_not_subscription(Package)
     case found_multiple_packages_of_same_identifier(String)
     case unrecognized_variable_name(variableName: String)
@@ -32,6 +33,7 @@ enum Strings {
 
     case attempted_to_track_event_with_missing_data
     case paywall_unknown_button_action_tracked_for_diagnostics(componentName: String?, actionValue: String?)
+    case paywall_native_navigation_action_failed(Error)
 
     case image_starting_request(URL)
     case image_result(Result<(), ImageLoader.Error>)
@@ -127,6 +129,7 @@ enum Strings {
     case web_checkout_load_failed(String)
     case web_checkout_http_error(statusCode: Int)
     case web_checkout_content_process_terminated
+    case web_checkout_external_url_not_opened(scheme: String)
     case hosted_checkout_dismissed_without_returning
 
     // Exit Offers
@@ -152,6 +155,8 @@ extension Strings: CustomStringConvertible {
 
     var description: String {
         switch self {
+        case .customer_center_preview_action_failed(let error):
+            return "Customer Center preview action failed: \(error)"
         case let .package_not_subscription(package):
             return "Expected package '\(package.identifier)' to be a subscription. " +
             "Type: \(package.packageType.debugDescription)"
@@ -245,6 +250,9 @@ extension Strings: CustomStringConvertible {
         case .paywall_view_model_construction_failed(let error):
             return "Paywall view model construction failed: \(error)\n" +
             "Will use fallback paywall."
+
+        case .paywall_native_navigation_action_failed(let error):
+            return "Native paywall navigation action failed: \(error.localizedDescription)"
 
         case .paywall_could_not_find_localization(let string):
             return "Could not find paywall localization data for \(string)"
@@ -417,9 +425,11 @@ extension Strings: CustomStringConvertible {
             return "Web checkout failed to load. The server responded with HTTP status code \(statusCode)."
         case .web_checkout_content_process_terminated:
             return "Web checkout content process terminated."
+        case .web_checkout_external_url_not_opened(let scheme):
+            return "Web checkout could not open a '\(scheme)' link. The checkout page stays as it was."
         case .hosted_checkout_dismissed_without_returning:
             return "The checkout was closed before the page reported an outcome. " +
-            "Whether a purchase was made will be confirmed with RevenueCat."
+            "It is kept, so that buying again carries on with it."
 
         case .errorFetchingOfferings(let error):
             return "Error fetching offerings: \(error)"

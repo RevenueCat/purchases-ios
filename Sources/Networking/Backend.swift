@@ -42,6 +42,7 @@ class Backend {
         diagnosticsTracker: DiagnosticsTrackerType?,
         apiSourceProvider: RemoteConfigSourceProviderType?,
         timeoutManager: HTTPRequestTimeoutManagerType,
+        subscriberDimensionsStore: SubscriberDimensionsStoreType,
         dateProvider: DateProvider = DateProvider()
     ) {
         // A single `apiSourceFailover` shared by every lane's HTTPClient, so they all walk one source
@@ -63,12 +64,24 @@ class Backend {
                                           offlineCustomerInfoCreator: offlineCustomerInfoCreator,
                                           dateProvider: dateProvider)
         let lanes = factory.makeLanes(dedicatedLanes: [.remoteConfig, .checkout])
-        self.init(lanes: lanes, attributionFetcher: attributionFetcher)
+        self.init(
+            lanes: lanes,
+            attributionFetcher: attributionFetcher,
+            subscriberDimensionsStore: subscriberDimensionsStore
+        )
     }
 
-    convenience init(lanes: BackendLanes, attributionFetcher: AttributionFetcher) {
+    convenience init(
+        lanes: BackendLanes,
+        attributionFetcher: AttributionFetcher,
+        subscriberDimensionsStore: SubscriberDimensionsStoreType
+    ) {
         let backendConfig = lanes[.default]
-        let customer = CustomerAPI(backendConfig: backendConfig, attributionFetcher: attributionFetcher)
+        let customer = CustomerAPI(
+            backendConfig: backendConfig,
+            attributionFetcher: attributionFetcher,
+            subscriberDimensionsStore: subscriberDimensionsStore
+        )
         let identity = IdentityAPI(backendConfig: backendConfig)
         let token = TokenAPI(backendConfig: backendConfig)
         let offerings = OfferingsAPI(backendConfig: backendConfig)

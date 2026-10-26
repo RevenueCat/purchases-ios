@@ -19,6 +19,7 @@ import XCTest
 class AuthenticationTests: TestCase {
 
     private static let appUserID = "test-app-user-id"
+    private static let newAppUserID = "new-app-user-id"
 
     private var backend: MockBackend!
     private var identityManager: MockIdentityManager!
@@ -80,7 +81,7 @@ class AuthenticationTests: TestCase {
         var receivedCreated: Bool?
         var receivedError: PublicError?
 
-        authentication.identifyCurrentUser(as: Self.appUserID) { info, created, error in
+        authentication.identifyCurrentUser(as: Self.newAppUserID) { info, created, error in
             receivedInfo = info
             receivedCreated = created
             receivedError = error
@@ -89,9 +90,45 @@ class AuthenticationTests: TestCase {
         expect(receivedInfo) == expectedInfo
         expect(receivedCreated) == true
         expect(receivedError).to(beNil())
-        expect(self.identityManager.invokedLogInParametersList) == [Self.appUserID]
+        expect(self.identityManager.invokedLogInParametersList) == [Self.newAppUserID]
         expect(self.internalDelegate.invokedAuthenticatorDidChangeIdentity) == true
         expect(self.internalDelegate.invokedAuthenticatorDidChangeIdentityParametersList.last) == .identified
+    }
+
+    func testIdentifyCurrentUserWithCurrentAppUserIDDoesNotNotifyInternalDelegate() throws {
+        let authentication = self.makeAuthentication()
+        let expectedInfo = try CustomerInfo(data: Self.customerInfoData(originalAppUserId: Self.appUserID))
+        self.identityManager.mockLogInResult = .success((expectedInfo, false))
+
+        var receivedInfo: CustomerInfo?
+        var receivedCreated: Bool?
+        var receivedError: PublicError?
+
+        authentication.identifyCurrentUser(as: Self.appUserID) { info, created, error in
+            receivedInfo = info
+            receivedCreated = created
+            receivedError = error
+        }
+
+        expect(receivedInfo) == expectedInfo
+        expect(receivedCreated) == false
+        expect(receivedError).to(beNil())
+        expect(self.identityManager.invokedLogInParametersList) == [Self.appUserID]
+        expect(self.internalDelegate.invokedAuthenticatorDidChangeIdentity) == false
+    }
+
+    func testIdentifyCurrentUserWithUntrimmedCurrentAppUserIDDoesNotNotifyInternalDelegate() throws {
+        let authentication = self.makeAuthentication()
+        let expectedInfo = try CustomerInfo(data: Self.customerInfoData(originalAppUserId: Self.appUserID))
+        self.identityManager.mockLogInResult = .success((expectedInfo, false))
+
+        var receivedInfo: CustomerInfo?
+        authentication.identifyCurrentUser(as: "  \(Self.appUserID)\n") { info, _, _ in
+            receivedInfo = info
+        }
+
+        expect(receivedInfo) == expectedInfo
+        expect(self.internalDelegate.invokedAuthenticatorDidChangeIdentity) == false
     }
 
     func testIdentifyCurrentUserWithStringFailureDoesNotNotifyInternalDelegate() {

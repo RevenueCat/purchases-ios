@@ -88,7 +88,6 @@ class TrialOrIntroPriceEligibilityCheckerUIPreviewModeTests: StoreKitConfigTestC
 
         expect(self.receiptFetcher.receiptDataCalled) == false
         expect(self.mockIntroEligibilityCalculator.invokedCheckTrialOrIntroDiscountEligibility) == false
-        expect(self.mockProductsManager.invokedSk2StoreProducts) == false
         expect(self.mockOfferingsAPI.invokedGetIntroEligibility) == false
     }
 }

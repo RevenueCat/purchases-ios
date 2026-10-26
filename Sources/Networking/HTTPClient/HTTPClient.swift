@@ -185,7 +185,7 @@ extension HTTPClient {
 
     static func headerParametersForSignatureHeader(
         with headers: RequestHeaders,
-        path: HTTPRequestPath
+        path: HTTPRequest.Path
     ) -> RequestHeaders {
         if let header = HTTPRequest.headerParametersForSignatureHeader(
             headers: headers,

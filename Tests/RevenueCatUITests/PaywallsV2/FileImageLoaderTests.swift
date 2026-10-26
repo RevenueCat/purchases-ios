@@ -189,6 +189,53 @@ final class FileImageLoaderTests: TestCase {
         await self.fulfillment(of: [completion], timeout: 5)
     }
 
+    #if os(iOS)
+    // A tab switch reuses the image view at the same position with a new URL.
+    // No render for the new URL may show the previous URL's image.
+    func testRemoteImageDoesNotRenderPreviousImageAfterURLChange() throws {
+        guard #available(iOS 16.0, *) else {
+            throw XCTSkip("API only available on iOS 16")
+        }
+
+        let urlA = try XCTUnwrap(URL(string: "https://assets.example.com/\(UUID().uuidString)-a.png"))
+        let urlB = try XCTUnwrap(URL(string: "https://assets.example.com/\(UUID().uuidString)-b.png"))
+        let dataA = try Self.makeImageData(variant: .red)
+        let dataB = try Self.makeImageData(variant: .blue)
+        let cachedURLA = try XCTUnwrap(
+            FileRepository.shared.generateLocalFilesystemURL(forRemoteURL: urlA, withChecksum: nil)
+        )
+        let cachedURLB = try XCTUnwrap(
+            FileRepository.shared.generateLocalFilesystemURL(forRemoteURL: urlB, withChecksum: nil)
+        )
+        try Self.writeImageData(dataA, to: cachedURLA)
+        try Self.writeImageData(dataB, to: cachedURLB)
+        defer {
+            try? FileManager.default.removeItem(at: cachedURLA)
+            try? FileManager.default.removeItem(at: cachedURLB)
+        }
+
+        let model = RemoteImageURLModel(url: urlA)
+        let recorder = RemoteImageRenderRecorder()
+        let controller = UIHostingController(rootView: RemoteImageURLHost(model: model, recorder: recorder))
+        let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 100, height: 100))
+        window.rootViewController = controller
+        window.makeKeyAndVisible()
+        defer { window.isHidden = true }
+
+        controller.view.layoutIfNeeded()
+        RunLoop.main.run(until: Date().addingTimeInterval(0.1))
+
+        model.url = urlB
+        controller.view.layoutIfNeeded()
+        RunLoop.main.run(until: Date().addingTimeInterval(0.2))
+
+        let rendersForB = recorder.renders.filter { $0.url == urlB }
+        expect(rendersForB).toNot(beEmpty())
+        // A is red, B is blue. A failed pixel read is nil, so it fails too.
+        expect(rendersForB.map { $0.image.dominantColor() }).to(allPass(equal(.blue)))
+    }
+    #endif
+
     // MARK: - Helpers
 
     private func makeFileRepository() -> FileRepository {
@@ -238,10 +285,59 @@ private enum TestImageVariant: String {
     }
 }
 
+#if os(iOS)
+private final class RemoteImageURLModel: ObservableObject {
+    @Published var url: URL
+    init(url: URL) { self.url = url }
+}
+
+private final class RemoteImageRenderRecorder {
+    var renders: [(url: URL, image: Image)] = []
+
+    func record(_ image: Image, for url: URL) -> Image {
+        self.renders.append((url: url, image: image))
+        return image
+    }
+}
+
+@available(iOS 15.0, *)
+private struct RemoteImageURLHost: View {
+    @ObservedObject var model: RemoteImageURLModel
+    let recorder: RemoteImageRenderRecorder
+
+    var body: some View {
+        let url = self.model.url
+        RemoteImage(url: url) { image, _ in
+            self.recorder.record(image, for: url).resizable()
+        }
+    }
+}
+#endif
+
 // MARK: - Private
 
 @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
 private extension Image {
+
+    #if os(iOS)
+    @MainActor
+    func dominantColor() -> TestImageVariant? {
+        guard let cgImage = ImageRenderer(content: self.resizable().frame(width: 2, height: 2)).cgImage,
+              let data = cgImage.dataProvider?.data,
+              let bytes = CFDataGetBytePtr(data) else {
+            return nil
+        }
+        let isBGR = cgImage.bitmapInfo.contains(.byteOrder32Little)
+        let red = isBGR ? bytes[2] : bytes[0]
+        let green = bytes[1]
+        let blue = isBGR ? bytes[0] : bytes[2]
+        switch max(red, green, blue) {
+        case red: return .red
+        case blue: return .blue
+        default: return .green
+        }
+    }
+    #endif
 
     @MainActor
     func platformPNGData() -> Data? {

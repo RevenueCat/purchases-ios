@@ -185,15 +185,31 @@ class DeviceCache {
 
     // MARK: - Subscriber dimensions
 
-    func cachedSubscriberDimensionsData(appUserID: String) -> Data? {
-        return self.userDefaults.read {
-            $0.data(forKey: CacheKey.subscriberDimensions(appUserID))
+    func cachedSubscriberDimensions(appUserID: String) -> CachedSubscriberDimensions? {
+        return self.userDefaults.read { defaults -> CachedSubscriberDimensions? in
+            guard let data = defaults.data(forKey: CacheKey.subscriberDimensions(appUserID)) else { return nil }
+
+            return try? JSONDecoder.default.decode(CachedSubscriberDimensions.self, jsonData: data)
         }
     }
 
-    func cache(subscriberDimensions: Data, appUserID: String) {
+    func cache(subscriberDimensions: Data, asOf: UInt64, appUserID: String) {
+        guard let data = try? JSONEncoder.default.encode(
+            value: CachedSubscriberDimensions(data: subscriberDimensions, asOf: asOf)
+        ) else { return }
+
         self.userDefaults.write {
-            $0.set(subscriberDimensions, forKey: CacheKey.subscriberDimensions(appUserID))
+            $0.set(data, forKey: CacheKey.subscriberDimensions(appUserID))
+        }
+    }
+
+    func clearSubscriberDimensions(appUserID: String, ifNotNewerThan supersededAt: UInt64) {
+        self.userDefaults.write { defaults in
+            guard let data = defaults.data(forKey: CacheKey.subscriberDimensions(appUserID)),
+                  let cached = try? JSONDecoder.default.decode(CachedSubscriberDimensions.self, jsonData: data),
+                  cached.asOf <= supersededAt else { return }
+
+            defaults.removeObject(forKey: CacheKey.subscriberDimensions(appUserID))
         }
     }
 
@@ -330,6 +346,43 @@ class DeviceCache {
 
         self.lockingUserDefaults.write {
             Self.store($0, subscriberAttributesByKey: subscriberAttributesByKey, appUserID: appUserID)
+        }
+    }
+
+    func merge(subscriberAttributes: SubscriberAttribute.Dictionary, appUserID: String) {
+        self.lockingUserDefaults.write {
+            let localAttributes = Self.storedSubscriberAttributes($0, appUserID: appUserID)
+
+            // start with the new attributes as the source of truth
+            var merged = subscriberAttributes
+            for (id, localAttribute) in localAttributes {
+                if let newAttribute = subscriberAttributes[id] {
+                    if localAttribute.setTime > newAttribute.setTime {
+                        // the existing attribute was modified more recently than the one we're asked to save
+                        // keep the existing one so it can still get synced
+                        merged[id] = localAttribute
+                    } else {
+                        // the new attribute was modified more recently than the local attribute
+                        // the new attribute overrides the locally saved one
+                    }
+                } else {
+                    // the new set of information does not have this locally-saved attribute
+                    if localAttribute.isSynced {
+                        // the attribute was already synced. therefore it has been *deleted* on the server
+                        // do nothing here to remove it from the locally cached attributes
+                    } else {
+                        // the existing attribute has NOT been synced
+                        // therefore we need to preserve it so it can be saved
+                        merged[id] = localAttribute
+                    }
+                }
+            }
+
+            if merged != localAttributes {
+                // use "set" instead of "store", because the latter does its own naive merging
+                // that would preserve a deleted-from-the-server attribute in the local cache
+                Self.set($0, subscriberAttributesByKey: merged, appUserID: appUserID)
+            }
         }
     }
 
@@ -608,6 +661,13 @@ class DeviceCache {
 
 }
 
+struct CachedSubscriberDimensions: Codable, Equatable, Sendable {
+
+    let data: Data
+    let asOf: UInt64
+
+}
+
 // @unchecked because:
 // - Class is not `final` (it's mocked). This implicitly makes subclasses `Sendable` even if they're not thread-safe.
 extension DeviceCache: @unchecked Sendable {}
@@ -689,6 +749,20 @@ private extension DeviceCache {
             subscriberAttributesForAppUserID[key] = attributes.asDictionary()
         }
         groupedSubscriberAttributes[appUserID] = subscriberAttributesForAppUserID
+        userDefaults.set(groupedSubscriberAttributes, forKey: CacheKeys.subscriberAttributes)
+    }
+
+    static func set(
+        _ userDefaults: UserDefaults,
+        subscriberAttributesByKey: [String: SubscriberAttribute],
+        appUserID: String
+    ) {
+        var groupedSubscriberAttributes = Self.storedAttributesForAllUsers(userDefaults)
+        if subscriberAttributesByKey.isEmpty {
+            groupedSubscriberAttributes.removeValue(forKey: appUserID)
+        } else {
+            groupedSubscriberAttributes[appUserID] = subscriberAttributesByKey.mapValues { $0.asDictionary() }
+        }
         userDefaults.set(groupedSubscriberAttributes, forKey: CacheKeys.subscriberAttributes)
     }
 

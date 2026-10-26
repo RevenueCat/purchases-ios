@@ -14,6 +14,9 @@ struct AppContentView: View {
     private enum Tab {
         case examples
         case livePaywalls
+        #if os(iOS) && !targetEnvironment(macCatalyst)
+        case checkpoints
+        #endif
         #if os(macOS) && DEBUG
         case purchaseFocusRegression
         #endif
@@ -40,10 +43,20 @@ struct AppContentView: View {
             if Purchases.isConfigured {
                 APIKeyDashboardList()
                     .tabItem {
-                        Label("Live Paywalls", systemImage: "testtube.2")
+                        Label(APIKeyDashboardList.title, systemImage: "testtube.2")
                     }
                     .tag(Tab.livePaywalls)
             }
+
+            #if os(iOS) && !targetEnvironment(macCatalyst)
+            if Purchases.isConfigured {
+                CheckpointsView()
+                    .tabItem {
+                        Label("Checkpoints", systemImage: "flag.checkered")
+                    }
+                    .tag(Tab.checkpoints)
+            }
+            #endif
 
             #if !os(macOS)
             SamplePaywallsList()

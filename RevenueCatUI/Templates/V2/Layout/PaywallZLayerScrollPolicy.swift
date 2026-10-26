@@ -18,10 +18,11 @@ enum PaywallZLayerScrollPolicy {
 
     /// Whether a z-layer stack should use vertical scrolling.
     ///
-    /// - Root z-layer paywalls scroll so tall hero content fits in bounded containers (e.g. iPad sheets).
+    /// - Root z-layer paywalls scroll by default so tall hero content fits in bounded containers.
+    /// - An explicit overflow setting takes precedence over that default.
     /// - Nested z-layers skip scrolling when an ancestor already scrolls vertically.
     static func shouldApplyScroll(
-        stackScrollingEnabled: Bool,
+        stackScrollPreference: Bool?,
         paywallRootStackIsZLayer: Bool,
         ancestorScrollsVertically: Bool
     ) -> Bool {
@@ -29,7 +30,7 @@ enum PaywallZLayerScrollPolicy {
             return false
         }
 
-        return stackScrollingEnabled || paywallRootStackIsZLayer
+        return stackScrollPreference ?? paywallRootStackIsZLayer
     }
 }
 

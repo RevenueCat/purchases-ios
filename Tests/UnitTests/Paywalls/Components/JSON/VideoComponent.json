@@ -31,7 +31,7 @@
   },
   "mute_audio": true,
   "name": "",
-  "override_source_lid": "abc123",
+  "override_video_lid": "abc123",
   "shadow": {
     "color": {
       "light": {

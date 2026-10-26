@@ -56,6 +56,7 @@ func checkPurchasesEnums() {
     switch oType! {
     case .purchased,
          .familyShared,
+         .assigned,
          .unknown:
         print(oType!)
     @unknown default:

@@ -62,6 +62,50 @@ class PurchasesLogInTests: BasePurchasesLogInTests {
         expect(self.mockRemoteConfigManager.invokedRefreshRemoteConfigCount) == baselineRefreshCount + 1
     }
 
+    func testLogInWithCurrentAppUserIDDoesNotUpdateCaches() {
+        expect(self.backend.getCustomerInfoCallCount).toEventually(equal(1))
+        // the mock now reports `appUserID` as the current user
+        self.identityManager.mockIsAnonymous = false
+        self.identityManager.mockLogInResult = .success((Self.mockLoggedInInfo, false))
+
+        let baselineOfferingsCount = self.mockOfferingsManager.invokedUpdateOfferingsCacheCount
+        let baselineRemoteConfigCount = self.mockRemoteConfigManager.invokedRefreshRemoteConfigCount
+
+        let result = waitUntilValue { completed in
+            self.purchases.logIn(Self.appUserID) { customerInfo, created, error in
+                completed(Self.logInResult(customerInfo, created, error))
+            }
+        }
+
+        expect(result).to(beSuccess())
+        expect(result?.value) == (Self.mockLoggedInInfo, false)
+        expect(self.identityManager.invokedLogInParametersList) == [Self.appUserID]
+        expect(self.backend.getCustomerInfoCallCount) == 1
+        expect(self.mockOfferingsManager.invokedUpdateOfferingsCacheCount) == baselineOfferingsCount
+        expect(self.mockRemoteConfigManager.invokedRefreshRemoteConfigCount) == baselineRemoteConfigCount
+    }
+
+    func testLogInWithUntrimmedCurrentAppUserIDDoesNotUpdateCaches() {
+        expect(self.backend.getCustomerInfoCallCount).toEventually(equal(1))
+        // the mock now reports `appUserID` as the current user
+        self.identityManager.mockIsAnonymous = false
+        self.identityManager.mockLogInResult = .success((Self.mockLoggedInInfo, false))
+
+        let baselineOfferingsCount = self.mockOfferingsManager.invokedUpdateOfferingsCacheCount
+        let baselineRemoteConfigCount = self.mockRemoteConfigManager.invokedRefreshRemoteConfigCount
+
+        waitUntil { completed in
+            self.purchases.logIn("  \(Self.appUserID)  ") { _, _, _ in
+                completed()
+            }
+        }
+
+        expect(self.identityManager.invokedLogInParametersList) == [Self.appUserID]
+        expect(self.backend.getCustomerInfoCallCount) == 1
+        expect(self.mockOfferingsManager.invokedUpdateOfferingsCacheCount) == baselineOfferingsCount
+        expect(self.mockRemoteConfigManager.invokedRefreshRemoteConfigCount) == baselineRemoteConfigCount
+    }
+
     func testLogInWithFailure() {
         let error: BackendError = .networkError(.offlineConnection())
         self.identityManager.mockLogInResult = .failure(error)

@@ -68,7 +68,8 @@ struct CustomCheckpointUseCaseView: View {
             identifier,
             customVariables: self.customVariables.checkpointCustomVariables,
             presentationMode: self.presentationMode,
-            paywallPresenter: paywallPresenter
+            paywallPresenter: paywallPresenter,
+            errorPresenter: self.model.localErrorPresenter
         ) { result in
             Task { @MainActor in
                 self.status = Self.describe(result)
@@ -76,12 +77,12 @@ struct CustomCheckpointUseCaseView: View {
         }
     }
 
-    private static func describe(_ result: FlowResult?) -> String {
-        guard let result else {
+    private static func describe(_ result: CheckpointResult) -> String {
+        guard let flow = result.flow else {
             return "No flow was presented or the flow could not complete."
         }
 
-        let entitlementIdentifiers = result.obtainedEntitlements.map(\.entitlementInfo.identifier).sorted()
+        let entitlementIdentifiers = flow.obtainedEntitlements.map(\.entitlementInfo.identifier).sorted()
         guard !entitlementIdentifiers.isEmpty else {
             return "Checkpoint flow completed without granting a new entitlement."
         }

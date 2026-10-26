@@ -56,4 +56,70 @@ public extension Locale {
         return self.rc_languageCode.map(Locale.init(identifier:))
     }
 
+    /// Selects the best-matching locale from `availableLocales` given `preferredLocales`.
+    ///
+    /// Matches on language first, then picks the closest region/script within language matches.
+    /// Returns `nil` if no language match exists for any preferred locale.
+    static func selectPreferredLocale(from availableLocales: [Locale],
+                                      preferredLocales: [Locale]) -> Locale? {
+        for preferred in preferredLocales {
+            let languageMatches = availableLocales
+                .filter { $0.rc_languageCode == preferred.rc_languageCode }
+                .sorted { $0.identifier < $1.identifier }
+            guard let firstMatch = languageMatches.first else { continue }
+
+            let bestIdentifier = Bundle.preferredLocalizations(
+                from: languageMatches.map(\.identifier),
+                forPreferences: [preferred.identifier]
+            ).first
+            return languageMatches.first { $0.identifier == bestIdentifier } ?? firstMatch
+        }
+        return nil
+    }
+
+}
+
+@_spi(Internal)
+public extension Dictionary where Key == String {
+
+    /// Finds the best matching value for the provided locale with the restriction that the key
+    /// must match the language of the provided locale.
+    func findLocale(_ locale: Locale) -> Value? {
+        let preferredIdentifiers = Self.preferredMatchedLocalesIdentifiers(from: Array(self.keys),
+                                                                           preferredLanguage: locale.identifier)
+
+        for localeIdentifier in preferredIdentifiers {
+            if let value = self[localeIdentifier] {
+                return value
+            }
+        }
+
+        return nil
+    }
+
+    /// Returns the languages in `identifiers` that share the same language code as `preferredLanguage`
+    /// and that best match `preferredLanguage`, sorted by match quality.
+    ///
+    /// Note: This method does not guarantee that all `identifiers` will be returned, only the best matches.
+    static func preferredMatchedLocalesIdentifiers(from identifiers: [String],
+                                                   preferredLanguage: String) -> [String] {
+
+        let preferredLocale = Locale(identifier: preferredLanguage)
+        let identifiersCandidates = identifiers.filter {
+            Locale(identifier: $0).matchesLanguage(preferredLocale)
+        }
+
+        guard !identifiersCandidates.isEmpty else {
+            return []
+        }
+
+        // As specified in the documentation of `Bundle.preferredLocalizations(from:forPreferences:)`
+        // "_This method doesn’t return all localizations in order of user preference. To get this information,
+        // you can call this method repeatedly, each time removing the identifiers returned by the previous call._"
+        // This means that not all matches will be returned, but only the best ones based on `preferredLanguage`.
+        let identifiers = Bundle.preferredLocalizations(from: identifiersCandidates,
+                                                        forPreferences: [preferredLanguage])
+        return identifiers
+    }
+
 }

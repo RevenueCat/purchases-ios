@@ -37,6 +37,20 @@ final class VideoComponentViewTests: TestCase {
 
         XCTAssertLessThanOrEqual(fittingSize.width, fullScreenSize.width)
     }
+
+    /// A `fit`-width video takes its width from the thumbnail, and the thumbnail must take the video's
+    /// size: a thumbnail taller than the video must not make the component taller than the video.
+    func testFitWidthVideoMatchesThumbnailToVideoSize() throws {
+        // A local file loads synchronously. A remote URL would fail to download at an unpredictable point.
+        try Self.assertFitWidthVideoMatchesVideoSize(thumbnailURL: Self.localThumbnailURL())
+    }
+
+    /// A thumbnail that fails to load must keep the video's size, not fill all the height it's offered.
+    func testFitWidthVideoWithFailedThumbnailMatchesVideoSize() throws {
+        try Self.assertFitWidthVideoMatchesVideoSize(
+            thumbnailURL: URL(fileURLWithPath: "/nonexistent/video-thumbnail.heic")
+        )
+    }
 #endif
 
     /// The view re-resolves when the asset it observes changes, so that value has to differ
@@ -98,13 +112,253 @@ final class VideoComponentViewTests: TestCase {
         XCTAssertEqual(maxWidth, 146)
     }
 
+    /// A portrait thumbnail on a landscape video must lay out at the video's size, not its own.
+    func testThumbnailSourceUsesVideoDimensions() {
+        let thumbnail = PaywallComponent.ImageUrls(
+            width: 1080,
+            height: 1920,
+            original: URL(string: "https://assets.revenuecat.com/thumbnail.jpg")!,
+            heic: URL(string: "https://assets.revenuecat.com/thumbnail.heic")!,
+            heicLowRes: URL(string: "https://assets.revenuecat.com/thumbnail_low.heic")!
+        )
+
+        let source = VideoComponentView.thumbnailSource(.init(light: thumbnail), sizedLike: Self.makeStyle())
+
+        XCTAssertEqual(source.light, .init(
+            width: 1920,
+            height: 1080,
+            original: thumbnail.original,
+            heic: thumbnail.heic,
+            heicLowRes: thumbnail.heicLowRes
+        ))
+        XCTAssertEqual(source.dark, source.light)
+    }
+
+    func testResolvesLocalizedVideoForComponentLid() throws {
+        let component = PaywallComponent.VideoComponent(
+            source: Self.videoUrls("default"),
+            overrideVideoLid: "video_lid"
+        )
+
+        let style = try Self.style(
+            for: component,
+            localizedVideos: ["video_lid": Self.videoUrls("localized")]
+        )
+
+        XCTAssertEqual(style.url, Self.videoURL("localized"))
+    }
+
+    func testThrowsWhenLocalizedVideoIsMissing() {
+        let component = PaywallComponent.VideoComponent(
+            source: Self.videoUrls("default"),
+            overrideVideoLid: "missing_lid"
+        )
+
+        XCTAssertThrowsError(try Self.style(for: component, localizedVideos: [:]))
+    }
+
+    func testResolvesLocalizedVideoForOverrideLid() throws {
+        let component = PaywallComponent.VideoComponent(
+            source: Self.videoUrls("default"),
+            overrides: [
+                .init(
+                    conditions: [.compact],
+                    properties: .init(source: Self.videoUrls("override"), overrideVideoLid: "override_lid")
+                )
+            ],
+            overrideVideoLid: "video_lid"
+        )
+
+        let style = try Self.style(
+            for: component,
+            localizedVideos: [
+                "video_lid": Self.videoUrls("localized"),
+                "override_lid": Self.videoUrls("override-localized")
+            ]
+        )
+
+        XCTAssertEqual(style.url, Self.videoURL("override-localized"))
+    }
+
+    func testOverrideWithoutLidUsesOverrideSource() throws {
+        let component = PaywallComponent.VideoComponent(
+            source: Self.videoUrls("default"),
+            overrides: [
+                .init(conditions: [.compact], properties: .init(source: Self.videoUrls("override")))
+            ],
+            overrideVideoLid: "video_lid"
+        )
+
+        let style = try Self.style(
+            for: component,
+            localizedVideos: ["video_lid": Self.videoUrls("localized")]
+        )
+
+        XCTAssertEqual(style.url, Self.videoURL("override"))
+    }
+
+    func testThrowsWhenOverrideLocalizedVideoIsMissing() {
+        let component = PaywallComponent.VideoComponent(
+            source: Self.videoUrls("default"),
+            overrides: [
+                .init(
+                    conditions: [.compact],
+                    properties: .init(source: Self.videoUrls("override"), overrideVideoLid: "missing_lid")
+                )
+            ]
+        )
+
+        XCTAssertThrowsError(try Self.style(for: component, localizedVideos: [:]))
+    }
+
+    func testChooseLocalizationResolvesVideosForSelectedLocale() throws {
+        let provider = PaywallsV2View.chooseLocalization(
+            componentsLocalizations: ["en_US": [:], "es_ES": [:]],
+            componentsVideoLocalizations: Self.videoLocalizations,
+            preferredLocales: [Locale(identifier: "es_ES")],
+            defaultLocale: "en_US"
+        )
+
+        let style = try Self.style(for: Self.localizedComponent, localizationProvider: provider)
+
+        XCTAssertEqual(style.url, Self.videoURL("es"))
+    }
+
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private extension VideoComponentViewTests {
 
+    final class Box<T> {
+        var value: T
+        init(_ value: T) { self.value = value }
+    }
+
+    static func capture<T>(_ value: T, into box: Box<T?>) -> EmptyView {
+        box.value = value
+        return EmptyView()
+    }
+
+    static var localizedComponent: PaywallComponent.VideoComponent {
+        return .init(source: Self.videoUrls("default"), overrideVideoLid: "video_lid")
+    }
+
+    static var videoLocalizations: [PaywallComponent.LocaleID: PaywallComponent.VideoLocalizationDictionary] {
+        return [
+            "en_US": ["video_lid": Self.videoUrls("en")],
+            "es_ES": ["video_lid": Self.videoUrls("es")]
+        ]
+    }
+
+    static func style(
+        for component: PaywallComponent.VideoComponent,
+        localizedVideos: PaywallComponent.VideoLocalizationDictionary
+    ) throws -> VideoComponentStyle {
+        return try Self.style(
+            for: component,
+            localizationProvider: .init(
+                locale: Locale(identifier: "es_ES"),
+                localizedStrings: [:],
+                localizedVideos: localizedVideos
+            )
+        )
+    }
+
+    static func style(
+        for component: PaywallComponent.VideoComponent,
+        localizationProvider: LocalizationProvider
+    ) throws -> VideoComponentStyle {
+        let viewModel = try VideoComponentViewModel(
+            localizationProvider: localizationProvider,
+            uiConfigProvider: UIConfigProvider(uiConfig: PreviewUIConfig.make()),
+            component: component
+        )
+
+        let captured = Box<VideoComponentStyle?>(nil)
+        _ = viewModel.styles(
+            state: .default,
+            condition: .compact,
+            isEligibleForIntroOffer: false,
+            isEligibleForPromoOffer: false,
+            selectedPackageId: nil,
+            customVariables: [:],
+            colorScheme: .light
+        ) { style in
+            Self.capture(style, into: captured)
+        }
+
+        return try XCTUnwrap(captured.value)
+    }
+
+    static func videoURL(_ name: String) -> URL {
+        return URL(string: "https://assets.revenuecat.com/\(name).mp4")!
+    }
+
+    static func videoUrls(_ name: String) -> PaywallComponent.ThemeVideoUrls {
+        return .init(
+            light: .init(
+                width: 1080,
+                height: 1920,
+                url: Self.videoURL(name),
+                checksum: nil,
+                urlLowRes: nil,
+                checksumLowRes: nil
+            )
+        )
+    }
+
 #if os(iOS)
-    static func makeVideoComponentView(size: CGSize) throws -> some View {
+    static func assertFitWidthVideoMatchesVideoSize(thumbnailURL: URL) throws {
+        let containerWidth: CGFloat = 300
+        let renderedSize = Box<CGSize?>(nil)
+        let view = try Self.makeVideoComponentView(
+            size: .zero,
+            width: .fit(nil),
+            fitMode: .fit,
+            fallbackSource: .init(light: .init(
+                width: 1080,
+                height: 2400,
+                original: thumbnailURL,
+                heic: thumbnailURL,
+                heicLowRes: thumbnailURL
+            ))
+        )
+            .onSizeChange { renderedSize.value = $0 }
+            .frame(width: containerWidth, height: 800, alignment: .top)
+        let controller = UIHostingController(rootView: view)
+        let window = UIWindow(frame: CGRect(x: 0, y: 0, width: containerWidth, height: 800))
+        window.rootViewController = controller
+        window.makeKeyAndVisible()
+
+        // Let the measurement pass write the size into @State and re-render.
+        for _ in 0..<5 {
+            RunLoop.main.run(until: Date().addingTimeInterval(0.05))
+            controller.view.layoutIfNeeded()
+        }
+
+        let size = try XCTUnwrap(renderedSize.value)
+        XCTAssertEqual(size.width, containerWidth, accuracy: 1)
+        // The 1080x1920 video at the container's width.
+        XCTAssertEqual(size.height, containerWidth * 1920 / 1080, accuracy: 1)
+    }
+
+    /// A bundled test image, resolved the same way as `PaywallData.withLocalImages`.
+    /// Only the dimensions in the thumbnail source affect layout, so any image works.
+    static func localThumbnailURL() -> URL {
+        #if SWIFT_PACKAGE
+        let resourcePath = Bundle.module.resourcePath ?? Bundle.module.bundlePath
+        #else
+        let resourcePath = Bundle.revenueCatUI.resourcePath ?? Bundle.revenueCatUI.bundlePath
+        #endif
+        return URL(fileURLWithPath: resourcePath).appendingPathComponent("header.heic")
+    }
+
+    static func makeVideoComponentView(
+        size: CGSize,
+        width: PaywallComponent.SizeConstraint = .fill,
+        fitMode: PaywallComponent.FitMode = .fill,
+        fallbackSource: PaywallComponent.ThemeImageUrls? = nil
+    ) throws -> some View {
         let component = PaywallComponent.VideoComponent(
             source: .init(
                 light: .init(
@@ -116,10 +370,11 @@ private extension VideoComponentViewTests {
                     checksumLowRes: nil
                 )
             ),
-            size: .init(width: .fill, height: .fit(nil)),
-            fitMode: .fill
+            fallbackSource: fallbackSource,
+            size: .init(width: width, height: .fit(nil)),
+            fitMode: fitMode
         )
-        let viewModel = VideoComponentViewModel(
+        let viewModel = try VideoComponentViewModel(
             localizationProvider: .init(locale: Locale(identifier: "en_US"), localizedStrings: [:]),
             uiConfigProvider: UIConfigProvider(uiConfig: PreviewUIConfig.make()),
             component: component

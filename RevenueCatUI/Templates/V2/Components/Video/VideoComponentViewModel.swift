@@ -26,6 +26,7 @@ class VideoComponentViewModel {
 
     var imageSource: PaywallComponent.ThemeImageUrls? { component.fallbackSource }
 
+    private let videoInfo: PaywallComponent.ThemeVideoUrls
     private let presentedOverrides: PresentedOverrides<LocalizedVideoPartial>?
 
     init(
@@ -33,13 +34,19 @@ class VideoComponentViewModel {
         uiConfigProvider: UIConfigProvider,
         component: PaywallComponent.VideoComponent,
         discardRules: Bool = false
-    ) {
+    ) throws {
         self.localizationProvider = localizationProvider
         self.uiConfigProvider = uiConfigProvider
         self.component = component
 
-        self.presentedOverrides = self.component.overrides?.toPresentedOverrides(discardRules: discardRules) {
-            LocalizedVideoPartial(partial: $0)
+        if let overrideVideoLid = component.overrideVideoLid {
+            self.videoInfo = try localizationProvider.localizedVideos.video(key: overrideVideoLid)
+        } else {
+            self.videoInfo = component.source
+        }
+
+        self.presentedOverrides = try self.component.overrides?.toPresentedOverrides(discardRules: discardRules) {
+            try LocalizedVideoPartial.create(from: $0, using: localizationProvider.localizedVideos)
         }
     }
 
@@ -67,6 +74,7 @@ class VideoComponentViewModel {
         self.localizationProvider = localizationProvider
         self.uiConfigProvider = uiConfigProvider
         self.component = component
+        self.videoInfo = component.source
         self.presentedOverrides = presentedOverrides
     }
 
@@ -97,21 +105,22 @@ class VideoComponentViewModel {
             with: self.presentedOverrides
         )
         let partial = localizedPartial?.partial
+        let source = localizedPartial?.videoInfo ?? self.videoInfo
 
         let style = VideoComponentStyle(
             visible: partial?.visible ?? self.component.visible ?? true,
             showControls: partial?.showControls ?? self.component.showControls,
             autoPlay: partial?.autoPlay ?? self.component.autoPlay,
             loop: partial?.loop ?? self.component.loop,
-            url: partial?.source?.light.url ?? self.component.source.light.url,
-            lowResUrl: partial?.source?.light.urlLowRes ?? self.component.source.light.urlLowRes,
-            darkUrl: partial?.source?.dark?.url ?? self.component.source.dark?.url,
-            darkLowResUrl: partial?.source?.dark?.urlLowRes ?? self.component.source.dark?.urlLowRes,
+            url: source.light.url,
+            lowResUrl: source.light.urlLowRes,
+            darkUrl: source.dark?.url,
+            darkLowResUrl: source.dark?.urlLowRes,
             size: partial?.size ?? self.component.size,
-            widthLight: partial?.source?.light.width ?? self.component.source.light.width,
-            heightLight: partial?.source?.light.height ?? self.component.source.light.height,
-            widthDark: partial?.source?.dark?.width ?? self.component.source.dark?.width,
-            heightDark: partial?.source?.dark?.height ?? self.component.source.dark?.height,
+            widthLight: source.light.width,
+            heightLight: source.light.height,
+            widthDark: source.dark?.width,
+            heightDark: source.dark?.height,
             muteAudio: partial?.muteAudio ?? self.component.muteAudio,
             fitMode: partial?.fitMode ?? self.component.fitMode,
             maskShape: partial?.maskShape ?? self.component.maskShape,
@@ -120,10 +129,10 @@ class VideoComponentViewModel {
             margin: partial?.margin ?? self.component.margin,
             border: partial?.border ?? self.component.border,
             shadow: partial?.shadow ?? self.component.shadow,
-            checksum: partial?.source?.light.checksum ?? self.component.source.light.checksum,
-            checksumLowRes: partial?.source?.light.checksumLowRes ?? self.component.source.light.checksumLowRes,
-            darkChecksum: partial?.source?.dark?.checksum ?? self.component.source.dark?.checksum,
-            darkChecksumLowRes: partial?.source?.dark?.checksumLowRes ?? self.component.source.dark?.checksumLowRes,
+            checksum: source.light.checksum,
+            checksumLowRes: source.light.checksumLowRes,
+            darkChecksum: source.dark?.checksum,
+            darkChecksumLowRes: source.dark?.checksumLowRes,
             uiConfigProvider: self.uiConfigProvider,
             colorScheme: colorScheme
         )
@@ -145,6 +154,7 @@ extension VideoComponentViewModel: Hashable {
 
 struct LocalizedVideoPartial: PresentedPartial {
 
+    let videoInfo: PaywallComponent.ThemeVideoUrls?
     let partial: PaywallComponent.PartialVideoComponent
 
     static func combine(_ base: Self?, with other: Self?) -> Self {
@@ -152,6 +162,7 @@ struct LocalizedVideoPartial: PresentedPartial {
         let basePartial = base?.partial
 
         return LocalizedVideoPartial(
+            videoInfo: other?.videoInfo ?? base?.videoInfo,
             partial: PaywallComponent.PartialVideoComponent(
                 source: otherPartial?.source ?? basePartial?.source,
                 visible: otherPartial?.visible ?? basePartial?.visible,
@@ -165,8 +176,25 @@ struct LocalizedVideoPartial: PresentedPartial {
                 padding: otherPartial?.padding ?? basePartial?.padding,
                 margin: otherPartial?.margin ?? basePartial?.margin,
                 border: otherPartial?.border ?? basePartial?.border,
-                shadow: otherPartial?.shadow ?? basePartial?.shadow
+                shadow: otherPartial?.shadow ?? basePartial?.shadow,
+                overrideVideoLid: otherPartial?.overrideVideoLid ?? basePartial?.overrideVideoLid
             )
+        )
+    }
+
+}
+
+extension LocalizedVideoPartial {
+
+    static func create(
+        from partial: PaywallComponent.PartialVideoComponent,
+        using localizedVideos: PaywallComponent.VideoLocalizationDictionary
+    ) throws -> LocalizedVideoPartial {
+        return LocalizedVideoPartial(
+            videoInfo: try partial.overrideVideoLid.flatMap { key in
+                try localizedVideos.video(key: key)
+            } ?? partial.source,
+            partial: partial
         )
     }
 

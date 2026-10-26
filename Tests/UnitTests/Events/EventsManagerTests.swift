@@ -631,10 +631,11 @@ class EventsManagerTests: TestCase {
                 entryReason: "start",
                 isFirstStep: true,
                 isLastStep: false,
+                workflowBlobRef: "blob-ref-1",
+                fallbackOriginalStepId: "step-1-original",
                 experiment: .init(
                     experimentId: "exp-1",
-                    experimentVariant: "variant-a",
-                    workflowBlobRef: "blob-ref-1"
+                    experimentVariant: "variant-a"
                 )
             )
         )
@@ -648,6 +649,7 @@ class EventsManagerTests: TestCase {
         expect(map["experiment_id"] as? String) == "exp-1"
         expect(map["experiment_variant"] as? String) == "variant-a"
         expect(map["blob_ref"] as? String) == "blob-ref-1"
+        expect(map["fallback_original_step_id"] as? String) == "step-1-original"
     }
 
     func testWorkflowEventToMapOmitsNilOptionalFields() {
@@ -666,6 +668,7 @@ class EventsManagerTests: TestCase {
         expect(map["experiment_id"]).to(beNil())
         expect(map["experiment_variant"]).to(beNil())
         expect(map["blob_ref"]).to(beNil())
+        expect(map["fallback_original_step_id"]).to(beNil())
     }
 
     // MARK: - flushAllEvents

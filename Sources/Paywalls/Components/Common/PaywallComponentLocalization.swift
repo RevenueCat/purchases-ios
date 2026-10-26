@@ -46,6 +46,35 @@ import Foundation
 
 }
 
+@_spi(Internal) extension PaywallComponent.VideoLocalizationDictionary {
+
+    public func video(key: String) throws -> PaywallComponent.ThemeVideoUrls {
+        guard let value = self[key] else {
+            throw LocalizationValidationError.missingLocalization(
+                "Missing video localization for property with id: \"\(key)\""
+            )
+        }
+        return value
+    }
+
+}
+
+extension Dictionary where Key == PaywallComponent.LocaleID, Value == PaywallComponent.LocalizationDictionary {
+
+    /// Mirrors how RevenueCatUI chooses the locale to display: the best match for `preferredLocales`,
+    /// or `defaultLocale` if the paywall doesn't support any of them.
+    func displayedLocale(preferredLocales: [Locale], defaultLocale: PaywallComponent.LocaleID) -> Locale {
+        let defaultLocale = Locale(identifier: defaultLocale)
+        let chosenLocale = Locale.selectPreferredLocale(
+            from: self.keys.map(Locale.init(identifier:)),
+            preferredLocales: preferredLocales
+        ) ?? defaultLocale
+
+        return self.findLocale(chosenLocale) != nil ? chosenLocale : defaultLocale
+    }
+
+}
+
 enum LocalizationValidationError: Error {
 
     case missingLocalization(String)

@@ -16,7 +16,8 @@ import Foundation
 /// Creates a checkout session for in-app web checkout, where a payment provider's page is presented
 /// inside the app instead of the purchase being handed off to the browser.
 ///
-/// The response carries the page to present and the two return URLs that mark the end of the checkout.
+/// The response carries the page to present and the success URL that marks the end of the checkout, or says the
+/// session the customer was given before already ended in a purchase.
 final class PostHostedCheckoutOperation: CacheableNetworkOperation {
 
     private let configuration: AppUserConfiguration
@@ -32,7 +33,9 @@ final class PostHostedCheckoutOperation: CacheableNetworkOperation {
             configuration.appUserID,
             postData.packageID,
             postData.presentedOfferingIdentifier,
-            postData.externalPurchaseTokenID ?? ""
+            postData.presentedCheckpointIdentifier ?? "",
+            postData.externalPurchaseTokenID ?? "",
+            postData.previousOperationSessionID ?? ""
         ].joined(separator: "\n")
 
         return CacheableNetworkOperationFactory({ cacheKey in
@@ -110,6 +113,7 @@ extension PostHostedCheckoutOperation {
         let packageID: String
         let presentedOfferingIdentifier: String
         let presentedPlacementIdentifier: String?
+        let presentedCheckpointIdentifier: String?
         let appliedTargetingRule: AppliedTargetingRule?
 
         /// The paywall the checkout was started from, so that the purchase is attributed to it the same
@@ -119,6 +123,10 @@ extension PostHostedCheckoutOperation {
         /// Identifies the Apple external purchase token registered for this purchase, so the backend can
         /// tie the checkout session to it. Omitted where no token applies (e.g. Test Store).
         let externalPurchaseTokenID: String?
+
+        /// A session this customer was given before, for the backend to hand back if they can still carry on with
+        /// it, rather than create a second one they could pay for as well.
+        let previousOperationSessionID: String?
 
     }
 
@@ -153,11 +161,13 @@ extension PostHostedCheckoutOperation.PostData: Encodable {
         case packageID = "package_id"
         case presentedOfferingIdentifier = "presented_offering_identifier"
         case presentedPlacementIdentifier = "presented_placement_identifier"
+        case presentedCheckpointIdentifier = "presented_checkpoint_identifier"
         case presentedWorkflowID = "presented_workflow_id"
         case presentedStepID = "presented_step_id"
         case appliedTargetingRule = "applied_targeting_rule"
         case paywall
         case externalPurchaseTokenID = "external_purchase_token_id"
+        case previousOperationSessionID = "previous_operation_session_id"
 
     }
 
@@ -168,11 +178,13 @@ extension PostHostedCheckoutOperation.PostData: Encodable {
         try container.encode(self.packageID, forKey: .packageID)
         try container.encode(self.presentedOfferingIdentifier, forKey: .presentedOfferingIdentifier)
         try container.encodeIfPresent(self.presentedPlacementIdentifier, forKey: .presentedPlacementIdentifier)
+        try container.encodeIfPresent(self.presentedCheckpointIdentifier, forKey: .presentedCheckpointIdentifier)
         try container.encodeIfPresent(self.appliedTargetingRule, forKey: .appliedTargetingRule)
         try container.encodeIfPresent(self.paywall, forKey: .paywall)
         try container.encodeIfPresent(self.paywall?.workflowID, forKey: .presentedWorkflowID)
         try container.encodeIfPresent(self.paywall?.stepID, forKey: .presentedStepID)
         try container.encodeIfPresent(self.externalPurchaseTokenID, forKey: .externalPurchaseTokenID)
+        try container.encodeIfPresent(self.previousOperationSessionID, forKey: .previousOperationSessionID)
     }
 
 }

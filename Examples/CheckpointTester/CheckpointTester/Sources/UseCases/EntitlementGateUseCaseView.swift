@@ -86,7 +86,8 @@ struct EntitlementGateUseCaseView: View {
             Purchases.shared.checkpoint(
                 "entitlement_gate",
                 customVariables: self.entitlementCheckpointCustomVariables,
-                paywallPresenter: self.model.localPaywallPresenter
+                paywallPresenter: self.model.localPaywallPresenter,
+                errorPresenter: self.model.localErrorPresenter
             ) { result in
                 self.handle(result)
             }
@@ -96,13 +97,13 @@ struct EntitlementGateUseCaseView: View {
     }
 
     @MainActor
-    private func handle(_ result: FlowResult?) {
-        guard let result else {
+    private func handle(_ result: CheckpointResult) {
+        guard let flow = result.flow else {
             self.status = "No completed flow. Content remains locked."
             return
         }
 
-        let obtained = result.obtainedEntitlements.map(\.entitlementInfo.identifier).sorted()
+        let obtained = flow.obtainedEntitlements.map(\.entitlementInfo.identifier).sorted()
         self.activeEntitlementIdentifiers = Array(Set(self.activeEntitlementIdentifiers + obtained)).sorted()
         self.status = obtained.isEmpty
             ? "Checkpoint completed without an active entitlement. Content remains locked."

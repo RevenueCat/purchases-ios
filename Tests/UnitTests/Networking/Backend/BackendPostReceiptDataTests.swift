@@ -29,10 +29,13 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
 
     func testPostsReceiptDataCorrectly() throws {
         let path: HTTPRequest.Path = .postReceiptData
+        var response = Self.validCustomerResponse
+        response["dimensions"] = ["country": "NL"]
+        response["as_of"] = 1_000
 
         httpClient.mock(
             requestPath: path,
-            response: .init(statusCode: .success, response: Self.validCustomerResponse)
+            response: .init(statusCode: .success, response: response)
         )
 
         let isRestore = false
@@ -57,6 +60,10 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
         }
 
         expect(self.httpClient.calls).to(haveCount(1))
+        expect(self.subscriberDimensionsStore.dimensions(appUserID: Self.userID)) == .init(
+            values: ["country": .string("NL")],
+            asOf: 1_000
+        )
     }
 
     func testPostsReceiptDataWithProductDataCorrectly() throws {
@@ -810,7 +817,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
         expect(updatedSubscriberInfo.value) == postSubscriberInfo.value
         expect(updatedSubscriberInfo.value) != originalSubscriberInfo.value
 
-        expect(self.httpClient.calls.map { $0.request.path as? HTTPRequest.Path }) == [
+        expect(self.httpClient.calls.map(\.request.path)) == [
             getCustomerInfoPath,
             .postReceiptData
         ]

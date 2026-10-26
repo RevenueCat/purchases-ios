@@ -253,7 +253,8 @@ final class BackendAPISourceFailoverIntegrationTests: TestCase {
             apiSourceProvider: RemoteConfigSourceProvider(
                 topicStore: APISourceTopicStore(urls: sources.map { "https://\($0)/" })
             ),
-            timeoutManager: HTTPRequestTimeoutManager(networkTimeout: .default)
+            timeoutManager: HTTPRequestTimeoutManager(networkTimeout: .default),
+            subscriberDimensionsStore: MockSubscriberDimensionsStore()
         )
     }
 

@@ -120,8 +120,11 @@ struct LoadedTabsComponentView: View {
     @Environment(\.paywallStateStore)
     private var stateStore
 
-    @Environment(\.isPaywallLoading)
-    private var isPaywallLoading
+    @Environment(\.offerEligibilityLoading)
+    private var offerEligibilityLoading
+
+    @Environment(\.offerEligibilityAvailability)
+    private var offerEligibilityAvailability
 
     private let viewModel: TabsComponentViewModel
     private let workflowDefaultPackage: Package?
@@ -259,7 +262,9 @@ struct LoadedTabsComponentView: View {
     private func reconcileSelection(_ context: PackageContext, tabViewModel: TabViewModel) {
         guard let resolved = tabViewModel.reconciledSelection(
             current: context.package,
-            in: self.packageSelectionContext
+            in: self.packageSelectionContext,
+            offerEligibilityLoading: self.offerEligibilityLoading,
+            offerEligibilityAvailability: self.offerEligibilityAvailability
         ) else {
             return
         }
@@ -309,15 +314,17 @@ struct LoadedTabsComponentView: View {
     }
 
     var body: some View {
+        let isEligibleForIntroOffer = self.introOfferEligibilityContext.isEligible(
+            package: self.packageContext.package
+        )
+        let isEligibleForPromoOffer = self.paywallPromoOfferCache.isMostLikelyEligible(
+            for: self.packageContext.package
+        )
         let style = viewModel.styles(
             state: self.componentViewState,
             condition: self.screenCondition,
-            isEligibleForIntroOffer: self.introOfferEligibilityContext.isEligible(
-                package: self.packageContext.package
-            ),
-            isEligibleForPromoOffer: self.paywallPromoOfferCache.isMostLikelyEligible(
-                for: self.packageContext.package
-            ),
+            isEligibleForIntroOffer: isEligibleForIntroOffer,
+            isEligibleForPromoOffer: isEligibleForPromoOffer,
             selectedPackageId: self.selectedPackageId,
             customVariables: self.customVariables,
             windowSize: self.paywallWindowSize,
@@ -354,9 +361,8 @@ struct LoadedTabsComponentView: View {
                     )
                 )
             )
-            // Intro and promo eligibility both land after first render and can flip a package's
-            // visibility. `isPaywallLoading` goes false once both have resolved.
-            .onChangeOf(self.isPaywallLoading) { _ in
+            // Each eligibility result can independently flip package visibility.
+            .onChangeOf(self.offerEligibilityLoading) { _ in
                 self.reconcileSelection(tierPackageContext, tabViewModel: activeTabViewModel)
             }
             // A window resize (rotation, Split View, Stage Manager) can hide the
@@ -492,6 +498,21 @@ struct LoadedTabsComponentView: View {
                         variableContext: tierPackageContext.variableContext
                     )
                 }
+            }
+            .redactedWhileOfferEligibilityLoads(
+                self.viewModel,
+                isEligibleForIntroOffer: isEligibleForIntroOffer,
+                isEligibleForPromoOffer: isEligibleForPromoOffer
+            ) { intro, promo in
+                self.viewModel.visible(
+                    state: self.componentViewState,
+                    condition: self.screenCondition,
+                    isEligibleForIntroOffer: intro,
+                    isEligibleForPromoOffer: promo,
+                    selectedPackageId: self.selectedPackageId,
+                    customVariables: self.customVariables,
+                    windowSize: self.paywallWindowSize
+                )
             }
         }
     }

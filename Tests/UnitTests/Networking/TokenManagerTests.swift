@@ -519,7 +519,7 @@ class TokenManagerTests: TestCase {
             fail("Expected .refresh, got \(action)")
             return
         }
-        expect(refreshRequest.path as? HTTPRequest.Path) == .tokenRefresh
+        expect(refreshRequest.path) == .tokenRefresh
         expect(refreshRequest.isRetryable) == false
         let body = try XCTUnwrap(refreshRequest.requestBody as? TokenRefreshOperation.Body)
         expect(body.refreshToken) == "current-refresh-token"

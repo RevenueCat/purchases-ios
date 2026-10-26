@@ -54,9 +54,9 @@ struct RcMaestroApp: App {
 
                             case .primaryBackendDown:
                                 // Remote config uses a separate request path whose primary URL is already
-                                // the fallback backend, so it does not have a fallbackUrlIndex.
-                                if let fallbackPath = request.httpRequest.path as? HTTPRequest.FallbackPath,
-                                   case .remoteConfig = fallbackPath {
+                                // the fallback backend, so it does not have a fallbackUrlIndex. It is the only path
+                                // that specifies isFallbackHostPath == true
+                                if request.httpRequest.path.isFallbackHostPath {
                                     return .performRequest
                                 }
                                 return request.fallbackUrlIndex == nil ? .defaultServerError : .performRequest
@@ -146,6 +146,7 @@ enum E2ETestFlow: String {
     case openWorkflowPresented = "open_workflow_presented"
     case openWorkflowUIKit = "open_workflow_uikit"
     case openDefaultPackageVisibility = "open_default_package_visibility"
+    case openDeveloperProvidedOffering = "open_developer_provided_offering"
 
     @ViewBuilder
     var view: some View {
@@ -164,6 +165,8 @@ enum E2ETestFlow: String {
             E2ETestFlowView.OpenWorkflowUIKit()
         case .openDefaultPackageVisibility:
             E2ETestFlowView.OpenDefaultPackageVisibility()
+        case .openDeveloperProvidedOffering:
+            E2ETestFlowView.OpenDeveloperProvidedOffering()
         }
     }
 }

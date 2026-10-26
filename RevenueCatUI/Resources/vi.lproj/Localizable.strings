@@ -29,3 +29,12 @@
 "Your purchase was successful." = "Bạn đã mua hàng thành công.";
 "Purchase unavailable" = "Không thể mua";
 "This purchase isn't available in your region." = "Giao dịch mua này không khả dụng ở khu vực của bạn.";
+"Couldn't connect. Check your internet connection and try again." = "Không thể kết nối. Hãy kiểm tra kết nối internet của bạn và thử lại.";
+"This content couldn't be loaded. Please try again later." = "Không thể tải nội dung này. Vui lòng thử lại sau.";
+"There was a problem with the store. Please try again later." = "Đã xảy ra sự cố với cửa hàng. Vui lòng thử lại sau.";
+"Purchases aren't allowed on this device." = "Thiết bị này không được phép mua hàng.";
+"This product isn't available right now." = "Sản phẩm này hiện không khả dụng.";
+"You already own this product." = "Bạn đã sở hữu sản phẩm này.";
+"Your payment is pending. You'll get access once it's approved." = "Thanh toán của bạn đang chờ xử lý. Bạn sẽ có quyền truy cập sau khi được phê duyệt.";
+"Something went wrong. Please try again." = "Đã xảy ra lỗi. Vui lòng thử lại.";
+"Your purchases couldn't be verified. Please try again later." = "Không thể xác minh các giao dịch mua của bạn. Vui lòng thử lại sau.";

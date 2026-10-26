@@ -12,6 +12,8 @@
 //  Created by Rick van der Linden.
 //
 
+// swiftlint:disable file_length
+
 import Foundation
 @_spi(Internal) import RevenueCat
 
@@ -27,40 +29,81 @@ import UIKit
 final class WorkflowPresenter: NSObject, WorkflowPresenterType {
 
     typealias PresentationStarter = (WorkflowPresentationRequest) throws -> Bool
-    private typealias Continuation = CheckedContinuation<CheckpointPresentationOutcome, Never>
+    private typealias Continuation = CheckedContinuation<CheckpointPresentationOutcome, Error>
 
     enum PresentationUpdate {
         case outcome(CheckpointPresentationOutcome)
+        case recoverableErrorHandled
         case workflowPresentationError(NSError)
         case dismissalReason(WorkflowDismissalReason)
     }
 
+    private enum WorkflowOutcomeState {
+        case none
+        case recoverableError
+        case terminalError
+        case reported(CheckpointPresentationOutcome)
+
+        var outcome: CheckpointPresentationOutcome {
+            switch self {
+            case .none:
+                return .completed(customerInfo: nil)
+            case .recoverableError, .terminalError:
+                return .failed
+            case let .reported(outcome):
+                return outcome
+            }
+        }
+
+        var hasReportedOutcome: Bool {
+            if case .none = self { return false }
+            return true
+        }
+    }
+
     private struct PresentationState {
-        let initialActiveEntitlementIdentifiers: Set<String>?
-        var outcome: CheckpointPresentationOutcome = .completed(customerInfo: nil)
-        var hasReportedOutcome = false
+        let checkpointIdentifier: String
+        let customVariables: [String: CustomVariableValue]
+        let errorPresentationHandler: ErrorPresentationHandler
+        let initialActiveEntitlementIdentifiers: Set<String>
+        var outcomeState: WorkflowOutcomeState = .none
         var dismissalReason: WorkflowDismissalReason = .close
 
-        mutating func record(_ update: PresentationUpdate) {
+        mutating func record(_ update: PresentationUpdate) -> Bool {
             switch update {
             case let .outcome(outcome):
-                guard !self.outcome.hasCustomerInfo || outcome.hasCustomerInfo else { return }
-                self.outcome = outcome
-                self.hasReportedOutcome = true
+                guard !self.outcomeState.outcome.hasCustomerInfo || outcome.hasCustomerInfo else { return false }
+                if case .failed = outcome {
+                    guard case .terminalError = self.outcomeState else {
+                        self.outcomeState = .recoverableError
+                        return true
+                    }
+                    return false
+                }
+                self.outcomeState = .reported(outcome)
+            case .recoverableErrorHandled:
+                guard case .recoverableError = self.outcomeState else { return false }
+                self.outcomeState = .none
             case let .workflowPresentationError(error):
-                guard !self.hasReportedOutcome else { return }
+                guard !self.outcomeState.hasReportedOutcome else { return false }
                 Logger.error(error.localizedDescription)
-                self.outcome = .failed
-                self.hasReportedOutcome = true
+                self.outcomeState = .terminalError
             case let .dismissalReason(reason):
                 self.dismissalReason = reason
             }
+            return true
         }
+    }
+
+    private struct ActiveErrorPresentation {
+        let id: UUID
     }
 
     private let presentationStarter: PresentationStarter?
     private var presentationState: PresentationState?
     private var pendingContinuation: Continuation?
+    private weak var presentedViewController: PaywallViewController?
+    private var activeErrorPresentation: ActiveErrorPresentation?
 
     init(presentationStarter: PresentationStarter? = nil) {
         self.presentationStarter = presentationStarter
@@ -72,13 +115,17 @@ final class WorkflowPresenter: NSObject, WorkflowPresenterType {
             throw CheckpointError.operationAlreadyInProgress
         }
 
-        return await withCheckedContinuation { continuation in
+        return try await withCheckedThrowingContinuation { continuation in
             self.pendingContinuation = continuation
             do {
                 try self.startPresentation(presentation)
             } catch {
-                Logger.error(error.localizedDescription)
-                self.finish(.failed)
+                if case CheckpointError.presentationContextUnavailable = error {
+                    Logger.warning(error.localizedDescription)
+                } else {
+                    Logger.error(error.localizedDescription)
+                }
+                self.finish(throwing: error)
             }
         }
     }
@@ -88,25 +135,64 @@ final class WorkflowPresenter: NSObject, WorkflowPresenterType {
             throw CheckpointError.operationAlreadyInProgress
         }
         self.presentationState = PresentationState(
+            checkpointIdentifier: presentation.checkpointIdentifier,
+            customVariables: presentation.customVariables,
+            errorPresentationHandler: presentation.errorPresentationHandler,
             initialActiveEntitlementIdentifiers: presentation.initialActiveEntitlementIdentifiers
         )
 
         do {
             if let presentationStarter = self.presentationStarter {
                 guard try presentationStarter(presentation) else {
-                    throw CheckpointError.presentationFailed
+                    throw CheckpointError.presentationContextUnavailable
                 }
             } else {
                 try self.presentAutomatically(presentation)
             }
         } catch {
             self.presentationState = nil
+            self.presentedViewController = nil
             throw error
         }
     }
 
-    func stage(_ update: PresentationUpdate) {
-        self.presentationState?.record(update)
+    @discardableResult
+    func stage(_ update: PresentationUpdate) -> Bool {
+        return self.presentationState?.record(update) == true
+    }
+
+    private func presentError(
+        _ error: any Error,
+        kind: CheckpointFailureKind,
+        onCompletion: (@MainActor () -> Void)? = nil
+    ) {
+        guard let state = self.presentationState else { return }
+        let presentation = ActiveErrorPresentation(id: UUID())
+        self.activeErrorPresentation = presentation
+        state.errorPresentationHandler(
+            .init(
+                checkpointIdentifier: state.checkpointIdentifier,
+                error: error,
+                customVariables: state.customVariables,
+                kind: kind
+            ),
+            .init { [weak self] in
+                self?.handleErrorPresentationResult(
+                    presentationID: presentation.id,
+                    onCompletion: onCompletion
+                )
+            }
+        )
+    }
+
+    private func handleErrorPresentationResult(
+        presentationID: UUID,
+        onCompletion: (@MainActor () -> Void)?
+    ) {
+        guard self.activeErrorPresentation?.id == presentationID,
+              self.presentationState != nil else { return }
+        self.activeErrorPresentation = nil
+        onCompletion?()
     }
 
     @discardableResult
@@ -121,10 +207,10 @@ final class WorkflowPresenter: NSObject, WorkflowPresenterType {
         guard let state = self.takePresentationState() else { return nil }
 
         let execution: CheckpointPresentationOutcome
-        if state.dismissalReason == .navigatedBack, !state.outcome.hasCustomerInfo {
+        if state.dismissalReason == .navigatedBack, !state.outcomeState.outcome.hasCustomerInfo {
             execution = .backedOut
         } else {
-            execution = state.outcome
+            execution = state.outcomeState.outcome
         }
         self.finish(execution)
         return execution
@@ -135,6 +221,11 @@ final class WorkflowPresenter: NSObject, WorkflowPresenterType {
         continuation.resume(returning: execution)
     }
 
+    private func finish(throwing error: any Error) {
+        guard let continuation = self.takePendingContinuation() else { return }
+        continuation.resume(throwing: error)
+    }
+
     private func takePendingContinuation() -> Continuation? {
         defer { self.pendingContinuation = nil }
         return self.pendingContinuation
@@ -142,6 +233,8 @@ final class WorkflowPresenter: NSObject, WorkflowPresenterType {
 
     private func takePresentationState() -> PresentationState? {
         defer { self.presentationState = nil }
+        self.activeErrorPresentation = nil
+        self.presentedViewController = nil
         return self.presentationState
     }
 
@@ -172,7 +265,7 @@ final class WorkflowPresenter: NSObject, WorkflowPresenterType {
         viewController.modalPresentationStyle = presentation.presentationMode.modalPresentationStyle
         presentationContext.present(viewController, animated: true)
         guard viewController.presentingViewController != nil else {
-            throw CheckpointError.presentationFailed
+            throw CheckpointError.presentationContextUnavailable
         }
     }
 
@@ -184,15 +277,31 @@ final class WorkflowPresenter: NSObject, WorkflowPresenterType {
             offerings: presentation.workflow.offerings,
             uiConfig: presentation.workflow.uiConfig,
             workflowBlobRef: presentation.workflow.workflowBlobRef,
-            traceId: presentation.workflow.traceId
+            traceId: presentation.workflow.traceId,
+            checkpointIdentifier: presentation.checkpointIdentifier
         )
         let viewController = PaywallViewController(
             workflowContext: workflowContext,
             displayCloseButton: true,
-            workflowPresentationErrorHandler: { [weak self] error in
-                self?.stage(.workflowPresentationError(error))
+            workflowPresentationErrorHandler: { [weak self] error, behavior in
+                guard let self else { return }
+                switch behavior {
+                case .endFlow:
+                    guard self.stage(.workflowPresentationError(error)) else { return }
+                    self.presentError(
+                        error,
+                        kind: .flowCouldNotBeShown,
+                        onCompletion: { [weak self] in
+                            self?.presentedViewController?.continueAfterCheckpointError()
+                        }
+                    )
+                case .keepCurrentScreen:
+                    Logger.error(error.localizedDescription)
+                    self.presentError(error, kind: .flowActionFailed)
+                }
             }
         )
+        self.presentedViewController = viewController
         viewController.disableExitOffers()
         viewController.customVariables = presentation.customVariables
         return viewController
@@ -212,6 +321,7 @@ extension WorkflowPresenter {
         transaction: StoreTransaction?
     ) {
         MainActor.assumeIsolated {
+            self.activeErrorPresentation = nil
             self.stage(.outcome(.completed(customerInfo: customerInfo)))
         }
     }
@@ -221,6 +331,7 @@ extension WorkflowPresenter {
         didFinishRestoringWith customerInfo: CustomerInfo
     ) {
         MainActor.assumeIsolated {
+            self.activeErrorPresentation = nil
             self.didCompleteRestore(customerInfo: customerInfo)
         }
     }
@@ -230,8 +341,14 @@ extension WorkflowPresenter {
         didFailPurchasingWith error: NSError
     ) {
         MainActor.assumeIsolated {
+            guard !error.isPurchaseCancellation else { return }
             Logger.error(error.localizedDescription)
-            self.stage(.outcome(.failed))
+            guard self.stage(.outcome(.failed)) else { return }
+            self.presentError(
+                error,
+                kind: .flowActionFailed,
+                onCompletion: { [weak self] in self?.stage(.recoverableErrorHandled) }
+            )
         }
     }
 
@@ -241,12 +358,18 @@ extension WorkflowPresenter {
     ) {
         MainActor.assumeIsolated {
             Logger.error(error.localizedDescription)
-            self.stage(.outcome(.failed))
+            guard self.stage(.outcome(.failed)) else { return }
+            self.presentError(
+                error,
+                kind: .flowActionFailed,
+                onCompletion: { [weak self] in self?.stage(.recoverableErrorHandled) }
+            )
         }
     }
 
     nonisolated func paywallViewControllerDidOpenWebCheckout(_ controller: PaywallViewController) {
         MainActor.assumeIsolated {
+            self.activeErrorPresentation = nil
             self.stage(.outcome(.completed(customerInfo: nil)))
         }
     }
@@ -263,6 +386,7 @@ extension WorkflowPresenter {
         didFinishPurchasingWith customerInfo: CustomerInfo,
         transaction: StoreTransaction?
     ) {
+        self.activeErrorPresentation = nil
         self.stage(.outcome(.completed(customerInfo: customerInfo)))
     }
 
@@ -270,6 +394,7 @@ extension WorkflowPresenter {
         _ controller: PaywallViewController,
         didFinishRestoringWith customerInfo: CustomerInfo
     ) {
+        self.activeErrorPresentation = nil
         self.didCompleteRestore(customerInfo: customerInfo)
     }
 
@@ -277,8 +402,14 @@ extension WorkflowPresenter {
         _ controller: PaywallViewController,
         didFailPurchasingWith error: NSError
     ) {
+        guard !error.isPurchaseCancellation else { return }
         Logger.error(error.localizedDescription)
-        self.stage(.outcome(.failed))
+        guard self.stage(.outcome(.failed)) else { return }
+        self.presentError(
+            error,
+            kind: .flowActionFailed,
+            onCompletion: { [weak self] in self?.stage(.recoverableErrorHandled) }
+        )
     }
 
     func paywallViewController(
@@ -286,10 +417,16 @@ extension WorkflowPresenter {
         didFailRestoringWith error: NSError
     ) {
         Logger.error(error.localizedDescription)
-        self.stage(.outcome(.failed))
+        guard self.stage(.outcome(.failed)) else { return }
+        self.presentError(
+            error,
+            kind: .flowActionFailed,
+            onCompletion: { [weak self] in self?.stage(.recoverableErrorHandled) }
+        )
     }
 
     func paywallViewControllerDidOpenWebCheckout(_ controller: PaywallViewController) {
+        self.activeErrorPresentation = nil
         self.stage(.outcome(.completed(customerInfo: nil)))
     }
 

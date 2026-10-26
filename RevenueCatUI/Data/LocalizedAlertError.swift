@@ -16,22 +16,37 @@ import SwiftUI
 
 struct LocalizedAlertError: LocalizedError {
 
+    struct Content {
+
+        let title: String
+        let message: String
+
+        init(error: NSError) {
+            self.title = "Error"
+
+            if let errorCode = error as? ErrorCode {
+                self.message = "Error \(error.code): \(errorCode.description)"
+            } else {
+                self.message = error.localizedDescription
+            }
+        }
+
+    }
+
     private let underlyingError: NSError
+    private let content: Content
 
     init(error: NSError) {
         self.underlyingError = error
+        self.content = .init(error: error)
     }
 
     var errorDescription: String? {
-        return "Error"
+        return self.content.title
     }
 
     var failureReason: String? {
-        if let errorCode = self.underlyingError as? ErrorCode {
-            return "Error \(self.underlyingError.code): \(errorCode.description)"
-        } else {
-            return self.underlyingError.localizedDescription
-        }
+        return self.content.message
     }
 
     var recoverySuggestion: String? {

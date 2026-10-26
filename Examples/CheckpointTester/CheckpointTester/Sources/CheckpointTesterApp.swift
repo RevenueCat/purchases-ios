@@ -28,6 +28,7 @@ struct CheckpointTesterApp: App {
         Purchases.logLevel = .debug
         Self.configurePurchases()
         model.configurePaywallPresenter()
+        model.configureErrorPresenter()
     }
 
     var body: some Scene {

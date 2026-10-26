@@ -5,9 +5,17 @@
 //  Created by Nacho Soto on 1/19/24.
 //
 
+import Combine
 import Foundation
 
 @_spi(Internal) import RevenueCat
+
+enum WorkflowPresentationErrorBehavior: Equatable {
+    case endFlow
+    case keepCurrentScreen
+}
+
+typealias WorkflowPresentationErrorHandler = (NSError, WorkflowPresentationErrorBehavior) -> Void
 
 /// Parameters needed to configure a ``PaywallView``.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -24,9 +32,12 @@ struct PaywallViewConfiguration {
     var introEligibility: TrialOrIntroEligibilityChecker?
     var purchaseHandler: PurchaseHandler
     var promoOfferCache: PaywallPromoOfferCache?
+    /// Whether the paywall presents purchase and restore errors instead of delegating presentation to its host.
+    var displaysPurchaseAndRestoreErrors: Bool
     #if !os(tvOS)
-    /// Receives a workflow configuration error so checkpoint presentation can report an error outcome.
-    var workflowPresentationErrorHandler: ((NSError) -> Void)?
+    var workflowBackNavigationBridge = WorkflowBackNavigationBridge()
+    /// Receives a workflow configuration error and whether the current presentation can remain active.
+    var workflowPresentationErrorHandler: WorkflowPresentationErrorHandler?
     /// A pre-built workflow context to seed directly (injection/preview path), bypassing the
     /// backend fetch. When set, `PaywallView` renders the workflow paywall immediately. Set by the
     /// `PaywallView(workflowContext:)` initializer; tvOS has no workflow paywall UI.
@@ -41,7 +52,8 @@ struct PaywallViewConfiguration {
         introEligibility: TrialOrIntroEligibilityChecker? = nil,
         purchaseHandler: PurchaseHandler,
         promoOfferCache: PaywallPromoOfferCache? = nil,
-        workflowPresentationErrorHandler: ((NSError) -> Void)? = nil
+        displaysPurchaseAndRestoreErrors: Bool = true,
+        workflowPresentationErrorHandler: WorkflowPresentationErrorHandler? = nil
     ) {
         self.content = content
         self.mode = mode
@@ -50,6 +62,7 @@ struct PaywallViewConfiguration {
         self.introEligibility = introEligibility
         self.purchaseHandler = purchaseHandler
         self.promoOfferCache = promoOfferCache
+        self.displaysPurchaseAndRestoreErrors = displaysPurchaseAndRestoreErrors
         #if !os(tvOS)
         self.workflowPresentationErrorHandler = workflowPresentationErrorHandler
         #endif
@@ -58,6 +71,41 @@ struct PaywallViewConfiguration {
     }
 
 }
+
+#if !os(tvOS)
+final class WorkflowBackNavigationBridge: ObservableObject {
+
+    @Published private(set) var hasPendingBackNavigationRequest = false
+    private(set) var hasActiveWorkflow = false
+
+    func workflowDidAppear() {
+        self.hasActiveWorkflow = true
+    }
+
+    func workflowDidDisappear() {
+        self.hasActiveWorkflow = false
+        self.hasPendingBackNavigationRequest = false
+    }
+
+    @discardableResult
+    func navigateBack() -> Bool {
+        guard self.hasActiveWorkflow else { return false }
+        self.hasPendingBackNavigationRequest = true
+        return true
+    }
+
+    func takePendingBackNavigationRequest(isTransitioning: Bool) -> Bool {
+        guard !isTransitioning,
+              self.hasPendingBackNavigationRequest else {
+            return false
+        }
+
+        self.hasPendingBackNavigationRequest = false
+        return true
+    }
+
+}
+#endif
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension PaywallViewConfiguration {
@@ -68,6 +116,14 @@ extension PaywallViewConfiguration {
         case defaultOffering
         case offering(Offering)
         case offeringIdentifier(String, presentedOfferingContext: PresentedOfferingContext?)
+
+        /// The developer-supplied `Offering` instance, when the caller passed one directly.
+        var passedOffering: Offering? {
+            if case let .offering(offering) = self {
+                return offering
+            }
+            return nil
+        }
 
     }
 

@@ -51,7 +51,7 @@ class CheckpointEventDataTests: TestCase {
 
     func testEveryResultReportsATraceId() throws {
         let resolutions: [CheckpointResolution] = [
-            .matchedOffering(Self.offering),
+            .matchedOffering(Self.offering, traceID: "trace_id"),
             .noAction(.noMatch),
             .noAction(.configurationUnavailable),
             .noAction(.unknownCheckpoint)
@@ -74,7 +74,10 @@ class CheckpointEventDataTests: TestCase {
     }
 
     func testMatchedOfferingReportsReturnDataWithTheOffering() throws {
-        let resolved = ResolvedCheckpoint(.matchedOffering(Self.offering), checkpointRuleID: "rule_123")
+        let resolved = ResolvedCheckpoint(
+            .matchedOffering(Self.offering, traceID: "trace_id"),
+            checkpointRuleID: "rule_123"
+        )
 
         let data = CheckpointEvent.Data(identifier: "onboarding_complete", date: self.date, resolved: resolved)
 

@@ -136,6 +136,10 @@ public class PaywallViewController: UIViewController {
 
     var workflowContextForTesting: WorkflowContext? { self.configuration.injectedWorkflowContext }
 
+    var workflowBackNavigationBridgeForTesting: WorkflowBackNavigationBridge {
+        return self.configuration.workflowBackNavigationBridge
+    }
+
     func simulateWorkflowExitOfferUpdate(_ offering: Offering?) {
         self.updateWorkflowExitOffer(offering)
     }
@@ -144,8 +148,15 @@ public class PaywallViewController: UIViewController {
         self.applyOfferingBasedExitOffer(offering)
     }
 
-    func simulateWorkflowPresentationError(_ error: NSError) {
-        self.configuration.workflowPresentationErrorHandler?(error)
+    func simulateWorkflowPresentationError(
+        _ error: NSError,
+        behavior: WorkflowPresentationErrorBehavior
+    ) {
+        self.configuration.workflowPresentationErrorHandler?(error, behavior)
+    }
+
+    func continueAfterCheckpointError() {
+        self.dismiss(animated: true)
     }
 
     /// Prevents this controller from resolving or presenting exit offers.
@@ -195,15 +206,36 @@ public class PaywallViewController: UIViewController {
     }
 
     #if !os(tvOS)
+    internal convenience init(
+        checkpointOffering offering: Offering,
+        displayCloseButton: Bool,
+        workflowPresentationErrorHandler: WorkflowPresentationErrorHandler?
+    ) {
+        self.init(
+            content: .optionalOffering(offering),
+            fonts: DefaultPaywallFontProvider(),
+            displayCloseButton: displayCloseButton,
+            shouldBlockTouchEvents: false,
+            performPurchase: nil,
+            performRestore: nil,
+            dismissRequestedHandler: nil
+        )
+
+        var configuration = self.configuration
+        configuration.displaysPurchaseAndRestoreErrors = false
+        configuration.workflowPresentationErrorHandler = workflowPresentationErrorHandler
+        self.configuration = configuration
+    }
+
     /// Creates a paywall view controller from a pre-built workflow context.
-    convenience init(
+    internal convenience init(
         workflowContext: WorkflowContext,
         fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
         displayCloseButton: Bool = false,
         introEligibility: TrialOrIntroEligibilityChecker? = nil,
         performPurchase: PerformPurchase? = nil,
         performRestore: PerformRestore? = nil,
-        workflowPresentationErrorHandler: ((NSError) -> Void)? = nil
+        workflowPresentationErrorHandler: WorkflowPresentationErrorHandler? = nil
     ) {
         self.init(
             content: .offering(workflowContext.initialOffering),
@@ -218,6 +250,7 @@ public class PaywallViewController: UIViewController {
         var configuration = self.configuration
         configuration.introEligibility = introEligibility
         configuration.injectedWorkflowContext = workflowContext
+        configuration.displaysPurchaseAndRestoreErrors = false
         configuration.workflowPresentationErrorHandler = workflowPresentationErrorHandler
         self.configuration = configuration
     }
@@ -394,7 +427,14 @@ public class PaywallViewController: UIViewController {
         }
     }
 
+    #if os(iOS)
+    private let nativeCloseOwner = NativePaywallUIKitOwner()
+    #endif
+
     public override func viewWillAppear(_ animated: Bool) {
+        #if os(iOS)
+        self.nativeCloseOwner.prepare(controller: self)
+        #endif
         super.viewWillAppear(animated)
 
         guard self.shouldDisplayExitOffers else { return }
@@ -881,7 +921,7 @@ private extension PaywallViewController {
             set: { [weak self] offering in self?.updateWorkflowExitOffer(offering) }
         )
 
-        let container = PaywallContainerView(
+        var container = PaywallContainerView(
             configuration: self.configuration,
             customVariables: self.customVariables,
             purchaseStarted: { [weak self] package in
@@ -939,6 +979,9 @@ private extension PaywallViewController {
             workflowExitOfferBinding: workflowExitOfferBinding
         )
 
+        #if os(iOS)
+        container.nativeCloseOwner = self.nativeCloseOwner
+        #endif
         let controller = UIHostingController(rootView: container)
 
         // make the background of the container clear so that if there are cutouts, they don't get
@@ -1072,7 +1115,21 @@ private struct PaywallContainerView: View {
     /// Receives the workflow exit offer from the embedded paywall (binding + preference below).
     let workflowExitOfferBinding: Binding<Offering?>
 
-    var body: some View {
+    #if os(iOS)
+    @ObservedObject var nativeCloseOwner = NativePaywallUIKitOwner()
+    #endif
+
+    @ViewBuilder var body: some View {
+        #if os(iOS)
+        self.paywall.environment(
+            \.nativePaywallNavigationContext, self.nativeCloseOwner.context ?? .uiKit(self.nativeCloseOwner)
+        )
+        #else
+        self.paywall
+        #endif
+    }
+
+    private var paywall: some View {
         PaywallView(configuration: self.configuration)
             .customPaywallVariables(self.customVariables)
             .onPurchaseStarted(self.purchaseStarted)

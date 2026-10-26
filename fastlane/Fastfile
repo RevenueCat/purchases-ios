@@ -751,29 +751,6 @@ platform :ios do
     pr_number
   end
 
-  private_lane :pr_upload_metadata do
-    pr_number = detect_pr_number
-    next nil unless pr_number
-
-    token = ENV["DANGER_GITHUB_API_TOKEN"]
-    UI.user_error!("DANGER_GITHUB_API_TOKEN is required to upload PR size analysis") if token.to_s.empty?
-
-    response = github_api(
-      server_url: "https://api.github.com",
-      api_token: token,
-      http_method: "GET",
-      path: "/repos/RevenueCat/#{REPO_NAME}/pulls/#{pr_number}"
-    )
-    pull_request = response[:json] || {}
-    base_sha = pull_request.dig("base", "sha")
-    UI.user_error!("Could not determine the base SHA for PR ##{pr_number}") if base_sha.to_s.empty?
-
-    {
-      number: pr_number,
-      base_sha: base_sha
-    }
-  end
-
   private_lane :pr_labels_for_api_gate do
     pr_number = detect_pr_number
     token = ENV["DANGER_GITHUB_API_TOKEN"]
@@ -987,12 +964,21 @@ platform :ios do
 
   desc "Runs all RevenueCatUI tests"
   lane :test_revenuecatui do |options|
-    generate_snapshots = ENV["CIRCLECI_TESTS_GENERATE_REVENUECAT_UI_SNAPSHOTS"] == "true"
+    hosted = options[:hosted].to_s == "true"
+    generate_snapshots = !hosted && ENV["CIRCLECI_TESTS_GENERATE_REVENUECAT_UI_SNAPSHOTS"] == "true"
     platform = ENV['PLATFORM'] || 'iOS Simulator'
     destination = ENV['DEVICE'] || "iPhone 14,OS=16.4"
     sdk = ENV['BUILD_SDK'] || 'iphonesimulator'
     test_plan = generate_snapshots ? "CI-Snapshots" : "CI-RevenueCatUI"
-    xcargs = "-testPlan #{test_plan}"
+    xcargs = if hosted
+      "-only-testing:RevenueCatUITests/NativePaywallCloseButtonTests " \
+        "-only-testing:RevenueCatUITests/NativePaywallUIKitTests " \
+        "-only-testing:RevenueCatUITests/NativePaywallWorkflowTests " \
+        "-only-testing:RevenueCatUITests/ButtonComponentViewTests"
+    else
+      "-testPlan #{test_plan}"
+    end
+    output_name = hosted ? 'revenuecatui-hosted' : 'revenuecatui'
     # Xcode 27 can hang in `simctl diagnose` after all tests pass, so jobs running on it
     # opt out of diagnostics collection. watchOS has always needed this.
     collect_test_diagnostics = ENV['RC_COLLECT_TEST_DIAGNOSTICS'] ||
@@ -1000,16 +986,16 @@ platform :ios do
     xcargs += " -collect-test-diagnostics #{collect_test_diagnostics}" if collect_test_diagnostics
     begin
       # See https://forums.swift.org/t/i-made-a-little-spm-package-that-uses-uikit-how-can-i-run-tests-from-command-line/50399/2
-      # Note: We use xcodebuild instead of scan because this is an SPM package (workspace: '.')
-      # and scan doesn't properly detect schemes defined in Package.swift
+      # Use xcodebuild because scan doesn't properly detect the SPM scheme. The hosted
+      # pass uses the existing Tuist test target to exercise real modal presentations.
       xcodebuild(
-        workspace: '.',
-        scheme: 'RevenueCatUI',
+        workspace: hosted ? 'RevenueCat-Tuist.xcworkspace' : '.',
+        scheme: hosted ? 'RevenueCatUITests' : 'RevenueCatUI',
         destination: platform == 'macOS' ? "platform=macOS" : "platform=" + platform + ",name=" + destination,
         sdk: sdk,
-        result_bundle_path: 'fastlane/test_output/revenuecatui.xcresult',
+        result_bundle_path: "fastlane/test_output/#{output_name}.xcresult",
         report_formats: [:junit],
-        report_path: 'fastlane/test_output/revenuecatui/tests.xml',
+        report_path: "fastlane/test_output/#{output_name}/tests.xml",
         test: true,
         xcargs: xcargs
       )
@@ -1110,28 +1096,13 @@ platform :ios do
       UI.user_error!("Missing thinned IPA for Sentry upload at '#{ipa_path}'")
     end
 
-    sentry_args = {
+    sentry_args = sentry_ci_metadata(
       org_slug: SENTRY_ORG_SLUG,
-      project_slug: SENTRY_PROJECT_SLUG,
+      project_slug: SENTRY_PROJECT_SLUG
+    ).merge(
       ipa_path: ipa_path,
-      build_configuration: BINARY_SIZE_ANALYSIS_CONFIGURATION,
-      vcs_provider: "github",
-      head_repo_name: "RevenueCat/#{REPO_NAME}",
-      base_repo_name: "RevenueCat/#{REPO_NAME}",
-      force_git_metadata: true
-    }
-
-    head_sha = ENV["CIRCLE_SHA1"]
-    sentry_args[:head_sha] = head_sha if head_sha && !head_sha.empty?
-
-    head_ref = ENV["CIRCLE_BRANCH"]
-    sentry_args[:head_ref] = head_ref if head_ref && !head_ref.empty?
-
-    pr_metadata = pr_upload_metadata
-    if pr_metadata
-      sentry_args[:base_sha] = pr_metadata[:base_sha]
-      sentry_args[:pr_number] = pr_metadata[:number]
-    end
+      build_configuration: BINARY_SIZE_ANALYSIS_CONFIGURATION
+    )
 
     sentry_upload_build(sentry_args)
   end
@@ -2326,15 +2297,30 @@ platform :ios do
   private_lane :build_symbols_for_docs do
     ios_version = ENV['DOCS_IOS_VERSION'] || "16.1"
 
-    sh("swift",
-       "build",
-       "--target", "RevenueCat",
-       # Build for iOS instead of the default macOS. This ensures that iOS-only symbols are included in the docs.
-       "-Xswiftc", "-sdk", "-Xswiftc", sh("xcrun", "--sdk", "iphonesimulator", "--show-sdk-path").strip!,
-       "-Xswiftc", "-target", "-Xswiftc", "arm64-apple-ios#{ios_version}-simulator",
-       "-Xswiftc", "-emit-symbol-graph",
-       "-Xswiftc", "-emit-symbol-graph-dir",
-       "-Xswiftc", ".build")
+    # Build for iOS instead of the default macOS. This ensures that iOS-only symbols are included in the docs.
+    triple = "arm64-apple-ios#{ios_version}-simulator"
+    sdk_path = sh("xcrun", "--sdk", "iphonesimulator", "--show-sdk-path").strip
+    platform_args = ["--triple", triple, "--sdk", sdk_path]
+
+    sh("swift", "build", "--target", "RevenueCat", *platform_args)
+    bin_path, status = Open3.capture2("swift", "build", *platform_args, "--show-bin-path")
+    UI.user_error!("Could not determine the SwiftPM bin path") unless status.success?
+    bin_path = bin_path.strip
+
+    # Extracted symbol graphs include doc comments inherited from protocol requirements,
+    # which symbol graphs emitted by the compiler (`-emit-symbol-graph`) don't.
+    sh("xcrun", "swift-symbolgraph-extract",
+       "-module-name", "RevenueCat",
+       "-target", triple,
+       "-sdk", sdk_path,
+       # Newer SwiftPM versions put modules in `Modules/`, older ones directly in the bin path.
+       "-I", File.join(bin_path, "Modules"),
+       "-I", bin_path,
+       "-minimum-access-level", "public",
+       "-emit-extension-block-symbols",
+       # Must be inside `.build`: `--additional-symbol-graph-dir .build` replaces the DocC plugin's own
+       # symbol graph directory, and DocC only finds the plugin's macOS symbol graphs by searching `.build` recursively.
+       "-output-dir", ".build")
   end
 
   desc "Preview docs"

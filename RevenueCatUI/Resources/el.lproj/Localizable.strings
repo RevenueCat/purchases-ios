@@ -29,3 +29,12 @@
 "Your purchase was successful." = "Η αγορά σας ολοκληρώθηκε με επιτυχία.";
 "Purchase unavailable" = "Η αγορά δεν είναι διαθέσιμη";
 "This purchase isn't available in your region." = "Αυτή η αγορά δεν είναι διαθέσιμη στην περιοχή σας.";
+"Couldn't connect. Check your internet connection and try again." = "Δεν ήταν δυνατή η σύνδεση. Ελέγξτε τη σύνδεσή σας στο διαδίκτυο και δοκιμάστε ξανά.";
+"This content couldn't be loaded. Please try again later." = "Δεν ήταν δυνατή η φόρτωση αυτού του περιεχομένου. Δοκιμάστε ξανά αργότερα.";
+"There was a problem with the store. Please try again later." = "Παρουσιάστηκε πρόβλημα με το κατάστημα. Δοκιμάστε ξανά αργότερα.";
+"Purchases aren't allowed on this device." = "Οι αγορές δεν επιτρέπονται σε αυτήν τη συσκευή.";
+"This product isn't available right now." = "Αυτό το προϊόν δεν είναι διαθέσιμο αυτήν τη στιγμή.";
+"You already own this product." = "Έχετε ήδη αυτό το προϊόν.";
+"Your payment is pending. You'll get access once it's approved." = "Η πληρωμή σας εκκρεμεί. Θα αποκτήσετε πρόσβαση μόλις εγκριθεί.";
+"Something went wrong. Please try again." = "Κάτι πήγε στραβά. Δοκιμάστε ξανά.";
+"Your purchases couldn't be verified. Please try again later." = "Δεν ήταν δυνατή η επαλήθευση των αγορών σας. Δοκιμάστε ξανά αργότερα.";

@@ -32,9 +32,9 @@ func checkCheckpointAPI(_ purchases: Purchases) {
     purchases.checkpoint(
         "test_checkpoint",
         customVariables: literalCustomVariables
-    ) { (_: FlowResult?) in }
+    ) { (_: CheckpointResult) in }
 
-    purchases.checkpoint("test_checkpoint") { (_: FlowResult?) in }
+    purchases.checkpoint("test_checkpoint") { (_: CheckpointResult) in }
     purchases.checkpoint("test_checkpoint", customVariables: explicitCustomVariables) { _ in }
     purchases.checkpoint("test_checkpoint", presentationMode: .modalFullScreen) { _ in }
 
@@ -44,8 +44,27 @@ func checkCheckpointAPI(_ purchases: Purchases) {
 
     let entitlement: ObtainedEntitlement? = nil
     let _: EntitlementInfo? = entitlement?.entitlementInfo
-    let result: FlowResult? = nil
-    let _: Set<ObtainedEntitlement>? = result?.obtainedEntitlements
+    let product: ObtainedProduct? = nil
+    let _: StoreProduct? = product?.product
+}
+
+private func checkCheckpointResultAPI(_ result: CheckpointResult) {
+    let _: FlowResult? = result.flow
+    let _: CustomerInfo = result.customer
+    let _: ObtainedEntitlement? = result.obtainedEntitlement("pro")
+    let _: Bool = result.didObtainEntitlement("pro")
+    let _: ObtainedProduct? = result.obtainedProduct("monthly")
+    let _: Bool = result.didObtainProduct("monthly")
+    let _: Bool = result.hasEntitlement("pro")
+}
+
+private func checkFlowResultAPI(_ result: FlowResult) {
+    let _: Set<ObtainedEntitlement> = result.obtainedEntitlements
+    let _: Set<ObtainedProduct> = result.obtainedProducts
+    let _: ObtainedEntitlement? = result.obtainedEntitlement("pro")
+    let _: Bool = result.didObtainEntitlement("pro")
+    let _: ObtainedProduct? = result.obtainedProduct("monthly")
+    let _: Bool = result.didObtainProduct("monthly")
 }
 
 @MainActor
@@ -72,6 +91,27 @@ private func checkPaywallPresentationAPI(
 }
 
 @MainActor
+private func checkErrorPresentationAPI(_ purchases: Purchases) {
+    let globalPresenter = CheckpointAPIErrorPresenter()
+    purchases.errorPresenter = globalPresenter
+    let _: ErrorPresenter? = purchases.errorPresenter
+
+    let presenter: ErrorPresentationHandler = { params, completion in
+        let _: String = params.checkpointIdentifier
+        let _: any Error = params.error
+        let _: [String: CustomVariableValue] = params.customVariables
+        let _: CheckpointFailureKind = params.kind
+        completion.complete()
+    }
+
+    let _: CheckpointFailureKind = .flowCouldNotBeShown
+    let _: CheckpointFailureKind = .flowActionFailed
+    let _: CheckpointFailureKind = .flowResultSyncFailed
+    let _: ErrorPresentationHandler = presenter
+    purchases.checkpoint("test_checkpoint", errorPresenter: presenter) { _ in }
+}
+
+@MainActor
 private final class CheckpointAPIPaywallPresenter: PaywallPresenter {
 
     func present(
@@ -79,6 +119,15 @@ private final class CheckpointAPIPaywallPresenter: PaywallPresenter {
         completion: @escaping PaywallPresentationCompletion
     ) {
         completion(.continued)
+    }
+
+}
+
+@MainActor
+private final class CheckpointAPIErrorPresenter: ErrorPresenter {
+
+    func present(params: ErrorPresentationParams, completion: ErrorPresentationCompletion) {
+        completion.complete()
     }
 
 }

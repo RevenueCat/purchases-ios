@@ -12,7 +12,7 @@
 import Foundation
 @_spi(Internal) import RevenueCat
 
-#if !os(tvOS) && ENABLE_WORKFLOW_BRANCH_LOADING
+#if !os(tvOS)
 
 struct WorkflowSkeleton {
 

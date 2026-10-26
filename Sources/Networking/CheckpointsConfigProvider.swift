@@ -11,6 +11,7 @@ protocol CheckpointsConfigProviderType {
 
     func rules(for identifier: String) async throws -> CheckpointRulesSnapshot?
     func isCurrent(_ snapshot: CheckpointRulesSnapshot) -> Bool
+    func checkpointIds() async -> [String]
 
 }
 
@@ -91,6 +92,11 @@ final class CheckpointsConfigProvider: CheckpointsConfigProviderType, RemoteConf
 
     func isCurrent(_ snapshot: CheckpointRulesSnapshot) -> Bool {
         return self.manager.configGeneration == snapshot.configGeneration
+    }
+
+    /// Every checkpoint in the `checkpoint_rules` topic.
+    func checkpointIds() async -> [String] {
+        return await self.manager.topic(.checkpointRules)?.keys.sorted() ?? []
     }
 
     private func loadRules(for identifier: String) async throws -> CheckpointRuleSet? {

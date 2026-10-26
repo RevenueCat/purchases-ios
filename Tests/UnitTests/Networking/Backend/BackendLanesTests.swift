@@ -131,7 +131,8 @@ final class BackendLanesTests: TestCase {
             offlineCustomerInfoCreator: nil,
             diagnosticsTracker: nil,
             apiSourceProvider: nil,
-            timeoutManager: HTTPRequestTimeoutManager(networkTimeout: .default)
+            timeoutManager: HTTPRequestTimeoutManager(networkTimeout: .default),
+            subscriberDimensionsStore: MockSubscriberDimensionsStore()
         )
 
         backend.clearHTTPClientCaches()

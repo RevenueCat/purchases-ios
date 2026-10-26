@@ -29,3 +29,12 @@
 "Your purchase was successful." = "購入が完了しました。";
 "Purchase unavailable" = "購入できません";
 "This purchase isn't available in your region." = "この項目はお住まいの地域では購入できません。";
+"Couldn't connect. Check your internet connection and try again." = "接続できませんでした。インターネット接続を確認して、もう一度お試しください。";
+"This content couldn't be loaded. Please try again later." = "このコンテンツを読み込めませんでした。しばらくしてからもう一度お試しください。";
+"There was a problem with the store. Please try again later." = "ストアで問題が発生しました。しばらくしてからもう一度お試しください。";
+"Purchases aren't allowed on this device." = "このデバイスでは購入が許可されていません。";
+"This product isn't available right now." = "この商品は現在ご利用いただけません。";
+"You already own this product." = "この商品はすでに購入済みです。";
+"Your payment is pending. You'll get access once it's approved." = "お支払いは保留中です。承認されるとご利用いただけるようになります。";
+"Something went wrong. Please try again." = "問題が発生しました。もう一度お試しください。";
+"Your purchases couldn't be verified. Please try again later." = "ご購入内容を確認できませんでした。しばらくしてからもう一度お試しください。";

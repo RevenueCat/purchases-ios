@@ -272,9 +272,13 @@ class CustomerInfoManager {
 
         if customerInfo.shouldCache {
             do {
-                self.cacheSubscriberDimensionsIfPresent(from: customerInfo, appUserID: appUserID)
                 let jsonData = try JSONEncoder.default.encode(customerInfo)
                 self.deviceCache.cache(customerInfo: jsonData, appUserID: appUserID)
+
+                if let attrs = customerInfo.subscriber.subscriberAttributes?.attributes {
+                    let map = Dictionary(uniqueKeysWithValues: attrs.map { ($0.key, $0) })
+                    self.deviceCache.merge(subscriberAttributes: map, appUserID: appUserID)
+                }
             } catch {
                 Logger.error(Strings.customerInfo.error_encoding_customerinfo(error))
             }
@@ -284,24 +288,6 @@ class CustomerInfoManager {
         }
 
         self.sendUpdateIfChanged(customerInfo: customerInfo, appUserID: appUserID)
-    }
-
-    private func cacheSubscriberDimensionsIfPresent(
-        from customerInfo: CustomerInfo,
-        appUserID: String
-    ) {
-        guard !customerInfo.isLoadedFromCache,
-              let dimensions = customerInfo.rawData["dimensions"] as? [String: Any],
-              !dimensions.isEmpty else {
-            return
-        }
-
-        do {
-            let data = try JSONSerialization.data(withJSONObject: dimensions)
-            self.deviceCache.cache(subscriberDimensions: data, appUserID: appUserID)
-        } catch {
-            Logger.warn(Strings.localRules.subscriberDimensionsUnavailable(error))
-        }
     }
 
     func clearCustomerInfoCache(forAppUserID appUserID: String) {

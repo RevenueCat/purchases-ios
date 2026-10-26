@@ -29,3 +29,12 @@
 "Your purchase was successful." = "La teva compra s'ha realitzat correctament.";
 "Purchase unavailable" = "Compra no disponible";
 "This purchase isn't available in your region." = "Aquesta compra no està disponible a la teva regió.";
+"Couldn't connect. Check your internet connection and try again." = "No s'ha pogut connectar. Comprova la connexió a internet i torna-ho a provar.";
+"This content couldn't be loaded. Please try again later." = "No s'ha pogut carregar aquest contingut. Torna-ho a provar més tard.";
+"There was a problem with the store. Please try again later." = "Hi ha hagut un problema amb la botiga. Torna-ho a provar més tard.";
+"Purchases aren't allowed on this device." = "Les compres no estan permeses en aquest dispositiu.";
+"This product isn't available right now." = "Aquest producte no està disponible ara mateix.";
+"You already own this product." = "Ja tens aquest producte.";
+"Your payment is pending. You'll get access once it's approved." = "El teu pagament està pendent. Hi tindràs accés quan s'aprovi.";
+"Something went wrong. Please try again." = "Alguna cosa ha fallat. Torna-ho a provar.";
+"Your purchases couldn't be verified. Please try again later." = "No s'han pogut verificar les teves compres. Torna-ho a provar més tard.";

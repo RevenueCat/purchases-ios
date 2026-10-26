@@ -83,7 +83,7 @@ internal typealias SK2BillingPlanType = StoreKit.Product.SubscriptionInfo.Billin
         super.init()
 
         if self.localizedTitle.isEmpty {
-            Logger.warn(Strings.offering.product_details_empty_title(productIdentifier: self.productIdentifier))
+            Logger.warn(Strings.offering.product_details_empty_title(productIdentifier: self.id))
         }
     }
 
@@ -140,6 +140,9 @@ internal typealias SK2BillingPlanType = StoreKit.Product.SubscriptionInfo.Billin
         }
     }
 
+    // Identifies the underlying store product; billing-plan variants share this value.
+    // Use `id` for caches or lookups whose values can differ between billing plans.
+    // Use `productIdentifier` when an API expects the underlying store product identifier.
     @objc public var productIdentifier: String { self.product.productIdentifier }
 
     @available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 7.0, *)
@@ -158,7 +161,14 @@ internal typealias SK2BillingPlanType = StoreKit.Product.SubscriptionInfo.Billin
     @available(iOS 26.4, tvOS 26.4, watchOS 26.4, macOS 26.4, visionOS 26.4, *)
     @objc public var installmentsInfo: InstallmentsInfo? { self.product.installmentsInfo }
 
-    @objc internal var id: String { return product.id }
+    /// A unique identifier for this product, including its billing plan.
+    /// Use this for caches or lookups whose values can differ between billing plans.
+    /// For example, "annual" and "annual:monthly" share a `productIdentifier` but have distinct `id` values.
+    ///
+    /// If the product has a billing plan associated with it, this will be "{productIdentifier}:{billingPlanType}",
+    /// except for the up-front billing plan, which uses "{productIdentifier}".
+    /// Otherwise, it will be "{productIdentifier}".
+    @_spi(Internal) public var id: String { return product.id }
 
     // switflint:enable missing_docs
 }
@@ -204,6 +214,9 @@ internal protocol StoreProductType: Sendable {
     /// The price of this product using ``StoreProduct/priceFormatter``.
     var localizedPriceString: String { get }
 
+    // Identifies the underlying store product; billing-plan variants share this value.
+    // Use `id` for caches or lookups whose values can differ between billing plans.
+    // Use `productIdentifier` when an API expects the underlying store product identifier.
     /// The string that identifies the product to the Apple App Store.
     var productIdentifier: String { get }
 
@@ -266,8 +279,13 @@ internal protocol StoreProductType: Sendable {
     @available(iOS 26.4, tvOS 26.4, watchOS 26.4, macOS 26.4, visionOS 26.4, *)
     var installmentsInfo: InstallmentsInfo? { get }
 
-    /// If the product has a billing plan associated with it, this will be "{productIdentifier}:{billingPlanType}".
-    /// Otherwise, it will be "{productIdentifier}"
+    /// A unique identifier for this product, including its billing plan.
+    /// Use this for caches or lookups whose values can differ between billing plans.
+    /// For example, "annual" and "annual:monthly" share a `productIdentifier` but have distinct `id` values.
+    ///
+    /// If the product has a billing plan associated with it, this will be "{productIdentifier}:{billingPlanType}",
+    /// except for the up-front billing plan, which uses "{productIdentifier}".
+    /// Otherwise, it will be "{productIdentifier}".
     var id: String { get }
 }
 

@@ -19,11 +19,12 @@ import SwiftUI
 typealias PresentedTabsPartial = PaywallComponent.PartialTabsComponent
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-class TabsComponentViewModel {
+class TabsComponentViewModel: OfferEligibilityVisibilityDependency {
 
     private let component: PaywallComponent.TabsComponent
     let uiConfigProvider: UIConfigProvider
     private let presentedOverrides: PresentedOverrides<PresentedTabsPartial>?
+    let dependsOnOfferEligibility: Bool
 
     let controlStackViewModel: StackComponentViewModel
     let tabViewModels: [String: TabViewModel]
@@ -77,7 +78,9 @@ class TabsComponentViewModel {
         self.name = component.name
         self.uiConfigProvider = uiConfigProvider
 
-        self.presentedOverrides = self.component.overrides?.toPresentedOverrides(discardRules: discardRules)
+        let presentedOverrides = component.overrides?.toPresentedOverrides(discardRules: discardRules)
+        self.presentedOverrides = presentedOverrides
+        self.dependsOnOfferEligibility = presentedOverrides?.contains(where: \.dependsOnOfferEligibility) ?? false
     }
 
     // swiftlint:disable:next function_parameter_count
@@ -120,6 +123,33 @@ class TabsComponentViewModel {
         )
     }
 
+    // swiftlint:disable:next function_parameter_count
+    func visible(
+        state: ComponentViewState,
+        condition: ScreenCondition,
+        isEligibleForIntroOffer: Bool,
+        isEligibleForPromoOffer: Bool,
+        selectedPackageId: String?,
+        customVariables: [String: CustomVariableValue],
+        windowSize: CGSize? = nil
+    ) -> Bool {
+        let conditionContext = self.uiConfigProvider.conditionContext(
+            selectedPackageId: selectedPackageId,
+            customVariables: customVariables,
+            windowSize: windowSize
+        )
+
+        let partial = PresentedTabsPartial.buildPartial(
+            state: state,
+            condition: condition,
+            isEligibleForIntroOffer: isEligibleForIntroOffer,
+            isEligibleForPromoOffer: isEligibleForPromoOffer,
+            conditionContext: conditionContext,
+            with: self.presentedOverrides
+        )
+        return partial?.visible ?? self.component.visible ?? true
+    }
+
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -155,8 +185,18 @@ class TabViewModel {
         return self.packageValidator.defaultSelectedPackage(in: context)
     }
 
-    func reconciledSelection(current: Package?, in context: PackageSelectionContext) -> Package? {
-        return self.packageValidator.reconciledSelection(current: current, in: context)
+    func reconciledSelection(
+        current: Package?,
+        in context: PackageSelectionContext,
+        offerEligibilityLoading: OfferEligibilityLoading,
+        offerEligibilityAvailability: OfferEligibilityAvailability
+    ) -> Package? {
+        return self.packageValidator.reconciledSelection(
+            current: current,
+            in: context,
+            offerEligibilityLoading: offerEligibilityLoading,
+            offerEligibilityAvailability: offerEligibilityAvailability
+        )
     }
 
 }

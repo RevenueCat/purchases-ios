@@ -250,11 +250,11 @@ class PurchaseHandlerTests: TestCase {
         expect(handler.purchaseError).to(beNil())
     }
 
-    func testHostedCheckoutCancellationDoesNotNeedCustomerInfo() {
+    func testHostedCheckoutDismissalDoesNotNeedCustomerInfo() {
         let handler = Self.handlerFailingToFetchCustomerInfo(purchasesAreCompletedBy: .revenueCat,
                                                              performPurchase: nil)
 
-        handler.handleHostedCheckoutCancellation(package: TestData.packageWithIntroOffer)
+        handler.handleHostedCheckoutDismissal(package: TestData.packageWithIntroOffer)
 
         expect(handler.purchaseResult) == .cancelled
         expect(handler.sessionPurchaseResult) == .cancelled

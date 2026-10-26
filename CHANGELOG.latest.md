@@ -1,41 +1,28 @@
 ## RevenueCat SDK
-### ✨ New Features
-* refactor(ads): rename rewarded ad prompt types to AdRewardPrompt* (#7880) via Drago Crnjac (@popcorn)
-* feat(ads): track rewarded ad prompt shown and accepted events (#7858) via Drago Crnjac (@popcorn)
-* Allow opting in to external purchase custom links (experimental) (#7809) via Antonio Pallares (@ajpallares)
 ### 🐞 Bugfixes
-* fix(customerinfo): notify observers when active entitlements change (#7820) via Peter Porfy (@peterporfy)
-### 📦 Dependency Updates
-* [RENOVATE] Update dependency revenuecat to v4.6.2 (#7847) via RevenueCat Git Bot (@RCGitBot)
+* Share one product cache between offerings and intro eligibility (#8085) via Antonio Pallares (@ajpallares)
+* Fix product cache invalidation and shared request results (#8084) via Antonio Pallares (@ajpallares)
+* Handle re-login as the same user (#8100) via Dave DeLong (@davedelong)
 
 ## RevenueCatUI SDK
-### 🐞 Bugfixes
-* Fix(paywalls) Crash on logout (#7836) via Jacob Rakidzich (@JZDesign)
-### Customer Center
-#### 🐞 Bugfixes
-* Fix Customer Center survey title wrapping on iOS 26 (#7843) via Josh Holtz (@joshdholtz)
 ### Paywallsv2
+#### ✨ New Features
+* 6 of 6: Support native Back and Close in paywall workflows (#8025) via Josh Holtz (@joshdholtz)
+* 5 of 6: Show native paywall buttons in UIKit (#8024) via Josh Holtz (@joshdholtz)
+* 4 of 6: Show native paywall buttons in SwiftUI (#8023) via Josh Holtz (@joshdholtz)
+* 3 of 6: Connect native paywall buttons to existing actions (#8022) via Josh Holtz (@joshdholtz)
+* 2 of 6: Register native paywall button actions (#8027) via Josh Holtz (@joshdholtz)
+* 1 of 6: Add native paywall button preferences (#8021) via Josh Holtz (@joshdholtz)
 #### 🐞 Bugfixes
-* Fix Paywalls V2 picking a random regional locale (#7835) via Jamie Holwill (@jholwill)
+* 8 of 8: Replace nested paywall navigation buttons (#8075) via Josh Holtz (@joshdholtz)
+* 7 of 7: Hide caller Back when native paywall controls are shown (#8071) via Josh Holtz (@joshdholtz)
+* fix: avoid redacting packages without applicable offers (#8074) via Antonio Pallares (@ajpallares)
 
 ### 🔄 Other Changes
-* Run RevenueCatUI tests on macOS (#7869) via Facundo Menzella (@facumenzella)
-* Enable signature verification for web purchase redemption (#7874) via Rick (@rickvdl)
-* other(workflows): route a branch trigger action to the step its audiences pick (#7853) via Facundo Menzella (@facumenzella)
-* Chore(Paywalls): Add DEBUG-only JSON paywall preview renderer (#7746) via Jacob Rakidzich (@JZDesign)
-* Chore(Paywalls): Apply min/max to Fill sizes only (#7770) via Jacob Rakidzich (@JZDesign)
-* Fix iOS AdMob capture method (#7844) via Pol Miro (@polmiro)
-* Use a positive simulator external purchase setting (#7856) via Antonio Pallares (@ajpallares)
-* [SDK-4501] Add `is_synced` to `customer_info` purchase records (#7849) via Toni Rico (@tonidero)
-* refactor(checkpoints): rename invite-only API SPI (#7852) via Rick (@rickvdl)
-* Allow web purchases in the simulator regardless of storefront (experimental) (#7828) via Antonio Pallares (@ajpallares)
-* Tell ineligible customers a web purchase is unavailable (#7831) via Antonio Pallares (@ajpallares)
-* Offer no external purchase outside the storefronts the backend allows (#7791) via Antonio Pallares (@ajpallares)
-* Chore(deps): Bump fastlane-plugin-sentry from 2.7.0 to 2.8.0 (#7850) via dependabot[bot] (@dependabot[bot])
-* Chore(deps): Bump rubyzip from 2.4.1 to 3.4.0 in /Tests/InstallationTests/CocoapodsInstallation (#7845) via dependabot[bot] (@dependabot[bot])
-* feat(remote-config): add SDK settings config provider (#7813) via Rick (@rickvdl)
-* Give web checkout requests their own backend lane (#7774) via Antonio Pallares (@ajpallares)
-* feat(remote-config): prewarm checkpoint rules and audiences (#7781) via Rick (@rickvdl)
-* Tell the customer when they already own what the in-app checkout would sell (#7756) via Antonio Pallares (@ajpallares)
-* Let a Test Store key run the in-app web checkout and Apple's flow (#7750) via Antonio Pallares (@ajpallares)
-* Present the in-app web checkout when external purchases do not apply (#7749) via Antonio Pallares (@ajpallares)
+* Improve intro eligibility debug logging (#8104) via Antonio Pallares (@ajpallares)
+* 10 of 10: Verify native and embedded navigation analytics (#8082) via Josh Holtz (@joshdholtz)
+* 9 of 9: Share paywall component traversal (#8080) via Josh Holtz (@joshdholtz)
+* Remove snapshots for iOS versions no longer tested on CI (#8092) via Antonio Pallares (@ajpallares)
+* Run iOS 26 tests on Xcode 26.6 with the iOS 26.2 simulator (#8090) via Antonio Pallares (@ajpallares)
+* Update fallback offerings snapshot for Filipino locale (#8102) via Josh Holtz (@joshdholtz)
+* Revert "Migrate existing anonymous user IDs when logging in" (#8101) via Dave DeLong (@davedelong)

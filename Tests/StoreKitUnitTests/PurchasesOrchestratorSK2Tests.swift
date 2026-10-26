@@ -327,7 +327,6 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         mockTransactionFetcher.stubbedReceipt = receipt
 
         let product = try await fetchSk2Product()
-        self.productsManager.stubbedSk2StoreProductsResult = .success([product])
         let result = try await orchestrator.purchase(
             sk2Product: product,
             package: nil,
@@ -2585,8 +2584,6 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
 
     func verifySyncPurchases(transaction: StoreTransaction) async throws {
         self.mockTransactionFetcher.stubbedFirstVerifiedTransaction = transaction
-        let product = try await self.fetchSk2StoreProduct()
-        self.productsManager.stubbedSk2StoreProductsResult = .success([product])
         self.backend.stubbedPostReceiptResult = .success(mockCustomerInfo)
 
         let customerInfo = try await self.orchestrator.syncPurchases(receiptRefreshPolicy: .always,
@@ -2637,8 +2634,6 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
             originalApplicationVersion: "123_original_application_version",
             originalPurchaseDate: Date(timeIntervalSince1970: 123))
         self.mockTransactionFetcher.stubbedReceipt = receipt
-        let product = try await self.fetchSk2StoreProduct()
-        self.productsManager.stubbedSk2StoreProductsResult = .success([product])
         self.backend.stubbedPostReceiptResult = .success(mockCustomerInfo)
 
         let customerInfo = try await self.orchestrator.syncPurchases(receiptRefreshPolicy: .always,
