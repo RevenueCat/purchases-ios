@@ -107,6 +107,10 @@ private struct WorkflowNavigateBackHandlerKey: EnvironmentKey {
     static let defaultValue: (() -> Void)? = nil
 }
 
+private struct WorkflowPostPurchaseDismissalKey: EnvironmentKey {
+    static let defaultValue: (() -> Void)? = nil
+}
+
 private struct WorkflowDismissalObserverKey: EnvironmentKey {
     static let defaultValue: ((WorkflowDismissalReason) -> Void)? = nil
 }
@@ -168,6 +172,13 @@ extension EnvironmentValues {
     var workflowNavigateBackHandler: (() -> Void)? {
         get { self[WorkflowNavigateBackHandlerKey.self] }
         set { self[WorkflowNavigateBackHandlerKey.self] = newValue }
+    }
+
+    /// Dismisses the workflow once a purchase completes, letting an unresolved checkpoint gate keep it open.
+    /// Pages fall back to their regular dismissal when no workflow provides this.
+    var workflowPostPurchaseDismissal: (() -> Void)? {
+        get { self[WorkflowPostPurchaseDismissalKey.self] }
+        set { self[WorkflowPostPurchaseDismissalKey.self] = newValue }
     }
 
     /// Notifies the host that the workflow's dismissal reason differs from the default `.close`.

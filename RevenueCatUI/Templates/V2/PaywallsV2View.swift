@@ -51,6 +51,9 @@ struct PaywallsV2View: View {
     @Environment(\.workflowPackageContext)
     private var workflowPackageContext
 
+    @Environment(\.workflowPostPurchaseDismissal)
+    private var workflowPostPurchaseDismissal
+
     @Environment(\.paywallInteractionNotifier)
     private var paywallInteractionNotifier
 
@@ -599,7 +602,7 @@ struct PaywallsV2View: View {
         DispatchQueue.main.async {
             guard self.purchaseHandler.hasPurchasedInSession else { return }
 
-            self.onDismiss()
+            (self.workflowPostPurchaseDismissal ?? self.onDismiss)()
         }
     }
 
