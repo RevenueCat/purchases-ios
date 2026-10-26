@@ -75,6 +75,7 @@ class ViewModelFactoryTests: TestCase {
             ]))], false, nil),
             ([.stack(.init(visible: false, components: [text])), .stack(.init(components: [hero]))], true, 1),
             ([.stack(.init(visible: false, components: [hero])), .stack(.init(components: [hero]))], true, 1),
+            ([.stack(.init(visible: false, components: [hero])), .stack(.init(components: [text]))], false, nil),
             ([.stack(.init(visible: false, components: [text])), .stack(.init(
                 components: [.stack(.init(components: [hero])), text], dimension: .zlayer(.top)
             ))], false, nil),

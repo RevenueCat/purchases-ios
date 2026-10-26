@@ -57,7 +57,6 @@ class StackComponentViewModel: OfferEligibilityVisibilityDependency {
                 isStackVisible: { !promotingHero || isStackVisible($0) },
                 requireDirectZLayerMedia: promotingHero
             )
-            if media == nil && index > 0 { return self.firstVisibleMedia(isStackVisible: { _ in true }) }
             return media
         }
         return directMediaType(at: index)
