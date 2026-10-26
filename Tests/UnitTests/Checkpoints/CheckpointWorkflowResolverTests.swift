@@ -838,6 +838,26 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
         )
     }
 
+    func testInvalidGatingOnTerminalOfferingDoesNotFallThroughToALaterRule() async throws {
+        self.stubTwoRules(secondWorkflowID: "wf_later")
+        self.stubOfferingWorkflow(
+            offeringID: self.offeringID,
+            gating: .object(["type": .string("hard")])
+        )
+        var offeringsFetched = 0
+        let resolver = self.makeResolver(offeringsProvider: {
+            offeringsFetched += 1
+            return self.offerings
+        })
+
+        let resolved = try await resolver.resolve(identifier: self.checkpointIdentifier, params: self.params)
+
+        XCTAssertEqual(Self.noActionReason(resolved.resolution), .configurationUnavailable)
+        XCTAssertNil(resolved.checkpointRuleID)
+        XCTAssertEqual(offeringsFetched, 0)
+        XCTAssertFalse(self.workflowsProvider.invokedGetWorkflowParameters.contains("wf_later"))
+    }
+
     /// The audience gate runs before the workflow body decides between presenting and handing back an
     /// offering, so a terminal-offering rule nobody matches must not hand back its offering either.
     func testAudienceGateAppliesToTerminalOfferingRulesToo() async throws {
@@ -959,7 +979,8 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
         extraSteps: [String: WorkflowStep] = [:],
         screenID: String? = nil,
         triggers: [WorkflowTrigger] = [],
-        triggerActions: [String: WorkflowTriggerAction] = [:]
+        triggerActions: [String: WorkflowTriggerAction] = [:],
+        gating: AnyDecodable? = nil
     ) {
         let stepID = "step_1"
         var step = WorkflowStep(
@@ -972,6 +993,7 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
         if let offeringID {
             step.paramValues = ["offering": .object(["identifier": .string(offeringID)])]
         }
+        step.paramValues["gating"] = gating
 
         var steps = extraSteps
         steps[stepID] = step
