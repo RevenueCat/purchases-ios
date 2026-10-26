@@ -94,6 +94,23 @@ struct StackComponentView: View {
         ).visible
     }
 
+    private func resolvedMedia(
+        _ viewModel: PaywallComponentViewModel
+    ) -> StackComponentViewModel.ResolvedMedia? {
+        viewModel.resolvedMedia(
+            state: self.componentViewState,
+            condition: self.screenCondition,
+            isEligibleForIntroOffer: self.introOfferEligibilityContext.isEligible(package: self.packageContext.package),
+            isEligibleForPromoOffer: self.paywallPromoOfferCache.isMostLikelyEligible(for: self.packageContext.package),
+            selectedPackageId: self.selectedPackageId,
+            customVariables: self.customVariables,
+            stateValues: self.paywallStateValues,
+            stateDefaults: self.paywallStateDefaults,
+            windowSize: self.paywallWindowSize,
+            colorScheme: self.colorScheme
+        )
+    }
+
     init(
         viewModel: StackComponentViewModel,
         isScrollableByDefault: Bool = false,
@@ -235,7 +252,9 @@ struct StackComponentView: View {
                         componentViewModels: self.viewModel.viewModels,
                         onDismiss: self.onDismiss,
                         safeAreaExemptChildIndex: self.viewModel.safeAreaExemptChildIndex(
-                            isStackVisible: { !self.resolveHeroFromVisibleStacks || self.isStackVisible($0) }
+                            dimension: style.dimension,
+                            isStackVisible: { !self.resolveHeroFromVisibleStacks || self.isStackVisible($0) },
+                            resolvedMedia: self.resolvedMedia
                         )
                     )
                 }

@@ -31,6 +31,11 @@ struct BadgeContents {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 class StackComponentViewModel: OfferEligibilityVisibilityDependency {
 
+    struct ResolvedMedia {
+        let visible: Bool
+        let type: ViewModelFactory.FirstMediaType?
+    }
+
     let component: PaywallComponent.StackComponent
     let uiConfigProvider: UIConfigProvider
     private let presentedOverrides: PresentedOverrides<PresentedStackPartial>?
@@ -42,10 +47,13 @@ class StackComponentViewModel: OfferEligibilityVisibilityDependency {
 
     /// Skip hidden root siblings without changing visibility inside nested hero containers.
     func firstVisibleMedia(
-        isStackVisible: (StackComponentViewModel) -> Bool, requireDirectZLayerMedia: Bool = false
+        isStackVisible: (StackComponentViewModel) -> Bool,
+        resolvedMedia: (PaywallComponentViewModel) -> ResolvedMedia?,
+        requireDirectZLayerMedia: Bool = false
     ) -> ViewModelFactory.FirstMediaType? {
         let firstIndex = requireDirectZLayerMedia
-            ? self.viewModels.indices.first : firstVisibleChildIndex(isStackVisible: isStackVisible)
+            ? self.viewModels.indices.first
+            : firstVisibleChildIndex(isStackVisible: isStackVisible, resolvedMedia: resolvedMedia)
         guard isStackVisible(self), let index = firstIndex else {
             return nil
         }
@@ -55,50 +63,55 @@ class StackComponentViewModel: OfferEligibilityVisibilityDependency {
             let promotingHero = requireDirectZLayerMedia || index > 0
             let media = stack.firstVisibleMedia(
                 isStackVisible: { !promotingHero || isStackVisible($0) },
+                resolvedMedia: resolvedMedia,
                 requireDirectZLayerMedia: promotingHero
             )
             return media
         }
-        return directMediaType(at: index)
+        return mediaType(at: index, resolvedMedia: resolvedMedia)
     }
 
-    func safeAreaExemptChildIndex(isStackVisible: (StackComponentViewModel) -> Bool) -> Int? {
-        guard case .zlayer = self.component.dimension,
-              let index = firstVisibleChildIndex(isStackVisible: isStackVisible) else {
+    func safeAreaExemptChildIndex(
+        dimension: PaywallComponent.Dimension,
+        isStackVisible: (StackComponentViewModel) -> Bool,
+        resolvedMedia: (PaywallComponentViewModel) -> ResolvedMedia?
+    ) -> Int? {
+        guard case .zlayer = dimension,
+              let index = firstVisibleChildIndex(
+                  isStackVisible: isStackVisible,
+                  resolvedMedia: resolvedMedia
+              ) else {
             return nil
         }
-        if directMediaType(at: index) != nil { return index }
+        if mediaType(at: index, resolvedMedia: resolvedMedia) != nil { return index }
         if index > 0, case .stack(let stack) = self.viewModels[index],
-           stack.firstVisibleMedia(isStackVisible: isStackVisible, requireDirectZLayerMedia: true) != nil {
+           stack.firstVisibleMedia(
+               isStackVisible: isStackVisible,
+               resolvedMedia: resolvedMedia,
+               requireDirectZLayerMedia: true
+           ) != nil {
             return index
         }
         return nil
     }
 
-    private func firstVisibleChildIndex(isStackVisible: (StackComponentViewModel) -> Bool) -> Int? {
+    private func firstVisibleChildIndex(
+        isStackVisible: (StackComponentViewModel) -> Bool,
+        resolvedMedia: (PaywallComponentViewModel) -> ResolvedMedia?
+    ) -> Int? {
         self.viewModels.firstIndex {
             if case .stack(let stack) = $0 { return isStackVisible(stack) }
+            if let media = resolvedMedia($0) { return media.visible }
             return true
         }
     }
 
-    private func directMediaType(at index: Int) -> ViewModelFactory.FirstMediaType? {
-        let components = self.component.components.filter {
-            if case .fallbackHeader = $0 { return false }
-            return true
-        }
-        // Copies used by tabs can replace the child view models without changing the component.
-        guard components.indices.contains(index) else { return nil }
-        switch (self.viewModels[index], components[index]) {
-        case (.image, .image(let image)):
-            return image.size.width.isFill ? .image : nil
-        case (.video, .video(let video)):
-            return video.size.width.isFill ? .video : nil
-        case (.webView, .webView(let webView)):
-            return webView.size.width.isFill ? .webView : nil
-        default:
-            return nil
-        }
+    private func mediaType(
+        at index: Int,
+        resolvedMedia: (PaywallComponentViewModel) -> ResolvedMedia?
+    ) -> ViewModelFactory.FirstMediaType? {
+        guard let media = resolvedMedia(self.viewModels[index]), media.visible else { return nil }
+        return media.type
     }
 
     /// Only undecorated, unconditional wrappers can disappear with their promoted buttons.
@@ -281,6 +294,77 @@ class StackComponentViewModel: OfferEligibilityVisibilityDependency {
             with: self.presentedOverrides
         )
         return partial?.visible ?? self.component.visible ?? true
+    }
+
+}
+
+extension PaywallComponentViewModel {
+
+    // swiftlint:disable:next function_parameter_count
+    func resolvedMedia(
+        state: ComponentViewState,
+        condition: ScreenCondition,
+        isEligibleForIntroOffer: Bool,
+        isEligibleForPromoOffer: Bool,
+        selectedPackageId: String?,
+        customVariables: [String: CustomVariableValue],
+        stateValues: [String: PaywallComponent.ConditionValue],
+        stateDefaults: [String: PaywallComponent.ConditionValue],
+        windowSize: CGSize?,
+        colorScheme: ColorScheme
+    ) -> StackComponentViewModel.ResolvedMedia? {
+        let media: (
+            visible: Bool,
+            width: PaywallComponent.SizeConstraint,
+            type: ViewModelFactory.FirstMediaType
+        )
+        switch self {
+        case .image(let viewModel):
+            let style = viewModel.styles(
+                state: state,
+                condition: condition,
+                isEligibleForIntroOffer: isEligibleForIntroOffer,
+                isEligibleForPromoOffer: isEligibleForPromoOffer,
+                selectedPackageId: selectedPackageId,
+                customVariables: customVariables,
+                stateValues: stateValues,
+                stateDefaults: stateDefaults,
+                windowSize: windowSize,
+                colorScheme: colorScheme
+            )
+            media = (style.visible, style.size.width, .image)
+        case .video(let viewModel):
+            let style = viewModel.styles(
+                state: state,
+                condition: condition,
+                isEligibleForIntroOffer: isEligibleForIntroOffer,
+                isEligibleForPromoOffer: isEligibleForPromoOffer,
+                selectedPackageId: selectedPackageId,
+                customVariables: customVariables,
+                windowSize: windowSize,
+                colorScheme: colorScheme
+            )
+            media = (style.visible, style.size.width, .video)
+        case .webView(let viewModel):
+            let style = viewModel.style(
+                state: state,
+                condition: condition,
+                isEligibleForIntroOffer: isEligibleForIntroOffer,
+                isEligibleForPromoOffer: isEligibleForPromoOffer,
+                selectedPackageId: selectedPackageId,
+                customVariables: customVariables,
+                stateValues: stateValues,
+                stateDefaults: stateDefaults,
+                windowSize: windowSize
+            )
+            media = (style.visible, style.size.width, .webView)
+        default:
+            return nil
+        }
+        return .init(
+            visible: media.visible,
+            type: media.width.isFill ? media.type : nil
+        )
     }
 
 }

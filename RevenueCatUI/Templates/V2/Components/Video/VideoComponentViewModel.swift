@@ -78,7 +78,6 @@ class VideoComponentViewModel {
         self.presentedOverrides = presentedOverrides
     }
 
-    @ViewBuilder
     // swiftlint:disable:next function_parameter_count
     func styles(
         state: ComponentViewState,
@@ -88,9 +87,8 @@ class VideoComponentViewModel {
         selectedPackageId: String?,
         customVariables: [String: CustomVariableValue],
         windowSize: CGSize? = nil,
-        colorScheme: ColorScheme,
-        @ViewBuilder apply: @escaping (VideoComponentStyle) -> some View
-    ) -> some View {
+        colorScheme: ColorScheme
+    ) -> VideoComponentStyle {
         let conditionContext = self.uiConfigProvider.conditionContext(
             selectedPackageId: selectedPackageId,
             customVariables: customVariables,
@@ -107,7 +105,7 @@ class VideoComponentViewModel {
         let partial = localizedPartial?.partial
         let source = localizedPartial?.videoInfo ?? self.videoInfo
 
-        let style = VideoComponentStyle(
+        return VideoComponentStyle(
             visible: partial?.visible ?? self.component.visible ?? true,
             showControls: partial?.showControls ?? self.component.showControls,
             autoPlay: partial?.autoPlay ?? self.component.autoPlay,
@@ -136,7 +134,31 @@ class VideoComponentViewModel {
             uiConfigProvider: self.uiConfigProvider,
             colorScheme: colorScheme
         )
+    }
 
+    @ViewBuilder
+    // swiftlint:disable:next function_parameter_count
+    func styles(
+        state: ComponentViewState,
+        condition: ScreenCondition,
+        isEligibleForIntroOffer: Bool,
+        isEligibleForPromoOffer: Bool,
+        selectedPackageId: String?,
+        customVariables: [String: CustomVariableValue],
+        windowSize: CGSize? = nil,
+        colorScheme: ColorScheme,
+        @ViewBuilder apply: @escaping (VideoComponentStyle) -> some View
+    ) -> some View {
+        let style = self.styles(
+            state: state,
+            condition: condition,
+            isEligibleForIntroOffer: isEligibleForIntroOffer,
+            isEligibleForPromoOffer: isEligibleForPromoOffer,
+            selectedPackageId: selectedPackageId,
+            customVariables: customVariables,
+            windowSize: windowSize,
+            colorScheme: colorScheme
+        )
         apply(style)
     }
 }

@@ -53,8 +53,21 @@ class ViewModelFactoryTests: TestCase {
                     windowSize: CGSize(width: CGFloat(width), height: 700), colorScheme: .light
                 ).visible
             }
-            XCTAssertEqual(stack.firstVisibleMedia(isStackVisible: visible) != nil, width < 800)
-            XCTAssertEqual(stack.safeAreaExemptChildIndex(isStackVisible: visible), width < 800 ? 1 : nil)
+            let resolvedMedia: (PaywallComponentViewModel) -> StackComponentViewModel.ResolvedMedia? = {
+                self.resolvedMedia(for: $0, windowWidth: CGFloat(width))
+            }
+            XCTAssertEqual(
+                stack.firstVisibleMedia(isStackVisible: visible, resolvedMedia: resolvedMedia) != nil,
+                width < 800
+            )
+            XCTAssertEqual(
+                stack.safeAreaExemptChildIndex(
+                    dimension: stack.component.dimension,
+                    isStackVisible: visible,
+                    resolvedMedia: resolvedMedia
+                ),
+                width < 800 ? 1 : nil
+            )
         }
     }
 
@@ -98,9 +111,99 @@ class ViewModelFactoryTests: TestCase {
                     customVariables: [:], colorScheme: .light
                 ).visible
             }
-            XCTAssertEqual(stack.firstVisibleMedia(isStackVisible: visible) != nil, expectsMedia)
-            XCTAssertEqual(stack.safeAreaExemptChildIndex(isStackVisible: visible), directIndex)
+            let resolvedMedia: (PaywallComponentViewModel) -> StackComponentViewModel.ResolvedMedia? = {
+                self.resolvedMedia(for: $0)
+            }
+            XCTAssertEqual(
+                stack.firstVisibleMedia(isStackVisible: visible, resolvedMedia: resolvedMedia) != nil,
+                expectsMedia
+            )
+            XCTAssertEqual(
+                stack.safeAreaExemptChildIndex(
+                    dimension: stack.component.dimension,
+                    isStackVisible: visible,
+                    resolvedMedia: resolvedMedia
+                ),
+                directIndex
+            )
         }
+    }
+
+    @MainActor
+    func testHeroDetectionUsesRenderedMediaVisibilityAndSize() throws {
+        func image(
+            visible: Bool? = nil,
+            overrides: PaywallComponent.ComponentOverrides<PaywallComponent.PartialImageComponent>? = nil
+        ) -> PaywallComponent {
+            .image(.init(
+                visible: visible,
+                source: .init(light: .init(
+                    width: 400, height: 240,
+                    original: Self.sampleURL, heic: Self.sampleURL, heicLowRes: Self.sampleURL
+                )),
+                size: .init(width: .fill, height: .fixed(240)),
+                overrides: overrides
+            ))
+        }
+        let cases: [([PaywallComponent], CGFloat, Bool)] = [
+            ([image(visible: false)], 400, false),
+            ([image(visible: false), image()], 400, true),
+            ([image(overrides: [.init(
+                extendedConditions: [.windowWidth(operator: .greaterThanOrEqual, value: 800)],
+                properties: .init(size: .init(width: .fixed(200), height: .fixed(240)))
+            )])], 900, false),
+            ([image()], 400, true)
+        ]
+        let factory = ViewModelFactory()
+        for (components, width, expected) in cases {
+            let stack = try factory.toStackViewModel(
+                component: .init(components: components),
+                packageValidator: factory.packageValidator,
+                purchaseButtonCollector: nil,
+                localizationProvider: .init(locale: .current, localizedStrings: [:]),
+                uiConfigProvider: try Self.createUIConfigProvider(),
+                offering: Self.mockOffering,
+                colorScheme: .light
+            )
+            XCTAssertEqual(
+                stack.firstVisibleMedia(
+                    isStackVisible: { _ in true },
+                    resolvedMedia: { self.resolvedMedia(for: $0, windowWidth: width) }
+                ) != nil,
+                expected
+            )
+        }
+    }
+
+    @MainActor
+    func testSafeAreaExemptChildUsesRenderedDimension() throws {
+        let hero = PaywallComponent.webView(Self.webViewComponent(width: .fill))
+        let factory = ViewModelFactory()
+        let stack = try factory.toStackViewModel(
+            component: .init(components: [hero], dimension: .vertical(.center, .start)),
+            packageValidator: factory.packageValidator,
+            purchaseButtonCollector: nil,
+            localizationProvider: .init(locale: .current, localizedStrings: [:]),
+            uiConfigProvider: try Self.createUIConfigProvider(),
+            offering: Self.mockOffering,
+            colorScheme: .light
+        )
+        let resolvedMedia: (PaywallComponentViewModel) -> StackComponentViewModel.ResolvedMedia? = {
+            self.resolvedMedia(for: $0)
+        }
+        XCTAssertEqual(
+            stack.safeAreaExemptChildIndex(
+                dimension: .zlayer(.top),
+                isStackVisible: { _ in true },
+                resolvedMedia: resolvedMedia
+            ),
+            0
+        )
+        XCTAssertNil(stack.safeAreaExemptChildIndex(
+            dimension: stack.component.dimension,
+            isStackVisible: { _ in true },
+            resolvedMedia: resolvedMedia
+        ))
     }
 
     // MARK: - Unsupported Condition Tests
@@ -915,7 +1018,11 @@ class ViewModelFactoryTests: TestCase {
             colorScheme: .light
         )
 
-        expect(viewModel.safeAreaExemptChildIndex(isStackVisible: { _ in true }) != nil).to(beTrue())
+        expect(viewModel.safeAreaExemptChildIndex(
+            dimension: viewModel.component.dimension,
+            isStackVisible: { _ in true },
+            resolvedMedia: { self.resolvedMedia(for: $0) }
+        ) != nil).to(beTrue())
     }
 
     @MainActor
@@ -941,7 +1048,11 @@ class ViewModelFactoryTests: TestCase {
             colorScheme: .light
         )
 
-        expect(viewModel.safeAreaExemptChildIndex(isStackVisible: { _ in true }) != nil).to(beFalse())
+        expect(viewModel.safeAreaExemptChildIndex(
+            dimension: viewModel.component.dimension,
+            isStackVisible: { _ in true },
+            resolvedMedia: { self.resolvedMedia(for: $0) }
+        ) != nil).to(beFalse())
     }
 
     // MARK: - Layout Tests
@@ -1125,6 +1236,24 @@ class ViewModelFactoryTests: TestCase {
             protocolVersion: PaywallComponent.WebViewComponent.supportedProtocolVersion,
             url: "https://revenuecat.com",
             size: .init(width: width, height: .fit(nil))
+        )
+    }
+
+    private func resolvedMedia(
+        for viewModel: PaywallComponentViewModel,
+        windowWidth: CGFloat? = nil
+    ) -> StackComponentViewModel.ResolvedMedia? {
+        viewModel.resolvedMedia(
+            state: .default,
+            condition: .compact,
+            isEligibleForIntroOffer: false,
+            isEligibleForPromoOffer: false,
+            selectedPackageId: nil,
+            customVariables: [:],
+            stateValues: [:],
+            stateDefaults: [:],
+            windowSize: windowWidth.map { CGSize(width: $0, height: 700) },
+            colorScheme: .light
         )
     }
 

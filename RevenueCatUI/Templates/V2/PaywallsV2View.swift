@@ -751,21 +751,48 @@ struct LoadedPaywallsV2View: View {
     @Environment(\.paywallStateValues) private var paywallStateValues
     @Environment(\.paywallStateDefaults) private var paywallStateDefaults
 
+    private func resolvedMedia(
+        _ viewModel: PaywallComponentViewModel
+    ) -> StackComponentViewModel.ResolvedMedia? {
+        viewModel.resolvedMedia(
+            state: self.componentViewState,
+            condition: self.screenCondition,
+            isEligibleForIntroOffer: self.introOfferEligibilityContext.isEligible(
+                package: self.selectedPackageContext.package
+            ),
+            isEligibleForPromoOffer: self.paywallPromoOfferCache.isMostLikelyEligible(
+                for: self.selectedPackageContext.package
+            ),
+            selectedPackageId: self.selectedPackageContext.package?.identifier,
+            customVariables: self.customVariables,
+            stateValues: self.paywallStateValues,
+            stateDefaults: self.paywallStateDefaults,
+            windowSize: self.paywallWindowSize,
+            colorScheme: self.colorScheme
+        )
+    }
+
     private var firstVisibleRootIsMedia: Bool {
-        paywallState.rootViewModel.stackViewModel.firstVisibleMedia { stack in
-            stack.styles(
-                state: componentViewState, condition: screenCondition,
-                isEligibleForIntroOffer: introOfferEligibilityContext.isEligible(
-                    package: selectedPackageContext.package
-                ),
-                isEligibleForPromoOffer: paywallPromoOfferCache.isMostLikelyEligible(
-                    for: selectedPackageContext.package
-                ),
-                selectedPackageId: selectedPackageContext.package?.identifier, customVariables: customVariables,
-                stateValues: paywallStateValues, stateDefaults: paywallStateDefaults,
-                windowSize: paywallWindowSize, colorScheme: colorScheme
-            ).visible
-        } != nil
+        paywallState.rootViewModel.stackViewModel.firstVisibleMedia(
+            isStackVisible: { stack in
+                stack.styles(
+                    state: componentViewState, condition: screenCondition,
+                    isEligibleForIntroOffer: introOfferEligibilityContext.isEligible(
+                        package: selectedPackageContext.package
+                    ),
+                    isEligibleForPromoOffer: paywallPromoOfferCache.isMostLikelyEligible(
+                        for: selectedPackageContext.package
+                    ),
+                    selectedPackageId: selectedPackageContext.package?.identifier,
+                    customVariables: customVariables,
+                    stateValues: paywallStateValues,
+                    stateDefaults: paywallStateDefaults,
+                    windowSize: paywallWindowSize,
+                    colorScheme: colorScheme
+                ).visible
+            },
+            resolvedMedia: self.resolvedMedia
+        ) != nil
     }
 
     var body: some View {
