@@ -371,8 +371,8 @@ import Foundation
         /// Sets the initial task priority for automatic introductory-offer eligibility warm-up.
         ///
         /// Defaults to `.background`. Apps that present a paywall immediately after configuration can
-        /// choose `.userInitiated` to give this work a higher initial priority. This is a scheduling
-        /// preference and does not guarantee a particular response time from StoreKit.
+        /// choose a higher initial priority for this work. This is a scheduling preference and does
+        /// not guarantee a particular response time from StoreKit.
         ///
         /// This setting only affects eligibility warm-up. Asset and font warm-ups remain at `.background`.
         ///
