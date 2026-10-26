@@ -197,6 +197,7 @@ class BasePurchasesTests: TestCase {
     var mockPurchasedProductsFetcher: MockPurchasedProductsFetcher!
     var mockTransactionFetcher: MockStoreKit2TransactionFetcher!
     var purchasesOrchestrator: PurchasesOrchestrator!
+    var groupEligibilityCache: SubscriptionGroupIntroEligibilityCache!
     var trialOrIntroPriceEligibilityChecker: MockTrialOrIntroPriceEligibilityChecker!
     var cachingTrialOrIntroPriceEligibilityChecker: MockCachingTrialOrIntroPriceEligibilityChecker!
     var mockManageSubsHelper: MockManageSubscriptionsHelper!
@@ -314,6 +315,7 @@ class BasePurchasesTests: TestCase {
             checkpointResolver: checkpointResolver,
             dateProvider: dateProvider
         )
+        self.groupEligibilityCache = .init()
         self.trialOrIntroPriceEligibilityChecker = MockTrialOrIntroPriceEligibilityChecker(
             systemInfo: self.systemInfo,
             receiptFetcher: self.receiptFetcher,
@@ -322,7 +324,8 @@ class BasePurchasesTests: TestCase {
             currentUserProvider: self.identityManager,
             operationDispatcher: self.mockOperationDispatcher,
             productsManager: self.mockProductsManager,
-            diagnosticsTracker: self.diagnosticsTracker
+            diagnosticsTracker: self.diagnosticsTracker,
+            groupEligibilityCache: self.groupEligibilityCache
         )
         self.cachingTrialOrIntroPriceEligibilityChecker = .init(checker: self.trialOrIntroPriceEligibilityChecker)
         let healthManager = SDKHealthManager(
