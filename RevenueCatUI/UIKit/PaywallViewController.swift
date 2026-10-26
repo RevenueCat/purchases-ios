@@ -247,7 +247,8 @@ public class PaywallViewController: UIViewController {
         performPurchase: PerformPurchase? = nil,
         performRestore: PerformRestore? = nil,
         purchaseHandler: PurchaseHandler? = nil,
-        workflowPresentationErrorHandler: WorkflowPresentationErrorHandler? = nil
+        workflowPresentationErrorHandler: WorkflowPresentationErrorHandler? = nil,
+        checkpointGateContext: CheckpointGateContext? = nil
     ) {
         self.init(
             content: .offering(workflowContext.initialOffering),
@@ -265,6 +266,7 @@ public class PaywallViewController: UIViewController {
         configuration.injectedWorkflowContext = workflowContext
         configuration.displaysPurchaseAndRestoreErrors = false
         configuration.workflowPresentationErrorHandler = workflowPresentationErrorHandler
+        configuration.checkpointGateContext = checkpointGateContext
         self.configuration = configuration
     }
     #endif

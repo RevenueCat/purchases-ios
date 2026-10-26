@@ -116,6 +116,15 @@ public struct ObtainedProduct: Hashable, Sendable {
 
 }
 
+/// The customer a checkpoint run is measured against, read before anything is presented.
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+struct CheckpointBaseline {
+
+    let appUserID: String
+    let customerInfo: CustomerInfo
+
+}
+
 extension CustomerInfo {
 
     var activeEntitlementIdentifiers: Set<String> {
