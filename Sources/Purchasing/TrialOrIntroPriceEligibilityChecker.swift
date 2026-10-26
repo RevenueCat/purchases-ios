@@ -53,23 +53,7 @@ class TrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCheckerTy
         self.groupEligibilityCache.clearCache()
     }
 
-    func checkEligibility(productIdentifiers: Set<String>,
-                          completion: @escaping ReceiveIntroEligibilityBlock) {
-        if let result = self.immediateEligibility(for: productIdentifiers) {
-            completion(result)
-            return
-        }
-
-        // Keep the completion API on the main actor; async callers await the work directly.
-        let deliver: ReceiveIntroEligibilityBlock = { result in
-            self.deliverEligibility(result, completion: completion)
-        }
-        Async.call(with: deliver) {
-            await self.checkEligibility(productIdentifiers: productIdentifiers)
-        }
-    }
-
-    /// Shared by the raw checker and caching wrapper after their asynchronous eligibility work completes.
+    /// Delivers the caching wrapper's results after its asynchronous eligibility work completes.
     /// Start timing before the main-actor hop so callback delivery logs exclude the eligibility check itself.
     func deliverEligibility(_ result: [String: IntroEligibility], completion: @escaping ReceiveIntroEligibilityBlock) {
         let logDelivery = IntroEligibilityLog.deliveryLogger(clock: self.systemInfo.clock)

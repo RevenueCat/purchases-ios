@@ -43,26 +43,18 @@ class MockTrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCheck
     var stubbedCheckTrialOrIntroPriceEligibilityFromOptimalStoreReceiveEligibilityResult: [String: IntroEligibility] = [:]
     private let checkEligibilityLock = Lock()
 
-    override func checkEligibility(productIdentifiers: Set<String>,
-                                   completion: @escaping ReceiveIntroEligibilityBlock) {
-        let result = self.checkEligibilityLock.perform {
-            invokedCheckTrialOrIntroPriceEligibilityFromOptimalStore = true
-            invokedCheckTrialOrIntroPriceEligibilityFromOptimalStoreCount += 1
-            invokedCheckTrialOrIntroPriceEligibilityFromOptimalStoreParameters = productIdentifiers
-            invokedCheckTrialOrIntroPriceEligibilityFromOptimalStoreParametersList.append(Set(productIdentifiers))
-            return stubbedCheckTrialOrIntroPriceEligibilityFromOptimalStoreReceiveEligibilityResult
-        }
-        completion(result)
-    }
-
     var asyncCheckEligibility: (@Sendable (Set<String>) async -> [String: IntroEligibility])?
 
     override func checkEligibility(productIdentifiers: Set<String>) async -> [String: IntroEligibility] {
         if let check = self.asyncCheckEligibility {
             return await check(productIdentifiers)
         }
-        return await Async.call { completion in
-            self.checkEligibility(productIdentifiers: productIdentifiers, completion: completion)
+        return self.checkEligibilityLock.perform {
+            invokedCheckTrialOrIntroPriceEligibilityFromOptimalStore = true
+            invokedCheckTrialOrIntroPriceEligibilityFromOptimalStoreCount += 1
+            invokedCheckTrialOrIntroPriceEligibilityFromOptimalStoreParameters = productIdentifiers
+            invokedCheckTrialOrIntroPriceEligibilityFromOptimalStoreParametersList.append(Set(productIdentifiers))
+            return stubbedCheckTrialOrIntroPriceEligibilityFromOptimalStoreReceiveEligibilityResult
         }
     }
 

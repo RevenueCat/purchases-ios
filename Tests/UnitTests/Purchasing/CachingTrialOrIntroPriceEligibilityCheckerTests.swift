@@ -447,12 +447,13 @@ private final class DelayedTrialOrIntroPriceEligibilityChecker: MockTrialOrIntro
     }
 
     override func checkEligibility(
-        productIdentifiers: Set<String>,
-        completion: @escaping ReceiveIntroEligibilityBlock
-    ) {
-        self.state.modify {
-            $0.invocations.append(productIdentifiers)
-            $0.completions[productIdentifiers, default: []].append(completion)
+        productIdentifiers: Set<String>
+    ) async -> [String: IntroEligibility] {
+        return await withCheckedContinuation { continuation in
+            self.state.modify {
+                $0.invocations.append(productIdentifiers)
+                $0.completions[productIdentifiers, default: []].append { continuation.resume(returning: $0) }
+            }
         }
     }
 
