@@ -60,24 +60,11 @@ class StackComponentViewModel: OfferEligibilityVisibilityDependency {
         return identifiers
     }
 
-    /// Whether the first child is a full-width image, video, or web view.
-    /// Used by ZStack rendering to push non-hero children below the safe area.
-    var firstChildIsFullWidthMedia: Bool {
-        guard case .zlayer = component.dimension else { return false }
-        guard let first = component.components.first(where: {
-            if case .fallbackHeader = $0 { return false }
-            return true
-        }) else { return false }
-        switch first {
-        case .image(let image):
-            return image.size.width.isFill
-        case .video(let video):
-            return video.size.width.isFill
-        case .webView(let webView):
-            return webView.size.width.isFill
-        default:
-            return false
-        }
+    /// Whether this is a ZStack on the path to a hero that bleeds into the top safe area.
+    /// Its first child contains the hero, so the remaining children are overlays to push below the safe area.
+    var pushesNonFirstChildrenBelowSafeArea: Bool {
+        guard case .zlayer = self.component.dimension else { return false }
+        return self.isOnHeroPath
     }
 
     /// Whether this stack renders anything a screen reader can announce, at any depth.
@@ -112,19 +99,22 @@ class StackComponentViewModel: OfferEligibilityVisibilityDependency {
     }
 
     private let discardRules: Bool
+    private let isOnHeroPath: Bool
 
     init(
         component: PaywallComponent.StackComponent,
         viewModels: [PaywallComponentViewModel],
         badgeViewModels: [BadgeContents],
         uiConfigProvider: UIConfigProvider,
-        discardRules: Bool = false
+        discardRules: Bool = false,
+        isOnHeroPath: Bool
     ) {
         self.component = component
         self.viewModels = viewModels
         self.uiConfigProvider = uiConfigProvider
         self.badgeViewModels = badgeViewModels
         self.discardRules = discardRules
+        self.isOnHeroPath = isOnHeroPath
         let presentedOverrides = component.overrides?.toPresentedOverrides(discardRules: discardRules)
         self.presentedOverrides = presentedOverrides
         self.dependsOnOfferEligibility = presentedOverrides?.contains(where: \.dependsOnOfferEligibility) ?? false
@@ -136,7 +126,8 @@ class StackComponentViewModel: OfferEligibilityVisibilityDependency {
             viewModels: newViewModels,
             badgeViewModels: self.badgeViewModels,
             uiConfigProvider: self.uiConfigProvider,
-            discardRules: self.discardRules
+            discardRules: self.discardRules,
+            isOnHeroPath: self.isOnHeroPath
         )
     }
 

@@ -34,6 +34,10 @@ struct ViewModelFactory {
     /// Set when any component in the paywall contains unsupported conditions.
     private(set) var discardRules: Bool = false
 
+    /// Stacks on the path to a hero that bleeds into the top safe area.
+    /// ZStacks among them push their non-first children (the overlays) below the safe area.
+    private var heroPathStacks: Set<ObjectIdentifier> = []
+
     mutating func toRootViewModel(
         componentsConfig: PaywallComponentsData.PaywallComponentsConfig,
         offering: Offering,
@@ -53,6 +57,11 @@ struct ViewModelFactory {
         }
         let rootFirstItemMedia = self.findFirstFullWidthMedia(.stack(componentsConfig.stack))
 
+        // Only an image bleeds into the safe area in the header; other media get the header's top padding.
+        let headerHeroPath = headerFirstItemMedia?.type == .image ? headerFirstItemMedia?.stacks ?? [] : []
+        let rootHeroPath = rootFirstItemMedia?.stacks ?? []
+        self.heroPathStacks = Set((headerHeroPath + rootHeroPath).map(ObjectIdentifier.init))
+
         let headerViewModel = try componentsConfig.header.flatMap {
             let stackViewModel = try toStackViewModel(
                 component: $0.stack,
@@ -67,7 +76,7 @@ struct ViewModelFactory {
             return HeaderComponentViewModel(
                 component: $0,
                 stackViewModel: stackViewModel,
-                firstItemIgnoresSafeArea: headerFirstItemMedia == .image
+                firstItemIgnoresSafeArea: headerFirstItemMedia?.type == .image
             )
         }
 
@@ -590,7 +599,8 @@ struct ViewModelFactory {
             viewModels: viewModels,
             badgeViewModels: badgeViewModels,
             uiConfigProvider: uiConfigProvider,
-            discardRules: discardRules
+            discardRules: discardRules,
+            isOnHeroPath: self.heroPathStacks.contains(ObjectIdentifier(component))
         )
     }
 
@@ -602,24 +612,31 @@ struct ViewModelFactory {
         case webView
     }
 
+    /// The first full-width media found and the stacks drilled through to reach it, outermost first.
+    struct FirstMedia {
+        let type: FirstMediaType
+        let stacks: [PaywallComponent.StackComponent]
+    }
+
     private func findFirstFullWidthMedia(
         _ component: PaywallComponent
-    ) -> FirstMediaType? {
+    ) -> FirstMedia? {
         switch component {
         case .image(let image):
-            return image.size.width.isFill ? .image : nil
+            return image.size.width.isFill ? .init(type: .image, stacks: []) : nil
         case .video(let video):
-            return video.size.width.isFill ? .video : nil
+            return video.size.width.isFill ? .init(type: .video, stacks: []) : nil
         case .webView(let webView):
-            return webView.size.width.isFill ? .webView : nil
+            return webView.size.width.isFill ? .init(type: .webView, stacks: []) : nil
         case .stack(let stack):
             guard let first = stack.components.first(where: {
                 if case .fallbackHeader = $0 { return false }
                 return true
-            }) else {
+            }),
+                  let media = self.findFirstFullWidthMedia(first) else {
                 return nil
             }
-            return self.findFirstFullWidthMedia(first)
+            return .init(type: media.type, stacks: [stack] + media.stacks)
         default:
             return nil
         }

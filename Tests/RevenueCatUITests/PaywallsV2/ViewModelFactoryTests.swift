@@ -811,8 +811,8 @@ class ViewModelFactoryTests: TestCase {
     }
 
     @MainActor
-    func testZLayerFirstChildFullWidthWebViewIsDetectedAsMedia() throws {
-        let stackComponent = PaywallComponent.StackComponent(
+    func testZLayerOnHeroPathWithFullWidthWebViewPushesOverlays() throws {
+        let zStack = PaywallComponent.StackComponent(
             components: [
                 .webView(Self.webViewComponent(width: .fill)),
                 .text(.init(text: "text_lid", color: Self.black))
@@ -820,25 +820,14 @@ class ViewModelFactoryTests: TestCase {
             dimension: .zlayer(.top)
         )
 
-        let factory = ViewModelFactory()
-        let viewModel = try factory.toStackViewModel(
-            component: stackComponent,
-            packageValidator: factory.packageValidator,
-            purchaseButtonCollector: nil,
-            localizationProvider: .init(locale: .current, localizedStrings: [
-                "text_lid": .string("Hello")
-            ]),
-            uiConfigProvider: try Self.createUIConfigProvider(),
-            offering: Self.mockOffering,
-            colorScheme: .light
-        )
+        let root = try Self.makeRootViewModel(stack: zStack)
 
-        expect(viewModel.firstChildIsFullWidthMedia).to(beTrue())
+        expect(root.stackViewModel.pushesNonFirstChildrenBelowSafeArea).to(beTrue())
     }
 
     @MainActor
-    func testZLayerFirstChildNonFullWidthWebViewIsNotDetectedAsMedia() throws {
-        let stackComponent = PaywallComponent.StackComponent(
+    func testZLayerWithNonFullWidthWebViewDoesNotPushOverlays() throws {
+        let zStack = PaywallComponent.StackComponent(
             components: [
                 .webView(Self.webViewComponent(width: .fixed(100))),
                 .text(.init(text: "text_lid", color: Self.black))
@@ -846,20 +835,75 @@ class ViewModelFactoryTests: TestCase {
             dimension: .zlayer(.top)
         )
 
-        let factory = ViewModelFactory()
-        let viewModel = try factory.toStackViewModel(
-            component: stackComponent,
-            packageValidator: factory.packageValidator,
-            purchaseButtonCollector: nil,
-            localizationProvider: .init(locale: .current, localizedStrings: [
-                "text_lid": .string("Hello")
-            ]),
-            uiConfigProvider: try Self.createUIConfigProvider(),
-            offering: Self.mockOffering,
-            colorScheme: .light
+        let root = try Self.makeRootViewModel(stack: zStack)
+
+        expect(root.stackViewModel.pushesNonFirstChildrenBelowSafeArea).to(beFalse())
+    }
+
+    @MainActor
+    func testZLayerPushesOverlaysWhenHeroIsWrappedInNestedStack() throws {
+        let zStack = PaywallComponent.StackComponent(
+            components: [
+                .stack(.init(components: [.image(Self.fullWidthImageComponent())])),
+                .text(.init(text: "text_lid", color: Self.black))
+            ],
+            dimension: .zlayer(.top)
+        )
+        let rootStack = PaywallComponent.StackComponent(components: [.stack(zStack)])
+
+        let root = try Self.makeRootViewModel(stack: rootStack)
+
+        expect(root.firstItemIsFullWidthMedia).to(beTrue())
+        expect(root.stackViewModel.pushesNonFirstChildrenBelowSafeArea).to(beFalse())
+        let zStackViewModel = try XCTUnwrap(Self.stackViewModel(root.stackViewModel.viewModels.first))
+        expect(zStackViewModel.pushesNonFirstChildrenBelowSafeArea).to(beTrue())
+        let wrapperViewModel = try XCTUnwrap(Self.stackViewModel(zStackViewModel.viewModels.first))
+        expect(wrapperViewModel.pushesNonFirstChildrenBelowSafeArea).to(beFalse())
+    }
+
+    @MainActor
+    func testEveryZLayerOnHeroPathPushesOverlays() throws {
+        let innerZStack = PaywallComponent.StackComponent(
+            components: [
+                .image(Self.fullWidthImageComponent()),
+                .text(.init(text: "text_lid", color: Self.black))
+            ],
+            dimension: .zlayer(.bottom)
+        )
+        let outerZStack = PaywallComponent.StackComponent(
+            components: [
+                .stack(innerZStack),
+                .stack(.init(components: [.text(.init(text: "text_lid", color: Self.black))]))
+            ],
+            dimension: .zlayer(.top)
         )
 
-        expect(viewModel.firstChildIsFullWidthMedia).to(beFalse())
+        let root = try Self.makeRootViewModel(stack: outerZStack)
+
+        expect(root.stackViewModel.pushesNonFirstChildrenBelowSafeArea).to(beTrue())
+        let innerViewModel = try XCTUnwrap(Self.stackViewModel(root.stackViewModel.viewModels.first))
+        expect(innerViewModel.pushesNonFirstChildrenBelowSafeArea).to(beTrue())
+    }
+
+    @MainActor
+    func testZLayerOffHeroPathDoesNotPushOverlays() throws {
+        let zStack = PaywallComponent.StackComponent(
+            components: [
+                .image(Self.fullWidthImageComponent()),
+                .text(.init(text: "text_lid", color: Self.black))
+            ],
+            dimension: .zlayer(.top)
+        )
+        let rootStack = PaywallComponent.StackComponent(components: [
+            .text(.init(text: "text_lid", color: Self.black)),
+            .stack(zStack)
+        ])
+
+        let root = try Self.makeRootViewModel(stack: rootStack)
+
+        expect(root.firstItemIsFullWidthMedia).to(beFalse())
+        let zStackViewModel = try XCTUnwrap(Self.stackViewModel(root.stackViewModel.viewModels.last))
+        expect(zStackViewModel.pushesNonFirstChildrenBelowSafeArea).to(beFalse())
     }
 
     // MARK: - Layout Tests
@@ -1044,6 +1088,42 @@ class ViewModelFactoryTests: TestCase {
             url: "https://revenuecat.com",
             size: .init(width: width, height: .fit(nil))
         )
+    }
+
+    private static func fullWidthImageComponent() -> PaywallComponent.ImageComponent {
+        .init(
+            source: .init(light: .init(
+                width: 1,
+                height: 1,
+                original: Self.sampleURL,
+                heic: Self.sampleURL,
+                heicLowRes: Self.sampleURL
+            )),
+            size: .init(width: .fill, height: .fit(nil))
+        )
+    }
+
+    @MainActor
+    private static func makeRootViewModel(stack: PaywallComponent.StackComponent) throws -> RootViewModel {
+        var factory = ViewModelFactory()
+        return try factory.toRootViewModel(
+            componentsConfig: .init(
+                stack: stack,
+                stickyFooter: nil,
+                background: .color(.init(light: .hex("#FFFFFF")))
+            ),
+            offering: Self.mockOffering,
+            localizationProvider: .init(locale: .current, localizedStrings: [
+                "text_lid": .string("Hello")
+            ]),
+            uiConfigProvider: try Self.createUIConfigProvider(),
+            colorScheme: .light
+        )
+    }
+
+    private static func stackViewModel(_ viewModel: PaywallComponentViewModel?) -> StackComponentViewModel? {
+        guard case let .stack(stackViewModel) = viewModel else { return nil }
+        return stackViewModel
     }
 
     private static func createUIConfigProvider() throws -> UIConfigProvider {

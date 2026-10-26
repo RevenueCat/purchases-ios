@@ -215,7 +215,7 @@ struct StackComponentView: View {
                 ZStack(alignment: alignment.stackAlignment) {
                     ComponentsView(
                         componentViewModels: self.viewModel.viewModels,
-                        pushNonFirstChildrenBelowSafeArea: self.viewModel.firstChildIsFullWidthMedia,
+                        pushNonFirstChildrenBelowSafeArea: self.viewModel.pushesNonFirstChildrenBelowSafeArea,
                         onDismiss: self.onDismiss
                     )
                 }
@@ -1076,7 +1076,8 @@ extension StackComponentViewModel {
             component: component,
             viewModels: viewModels,
             badgeViewModels: badgeViewModelPairs,
-            uiConfigProvider: .init(uiConfig: PreviewUIConfig.make())
+            uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
+            isOnHeroPath: false
         )
     }
 
