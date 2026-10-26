@@ -3509,6 +3509,7 @@
 		FACD00012F61A1230073D2DE /* TextComponentLocalizationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextComponentLocalizationTests.swift; sourceTree = "<group>"; };
 		FACD00032F61A1230073D2DE /* ViewModelFactoryBadgeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModelFactoryBadgeTests.swift; sourceTree = "<group>"; };
 		FACD00052F61A1230073D2DE /* StackBadgeRuleFixtureTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StackBadgeRuleFixtureTests.swift; sourceTree = "<group>"; };
+		F4DB3F247C88408E90DE3237 /* StackComponentViewModel+TestExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "StackComponentViewModel+TestExtensions.swift"; sourceTree = "<group>"; };
 		C3B8FD38DB4F44BFBAF221AD /* StackOverflowOverrideTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StackOverflowOverrideTests.swift; sourceTree = "<group>"; };
 		FACD00042F61A1230073D2DE /* StackBadgeOverrideTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StackBadgeOverrideTests.swift; sourceTree = "<group>"; };
 		FACD00072F61A1230073D2DE /* PackageComponentViewTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PackageComponentViewTests.swift; sourceTree = "<group>"; };
@@ -3789,6 +3790,7 @@
 				FACD00032F61A1230073D2DE /* ViewModelFactoryBadgeTests.swift */,
 				FACD00052F61A1230073D2DE /* StackBadgeRuleFixtureTests.swift */,
 				FACD00042F61A1230073D2DE /* StackBadgeOverrideTests.swift */,
+				F4DB3F247C88408E90DE3237 /* StackComponentViewModel+TestExtensions.swift */,
 				C3B8FD38DB4F44BFBAF221AD /* StackOverflowOverrideTests.swift */,
 				FB5A72012F65F5B9005C64A1 /* ViewModelFactoryTests.swift */,
 				FACD00072F61A1230073D2DE /* PackageComponentViewTests.swift */,
