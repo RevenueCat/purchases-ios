@@ -132,7 +132,7 @@ custom_rules:
       - doccomment
       - doccomment.field
       - string
-    regex: '(?<!@_spi\(Internal\)\s{1,30})\b(?:(?:public|open)\s+(?:(?:convenience|required|override|nonisolated)\s+)*|(?:convenience|required|override)\s+(?:public|open)\s+)init[?!]?\s*(?:<[^(]*>)?\s*\((?!\s*(?:from\s+decoder|rawValue|coder)\b)'
+    regex: '(?<!@_spi\(Internal\)(?:\s{1,30}|@[\w.]{1,40}(?:\([^)]{0,200}\))?){0,10})\b(?:(?:public|open)\s+(?:(?:convenience|required|override|nonisolated)\s+)*|(?:convenience|required|override)\s+(?:public|open)\s+)init[?!]?\s*(?:<[^(]*>)?\s*\((?!\s*(?:from\s+decoder|rawValue|coder)\b)'
 
   no_protocol_suffix_naming:
     included: ".*\\.swift"
