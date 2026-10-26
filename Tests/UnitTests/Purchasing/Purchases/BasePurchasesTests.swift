@@ -285,7 +285,8 @@ class BasePurchasesTests: TestCase {
         webBundleEventBus: WebBundleEventBus = .shared,
         paywallCache: PaywallCacheWarmingType? = nil,
         sdkSettingsConfigProvider: SDKSettingsConfigProviderType? = nil,
-        subscriberDimensionsConfigProvider: SubscriberDimensionsConfigProviderType? = nil
+        subscriberDimensionsConfigProvider: SubscriberDimensionsConfigProviderType? = nil,
+        currentConfiguration: Configuration? = nil
     ) {
         self.purchasesOrchestrator = PurchasesOrchestrator(
             productsManager: self.mockProductsManager,
@@ -388,7 +389,7 @@ class BasePurchasesTests: TestCase {
                                    virtualCurrencyManager: self.mockVirtualCurrencyManager,
                                    healthManager: healthManager,
                                    transactionMetadataSyncHelper: transactionMetadataSyncHelper,
-                                   currentConfiguration: nil,
+                                   currentConfiguration: currentConfiguration,
                                    webBundleEventBus: webBundleEventBus)
 
         self.purchasesOrchestrator.delegate = self.purchases

@@ -15,7 +15,7 @@ import Nimble
 import StoreKit
 import XCTest
 
-@testable import RevenueCat
+@testable @_spi(Experimental) import RevenueCat
 
 private final class HeldEligibilityChecker: TrialOrIntroPriceEligibilityCheckerType {
 
@@ -207,6 +207,37 @@ class PurchasesGetOfferingsTests: BasePurchasesTests {
 
         expect(self.paywallCache.invokedWarmUpEligibilityCache).toEventually(beTrue())
         expect(self.paywallCache.invokedWarmUpEligibilityCacheOfferings) === offerings
+    }
+
+    @MainActor
+    func testEligibilityWarmupDefaultsToBackgroundPriority() async throws {
+        try await self.verifyWarmupPriorities(
+            configuration: Configuration.builder(withAPIKey: "test").build(),
+            expectedEligibilityPriority: .background
+        )
+    }
+
+    @MainActor
+    func testEligibilityWarmupWithoutConfigurationUsesBackgroundPriority() async throws {
+        try await self.verifyWarmupPriorities(configuration: nil, expectedEligibilityPriority: .background)
+    }
+
+    @MainActor
+    func testEligibilityWarmupStartsAtConfiguredUserInitiatedPriorityWithoutAPaywallRequest() async throws {
+        try await self.verifyWarmupPriorities(
+            configuration: Configuration.builder(withAPIKey: "test")
+                .with(introEligibilityWarmupPriority: .userInitiated).build(),
+            expectedEligibilityPriority: .userInitiated
+        )
+    }
+
+    @MainActor
+    func testEligibilityWarmupSupportsUtilityPriority() async throws {
+        try await self.verifyWarmupPriorities(
+            configuration: Configuration.builder(withAPIKey: "test")
+                .with(introEligibilityWarmupPriority: .utility).build(),
+            expectedEligibilityPriority: .utility
+        )
     }
 
     // MARK: - overridePreferredUILocale
@@ -459,6 +490,29 @@ class PurchasesGetOfferingsTests: BasePurchasesTests {
         self.setupPurchases()
 
         expect(self.mockOfferingsManager.invokedUpdateOfferingsCacheCount).toAlways(equal(0))
+    }
+
+}
+
+private extension PurchasesGetOfferingsTests {
+
+    @MainActor
+    func verifyWarmupPriorities(configuration: Configuration?, expectedEligibilityPriority: TaskPriority) async throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+        self.systemInfo.stubbedIsApplicationBackgrounded = true
+        self.initializePurchasesInstance(appUserId: "test", currentConfiguration: configuration)
+        self.mockOperationDispatcher.forwardToOriginalDispatchOnWorkerThread = true
+        self.mockOfferingsManager.stubbedOfferingsCompletionResult = .success(try XCTUnwrap(
+            self.offeringsFactory.createOfferings(from: [:], contents: .mockContents, loadedFromDiskCache: false)
+        ))
+
+        _ = try await self.purchases.offerings()
+
+        // Poll instead of awaiting the warm-up task, which would donate this test's priority.
+        await expect { self.paywallCache.eligibilityWarmupPriority.value }
+            .toEventually(equal(expectedEligibilityPriority))
+        await expect { self.paywallCache.assetsWarmupPriority.value }.toEventually(equal(.background))
+        await expect { self.paywallCache.fontsWarmupPriority.value }.toEventually(equal(.background))
     }
 
 }

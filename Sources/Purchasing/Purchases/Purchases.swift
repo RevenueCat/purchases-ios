@@ -3487,7 +3487,8 @@ private extension Purchases {
         #if DEBUG
         let warmupFinished = Self.eligibilityCacheWarmupStarted.value?()
         #endif
-        let warmupTask = self.operationDispatcher.dispatchOnWorkerThread {
+        let priority = self.currentConfiguration?.introEligibilityWarmupPriority ?? .background
+        let warmupTask = self.operationDispatcher.dispatchOnWorkerThread(priority: priority) {
             #if DEBUG
             defer { warmupFinished?() }
             #endif
