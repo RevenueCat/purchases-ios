@@ -232,6 +232,7 @@
 		2C08B2E92CD40DBF0024857B /* ButtonComponentTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C08B2E82CD40DBF0024857B /* ButtonComponentTests.swift */; };
 		2C08B3072CD55D660024857B /* FlexHStack.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C08B3062CD55D590024857B /* FlexHStack.swift */; };
 		2C08B3172CDA44440024857B /* ViewModelFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C08B3162CDA443A0024857B /* ViewModelFactory.swift */; };
+		DD3889B3AF7540A7BE84FB0F /* PaywallHeroLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 963F9E3F1811431799CA98C0 /* PaywallHeroLayout.swift */; };
 		2C08B3352CDD165B0024857B /* PaywallComponentViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C08B3342CDD16550024857B /* PaywallComponentViewModel.swift */; };
 		2C0B98CD2797070B00C5874F /* PromotionalOffer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C0B98CC2797070B00C5874F /* PromotionalOffer.swift */; };
 		2C2AEB0F2CA64E0E00A50F38 /* Template1Preview.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C2AEB0E2CA64E0E00A50F38 /* Template1Preview.swift */; };
@@ -2040,6 +2041,7 @@
 		2C08B2E82CD40DBF0024857B /* ButtonComponentTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ButtonComponentTests.swift; sourceTree = "<group>"; };
 		2C08B3062CD55D590024857B /* FlexHStack.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlexHStack.swift; sourceTree = "<group>"; };
 		2C08B3162CDA443A0024857B /* ViewModelFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModelFactory.swift; sourceTree = "<group>"; };
+		963F9E3F1811431799CA98C0 /* PaywallHeroLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallHeroLayout.swift; sourceTree = "<group>"; };
 		2C08B3342CDD16550024857B /* PaywallComponentViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallComponentViewModel.swift; sourceTree = "<group>"; };
 		2C0B98CC2797070B00C5874F /* PromotionalOffer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromotionalOffer.swift; sourceTree = "<group>"; };
 		2C2AEB0E2CA64E0E00A50F38 /* Template1Preview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Template1Preview.swift; sourceTree = "<group>"; };
@@ -3526,6 +3528,7 @@
 		FACE0000000000000000F001 /* PaywallViewControllerExitOfferTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallViewControllerExitOfferTests.swift; sourceTree = "<group>"; };
 		FACE0000000000000000F002 /* PaywallViewControllerCustomVariablesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallViewControllerCustomVariablesTests.swift; sourceTree = "<group>"; };
 		FB5A72012F65F5B9005C64A1 /* ViewModelFactoryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModelFactoryTests.swift; sourceTree = "<group>"; };
+		F6FD5EFAD5E34697972DF77C /* PaywallHeroLayoutTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallHeroLayoutTests.swift; sourceTree = "<group>"; };
 		FCF81FAC33B948F0947AE312 /* RemoteConfigCallback.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteConfigCallback.swift; sourceTree = "<group>"; };
 		FD05A7192EE2430E00FE671F /* StoreKit2PromotionalOfferPurchaseOptions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreKit2PromotionalOfferPurchaseOptions.swift; sourceTree = "<group>"; };
 		FD15AF572DF9A8F30062467E /* VirtualCurrenciesScrollViewWithOSBackgroundSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VirtualCurrenciesScrollViewWithOSBackgroundSection.swift; sourceTree = "<group>"; };
@@ -3793,6 +3796,7 @@
 				FACD00042F61A1230073D2DE /* StackBadgeOverrideTests.swift */,
 				C3B8FD38DB4F44BFBAF221AD /* StackOverflowOverrideTests.swift */,
 				FB5A72012F65F5B9005C64A1 /* ViewModelFactoryTests.swift */,
+				F6FD5EFAD5E34697972DF77C /* PaywallHeroLayoutTests.swift */,
 				FACD00072F61A1230073D2DE /* PackageComponentViewTests.swift */,
 				0DD50FFC7C0F48B6A0FDE360 /* PaywallPromoOfferCacheTests.swift */,
 				FACD00092F61A1230073D2DE /* PackageValidatorTests.swift */,
@@ -4236,6 +4240,7 @@
 				03A98D372D2AC637009BCA61 /* UIConfigProvider.swift */,
 				2C74574A2CEA6B80004ACE52 /* LocalizationProvider.swift */,
 				2C08B3162CDA443A0024857B /* ViewModelFactory.swift */,
+				963F9E3F1811431799CA98C0 /* PaywallHeroLayout.swift */,
 				2C8EC71F2CCF275E00D6CCF8 /* PresentedPartials.swift */,
 				2C8EC6DC2CCC7C5500D6CCF8 /* PackageValidator.swift */,
 				88B1BAE72C813A3C001B7EE5 /* PaywallComponentTypeTransformers.swift */,
@@ -9310,6 +9315,7 @@
 				F221538ADDD849338CEBB79F /* VoiceOverEnabledOverrideKey.swift in Sources */,
 				887A607F2C1D037000E1A461 /* Optional+Extensions.swift in Sources */,
 				2C08B3172CDA44440024857B /* ViewModelFactory.swift in Sources */,
+				DD3889B3AF7540A7BE84FB0F /* PaywallHeroLayout.swift in Sources */,
 				356979E02CCFDAA100EE6A9E /* CustomerInfoFixtures.swift in Sources */,
 				57F7DAAB2D9E906200855622 /* RuntimeUtils.swift in Sources */,
 				887A60752C1D037000E1A461 /* TemplateViewConfiguration.swift in Sources */,
