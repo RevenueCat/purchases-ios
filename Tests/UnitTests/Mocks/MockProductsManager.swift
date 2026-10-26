@@ -15,8 +15,15 @@ class MockProductsManager: ProductsManager {
     var invokedProductsParametersList = [Set<String>]()
     var stubbedProductsCompletionResult: Result<Set<StoreProduct>, PurchasesError>?
     var productResultDelay: TimeInterval?
+    var fetchProductsFromStoreKit = false
     var shouldDeferProductsCompletion = false
-    private(set) var deferredProductsCompletions: [() -> Void] = []
+
+    // A request is ready only after its result and completion have both been captured.
+    var deferredProductsRequestCount: Int {
+        self.deferredProductsCompletions.value.count
+    }
+
+    private let deferredProductsCompletions: Atomic<[() -> Void]> = .init([])
 
     override func products(withIdentifiers identifiers: Set<String>,
                            completion: @escaping (Result<Set<StoreProduct>, PurchasesError>) -> Void) {
@@ -24,6 +31,10 @@ class MockProductsManager: ProductsManager {
         self.invokedProductsCount += 1
         self.invokedProductsParameters = identifiers
         self.invokedProductsParametersList.append(identifiers)
+        if self.fetchProductsFromStoreKit, self.stubbedProductsCompletionResult == nil {
+            super.products(withIdentifiers: identifiers, completion: completion)
+            return
+        }
         let result: Result<Set<StoreProduct>, PurchasesError>
         if let stubbedResult = self.stubbedProductsCompletionResult {
             result = stubbedResult
@@ -48,7 +59,7 @@ class MockProductsManager: ProductsManager {
 
         let complete = { completion(result) }
         if self.shouldDeferProductsCompletion {
-            self.deferredProductsCompletions.append(complete)
+            self.deferredProductsCompletions.modify { $0.append(complete) }
         } else if let delay = self.productResultDelay {
             DispatchQueue.main.asyncAfter(deadline: .now() + delay, execute: complete)
         } else {
@@ -57,7 +68,7 @@ class MockProductsManager: ProductsManager {
     }
 
     func completeDeferredProductsRequest(at index: Int) {
-        self.deferredProductsCompletions[index]()
+        self.deferredProductsCompletions.value[index]()
     }
 
     var invokedCacheProduct = false
@@ -70,43 +81,11 @@ class MockProductsManager: ProductsManager {
         invokedCacheProductParameter = product
     }
 
-    var invokedSk2StoreProducts = false
-    var invokedSk2StoreProductsCount = 0
-    var invokedSk2StoreProductsParameter: Set<String>?
-    var invokedSk2StoreProductsParameterList: [Set<String>] = []
-
-    // values must be `SK2StoreProduct` (can't use the type because it requires an @available
-    var stubbedSk2StoreProductsResult: Result<Set<AnyHashable>, PurchasesError>?
-
-    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-    override func sk2Products(
-        withIdentifiers identifiers: Set<String>,
-        completion: @escaping (Result<Set<SK2StoreProduct>, PurchasesError>) -> Void
-    ) {
-        self.invokedSk2StoreProducts = true
-        self.invokedSk2StoreProductsCount += 1
-        self.invokedSk2StoreProductsParameter = identifiers
-        self.invokedSk2StoreProductsParameterList.append(identifiers)
-
-        if let result = self.stubbedSk2StoreProductsResult {
-            // swiftlint:disable:next force_cast
-            let storeProducts = result.map { Set($0.map { $0 as! SK2StoreProduct }) }
-
-            if let delay = self.productResultDelay {
-                DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
-                    completion(storeProducts)
-                }
-            } else {
-                completion(storeProducts)
-            }
-        } else {
-            super.sk2Products(withIdentifiers: identifiers, completion: completion)
-        }
-    }
-
     var invokedClearCacheCount = 0
+    var clearCacheHandler: (() -> Void)?
     override func clearCache() {
         self.invokedClearCacheCount += 1
+        self.clearCacheHandler?()
     }
 
     func resetMock() {
@@ -116,11 +95,12 @@ class MockProductsManager: ProductsManager {
         self.invokedProductsParametersList = []
         self.stubbedProductsCompletionResult = nil
         self.shouldDeferProductsCompletion = false
-        self.deferredProductsCompletions = []
+        self.deferredProductsCompletions.value = []
         self.invokedCacheProduct = false
         self.invokedCacheProductCount = 0
         self.invokedCacheProductParameter = nil
         self.invokedClearCacheCount = 0
+        self.clearCacheHandler = nil
     }
 }
 

@@ -29,11 +29,12 @@ struct BadgeContents {
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-class StackComponentViewModel {
+class StackComponentViewModel: OfferEligibilityVisibilityDependency {
 
     let component: PaywallComponent.StackComponent
     let uiConfigProvider: UIConfigProvider
     private let presentedOverrides: PresentedOverrides<PresentedStackPartial>?
+    let dependsOnOfferEligibility: Bool
 
     let viewModels: [PaywallComponentViewModel]
 
@@ -101,6 +102,26 @@ class StackComponentViewModel {
         }
     }
 
+    /// Only undecorated, unconditional wrappers can disappear with their promoted buttons.
+    /// An authored empty stack, decoration, or an uncertain override keeps its existing layout.
+    var nativeButtonContainerIdentifiers: Set<ObjectIdentifier>? {
+        guard !self.viewModels.isEmpty,
+              self.component.background == nil, self.component.backgroundColor == nil,
+              self.component.border == nil, self.component.shadow == nil, self.component.badge == nil,
+              self.component.overrides == nil else { return nil }
+        var identifiers: Set<ObjectIdentifier> = []
+        for item in self.viewModels {
+            switch item {
+            case .button(let button): identifiers.insert(ObjectIdentifier(button))
+            case .stack(let stack):
+                guard let nested = stack.nativeButtonContainerIdentifiers else { return nil }
+                identifiers.formUnion(nested)
+            default: return nil
+            }
+        }
+        return identifiers
+    }
+
     /// Whether this stack renders anything a screen reader can announce, at any depth.
     /// Anything uncertain counts as `true`, so a derived label never overrides wording that works.
     var containsAnnounceableContent: Bool {
@@ -146,7 +167,9 @@ class StackComponentViewModel {
         self.uiConfigProvider = uiConfigProvider
         self.badgeViewModels = badgeViewModels
         self.discardRules = discardRules
-        self.presentedOverrides = self.component.overrides?.toPresentedOverrides(discardRules: discardRules)
+        let presentedOverrides = component.overrides?.toPresentedOverrides(discardRules: discardRules)
+        self.presentedOverrides = presentedOverrides
+        self.dependsOnOfferEligibility = presentedOverrides?.contains(where: \.dependsOnOfferEligibility) ?? false
     }
 
     func copy(withViewModels newViewModels: [PaywallComponentViewModel]) -> StackComponentViewModel {
@@ -241,6 +264,24 @@ class StackComponentViewModel {
             colorScheme: colorScheme
         )
         apply(style)
+    }
+
+    func visible(
+        state: ComponentViewState,
+        condition: ScreenCondition,
+        isEligibleForIntroOffer: Bool,
+        isEligibleForPromoOffer: Bool,
+        conditionContext: ConditionContext
+    ) -> Bool {
+        let partial = PresentedStackPartial.buildPartial(
+            state: state,
+            condition: condition,
+            isEligibleForIntroOffer: isEligibleForIntroOffer,
+            isEligibleForPromoOffer: isEligibleForPromoOffer,
+            conditionContext: conditionContext,
+            with: self.presentedOverrides
+        )
+        return partial?.visible ?? self.component.visible ?? true
     }
 
 }

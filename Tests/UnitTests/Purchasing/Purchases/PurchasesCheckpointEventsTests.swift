@@ -162,7 +162,7 @@ private final class MatchingCheckpointWorkflowResolver: CheckpointWorkflowResolv
             webCheckoutUrl: nil
         )
 
-        return .init(.matchedOffering(offering), checkpointRuleID: "rule_123")
+        return .init(.matchedOffering(offering, traceID: "trace_id"), checkpointRuleID: "rule_123")
     }
 
 }

@@ -14,14 +14,16 @@
 
 import Foundation
 
+// swiftlint:disable file_length
+
 /// The result of resolving a checkpoint against RevenueCat configuration.
 @_spi(Internal) public enum CheckpointResolution {
 
     /// A workflow was selected for the checkpoint.
     case matchedWorkflow(ResolvedCheckpointWorkflow)
     /// An offering was selected for the checkpoint, with no RevenueCat-managed UI to present. The app
-    /// decides whether and how to use it.
-    case matchedOffering(Offering)
+    /// decides whether and how to use it. `traceID` identifies the hit, and the offering's packages carry it too.
+    case matchedOffering(Offering, traceID: String)
     /// No workflow should run for the checkpoint.
     case noAction(CheckpointResolutionReason)
 
@@ -45,15 +47,18 @@ struct ResolvedCheckpoint {
 
     let resolution: CheckpointResolution
     let checkpointRuleID: String?
-    /// The matched workflow's trace id, so the hit and the workflow run join on it. Fresh otherwise.
+    /// The matched workflow's or offering's trace id, so the hit and its purchases join on it. Fresh otherwise.
     let traceID: String
 
     init(_ resolution: CheckpointResolution, checkpointRuleID: String? = nil) {
         self.resolution = resolution
         self.checkpointRuleID = checkpointRuleID
-        if case let .matchedWorkflow(workflow) = resolution {
+        switch resolution {
+        case let .matchedWorkflow(workflow):
             self.traceID = workflow.traceId
-        } else {
+        case let .matchedOffering(_, traceID):
+            self.traceID = traceID
+        case .noAction:
             self.traceID = UUID().uuidString
         }
     }
@@ -219,7 +224,7 @@ final class DefaultCheckpointWorkflowResolver: CheckpointWorkflowResolver {
         // The offering mapping is resolved per branch now, since only a UI workflow needs it.
         guard let rule else { return .init(.noAction(.noMatch)) }
 
-        let resolution = try await self.resolve(rule)
+        let resolution = try await self.resolve(rule, checkpointIdentifier: identifier)
         guard self.isCurrent(rulesSnapshot, audienceConfiguration) else {
             return nil
         }
@@ -286,7 +291,7 @@ final class DefaultCheckpointWorkflowResolver: CheckpointWorkflowResolver {
         }
     }
 
-    private func resolve(_ rule: CheckpointRule) async throws -> CheckpointResolution {
+    private func resolve(_ rule: CheckpointRule, checkpointIdentifier: String) async throws -> CheckpointResolution {
         // Deliberately the non-prewarming read: an offering workflow renders nothing, and prewarming takes
         // its fonts from `uiConfig` rather than from the workflow's screens, so it isn't free here.
         let workflowData: WorkflowDataResult
@@ -302,12 +307,15 @@ final class DefaultCheckpointWorkflowResolver: CheckpointWorkflowResolver {
         guard let initialStep = workflow.steps[workflow.initialStepId] else {
             return Self.unservable(rule, reason: "its initial step was not found")
         }
+        if let step = workflow.steps.values.first(where: { $0.gating == .invalid }) {
+            return Self.unservable(rule, reason: "step '\(step.id)' has invalid gating")
+        }
 
         if initialStep.isOfferingStep {
             guard workflow.steps.count == 1 else {
                 return Self.unservable(rule, reason: "an offering step cannot be mixed with other steps")
             }
-            return await self.resolveOffering(rule, step: initialStep)
+            return await self.resolveOffering(rule, step: initialStep, checkpointIdentifier: checkpointIdentifier)
         }
 
         if workflow.steps.values.contains(where: \.isOfferingStep) {
@@ -319,11 +327,10 @@ final class DefaultCheckpointWorkflowResolver: CheckpointWorkflowResolver {
 
     /// Serves a workflow whose only step is a terminal `offering` step as an offering the app owns.
     ///
-    /// Only the offering identifier is validated. Anything else the step happens to carry is ignored rather
-    /// than treated as unservable, since a step of this kind renders nothing.
+    /// Gating has already been validated. Other than that, only the offering identifier is validated,
+    /// since a step of this kind renders nothing.
     private func resolveOffering(
-        _ rule: CheckpointRule,
-        step: WorkflowStep
+        _ rule: CheckpointRule, step: WorkflowStep, checkpointIdentifier: String
     ) async -> CheckpointResolution {
         guard let offeringID = step.offeringIdentifier else {
             return Self.unservable(rule, reason: "the offering step has no valid offering identifier")
@@ -332,7 +339,18 @@ final class DefaultCheckpointWorkflowResolver: CheckpointWorkflowResolver {
             return .noAction(.configurationUnavailable)
         }
 
-        return .matchedOffering(match.offering)
+        return Self.makeMatchedOffering(match.offering, checkpointIdentifier: checkpointIdentifier)
+    }
+
+    private static func makeMatchedOffering(
+        _ offering: Offering,
+        checkpointIdentifier: String
+    ) -> CheckpointResolution {
+        let traceID = UUID().uuidString
+        return .matchedOffering(
+            offering.withPresentedCheckpointIdentifier(checkpointIdentifier, traceID: traceID),
+            traceID: traceID
+        )
     }
 
     private func resolveWorkflow(workflowData: WorkflowDataResult) async -> CheckpointResolution {
@@ -377,7 +395,7 @@ final class DefaultCheckpointWorkflowResolver: CheckpointWorkflowResolver {
     }
 
     #if DEBUG
-    private static let simulatedErrorCheckpointIdentifier = "error_checkpoint"
+    private static let simulatedErrorCheckpointIdentifier = "f0rc3_3rr0r"
     #endif
 }
 /// An audience referenced by a checkpoint rule that the SDK couldn't read, so the rule can't be evaluated.

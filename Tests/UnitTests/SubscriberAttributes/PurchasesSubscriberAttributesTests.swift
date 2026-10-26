@@ -223,7 +223,8 @@ class PurchasesSubscriberAttributesTests: TestCase {
             currentUserProvider: mockIdentityManager,
             operationDispatcher: mockOperationDispatcher,
             productsManager: mockProductsManager,
-            diagnosticsTracker: nil
+            diagnosticsTracker: nil,
+            groupEligibilityCache: .init()
         )
         let healthManager = SDKHealthManager(
             backend: self.mockBackend,
@@ -265,6 +266,9 @@ class PurchasesSubscriberAttributesTests: TestCase {
                                 operationDispatcher: mockOperationDispatcher
                               ),
                               remoteConfigManager: NoOpRemoteConfigManager(),
+                              checkpointsConfigProvider: CheckpointsConfigProvider(
+                                manager: NoOpRemoteConfigManager()
+                              ),
                               sdkSettingsConfigProvider: SDKSettingsConfigProvider(
                                 manager: NoOpRemoteConfigManager()
                               ),
@@ -274,8 +278,8 @@ class PurchasesSubscriberAttributesTests: TestCase {
                               offlineEntitlementsManager: mockOfflineEntitlementsManager,
                               purchasesOrchestrator: purchasesOrchestrator,
                               purchasedProductsFetcher: mockPurchasedProductsFetcher,
-                              trialOrIntroPriceEligibilityChecker: .create(
-                                with: trialOrIntroductoryPriceEligibilityChecker
+                              trialOrIntroPriceEligibilityChecker: .init(
+                                checker: trialOrIntroductoryPriceEligibilityChecker
                               ),
                               storeMessagesHelper: self.mockStoreMessagesHelper,
                               diagnosticsTracker: nil,

@@ -453,39 +453,6 @@ final class WorkflowPresenterTests: TestCase {
         XCTAssertEqual(reportedCustomerInfo, customerInfo)
     }
 
-    func testRestoreTreatsActiveEntitlementAsNewWithoutInitialCustomerInfo() throws {
-        let presenter = WorkflowPresenter { _ in true }
-        let customerInfo = try Self.customerInfo(activeEntitlements: ["pro"])
-
-        try presenter.startPresentation(Self.presentation(initialActiveEntitlementIdentifiers: nil))
-        presenter.paywallViewController(
-            PaywallViewController(offering: nil),
-            didFinishRestoringWith: customerInfo
-        )
-        let execution = presenter.presentationDidDismiss(reason: .navigatedBack)
-
-        guard case let .completed(reportedCustomerInfo)? = execution else {
-            return XCTFail("Expected active entitlements to be new without an initial snapshot")
-        }
-        XCTAssertEqual(reportedCustomerInfo, customerInfo)
-    }
-
-    func testRestoreWithoutActiveEntitlementsDoesNotOverrideBackWhenInitialCustomerInfoIsMissing() throws {
-        let presenter = WorkflowPresenter { _ in true }
-        let customerInfo = try Self.customerInfo(activeEntitlements: [])
-
-        try presenter.startPresentation(Self.presentation(initialActiveEntitlementIdentifiers: nil))
-        presenter.paywallViewController(
-            PaywallViewController(offering: nil),
-            didFinishRestoringWith: customerInfo
-        )
-        let execution = presenter.presentationDidDismiss(reason: .navigatedBack)
-
-        guard case .backedOut? = execution else {
-            return XCTFail("Expected an empty restore not to override back navigation")
-        }
-    }
-
     func testInteractiveDismissalIsNotReportedAsBackingOut() throws {
         let presentation = Self.presentation()
         let presenter = WorkflowPresenter { _ in true }
@@ -564,15 +531,15 @@ final class WorkflowPresenterTests: TestCase {
 
     #if canImport(UIKit) && !os(tvOS) && !os(watchOS)
 
-    func testRejectedPresentationThrowsAndCleansStoredCall() {
+    func testUnavailablePresentationContextThrowsAndCleansStoredCall() {
         var shouldAcceptPresentation = false
         let presenter = WorkflowPresenter { _ in shouldAcceptPresentation }
 
         XCTAssertThrowsError(
             try presenter.startPresentation(Self.presentation())
         ) { error in
-            guard case CheckpointError.presentationFailed = error else {
-                return XCTFail("Expected presentationFailed, got \(error)")
+            guard case CheckpointError.presentationContextUnavailable = error else {
+                return XCTFail("Expected presentationContextUnavailable, got \(error)")
             }
         }
 
@@ -670,7 +637,7 @@ final class WorkflowPresenterTests: TestCase {
 
     private static func presentation(
         customVariables: [String: CustomVariableValue] = [:],
-        initialActiveEntitlementIdentifiers: Set<String>? = nil,
+        initialActiveEntitlementIdentifiers: Set<String> = [],
         errorPresentationHandler: @escaping ErrorPresentationHandler = { _, completion in
             completion.complete()
         }
@@ -718,6 +685,7 @@ final class WorkflowPresenterTests: TestCase {
             ),
             customVariables: customVariables,
             presentationMode: .modalSheet,
+            initialActiveEntitlementIdentifiers: [],
             errorPresentationHandler: errorPresentationHandler
         )
     }

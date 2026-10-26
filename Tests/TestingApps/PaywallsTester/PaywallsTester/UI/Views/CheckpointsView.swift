@@ -15,7 +15,12 @@
 #if os(iOS) && !targetEnvironment(macCatalyst)
 
 import Foundation
+// The configured checkpoint list reads an internal SDK method, so it's Debug-only.
+#if DEBUG
+@_spi(Internal) @testable import RevenueCat
+#else
 import RevenueCat
+#endif
 @_spi(InviteOnlyCheckpointsApi) import RevenueCatUI
 import SwiftUI
 
@@ -24,6 +29,7 @@ struct CheckpointsView: View {
     @FocusState private var isIdentifierFocused: Bool
     @State private var identifier = ""
     @State private var recentIdentifiers: [String]
+    @State private var configuredIdentifiers: [String] = []
     @State private var variables = [CheckpointVariable()]
     @State private var result: CheckpointDisplayResult?
     @State private var isSubscriberAttributeEditorPresented = false
@@ -50,11 +56,18 @@ struct CheckpointsView: View {
         NavigationView {
             Form {
                 self.checkpointSection
-                self.recentSection
-                self.customVariablesSection
                 self.resultSection
+                self.recentSection
+                #if DEBUG
+                self.configuredSection
+                #endif
+                self.customVariablesSection
             }
             .navigationTitle("Checkpoints")
+            #if DEBUG
+            .task { await self.loadConfiguredIdentifiers() }
+            .refreshable { await self.loadConfiguredIdentifiers() }
+            #endif
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
                     Button {
@@ -70,6 +83,39 @@ struct CheckpointsView: View {
         }
     }
 
+    #if DEBUG
+    private var configuredSection: some View {
+        Section {
+            ForEach(self.configuredIdentifiers, id: \.self) { identifier in
+                Button(identifier) {
+                    self.triggerCheckpoint(identifier)
+                }
+                .contextMenu { self.presentationModeMenu(for: identifier) }
+            }
+
+            // The SDK throws for this identifier in Debug builds, to test error presentation.
+            Button("Simulated error") {
+                self.triggerCheckpoint(Self.simulatedErrorIdentifier)
+            }
+            .contextMenu { self.presentationModeMenu(for: Self.simulatedErrorIdentifier) }
+        } header: {
+            Text("Configured")
+        } footer: {
+            Text(
+                self.configuredIdentifiers.isEmpty
+                    ? "No checkpoints loaded for this project. Pull to refresh."
+                    : "Checkpoints in this project. Tap one to run it, or long press to pick how it is presented."
+            )
+        }
+    }
+
+    private static let simulatedErrorIdentifier = "f0rc3_3rr0r"
+
+    private func loadConfiguredIdentifiers() async {
+        self.configuredIdentifiers = await Purchases.shared.checkpointIds()
+    }
+    #endif
+
     private var checkpointSection: some View {
         Section {
             TextField("Checkpoint identifier", text: self.$identifier)
@@ -77,9 +123,10 @@ struct CheckpointsView: View {
                 .autocorrectionDisabled()
                 .submitLabel(.go)
                 .focused(self.$isIdentifierFocused)
-                .onSubmit(self.triggerCheckpoint)
+                .onSubmit { self.triggerCheckpoint(self.trimmedIdentifier) }
 
-            Button("Trigger checkpoint", action: self.triggerCheckpoint)
+            Button("Hit checkpoint") { self.triggerCheckpoint(self.trimmedIdentifier) }
+                .contextMenu { self.presentationModeMenu(for: self.trimmedIdentifier) }
                 .disabled(self.trimmedIdentifier.isEmpty)
         } footer: {
             Text("Runs the checkpoint with the custom variables below.")
@@ -128,31 +175,50 @@ struct CheckpointsView: View {
 
     @ViewBuilder
     private var resultSection: some View {
-        if let result {
-            Section("Latest result") {
+        Section("Latest result") {
+            if let result {
                 CheckpointResultRow(label: "Identifier", value: result.identifier)
-                CheckpointResultRow(label: "Outcome", value: result.outcome)
+                HStack {
+                    Text("Outcome")
+                    Spacer()
+                    if result.isWaiting {
+                        ProgressView()
+                    }
+                    Text(result.outcome)
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.trailing)
+                }
 
                 if let details = result.details {
                     Text(details)
                         .foregroundStyle(.secondary)
                 }
+            } else {
+                Text("Hit a checkpoint to see its result here.")
+                    .foregroundStyle(.secondary)
             }
         }
     }
 
+    @ViewBuilder
+    private func presentationModeMenu(for identifier: String) -> some View {
+        Button("Default") { self.triggerCheckpoint(identifier, presentationMode: .default) }
+        Button("Full screen") { self.triggerCheckpoint(identifier, presentationMode: .modalFullScreen) }
+        Button("Sheet") { self.triggerCheckpoint(identifier, presentationMode: .modalSheet) }
+    }
+
     @MainActor
-    private func triggerCheckpoint() {
-        let identifier = self.trimmedIdentifier
+    private func triggerCheckpoint(_ identifier: String, presentationMode: FlowPresentationMode = .default) {
         guard !identifier.isEmpty else { return }
 
         self.isIdentifierFocused = false
         self.recordRecentIdentifier(identifier)
-        self.result = .callbackNotInvoked(identifier: identifier)
+        self.result = .waiting(identifier: identifier)
 
         Purchases.shared.checkpoint(
             identifier,
             customVariables: self.customVariables,
+            presentationMode: presentationMode,
             errorPresenter: { params, completion in
                 self.result = .failed(
                     identifier: params.checkpointIdentifier,
@@ -161,7 +227,7 @@ struct CheckpointsView: View {
                 completion.complete()
             },
             { checkpointResult in
-                self.result = .completed(identifier: identifier, flowResult: checkpointResult.flow)
+                self.result = .completed(identifier: identifier, result: checkpointResult)
             }
         )
     }
@@ -222,31 +288,38 @@ private struct CheckpointDisplayResult {
     let identifier: String
     let outcome: String
     let details: String?
+    var isWaiting = false
 
-    static func callbackNotInvoked(identifier: String) -> Self {
+    static func waiting(identifier: String) -> Self {
         return Self(
             identifier: identifier,
-            outcome: "Callback not called",
-            details: nil
+            outcome: "Waiting…",
+            details: "Backing out of a paywall never reports a result. Hit the checkpoint again.",
+            isWaiting: true
         )
     }
 
-    static func completed(identifier: String, flowResult: FlowResult?) -> Self {
-        guard let flowResult else {
+    static func completed(identifier: String, result: CheckpointResult) -> Self {
+        let activeNow = result.customer.entitlements.active.keys.sorted()
+        let activeNowDetails = "Active now: \(activeNow.isEmpty ? "none" : activeNow.joined(separator: ", "))."
+        guard let flowResult = result.flow else {
             return Self(
                 identifier: identifier,
-                outcome: "No action",
-                details: "No matching flow was presented."
+                outcome: "Nothing presented",
+                details: "See the logs for the reason. \(activeNowDetails)"
             )
         }
 
-        let identifiers = flowResult.obtainedEntitlements.map(\.entitlementInfo.identifier).sorted()
+        let entitlements = flowResult.obtainedEntitlements.map(\.entitlementInfo.identifier).sorted()
+        let products = flowResult.obtainedProducts.map(\.product.productIdentifier).sorted()
+        let obtainedDetails = entitlements.isEmpty && products.isEmpty
+            ? "Nothing obtained."
+            : "Obtained entitlements: \(entitlements.joined(separator: ", ")), " +
+                "products: \(products.joined(separator: ", "))."
         return Self(
             identifier: identifier,
-            outcome: "Flow completed",
-            details: identifiers.isEmpty
-                ? "No new entitlements were granted."
-                : "Granted entitlements: \(identifiers.joined(separator: ", "))."
+            outcome: "Flow presented",
+            details: "\(obtainedDetails) \(activeNowDetails)"
         )
     }
 

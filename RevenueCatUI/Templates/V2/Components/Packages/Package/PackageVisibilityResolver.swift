@@ -28,6 +28,7 @@ struct PackageVisibilityResolver {
     private let componentVisible: Bool?
     private let uiConfigProvider: UIConfigProvider
     private let presentedOverrides: PresentedOverrides<PresentedPackagePartial>?
+    let dependsOnOfferEligibility: Bool
 
     init(
         component: PaywallComponent.PackageComponent,
@@ -36,7 +37,9 @@ struct PackageVisibilityResolver {
     ) {
         self.componentVisible = component.visible
         self.uiConfigProvider = uiConfigProvider
-        self.presentedOverrides = component.overrides?.toPresentedOverrides(discardRules: discardRules)
+        let presentedOverrides = component.overrides?.toPresentedOverrides(discardRules: discardRules)
+        self.presentedOverrides = presentedOverrides
+        self.dependsOnOfferEligibility = presentedOverrides?.contains(where: \.dependsOnOfferEligibility) ?? false
     }
 
     // swiftlint:disable:next function_parameter_count

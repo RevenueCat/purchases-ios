@@ -18,7 +18,7 @@ import Foundation
 /// or `WorkflowPreview.makeContext` for injected data) and passed into ``PaywallView``; it has no
 /// public initializer because callers never assemble it directly.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-@_spi(Internal) public struct WorkflowContext {
+@_spi(Internal) public struct WorkflowContext: Sendable {
     let workflow: PublishedWorkflow
     let uiConfig: UIConfig
     /// Every step and exit offer lookup goes through this, so the developer-supplied offering is never bypassed.
@@ -26,6 +26,8 @@ import Foundation
     let initialOffering: Offering
     /// Preserved so every subsequent step's offering can carry the same placement/targeting metadata.
     let presentedOfferingContext: PresentedOfferingContext?
+    /// Set only for a checkpoint-launched workflow invocation.
+    let checkpointIdentifier: String?
     /// Package context from `singleStepFallbackId`, precomputed because it is stable for a workflow.
     let workflowPackageContext: WorkflowPackageContext?
     let workflowBlobRef: String?
@@ -39,21 +41,27 @@ import Foundation
         initialOffering: Offering,
         presentedOfferingContext: PresentedOfferingContext?,
         workflowBlobRef: String? = nil,
-        traceId: String? = nil
+        traceId: String? = nil,
+        checkpointIdentifier: String? = nil
     ) {
         self.workflowBlobRef = workflowBlobRef
         self.traceId = traceId
         self.workflow = workflow
         self.uiConfig = uiConfig
         self.offerings = offerings
-        self.initialOffering = initialOffering
+        self.initialOffering = checkpointIdentifier.map {
+            initialOffering.withPresentedCheckpointIdentifier($0, traceID: nil)
+        }
+            ?? initialOffering
         self.presentedOfferingContext = presentedOfferingContext
+        self.checkpointIdentifier = checkpointIdentifier
 
         let workflowPackageContext = Self.workflowPackageContext(
             workflow: workflow,
             offerings: offerings,
-            initialOffering: initialOffering,
-            presentedOfferingContext: presentedOfferingContext
+            initialOffering: self.initialOffering,
+            presentedOfferingContext: presentedOfferingContext,
+            checkpointIdentifier: checkpointIdentifier
         )
         if let singleWorkflowStepFallbackId = workflow.singleStepFallbackId, workflowPackageContext == nil {
             Logger.warning(Strings.workflow_package_context_unresolvable(stepId: singleWorkflowStepFallbackId))
@@ -66,7 +74,8 @@ import Foundation
             for: offeringIdentifier,
             offerings: self.offerings,
             initialOffering: self.initialOffering,
-            presentedOfferingContext: self.presentedOfferingContext
+            presentedOfferingContext: self.presentedOfferingContext,
+            checkpointIdentifier: self.checkpointIdentifier
         )
     }
 
@@ -78,11 +87,12 @@ import Foundation
     /// Non-nil only when an exit offer is configured and its offering is present in the loaded offerings bundle.
     var exitOfferOffering: Offering? {
         guard let entry = exitOfferEntry else { return nil }
-        return ExitOfferHelper.validExitOffer(
+        guard let offering = ExitOfferHelper.validExitOffer(
             offeringId: entry.offeringId,
             currentOfferingId: initialOffering.identifier,
             from: offerings
-        )
+        ) else { return nil }
+        return self.applyingPurchaseContext(to: offering)
     }
 
     /// Returns a `WorkflowExitOfferContext` if `stepId` is the exit-offer triggering step
@@ -97,7 +107,7 @@ import Foundation
                   currentOfferingId: initialOffering.identifier,
                   from: offerings
               ) else { return nil }
-        return WorkflowExitOfferContext(exitOfferOffering: offering)
+        return WorkflowExitOfferContext(exitOfferOffering: self.applyingPurchaseContext(to: offering))
     }
 
     /// Resolves the exit offer entry from `singleStepFallbackId`'s screen.
@@ -173,7 +183,8 @@ import Foundation
         workflow: PublishedWorkflow,
         offerings: WorkflowOfferings,
         initialOffering: Offering,
-        presentedOfferingContext: PresentedOfferingContext?
+        presentedOfferingContext: PresentedOfferingContext?,
+        checkpointIdentifier: String?
     ) -> WorkflowPackageContext? {
         guard let singleWorkflowStepFallbackId = workflow.singleStepFallbackId,
               let step = workflow.steps[singleWorkflowStepFallbackId],
@@ -184,7 +195,8 @@ import Foundation
                   for: offeringIdentifier,
                   offerings: offerings,
                   initialOffering: initialOffering,
-                  presentedOfferingContext: presentedOfferingContext
+                  presentedOfferingContext: presentedOfferingContext,
+                  checkpointIdentifier: checkpointIdentifier
               ) else {
             return nil
         }
@@ -219,31 +231,6 @@ import Foundation
             packages: packages.map(\.package),
             promoOfferCodesByPackageId: promoOfferCodes
         )
-    }
-
-    private static func offering(
-        for offeringIdentifier: String?,
-        offerings: WorkflowOfferings,
-        initialOffering: Offering,
-        presentedOfferingContext: PresentedOfferingContext?
-    ) -> Offering? {
-        guard let offeringIdentifier else {
-            return nil
-        }
-
-        if initialOffering.identifier == offeringIdentifier {
-            return initialOffering
-        }
-
-        guard let offering = offerings.offering(identifier: offeringIdentifier) else {
-            return nil
-        }
-
-        guard let presentedOfferingContext else {
-            return offering
-        }
-
-        return offering.withPresentedOfferingContext(presentedOfferingContext)
     }
 
     func offering(for step: WorkflowStep) -> Offering? {
@@ -321,7 +308,49 @@ import Foundation
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-struct WorkflowPackageContext {
+private extension WorkflowContext {
+
+    static func offering(
+        for offeringIdentifier: String?,
+        offerings: WorkflowOfferings,
+        initialOffering: Offering,
+        presentedOfferingContext: PresentedOfferingContext?,
+        checkpointIdentifier: String?
+    ) -> Offering? {
+        guard let offeringIdentifier else { return nil }
+        if initialOffering.identifier == offeringIdentifier { return initialOffering }
+        guard let offering = offerings.offering(identifier: offeringIdentifier) else { return nil }
+
+        return Self.applyingPurchaseContext(
+            to: offering,
+            presentedOfferingContext: presentedOfferingContext,
+            checkpointIdentifier: checkpointIdentifier
+        )
+    }
+
+    func applyingPurchaseContext(to offering: Offering) -> Offering {
+        return Self.applyingPurchaseContext(
+            to: offering,
+            presentedOfferingContext: self.presentedOfferingContext,
+            checkpointIdentifier: self.checkpointIdentifier
+        )
+    }
+
+    static func applyingPurchaseContext(
+        to offering: Offering,
+        presentedOfferingContext: PresentedOfferingContext?,
+        checkpointIdentifier: String?
+    ) -> Offering {
+        let contextualOffering = presentedOfferingContext.map(offering.withPresentedOfferingContext) ?? offering
+        return checkpointIdentifier.map {
+            contextualOffering.withPresentedCheckpointIdentifier($0, traceID: nil)
+        } ?? contextualOffering
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+struct WorkflowPackageContext: Sendable {
     let selectedPackage: Package
     let packages: [Package]
     /// Apple promo offer product code per package identifier, used to resolve `promo_offer_condition`

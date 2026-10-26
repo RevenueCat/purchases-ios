@@ -286,6 +286,17 @@ final class DefaultErrorPresenterTests: TestCase {
         XCTAssertEqual(terminalCompletionCount, 1)
     }
 
+    func testFailedAlertPresentationDoesNotLeaveFlowWaiting() {
+        let harness = Harness(failsPresentation: true)
+
+        harness.presenter.present(
+            params: Self.params(kind: .flowCouldNotBeShown),
+            completion: harness.completion
+        )
+
+        XCTAssertEqual(harness.completionCount, 1)
+    }
+
     private static func params(
         message: String = "boom",
         kind: CheckpointFailureKind = .flowActionFailed
@@ -322,6 +333,7 @@ final class DefaultErrorPresenterTests: TestCase {
     private final class Harness {
         private let host = UIViewController()
         private let defersDismissal: Bool
+        private let failsPresentation: Bool
         private let localeIdentifier: String?
         var presentedTitle: String?
         var presentedMessages: [String] = []
@@ -330,8 +342,13 @@ final class DefaultErrorPresenterTests: TestCase {
         var completionCount = 0
         var deferredAlerts: [DeferredDismissalViewController] = []
 
-        init(defersDismissal: Bool = false, localeIdentifier: String? = "en") {
+        init(
+            defersDismissal: Bool = false,
+            failsPresentation: Bool = false,
+            localeIdentifier: String? = "en"
+        ) {
             self.defersDismissal = defersDismissal
+            self.failsPresentation = failsPresentation
             self.localeIdentifier = localeIdentifier
         }
 
@@ -350,7 +367,11 @@ final class DefaultErrorPresenterTests: TestCase {
                     return alert
                 }
 
-                return UIViewController()
+                if self?.failsPresentation == true {
+                    return UIViewController()
+                }
+
+                return PresentedViewController()
             }
         )
 
@@ -360,6 +381,19 @@ final class DefaultErrorPresenterTests: TestCase {
 
         func completeNextDismissal() {
             self.deferredAlerts.first(where: { $0.hasPendingDismissal })?.completeDismissal()
+        }
+    }
+
+    @MainActor
+    private final class PresentedViewController: UIViewController {
+        private let presentingController = UIViewController()
+
+        override var presentingViewController: UIViewController? {
+            return self.presentingController
+        }
+
+        override func dismiss(animated flag: Bool, completion: (() -> Void)? = nil) {
+            completion?()
         }
     }
 

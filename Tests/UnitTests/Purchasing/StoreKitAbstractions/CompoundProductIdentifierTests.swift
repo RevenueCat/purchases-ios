@@ -268,6 +268,42 @@ extension CompoundProductIdentifierTests {
     }
 }
 
+// MARK: - Cache Identifier Normalization
+extension CompoundProductIdentifierTests {
+
+    func testCanonicalIdentifierRemovesEmptyPlanSuffix() {
+        expect(CompoundProductIdentifier.canonicalIdentifier("com.revenuecat.subscription:")) ==
+            "com.revenuecat.subscription"
+    }
+
+    func testCanonicalIdentifierPreservesBaseAndNonEmptyPlanIdentifiers() {
+        for identifier in [
+            "com.revenuecat.subscription",
+            "com.revenuecat.subscription:monthly",
+            "com.revenuecat.subscription:upFront",
+            "com.revenuecat.subscription:MoNtHlY",
+            "com.revenuecat.subscription:unknown",
+            "com.revenuecat.subscription: monthly "
+        ] {
+            expect(CompoundProductIdentifier.canonicalIdentifier(identifier)) == identifier
+        }
+    }
+
+    func testCanonicalIdentifierPreservesInvalidIdentifiersWithoutLogging() {
+        self.logger.clearMessages()
+
+        for identifier in [
+            "", ":", ":monthly", "::", "com.revenuecat.subscription::",
+            "com.revenuecat.subscription:monthly:extra", "com.revenuecat.subscription::monthly"
+        ] {
+            expect(CompoundProductIdentifier.canonicalIdentifier(identifier)) == identifier
+        }
+
+        expect(self.logger.messages).to(beEmpty())
+    }
+
+}
+
 // MARK: - StoreKit 2 Billing Plan Type
 #if compiler(>=6.3.2)   // Billing plans were introduced in Xcode 26.5
 extension CompoundProductIdentifierTests {

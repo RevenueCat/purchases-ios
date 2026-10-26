@@ -299,6 +299,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
     private let customerInfoManager: CustomerInfoManager
     private let eventsManager: EventsManagerType?
     private let remoteConfigManager: RemoteConfigManagerType
+    private let configuredAdRewardsProvider: ConfiguredAdRewardsProvider
+    private let checkpointsConfigProvider: CheckpointsConfigProviderType
     private let sdkSettingsConfigProvider: SDKSettingsConfigProviderType
     private let subscriberDimensionsConfigProvider: SubscriberDimensionsConfigProviderType
 
@@ -601,15 +603,16 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                                                systemInfo: systemInfo)
         let introCalculator = IntroEligibilityCalculator(productsManager: productsManager, receiptParser: receiptParser)
 
-        let trialOrIntroPriceChecker = CachingTrialOrIntroPriceEligibilityChecker.create(
-            with: TrialOrIntroPriceEligibilityChecker(systemInfo: systemInfo,
-                                                      receiptFetcher: receiptFetcher,
-                                                      introEligibilityCalculator: introCalculator,
-                                                      backend: backend,
-                                                      currentUserProvider: identityManager,
-                                                      operationDispatcher: operationDispatcher,
-                                                      productsManager: productsManager,
-                                                      diagnosticsTracker: diagnosticsTracker)
+        let trialOrIntroPriceChecker = CachingTrialOrIntroPriceEligibilityChecker(
+            checker: TrialOrIntroPriceEligibilityChecker(systemInfo: systemInfo,
+                                                         receiptFetcher: receiptFetcher,
+                                                         introEligibilityCalculator: introCalculator,
+                                                         backend: backend,
+                                                         currentUserProvider: identityManager,
+                                                         operationDispatcher: operationDispatcher,
+                                                         productsManager: productsManager,
+                                                         diagnosticsTracker: diagnosticsTracker,
+                                                         groupEligibilityCache: .init())
         )
 
         let paywallCache: PaywallCacheWarmingType?
@@ -885,6 +888,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                   workflowManager: workflowManager,
                   branchResolver: branchResolver,
                   remoteConfigManager: remoteConfigManager,
+                  checkpointsConfigProvider: checkpointsConfigProvider,
                   sdkSettingsConfigProvider: sdkSettingsConfigProvider,
                   subscriberDimensionsConfigProvider: subscriberDimensionsConfigProvider,
                   offlineEntitlementsManager: offlineEntitlementsManager,
@@ -927,6 +931,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
          workflowManager: WorkflowManager,
          branchResolver: BranchResolver = DisabledBranchResolver(),
          remoteConfigManager: RemoteConfigManagerType,
+         checkpointsConfigProvider: CheckpointsConfigProviderType,
          sdkSettingsConfigProvider: SDKSettingsConfigProviderType,
          subscriberDimensionsConfigProvider: SubscriberDimensionsConfigProviderType,
          offlineEntitlementsManager: OfflineEntitlementsManager,
@@ -992,6 +997,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         self.remoteConfigManager = systemInfo.remoteConfigEnabled
             ? remoteConfigManager
             : NoOpRemoteConfigManager()
+        self.configuredAdRewardsProvider = ConfiguredAdRewardsProvider(manager: self.remoteConfigManager)
+        self.checkpointsConfigProvider = checkpointsConfigProvider
         self.sdkSettingsConfigProvider = sdkSettingsConfigProvider
         self.subscriberDimensionsConfigProvider = subscriberDimensionsConfigProvider
         self.offlineEntitlementsManager = offlineEntitlementsManager
@@ -1632,7 +1639,9 @@ public extension Purchases {
     }
 
     func checkTrialOrIntroDiscountEligibility(productIdentifiers: [String]) async -> [String: IntroEligibility] {
-        return await checkTrialOrIntroductoryDiscountEligibilityAsync(productIdentifiers)
+        return await self.trialOrIntroPriceEligibilityChecker.checkEligibility(
+            productIdentifiers: Set(productIdentifiers)
+        )
     }
 
     func checkTrialOrIntroDiscountEligibility(packages: [Package]) async -> [Package: IntroEligibility] {
@@ -1653,7 +1662,8 @@ public extension Purchases {
     }
 
     func checkTrialOrIntroDiscountEligibility(product: StoreProduct) async -> IntroEligibilityStatus {
-        return await checkTrialOrIntroductoryDiscountEligibilityAsync(product)
+        let result = await self.checkTrialOrIntroDiscountEligibility(productIdentifiers: [product.id])
+        return result[product.id]?.status ?? .unknown
     }
 
 #if os(iOS) || targetEnvironment(macCatalyst) || VISION_OS
@@ -2065,6 +2075,28 @@ public extension Purchases {
     /// Used by `RevenueCatUI` to download and cache paywall images.
     @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
     static let paywallImageDownloadSession: URLSession = PaywallCacheWarming.downloadSession
+
+}
+
+// MARK: - Reward Configuration
+
+extension Purchases {
+
+    /// Returns the rewards configured for a rewarded ad unit, loading remote configuration when needed.
+    ///
+    /// This returns immediately when configuration is already cached. Otherwise, it joins any remote-config refresh
+    /// already in progress or starts one when cached configuration is missing or stale. Returns `nil` when
+    /// configuration is still unavailable after that work finishes. Returns
+    /// ``ConfiguredAdRewards/noConfiguredReward`` when configuration is available but no rewards are configured for
+    /// the ad unit.
+    ///
+    /// - Parameter adUnitId: The ad network's rewarded ad unit identifier.
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    public func adRewards(
+        forAdUnitId adUnitId: String
+    ) async -> ConfiguredAdRewards? {
+        return await self.configuredAdRewardsProvider.rewards(forAdUnitId: adUnitId)
+    }
 
 }
 
@@ -3076,6 +3108,10 @@ internal extension Purchases {
         return await self.workflowManager.workflowId(forOfferingId: offeringID)
     }
 
+    func checkpointIds() async -> [String] {
+        return await self.checkpointsConfigProvider.checkpointIds()
+    }
+
     /// - Returns: the parsed `AppleReceipt`
     ///
     /// - Warning: this is only meant for integration tests, as a way to debug purchase failures.
@@ -3451,7 +3487,8 @@ private extension Purchases {
         #if DEBUG
         let warmupFinished = Self.eligibilityCacheWarmupStarted.value?()
         #endif
-        let warmupTask = self.operationDispatcher.dispatchOnWorkerThread {
+        let priority = self.currentConfiguration?.introEligibilityWarmupPriority ?? .background
+        let warmupTask = self.operationDispatcher.dispatchOnWorkerThread(priority: priority) {
             #if DEBUG
             defer { warmupFinished?() }
             #endif

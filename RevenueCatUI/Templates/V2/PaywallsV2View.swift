@@ -60,8 +60,8 @@ struct PaywallsV2View: View {
     private var inheritedStateStore
 
     #if DEBUG
-    @Environment(\.paywallLoadingOverride)
-    private var paywallLoadingOverride: Bool?
+    @Environment(\.offerEligibilityLoadingOverride)
+    private var offerEligibilityLoadingOverride
     #endif
 
     @StateObject
@@ -112,10 +112,19 @@ struct PaywallsV2View: View {
     /// step alone. Irrelevant for standalone paywalls and tagged steps.
     private let isWorkflowSingleStepFallback: Bool
     @State
-    private var didFinishEligibilityCheck: Bool = {
+    private var didFinishIntroEligibilityCheck: Bool = {
         #if DEBUG
         // In Xcode Previews and Emerge snapshot runs, the async eligibility check never
         // completes, so default to finished to avoid capturing permanently-redacted snapshots.
+        return ProcessInfo.isRunningForPreviews
+        #else
+        return false
+        #endif
+    }()
+
+    @State
+    private var didFinishPromoEligibilityCheck: Bool = {
+        #if DEBUG
         return ProcessInfo.isRunningForPreviews
         #else
         return false
@@ -261,6 +270,7 @@ struct PaywallsV2View: View {
                 }
             }
         )
+        .environment(\.nativePaywallButtonRegistrationEnabled, self.isActiveWorkflowPage != false)
         .modifier(PaywallURLEventsModifier(purchaseHandler: self.purchaseHandler))
         // Only publish the state-store environment when this paywall owns the store (standalone).
         // Inside a workflow the store is injected and observed by `WorkflowPaywallView`;
@@ -272,8 +282,27 @@ struct PaywallsV2View: View {
         }
     }
 
+    private func promoEligibilityPackageInfos(for paywallState: PaywallState) -> [PaywallState.PackageInfo] {
+        return Self.promoEligibilityPackageInfos(
+            paywallPackageInfos: paywallState.packageInfos.map {
+                ($0.package, $0.promotionalOfferProductCode)
+            },
+            workflowPackages: self.workflowPackages,
+            workflowPromoOfferProductCodes: self.workflowPromoOfferProductCodes
+        )
+    }
+
     private func loadedPaywallView(paywallState: PaywallState) -> some View {
         let contentLocale = paywallState.rootViewModel.localizationProvider.locale
+        var offerEligibilityLoading = OfferEligibilityLoading(
+            intro: !self.didFinishIntroEligibilityCheck,
+            promo: !self.didFinishPromoEligibilityCheck
+        )
+        #if DEBUG
+        if let override = self.offerEligibilityLoadingOverride {
+            offerEligibilityLoading = override
+        }
+        #endif
         let workflow: PaywallWebViewStaticContext.Workflow? = {
             guard let workflowId = self.workflowId, let stepId = self.stepId else {
                 return nil
@@ -304,12 +333,10 @@ struct PaywallsV2View: View {
             onDismiss: self.onDismiss,
             closeWorkflowAction: self.closeWorkflowAction
         )
-        .environment(\.isPaywallLoading, {
-            #if DEBUG
-            if let override = self.paywallLoadingOverride { return override }
-            #endif
-            return !self.didFinishEligibilityCheck
-        }())
+        .environment(\.offerEligibilityLoading, offerEligibilityLoading)
+        .environment(\.offerEligibilityAvailability, OfferEligibilityAvailability(
+            packageInfos: self.promoEligibilityPackageInfos(for: paywallState)
+        ))
         .environment(\.locale, contentLocale)
         .environment(\.layoutDirection, contentLocale.swiftUILayoutDirection)
         .environment(\.screenCondition, ScreenCondition.from(self.horizontalSizeClass))
@@ -390,7 +417,7 @@ struct PaywallsV2View: View {
                 self.firePaywallImpression()
             }
             .task {
-                guard !self.didFinishEligibilityCheck else {
+                guard !self.didFinishIntroEligibilityCheck else {
                     return
                 }
                 if let errorInfo = self.paywallComponentsData.errorInfo, !errorInfo.isEmpty {
@@ -400,23 +427,29 @@ struct PaywallsV2View: View {
                     return
                 }
 
-                async let introCheck: Void = self.introOfferEligibilityContext.computeEligibility(
+                await self.introOfferEligibilityContext.computeEligibility(
                     for: Self.introEligibilityPackages(
                         paywallPackages: paywallState.packages,
                         workflowPackages: self.workflowPackages
                     )
                 )
-                async let promoCheck: Void = self.paywallPromoOfferCache.computeEligibility(
-                    for: Self.promoEligibilityPackageInfos(
-                        paywallPackageInfos: paywallState.packageInfos.map {
-                            ($0.package, $0.promotionalOfferProductCode)
-                        },
-                        workflowPackages: self.workflowPackages,
-                        workflowPromoOfferProductCodes: self.workflowPromoOfferProductCodes
-                    )
+                self.didFinishIntroEligibilityCheck = true
+            }
+            .task {
+                guard !self.didFinishPromoEligibilityCheck else {
+                    return
+                }
+                if let errorInfo = self.paywallComponentsData.errorInfo, !errorInfo.isEmpty {
+                    return
+                }
+                guard case let .success(paywallState) = self.paywallStateManager.state else {
+                    return
+                }
+
+                await self.paywallPromoOfferCache.computeEligibility(
+                    for: self.promoEligibilityPackageInfos(for: paywallState)
                 )
-                _ = await (introCheck, promoCheck)
-                self.didFinishEligibilityCheck = true
+                self.didFinishPromoEligibilityCheck = true
             }
             // Note: preferences need to be applied after `.toolbar` call
             .preference(key: PurchaseInProgressPreferenceKey.self,
@@ -634,8 +667,11 @@ struct LoadedPaywallsV2View: View {
     @Environment(\.customPaywallVariables)
     private var customVariables
 
-    @Environment(\.isPaywallLoading)
-    private var isPaywallLoading
+    @Environment(\.offerEligibilityLoading)
+    private var offerEligibilityLoading
+
+    @Environment(\.offerEligibilityAvailability)
+    private var offerEligibilityAvailability
 
     @ObservedObject
     private var selectedPackageContext: PackageContext
@@ -691,7 +727,9 @@ struct LoadedPaywallsV2View: View {
 
         guard let resolved = packageValidator.reconciledSelection(
             current: self.selectedPackageContext.package,
-            in: self.packageSelectionContext
+            in: self.packageSelectionContext,
+            offerEligibilityLoading: self.offerEligibilityLoading,
+            offerEligibilityAvailability: self.offerEligibilityAvailability
         ) else {
             return
         }
@@ -765,9 +803,8 @@ struct LoadedPaywallsV2View: View {
             .onAppear {
                 self.reconcileSelection()
             }
-            // Intro and promo eligibility both land after first render and can flip a package's
-            // visibility. `isPaywallLoading` goes false once both have resolved.
-            .onChangeOf(self.isPaywallLoading) { _ in
+            // Each eligibility result can independently flip package visibility.
+            .onChangeOf(self.offerEligibilityLoading) { _ in
                 self.reconcileSelection()
             }
             // Leaving a tab can restore a package a rule hides, and this doesn't depend on

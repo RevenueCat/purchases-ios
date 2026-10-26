@@ -63,6 +63,7 @@ private enum PackageVisibilityPreview {
 
     static let localizations: PaywallComponent.LocalizationDictionary = [
         "headline": .string("Choose your plan"),
+        "headline_offer": .string("{{ product.offer_price }}"),
         "monthly": .string("Monthly"),
         "annual": .string("Annual"),
         "weekly": .string("Weekly")
@@ -118,11 +119,12 @@ private enum PackageVisibilityPreview {
     }
 
     static func paywallComponents(
-        packages: [PaywallComponent.PackageComponent]
+        packages: [PaywallComponent.PackageComponent],
+        title: PaywallComponent.TextComponent? = nil
     ) -> Offering.PaywallComponents {
         let stack = PaywallComponent.StackComponent(
             components: [
-                .text(title)
+                .text(title ?? Self.title)
             ] + packages.map { .package($0) },
             dimension: .vertical(.leading, .start),
             spacing: 12,
@@ -131,6 +133,7 @@ private enum PackageVisibilityPreview {
 
         let data = PaywallComponentsData(
             templateName: "components",
+            // swiftlint:disable:next force_unwrapping
             assetBaseURL: URL(string: "https://assets.pawwalls.com")!,
             componentsConfig: .init(
                 base: .init(
@@ -227,11 +230,22 @@ struct PackageVisibilityPreview_Previews: PreviewProvider {
                         title: "weekly",
                         isSelectedByDefault: false
                     )
-                ]
+                ],
+                title: .init(
+                    text: "headline",
+                    fontWeight: .bold,
+                    color: .init(light: .hex("#111111")),
+                    overrides: [
+                        .init(
+                            conditions: [.introOffer],
+                            properties: .init(visible: nil, text: "headline_offer")
+                        )
+                    ]
+                )
             ),
             eligibility: .ineligible
         )
-        .environment(\.paywallLoadingOverride, true)
+        .environment(\.offerEligibilityLoadingOverride, [.intro, .promo])
         .previewRequiredPaywallsV2Properties()
         .previewLayout(.fixed(width: 400, height: 800))
         .previewDisplayName("Package: static hidden default (Loading)")

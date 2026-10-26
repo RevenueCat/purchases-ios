@@ -1027,10 +1027,13 @@ SWIFT_CLASS_NAMED("Builder")
 ///   </li>
 /// </ul>
 - (RCConfigurationBuilder * _Nonnull)withEntitlementVerificationMode:(enum RCEntitlementVerificationMode)mode SWIFT_WARN_UNUSED_RESULT;
-/// Enabling diagnostics will send some performance and debugging information from the SDK to our servers.
-/// Examples of this information include response times, cache hits or error codes.
-/// This information will be anonymous so it can’t be traced back to the end-user
-/// Defaults to <code>false</code>
+/// Enabling diagnostics sends performance and debugging information from the SDK to RevenueCat,
+/// including response times, cache hits, and error codes.
+/// This information is anonymous and cannot be traced back to the end user.
+/// Diagnostics are not sent to RevenueCat by default. They can be enabled locally by calling this
+/// method with <code>true</code>, or remotely only at the developer’s request or with their explicit approval.
+/// A remote setting takes precedence over the value configured here.
+/// Defaults to <code>false</code>.
 - (RCConfigurationBuilder * _Nonnull)withDiagnosticsEnabled:(BOOL)diagnosticsEnabled SWIFT_WARN_UNUSED_RESULT SWIFT_AVAILABILITY(watchos,introduced=8.0) SWIFT_AVAILABILITY(macos,introduced=12.0) SWIFT_AVAILABILITY(tvos,introduced=15.0) SWIFT_AVAILABILITY(ios,introduced=15.0);
 /// Set <code>StoreKitVersion</code>.
 /// Defaults to <code>StoreKitVersion/default</code> which lets the SDK select
@@ -2264,7 +2267,7 @@ SWIFT_CLASS("_TtC10RevenueCat18ProductsFetcherSK1")
 - (void)request:(SKRequest * _Nonnull)request didFailWithError:(NSError * _Nonnull)error;
 @end
 
-/// Basic implemenation of a <code>ProductsManagerType</code>
+/// Fetches Apple products using the configured StoreKit version.
 SWIFT_CLASS("_TtC10RevenueCat15ProductsManager")
 @interface ProductsManager : NSObject
 - (nonnull instancetype)init SWIFT_UNAVAILABLE;
@@ -2348,6 +2351,8 @@ typedef SWIFT_ENUM_NAMED(NSInteger, RCPurchaseOwnershipType, "PurchaseOwnershipT
   RCPurchaseOwnershipTypeFamilyShared = 1,
 /// The ownership type could not be determined.
   RCPurchaseOwnershipTypeUnknown = 2,
+/// The user has access to the purchase through an organization.
+  RCPurchaseOwnershipTypeAssigned = 3,
 };
 
 /// <code>PurchaseParams</code> can be used to add configuration options when making a purchase.
@@ -3497,13 +3502,6 @@ SWIFT_CLASS_PROPERTY(@property (nonatomic, class) BOOL debugLogsEnabled SWIFT_DE
 @end
 
 @interface RCPurchases (SWIFT_EXTENSION(RevenueCat))
-- (void)getVirtualCurrenciesWithCompletion:(void (^ _Nonnull)(RCVirtualCurrencies * _Nullable, NSError * _Nullable))completion;
-@property (nonatomic, readonly, strong) RCVirtualCurrencies * _Nullable cachedVirtualCurrencies;
-- (void)invalidateVirtualCurrenciesCache;
-- (void)spendVirtualCurrenciesWithAmounts:(NSDictionary<NSString *, NSNumber *> * _Nonnull)amounts reference:(NSString * _Nullable)reference completion:(void (^ _Nonnull)(RCVirtualCurrencies * _Nullable, NSError * _Nullable))completion;
-@end
-
-@interface RCPurchases (SWIFT_EXTENSION(RevenueCat))
 /// Configures an instance of the Purchases SDK with a specified <code>Configuration</code>.
 /// The instance will be set as a singleton.
 /// You should access the singleton instance using <code>Purchases/shared</code>
@@ -3597,6 +3595,13 @@ SWIFT_CLASS_PROPERTY(@property (nonatomic, class) BOOL debugLogsEnabled SWIFT_DE
 /// returns:
 /// An instantiated <code>Purchases</code> object that has been set as a singleton.
 + (RCPurchases * _Nonnull)configureWithAPIKey:(NSString * _Nonnull)apiKey appUserID:(NSString * _Nullable)appUserID purchasesAreCompletedBy:(enum RCPurchasesAreCompletedBy)purchasesAreCompletedBy storeKitVersion:(enum RCStoreKitVersion)storeKitVersion;
+@end
+
+@interface RCPurchases (SWIFT_EXTENSION(RevenueCat))
+- (void)getVirtualCurrenciesWithCompletion:(void (^ _Nonnull)(RCVirtualCurrencies * _Nullable, NSError * _Nullable))completion;
+@property (nonatomic, readonly, strong) RCVirtualCurrencies * _Nullable cachedVirtualCurrencies;
+- (void)invalidateVirtualCurrenciesCache;
+- (void)spendVirtualCurrenciesWithAmounts:(NSDictionary<NSString *, NSNumber *> * _Nonnull)amounts reference:(NSString * _Nullable)reference completion:(void (^ _Nonnull)(RCVirtualCurrencies * _Nullable, NSError * _Nullable))completion;
 @end
 
 @interface RCPurchases (SWIFT_EXTENSION(RevenueCat))
@@ -4528,6 +4533,10 @@ SWIFT_CLASS_NAMED("SubscriptionInfo")
 ///   </li>
 ///   <li>
 ///     <code>PurchaseOwnershipType/familyShared</code>: The Customer has access to the product via their family.
+///   </li>
+///   <li>
+///     <code>PurchaseOwnershipType/assigned</code>: The Customer has been assigned access to this product
+///     through an organization.
 ///   </li>
 /// </ul>
 @property (nonatomic, readonly) enum RCPurchaseOwnershipType ownershipType;

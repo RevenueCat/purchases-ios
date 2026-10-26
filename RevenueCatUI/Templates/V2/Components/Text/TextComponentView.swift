@@ -62,8 +62,11 @@ struct TextComponentView: View {
 
     @Environment(\.redactionReasons) private var redactionReasons
 
-    @Environment(\.isPaywallLoading)
-    private var isPaywallLoading
+    @Environment(\.offerEligibilityLoading)
+    private var offerEligibilityLoading
+
+    @Environment(\.offerEligibilityAvailability)
+    private var offerEligibilityAvailability
 
     @Environment(\.accessibilityVoiceOverEnabled)
     private var accessibilityVoiceOverEnabled
@@ -88,11 +91,44 @@ struct TextComponentView: View {
         self.viewModel = viewModel
     }
 
+    private func shouldRedactWhileLoading(
+        isEligibleForIntroOffer: Bool,
+        isEligibleForPromoOffer: Bool
+    ) -> Bool {
+        guard !self.offerEligibilityLoading.isEmpty else {
+            return false
+        }
+
+        return self.viewModel.redactsWhileOfferEligibilityLoads(
+            state: self.componentViewState,
+            condition: self.screenCondition,
+            offerEligibility: .init(
+                isEligibleForIntroOffer: isEligibleForIntroOffer,
+                isEligibleForPromoOffer: isEligibleForPromoOffer,
+                loading: self.offerEligibilityAvailability.loading(
+                    self.offerEligibilityLoading,
+                    for: self.packageContext.package
+                )
+            ),
+            conditionContext: self.viewModel.uiConfigProvider.conditionContext(
+                selectedPackageId: self.selectedPackageId,
+                customVariables: self.customVariables,
+                stateValues: self.paywallStateValues,
+                stateDefaults: self.paywallStateDefaults,
+                windowSize: self.paywallWindowSize
+            )
+        )
+    }
+
     var body: some View {
         let isEligibleForIntroOffer = self.introOfferEligibilityContext.isEligible(
             package: self.packageContext.package
         )
         let promoOffer = self.paywallPromoOfferCache.get(for: self.packageContext.package)
+        let shouldRedactWhileLoading = self.shouldRedactWhileLoading(
+            isEligibleForIntroOffer: isEligibleForIntroOffer,
+            isEligibleForPromoOffer: promoOffer != nil
+        )
         viewModel.styles(
             state: self.componentViewState,
             condition: self.screenCondition,
@@ -118,7 +154,7 @@ struct TextComponentView: View {
                     .fixedSize(horizontal: false, vertical: true)
                     .multilineTextAlignment(style.textAlignment)
                     .foregroundColorScheme(style.color)
-                    .redacted(reason: isPaywallLoading ? .placeholder : self.redactionReasons)
+                    .redacted(reason: shouldRedactWhileLoading ? .placeholder : self.redactionReasons)
                     .padding(style.padding)
                     .size(style.size,
                           horizontalAlignment: style.horizontalAlignment)
@@ -393,12 +429,12 @@ struct TextComponentView_Previews: PreviewProvider {
         .previewDisplayName("Detected Platform")
 
         defaultPreview
-        .environment(\.isPaywallLoading, true)
-        .previewDisplayName("Default (Loading)")
+        .environment(\.offerEligibilityLoading, [.intro, .promo])
+        .previewDisplayName("Default (Loading, static text)")
 
         platformPreview
-        .environment(\.isPaywallLoading, true)
-        .previewDisplayName("Detected Platform (Loading)")
+        .environment(\.offerEligibilityLoading, [.intro, .promo])
+        .previewDisplayName("Detected Platform (Loading, static text)")
 
         // Markdown
         TextComponentView(

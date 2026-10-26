@@ -61,7 +61,7 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
     #if DEBUG
     func testSimulatedErrorCheckpointThrowsConfigurationError() async {
         do {
-            _ = try await self.resolve(identifier: "error_checkpoint")
+            _ = try await self.resolve(identifier: "f0rc3_3rr0r")
             XCTFail("Expected resolution to throw")
         } catch {
             XCTAssertEqual((error as NSError).code, ErrorCode.configurationError.rawValue)
@@ -722,6 +722,46 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
         XCTAssertNil(Self.resolvedWorkflow(resolution))
     }
 
+    func testTerminalOfferingWorkflowAttributesPackagesToCheckpoint() async throws {
+        self.stubOfferingWorkflow(offeringID: self.offeringID)
+
+        let resolution = try await self.resolve()
+        let offering = try XCTUnwrap(Self.resolvedOffering(resolution))
+
+        XCTAssertTrue(offering.availablePackages.allSatisfy {
+            $0.presentedOfferingContext.checkpointIdentifier == self.checkpointIdentifier
+        })
+        XCTAssertTrue(self.offering.availablePackages.allSatisfy {
+            $0.presentedOfferingContext.checkpointIdentifier == nil
+        })
+    }
+
+    func testTerminalOfferingWorkflowAttributesPackagesToTheHitTraceID() async throws {
+        self.stubOfferingWorkflow(offeringID: self.offeringID)
+
+        let resolved = try await self.resolveCheckpoint()
+        let offering = try XCTUnwrap(Self.resolvedOffering(resolved.resolution))
+        let hit = CheckpointEvent.Data(identifier: self.checkpointIdentifier, date: Date(), resolved: resolved)
+
+        let package = try XCTUnwrap(offering.availablePackages.first)
+        XCTAssertEqual(package.presentedOfferingContext.traceID, hit.traceID)
+    }
+
+    func testTerminalOfferingWorkflowWithoutPackagesReportsTheResolutionTraceID() async throws {
+        self.offerings = Self.offerings([
+            Offering(identifier: self.offeringID, serverDescription: "Test offering", availablePackages: [],
+                     webCheckoutUrl: nil)
+        ])
+        self.stubOfferingWorkflow(offeringID: self.offeringID)
+
+        let resolved = try await self.resolveCheckpoint()
+
+        guard case let .matchedOffering(_, traceID) = resolved.resolution else {
+            return XCTFail("Expected a matched offering, got \(resolved.resolution)")
+        }
+        XCTAssertEqual(resolved.traceID, traceID)
+    }
+
     func testTerminalOfferingWorkflowReadsItsOfferingFromTheStep() async throws {
         let secondaryOffering = Self.offering(id: "secondary")
         self.offerings = Self.offerings([self.offering, secondaryOffering])
@@ -750,6 +790,72 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
         self.workflowsProvider.stubbedGetWorkflowResult[secondWorkflowID] = Self.workflowDataResult(
             id: secondWorkflowID
         )
+    }
+
+    func testInvalidGatingOnAnyStepDoesNotFallThroughToALaterRule() async throws {
+        self.stubTwoRules(secondWorkflowID: "wf_later")
+        let invalidGates: [AnyDecodable] = [
+            .null, .string("hard"), .object(["type": .string("unknown")]),
+            .object(["type": .string("hard")])
+        ]
+        var offeringsFetched = 0
+        let resolver = self.makeResolver(offeringsProvider: {
+            offeringsFetched += 1
+            return self.offerings
+        })
+
+        for gate in invalidGates {
+            self.workflowsProvider.stubbedGetWorkflowResult[self.workflowID] = Self.workflowDataResult(
+                id: self.workflowID,
+                gates: [nil, gate]
+            )
+
+            let resolved = try await resolver.resolve(identifier: self.checkpointIdentifier, params: self.params)
+
+            XCTAssertEqual(Self.noActionReason(resolved.resolution), .configurationUnavailable)
+            XCTAssertNil(resolved.checkpointRuleID)
+        }
+
+        XCTAssertEqual(offeringsFetched, 0)
+        XCTAssertFalse(self.workflowsProvider.invokedGetWorkflowParameters.contains("wf_later"))
+    }
+
+    func testSoftAndHardGatesAllowWorkflowResolution() async throws {
+        self.workflowsProvider.stubbedGetWorkflowResult[self.workflowID] = Self.workflowDataResult(
+            id: self.workflowID,
+            gates: [
+                .object(["type": .string("soft")]),
+                .object(["type": .string("hard"), "entitlement_identifiers": .array([.string("pro")])])
+            ]
+        )
+
+        let resolution = try await self.resolve()
+
+        XCTAssertEqual(Self.resolvedWorkflow(resolution)?.workflow.steps["step_1"]?.gating, .soft)
+        XCTAssertEqual(
+            Self.resolvedWorkflow(resolution)?.workflow.steps["step_2"]?.gating,
+            .hard(entitlementIdentifiers: ["pro"])
+        )
+    }
+
+    func testInvalidGatingOnTerminalOfferingDoesNotFallThroughToALaterRule() async throws {
+        self.stubTwoRules(secondWorkflowID: "wf_later")
+        self.stubOfferingWorkflow(
+            offeringID: self.offeringID,
+            gating: .object(["type": .string("hard")])
+        )
+        var offeringsFetched = 0
+        let resolver = self.makeResolver(offeringsProvider: {
+            offeringsFetched += 1
+            return self.offerings
+        })
+
+        let resolved = try await resolver.resolve(identifier: self.checkpointIdentifier, params: self.params)
+
+        XCTAssertEqual(Self.noActionReason(resolved.resolution), .configurationUnavailable)
+        XCTAssertNil(resolved.checkpointRuleID)
+        XCTAssertEqual(offeringsFetched, 0)
+        XCTAssertFalse(self.workflowsProvider.invokedGetWorkflowParameters.contains("wf_later"))
     }
 
     /// The audience gate runs before the workflow body decides between presenting and handing back an
@@ -873,7 +979,8 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
         extraSteps: [String: WorkflowStep] = [:],
         screenID: String? = nil,
         triggers: [WorkflowTrigger] = [],
-        triggerActions: [String: WorkflowTriggerAction] = [:]
+        triggerActions: [String: WorkflowTriggerAction] = [:],
+        gating: AnyDecodable? = nil
     ) {
         let stepID = "step_1"
         var step = WorkflowStep(
@@ -886,6 +993,7 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
         if let offeringID {
             step.paramValues = ["offering": .object(["identifier": .string(offeringID)])]
         }
+        step.paramValues["gating"] = gating
 
         var steps = extraSteps
         steps[stepID] = step
@@ -942,7 +1050,7 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
     }
 
     private static func resolvedOffering(_ resolution: CheckpointResolution) -> Offering? {
-        guard case let .matchedOffering(offering) = resolution else { return nil }
+        guard case let .matchedOffering(offering, _) = resolution else { return nil }
         return offering
     }
 
@@ -950,10 +1058,19 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
         return CheckpointRule(id: "rule_\(workflowID)", audienceId: audienceID, workflowId: workflowID)
     }
 
-    private static func workflowDataResult(id: String, offeringID: String? = "default") -> WorkflowDataResult {
-        var step = WorkflowStep(id: "step_1", type: "screen", screenId: nil)
-        if let offeringID {
-            step.paramValues = ["offering": .object(["identifier": .string(offeringID)])]
+    private static func workflowDataResult(
+        id: String,
+        offeringID: String? = "default",
+        gates: [AnyDecodable?] = [nil]
+    ) -> WorkflowDataResult {
+        var steps: [String: WorkflowStep] = [:]
+        for (index, gate) in gates.enumerated() {
+            var step = WorkflowStep(id: "step_\(index + 1)", type: "screen", screenId: nil)
+            if let offeringID {
+                step.paramValues = ["offering": .object(["identifier": .string(offeringID)])]
+            }
+            step.paramValues["gating"] = gate
+            steps[step.id] = step
         }
         return WorkflowDataResult(
             workflow: PublishedWorkflow(
@@ -961,7 +1078,7 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
                 displayName: "Test",
                 initialStepId: "step_1",
                 singleStepFallbackId: nil,
-                steps: ["step_1": step],
+                steps: steps,
                 screens: [:]
             ),
             uiConfig: .empty,
@@ -970,10 +1087,17 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
     }
 
     private static func offering(id: String) -> Offering {
+        let package = Package(
+            identifier: "$rc_monthly",
+            packageType: .monthly,
+            storeProduct: StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: "monthly")),
+            offeringIdentifier: id,
+            webCheckoutUrl: nil
+        )
         return Offering(
             identifier: id,
             serverDescription: "Test offering",
-            availablePackages: [],
+            availablePackages: [package],
             webCheckoutUrl: nil
         )
     }
@@ -1119,6 +1243,10 @@ private final class MockCheckpointsConfigProvider: CheckpointsConfigProviderType
 
     func isCurrent(_ snapshot: CheckpointRulesSnapshot) -> Bool {
         return snapshot.configGeneration == self.configGeneration
+    }
+
+    func checkpointIds() async -> [String] {
+        return []
     }
 
 }

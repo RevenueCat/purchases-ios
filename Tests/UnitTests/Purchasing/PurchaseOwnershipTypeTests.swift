@@ -13,6 +13,7 @@
 
 import Nimble
 @testable import RevenueCat
+import StoreKit
 import XCTest
 
 class PurchaseOwnershipTypeTests: TestCase {
@@ -29,6 +30,22 @@ class PurchaseOwnershipTypeTests: TestCase {
 
     func testNullBecomesUnknown() throws {
         expect(try PurchaseOwnershipType.decode("null")) == .unknown
+    }
+
+}
+
+// MARK: - From StoreKit OwnershipType
+extension PurchaseOwnershipTypeTests {
+
+    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+    func testFromStoreKitOwnershipType() throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        expect(PurchaseOwnershipType.from(storeKitOwnershipType: .purchased)) == .purchased
+        expect(PurchaseOwnershipType.from(storeKitOwnershipType: .familyShared)) == .familyShared
+        #if compiler(>=6.4)
+        expect(PurchaseOwnershipType.from(storeKitOwnershipType: .assigned)) == .assigned
+        #endif
     }
 
 }

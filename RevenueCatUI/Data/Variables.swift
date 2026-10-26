@@ -51,7 +51,7 @@ protocol VariableDataProvider {
     func localizedPricePerPeriodFull(_ locale: Locale, showZeroDecimalPlacePrices: Bool) -> String
     func localizedPriceAndPerMonth(_ locale: Locale, showZeroDecimalPlacePrices: Bool) -> String
     func localizedPriceAndPerMonthFull(_ locale: Locale, showZeroDecimalPlacePrices: Bool) -> String
-    func localizedRelativeDiscount(_ discount: Double?, _ locale: Locale) -> String?
+    func localizedRelativeDiscount(_ discount: Decimal?, _ locale: Locale) -> String?
 
 }
 
@@ -62,7 +62,7 @@ enum VariableHandler {
     /// Information necessary for computing variables
     struct Context {
 
-        var discountRelativeToMostExpensivePerMonth: Double?
+        var discountRelativeToMostExpensivePerMonth: Decimal?
         var showZeroDecimalPlacePrices: Bool = false
 
     }

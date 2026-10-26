@@ -92,7 +92,12 @@ private final class OverlappingPreviewProvider: CustomerCenterStateTestProvider,
     var beforeReturningConfiguration: (@Sendable () async throws -> Void)?
 
     override init() {
-        (stream, continuation) = AsyncStream.makeStream()
+        var continuation: AsyncStream<CustomerInfo>.Continuation?
+        self.stream = AsyncStream { continuation = $0 }
+        guard let continuation else {
+            fatalError("AsyncStream did not provide a continuation")
+        }
+        self.continuation = continuation
         super.init()
     }
 

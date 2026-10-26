@@ -1,3 +1,131 @@
+## 5.99.0
+## RevenueCat SDK
+### ✨ New Features
+* (Experimental) Allow configuring intro eligibility warm-up task priority (#8117) via Antonio Pallares (@ajpallares)
+### 🐞 Bugfixes
+* Share StoreKit 2 intro eligibility checks by subscription group (#8109) via Antonio Pallares (@ajpallares)
+
+## RevenueCatUI SDK
+### 🐞 Bugfixes
+* Fix(paywalls) Native delayed back button (#8114) via Jacob Rakidzich (@JZDesign)
+
+### 🔄 Other Changes
+* Simplify HTTP path types (#7987) via Dave DeLong (@davedelong)
+
+## 5.98.0
+## RevenueCat SDK
+### 🐞 Bugfixes
+* Share one product cache between offerings and intro eligibility (#8085) via Antonio Pallares (@ajpallares)
+* Fix product cache invalidation and shared request results (#8084) via Antonio Pallares (@ajpallares)
+* Handle re-login as the same user (#8100) via Dave DeLong (@davedelong)
+
+## RevenueCatUI SDK
+### Paywallsv2
+#### ✨ New Features
+* 6 of 6: Support native Back and Close in paywall workflows (#8025) via Josh Holtz (@joshdholtz)
+* 5 of 6: Show native paywall buttons in UIKit (#8024) via Josh Holtz (@joshdholtz)
+* 4 of 6: Show native paywall buttons in SwiftUI (#8023) via Josh Holtz (@joshdholtz)
+* 3 of 6: Connect native paywall buttons to existing actions (#8022) via Josh Holtz (@joshdholtz)
+* 2 of 6: Register native paywall button actions (#8027) via Josh Holtz (@joshdholtz)
+* 1 of 6: Add native paywall button preferences (#8021) via Josh Holtz (@joshdholtz)
+#### 🐞 Bugfixes
+* 8 of 8: Replace nested paywall navigation buttons (#8075) via Josh Holtz (@joshdholtz)
+* 7 of 7: Hide caller Back when native paywall controls are shown (#8071) via Josh Holtz (@joshdholtz)
+* fix: avoid redacting packages without applicable offers (#8074) via Antonio Pallares (@ajpallares)
+
+### 🔄 Other Changes
+* Improve intro eligibility debug logging (#8104) via Antonio Pallares (@ajpallares)
+* 10 of 10: Verify native and embedded navigation analytics (#8082) via Josh Holtz (@joshdholtz)
+* 9 of 9: Share paywall component traversal (#8080) via Josh Holtz (@joshdholtz)
+* Remove snapshots for iOS versions no longer tested on CI (#8092) via Antonio Pallares (@ajpallares)
+* Run iOS 26 tests on Xcode 26.6 with the iOS 26.2 simulator (#8090) via Antonio Pallares (@ajpallares)
+* Update fallback offerings snapshot for Filipino locale (#8102) via Josh Holtz (@joshdholtz)
+* Revert "Migrate existing anonymous user IDs when logging in" (#8101) via Dave DeLong (@davedelong)
+
+## 5.97.0
+## RevenueCat SDK
+### ✨ New Features
+* Load configured ad rewards from remote config (#7912) via Pol Miro (@polmiro)
+* Add configured ad rewards API (#7911) via Pol Miro (@polmiro)
+### Storekit 2
+#### ✨ New Features
+* feat: parse OwnershipType.assigned (#8064) via Will Taylor (@fire-at-will)
+
+## RevenueCatUI SDK
+### Paywallsv2
+#### ✨ New Features
+* feat(paywalls): add discount variables (#8038) via andsolleiro (@andsolleiro)
+#### 🐞 Bugfixes
+* Fix relative discounts calculated from rounded monthly prices (#8062) via Josh Holtz (@joshdholtz)
+
+### 🔄 Other Changes
+* Clarify StoreProduct identifier choices for billing plans (#8096) via Antonio Pallares (@ajpallares)
+* other: handle assigned ownership type in Customer Center and winback offers (#8072) via Will Taylor (@fire-at-will)
+* Run iOS 15 tests on Xcode 15.4 and drop the Xcode 14.3.1 test jobs (#8091) via Antonio Pallares (@ajpallares)
+* other(paywalls-tester): show checkpoint results the same way as Android (#8093) via Facundo Menzella (@facumenzella)
+* other(paywalls-tester): pick a presentation mode and run a simulated error (#8087) via Facundo Menzella (@facumenzella)
+* Build docs on Xcode 26.6 instead of the deprecated Xcode 14.3.1 image (#7942) via Antonio Pallares (@ajpallares)
+* other(paywalls-tester): list the project's checkpoints in the Checkpoints tab (#8070) via Facundo Menzella (@facumenzella)
+* feat(checkpoints): always deliver the customer's information in `CheckpointResult` (#8060) via Toni Rico (@tonidero)
+* feat(checkpoints): expand `CheckpointResult` with customer and purchase details (#8002) via Rick (@rickvdl)
+
+## 5.96.1
+## RevenueCatUI SDK
+### 🐞 Bugfixes
+* Fix(Paywalls) Adjust loading state during eligibility check (#8055) via Jacob Rakidzich (@JZDesign)
+* Fix(Paywalls) Intro Offer Eligibility checks were not resumable and sometimes slow (#8054) via Jacob Rakidzich (@JZDesign)
+### Paywallsv2
+#### 🐞 Bugfixes
+* fix(paywalls): Match Android swipe behaviour for Paywalls V2 carousel (#7857) via Jamie Holwill (@jholwill)
+
+### 🔄 Other Changes
+* Use a dedicated session id for diagnostics events (#8066) via Toni Rico (@tonidero)
+* Fix Customer Center preview tests on Xcode 14.3.1 (#8063) via Monika Mateska (@MonikaMateska)
+* other: attribute checkpoint offering purchases to their hit (#8058) via Facundo Menzella (@facumenzella)
+* Chore(deps): Bump fastlane from 2.241.0 to 2.241.1 (#8059) via dependabot[bot] (@dependabot[bot])
+* feat(customer-center): Add stateful Customer Center preview actions and diagnostics (#7951) via Monika Mateska (@MonikaMateska)
+* docs: require explicit fields in data model initializers (#8057) via Pol Miro (@polmiro)
+
+## 5.96.0
+## RevenueCat SDK
+### ✨ New Features
+* feat(ads): add revenuecat mediator type (#8007) via Peter Porfy (@peterporfy)
+### 🐞 Bugfixes
+* fix(test-store): Forward Test Store purchase attribution context (#8020) via Álvaro Marco (@amarco90)
+* fix(billing plans): use product.id in log messages (#8003) via Will Taylor (@fire-at-will)
+### Checkpoints
+#### 🐞 Bugfixes
+* fix(checkpoints): suppress callbacks for terminal checkpoint errors (#7984) via Rick (@rickvdl)
+* fix(checkpoints): respect preferred locale override in local rules (#7953) via Rick (@rickvdl)
+
+## RevenueCatUI SDK
+### Customer Center
+#### 🐞 Bugfixes
+* Fix Customer Center purchase details and action state (#7948) via Monika Mateska (@MonikaMateska)
+* fix(customer-center): stop the hang on iOS 16 and 17 when the single-purchase screen opens purchase history (#7993) via Facundo Menzella (@facumenzella)
+
+### 🔄 Other Changes
+* test: fix CI failures on main (non-UIKit test compile, offline cache key regex) (#8050) via Toni Rico (@tonidero)
+* Attribute workflow purchases to their launching checkpoint (#8037) via Cesar de la Vega (@vegaro)
+* test(customer-center): fix preview tests compiling on Xcode 14.3.1 (#8046) via Monika Mateska (@MonikaMateska)
+* fix(checkpoints): prevent presentation conflicts from blocking future calls (#8048) via Rick (@rickvdl)
+* Rename simulated error checkpoint identifier (#8047) via JayShortway (@JayShortway)
+* feat(customer-center): Render isolated Customer Center preview paywalls (#8015) via Monika Mateska (@MonikaMateska)
+* chore: route CODEOWNERS review requests to owning teams (#8033) via Cesar de la Vega (@vegaro)
+* Link RevenueCatUI in MagicWeatherSwiftUI (#8039) via Facundo Menzella (@facumenzella)
+* feat(checkpoints): add `CheckpointResult` result container (#8035) via Rick (@rickvdl)
+* docs(remote-config): clarify when diagnostics are enabled (#8004) via Rick (@rickvdl)
+* other(paywalls-tester): list and open flows by id (#7962) via Facundo Menzella (@facumenzella)
+* fix(checkpoints): localize default error presenter messages (#8032) via Rick (@rickvdl)
+* fix(checkpoints): report workflow navigation failures without ending the flow (#8031) via Rick (@rickvdl)
+* fix(checkpoints): route all errors through error presenter (#7994) via Rick (@rickvdl)
+* refactor(checkpoints): simplify error presenter completion (#8012) via Rick (@rickvdl)
+* feat(customer-center): Add isolated Customer Center preview data and actions (#8014) via Monika Mateska (@MonikaMateska)
+* Migrate existing anonymous user IDs when logging in (#8017) via Dave DeLong (@davedelong)
+* Chore(deps): Bump fastlane from 2.240.1 to 2.241.0 (#8019) via dependabot[bot] (@dependabot[bot])
+* feat(ads): add new capture methods (#7988) via Peter Porfy (@peterporfy)
+* fix(checkpoints): log unknown checkpoint hit as informational (#7970) via Rick (@rickvdl)
+
 ## 5.95.0
 ## RevenueCat SDK
 ### ✨ New Features

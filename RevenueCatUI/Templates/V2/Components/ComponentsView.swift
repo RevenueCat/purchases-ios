@@ -25,11 +25,25 @@ struct ComponentsView: View {
     @Environment(\.overlaidHeaderHeight)
     private var overlaidHeaderHeight
 
+    @Environment(\.workflowRenderingContext) private var workflowRenderingContext
+
+    @Environment(\.nativePaywallHiddenLayoutButtons) private var hiddenNativeButtons
+    @Environment(\.nativePaywallInvisibleLayoutButtons) private var invisibleButtons
+    @Environment(\.nativePaywallBodyHeroIdentifier) private var bodyHeroIdentifier
+    @Environment(\.nativePaywallBodySafeAreaRestored) private var bodySafeAreaRestored
+    @Environment(\.nativePaywallLayoutButtons) private var registeredLayoutButtons
+
     let componentViewModels: [PaywallComponentViewModel]
     /// The direct hero child stays above the safe area while its siblings receive padding.
     private let safeAreaExemptChildIndex: Int?
     private let onDismiss: () -> Void
     private let defaultPackage: Package?
+
+    private var bodyHeroInsetAlreadyRestored: Bool {
+        guard let bodyHeroIdentifier else { return false }
+        return self.bodySafeAreaRestored
+            && self.componentViewModels.first?.nativeMediaIdentifier == bodyHeroIdentifier
+    }
 
     init(
         componentViewModels: [PaywallComponentViewModel],
@@ -44,14 +58,44 @@ struct ComponentsView: View {
     }
 
     var body: some View {
-        ForEach(Array(componentViewModels.enumerated()), id: \.offset) { index, item in
+        ForEach(self.componentViewModels.indicesExcludingNativeButtons(
+            self.hiddenNativeButtons, invisibleButtons: self.invisibleButtons
+        ), id: \.self) { index in
+            let item = self.componentViewModels[index]
             view(for: item)
+                .background {
+                    if let bodyHeroIdentifier, item.nativeMediaIdentifier == bodyHeroIdentifier {
+                        GeometryReader { geometry in
+                            Color.clear.preference(
+                                key: NativePaywallVisibleBodyHeroKey.self,
+                                value: geometry.size.width > 0 && geometry.size.height > 0
+                            )
+                        }
+                    }
+                }
                 .padding(
                     .top,
-                    safeAreaExemptChildIndex != nil && index != safeAreaExemptChildIndex
+                    safeAreaExemptChildIndex != nil
+                        && index != safeAreaExemptChildIndex
+                        && !self.bodyHeroInsetAlreadyRestored
                         ? max(safeAreaInsets.top, overlaidHeaderHeight)
                         : 0
                 )
+                .applyIf(self.workflowRenderingContext.isHeader) { view in
+                    view.background {
+                        switch item {
+                        case .stack, .root:
+                            EmptyView() // Descendants report their own rendered content.
+                        default:
+                            GeometryReader { geometry in
+                                Color.clear.preference(
+                                    key: NativePaywallHeaderContentKey.self,
+                                    value: .init(hasVisibleContent: geometry.size.width > 0 && geometry.size.height > 0)
+                                )
+                            }
+                        }
+                    }
+                }
         }
     }
 
@@ -78,6 +122,8 @@ struct ComponentsView: View {
                 viewModel: viewModel,
                 onDismiss: onDismiss
             )
+            .environment(\.nativePaywallStackRegistrationHandled,
+                         viewModel.nativeButtonContainerIdentifiers?.isSubset(of: self.registeredLayoutButtons) == true)
             .workflowSkeletonShimmer()
         case .button(let viewModel):
             ButtonComponentView(viewModel: viewModel, onDismiss: onDismiss)

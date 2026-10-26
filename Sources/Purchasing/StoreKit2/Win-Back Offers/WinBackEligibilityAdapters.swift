@@ -30,6 +30,7 @@ import StoreKit
 internal enum WinBackEligibilityOwnershipType: Sendable {
     case purchased
     case familyShared
+    case assigned
     case unknown
 }
 
@@ -156,6 +157,10 @@ private struct StoreKitWinBackStatus: WinBackEligibilityStatusType {
             return .purchased
         case .familyShared:
             return .familyShared
+        #if compiler(>=6.4)
+        case .assigned:
+            return .assigned
+        #endif
         default:
             return .unknown
         }

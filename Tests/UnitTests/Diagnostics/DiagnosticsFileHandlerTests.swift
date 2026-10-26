@@ -51,7 +51,7 @@ class DiagnosticsFileHandlerTests: TestCase {
         let content = DiagnosticsEvent(name: .customerInfoVerificationResult,
                                        properties: DiagnosticsEvent.Properties(verificationResult: "FAILED"),
                                        timestamp: Date(),
-                                       appSessionId: UUID())
+                                       diagnosticsSessionId: UUID())
 
         var entries = await self.handler.getEntries()
         expect(entries.count).to(equal(0))
@@ -94,13 +94,13 @@ class DiagnosticsFileHandlerTests: TestCase {
                                         name: .customerInfoVerificationResult,
                                         properties: DiagnosticsEvent.Properties(verificationResult: "FAILED"),
                                         timestamp: Date(millisecondsSince1970: 1712235359000),
-                                        appSessionId: UUID(uuidString: "4FAF3FE9-F239-4CC1-BB07-C3320BA40BCF")!)
+                                        diagnosticsSessionId: UUID(uuidString: "4FAF3FE9-F239-4CC1-BB07-C3320BA40BCF")!)
 
         let content2 = DiagnosticsEvent(id: UUID(uuidString: "FD06888D-DEA6-43C5-A36A-A1E06F2D6A42")!,
                                         name: .customerInfoVerificationResult,
                                         properties: DiagnosticsEvent.Properties(verificationResult: "FAILED"),
                                         timestamp: Date(millisecondsSince1970: 1712238959000),
-                                        appSessionId: UUID(uuidString: "4FAF3FE9-F239-4CC1-BB07-C3320BA40BCF")!)
+                                        diagnosticsSessionId: UUID(uuidString: "4FAF3FE9-F239-4CC1-BB07-C3320BA40BCF")!)
 
         let entries = await self.handler.getEntries()
         expect(entries[0]).to(equal(content1))
@@ -227,13 +227,13 @@ class DiagnosticsFileHandlerTests: TestCase {
                                         name: .customerInfoVerificationResult,
                                         properties: DiagnosticsEvent.Properties(verificationResult: "FAILED"),
                                         timestamp: Date(millisecondsSince1970: 1712235359000),
-                                        appSessionId: UUID(uuidString: "4FAF3FE9-F239-4CC1-BB07-C3320BA40BCF")!)
+                                        diagnosticsSessionId: UUID(uuidString: "4FAF3FE9-F239-4CC1-BB07-C3320BA40BCF")!)
 
         let content2 = DiagnosticsEvent(id: UUID(uuidString: "FD06888D-DEA6-43C5-A36A-A1E06F2D6A42")!,
                                         name: .customerInfoVerificationResult,
                                         properties: DiagnosticsEvent.Properties(verificationResult: "FAILED"),
                                         timestamp: Date(millisecondsSince1970: 1712238959000),
-                                        appSessionId: UUID(uuidString: "4FAF3FE9-F239-4CC1-BB07-C3320BA40BCF")!)
+                                        diagnosticsSessionId: UUID(uuidString: "4FAF3FE9-F239-4CC1-BB07-C3320BA40BCF")!)
 
         let entries = await self.handler.getEntries()
         expect(entries[0]).to(beNil())
@@ -304,7 +304,7 @@ private extension DiagnosticsFileHandlerTests {
         return DiagnosticsEvent(name: .httpRequestPerformed,
                                 properties: DiagnosticsEvent.Properties(verificationResult: "FAILED"),
                                 timestamp: Date(),
-                                appSessionId: UUID())
+                                diagnosticsSessionId: UUID())
     }
 
 }
@@ -426,7 +426,7 @@ class DiagnosticsFileOldFileDeletionTests: TestCase {
         return DiagnosticsEvent(name: .httpRequestPerformed,
                                 properties: DiagnosticsEvent.Properties(verificationResult: "FAILED"),
                                 timestamp: Date(),
-                                appSessionId: UUID())
+                                diagnosticsSessionId: UUID())
     }
 }
 

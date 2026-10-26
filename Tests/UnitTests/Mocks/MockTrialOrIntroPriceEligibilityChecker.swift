@@ -32,7 +32,8 @@ class MockTrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCheck
                   productsManager: MockProductsManager(diagnosticsTracker: nil,
                                                        systemInfo: systemInfo,
                                                        requestTimeout: Configuration.storeKitRequestTimeoutDefault),
-                  diagnosticsTracker: nil)
+                  diagnosticsTracker: nil,
+                  groupEligibilityCache: .init())
     }
 
     var invokedCheckTrialOrIntroPriceEligibilityFromOptimalStore = false
@@ -40,14 +41,21 @@ class MockTrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCheck
     var invokedCheckTrialOrIntroPriceEligibilityFromOptimalStoreParameters: Set<String>?
     var invokedCheckTrialOrIntroPriceEligibilityFromOptimalStoreParametersList: [Set<String>] = []
     var stubbedCheckTrialOrIntroPriceEligibilityFromOptimalStoreReceiveEligibilityResult: [String: IntroEligibility] = [:]
+    private let checkEligibilityLock = Lock()
 
-    override func checkEligibility(productIdentifiers: Set<String>,
-                                   completion: @escaping ReceiveIntroEligibilityBlock) {
-        invokedCheckTrialOrIntroPriceEligibilityFromOptimalStore = true
-        invokedCheckTrialOrIntroPriceEligibilityFromOptimalStoreCount += 1
-        invokedCheckTrialOrIntroPriceEligibilityFromOptimalStoreParameters = productIdentifiers
-        invokedCheckTrialOrIntroPriceEligibilityFromOptimalStoreParametersList.append(Set(productIdentifiers))
-        completion(stubbedCheckTrialOrIntroPriceEligibilityFromOptimalStoreReceiveEligibilityResult)
+    var asyncCheckEligibility: (@Sendable (Set<String>) async -> [String: IntroEligibility])?
+
+    override func checkEligibility(productIdentifiers: Set<String>) async -> [String: IntroEligibility] {
+        if let check = self.asyncCheckEligibility {
+            return await check(productIdentifiers)
+        }
+        return self.checkEligibilityLock.perform {
+            invokedCheckTrialOrIntroPriceEligibilityFromOptimalStore = true
+            invokedCheckTrialOrIntroPriceEligibilityFromOptimalStoreCount += 1
+            invokedCheckTrialOrIntroPriceEligibilityFromOptimalStoreParameters = productIdentifiers
+            invokedCheckTrialOrIntroPriceEligibilityFromOptimalStoreParametersList.append(Set(productIdentifiers))
+            return stubbedCheckTrialOrIntroPriceEligibilityFromOptimalStoreReceiveEligibilityResult
+        }
     }
 
     var invokedSk1checkTrialOrIntroPriceEligibility = false
@@ -73,7 +81,10 @@ class MockTrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCheck
     var stubbedSk2checkTrialOrIntroPriceEligibilityReceiveEligibilityResult: [String: IntroEligibility] = [:]
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-    override func sk2CheckEligibility(_ productIdentifiers: Set<String>) async -> [String: IntroEligibility] {
+    override func sk2CheckEligibility(
+        _ productIdentifiers: Set<String>,
+        checkSubscriptionGroup: @escaping @Sendable (String) async -> Bool
+    ) async -> [String: IntroEligibility] {
         invokedSk2checkTrialOrIntroPriceEligibility = true
         invokedSk2checkTrialOrIntroPriceEligibilityCount += 1
         invokedSk2checkTrialOrIntroPriceEligibilityParameters = (productIdentifiers, ())

@@ -33,6 +33,7 @@ final class PostHostedCheckoutOperation: CacheableNetworkOperation {
             configuration.appUserID,
             postData.packageID,
             postData.presentedOfferingIdentifier,
+            postData.presentedCheckpointIdentifier ?? "",
             postData.externalPurchaseTokenID ?? "",
             postData.previousOperationSessionID ?? ""
         ].joined(separator: "\n")
@@ -112,6 +113,7 @@ extension PostHostedCheckoutOperation {
         let packageID: String
         let presentedOfferingIdentifier: String
         let presentedPlacementIdentifier: String?
+        let presentedCheckpointIdentifier: String?
         let appliedTargetingRule: AppliedTargetingRule?
 
         /// The paywall the checkout was started from, so that the purchase is attributed to it the same
@@ -159,6 +161,7 @@ extension PostHostedCheckoutOperation.PostData: Encodable {
         case packageID = "package_id"
         case presentedOfferingIdentifier = "presented_offering_identifier"
         case presentedPlacementIdentifier = "presented_placement_identifier"
+        case presentedCheckpointIdentifier = "presented_checkpoint_identifier"
         case presentedWorkflowID = "presented_workflow_id"
         case presentedStepID = "presented_step_id"
         case appliedTargetingRule = "applied_targeting_rule"
@@ -175,6 +178,7 @@ extension PostHostedCheckoutOperation.PostData: Encodable {
         try container.encode(self.packageID, forKey: .packageID)
         try container.encode(self.presentedOfferingIdentifier, forKey: .presentedOfferingIdentifier)
         try container.encodeIfPresent(self.presentedPlacementIdentifier, forKey: .presentedPlacementIdentifier)
+        try container.encodeIfPresent(self.presentedCheckpointIdentifier, forKey: .presentedCheckpointIdentifier)
         try container.encodeIfPresent(self.appliedTargetingRule, forKey: .appliedTargetingRule)
         try container.encodeIfPresent(self.paywall, forKey: .paywall)
         try container.encodeIfPresent(self.paywall?.workflowID, forKey: .presentedWorkflowID)

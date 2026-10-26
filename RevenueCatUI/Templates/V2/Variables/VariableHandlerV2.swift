@@ -26,7 +26,8 @@ struct VariableHandlerV2 {
     private let functionCompatibilityMap: [String: String]
 
     private let showZeroDecimalPlacePrices: Bool
-    private let discountRelativeToMostExpensivePerMonth: Double?
+    private let discountRelativeToMostExpensivePerMonth: Decimal?
+    private let mostExpensivePricePerMonth: Decimal?
     private let dateProvider: () -> Date
 
     /// Custom variables provided by the SDK at runtime.
@@ -37,7 +38,8 @@ struct VariableHandlerV2 {
     init(
         variableCompatibilityMap: [String: String],
         functionCompatibilityMap: [String: String],
-        discountRelativeToMostExpensivePerMonth: Double?,
+        discountRelativeToMostExpensivePerMonth: Decimal?,
+        mostExpensivePricePerMonth: Decimal? = nil,
         showZeroDecimalPlacePrices: Bool,
         customVariables: [String: CustomVariableValue] = [:],
         defaultCustomVariables: [String: CustomVariableValue] = [:],
@@ -46,6 +48,7 @@ struct VariableHandlerV2 {
         self.variableCompatibilityMap = variableCompatibilityMap
         self.functionCompatibilityMap = functionCompatibilityMap
         self.discountRelativeToMostExpensivePerMonth = discountRelativeToMostExpensivePerMonth
+        self.mostExpensivePricePerMonth = mostExpensivePricePerMonth
         self.showZeroDecimalPlacePrices = showZeroDecimalPlacePrices
         self.customVariables = customVariables
         self.defaultCustomVariables = defaultCustomVariables
@@ -67,6 +70,7 @@ struct VariableHandlerV2 {
             locale: locale,
             localizations: localizations,
             discountRelativeToMostExpensivePerMonth: self.discountRelativeToMostExpensivePerMonth,
+            mostExpensivePricePerMonth: self.mostExpensivePricePerMonth,
             showZeroDecimalPlacePrices: self.showZeroDecimalPlacePrices,
             isEligibleForIntroOffer: isEligibleForIntroOffer,
             date: self.dateProvider(),
@@ -302,7 +306,7 @@ private enum VariableLocalizationKey: String {
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-enum VariablesV2: String {
+enum VariablesV2: String, CaseIterable {
 
     case productCurrencyCode = "product.currency_code"
     case productCurrencySymbol = "product.currency_symbol"
@@ -321,6 +325,7 @@ enum VariablesV2: String {
     case productPeriodInMonths = "product.period_in_months"
     case productPeriodInYears = "product.period_in_years"
     case productPeriodWithUnit = "product.period_with_unit"
+    // These read intro and promo eligibility. `dependsOnOfferEligibility` includes every `product.offer_*` case.
     case productOfferPrice = "product.offer_price"
     case productOfferPricePerDay = "product.offer_price_per_day"
     case productOfferPricePerWeek = "product.offer_price_per_week"
@@ -343,6 +348,13 @@ enum VariablesV2: String {
     case productSecondaryOfferPeriod = "product.secondary_offer_period"
     case productSecondaryOfferPeriodAbbreviated = "product.secondary_offer_period_abbreviated"
     case productRelativeDiscount = "product.relative_discount"
+    case productAbsoluteDiscount = "product.absolute_discount"
+    case productOfferRelativeDiscount = "product.offer_relative_discount"
+    case productOfferAbsoluteDiscount = "product.offer_absolute_discount"
+    case productRelativeDiscountWithOffer = "product.relative_discount_with_offer"
+    case productAbsoluteDiscountWithOffer = "product.absolute_discount_with_offer"
+    case productRelativeDiscountWithOfferFullPeriod = "product.relative_discount_with_offer_full_period"
+    case productAbsoluteDiscountWithOfferFullPeriod = "product.absolute_discount_with_offer_full_period"
     case productStoreProductName = "product.store_product_name"
 
     // Countdown variables
@@ -373,7 +385,8 @@ extension VariablesV2 {
         let package: Package?
         let locale: Locale
         let localizations: [String: String]
-        let discountRelativeToMostExpensivePerMonth: Double?
+        let discountRelativeToMostExpensivePerMonth: Decimal?
+        let mostExpensivePricePerMonth: Decimal?
         let showZeroDecimalPlacePrices: Bool
         let isEligibleForIntroOffer: Bool
         let date: Date
@@ -699,6 +712,78 @@ extension VariablesV2 {
                 discountRelativeToMostExpensivePerMonth: discountRelativeToMostExpensivePerMonth,
                 localizations: localizations
             )
+        case .productAbsoluteDiscount:
+            if let package {
+                return self.absoluteDiscount(
+                    self.standardSavings(
+                        package: package,
+                        mostExpensivePricePerMonth: context.mostExpensivePricePerMonth
+                    ),
+                    package: package,
+                    showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
+                )
+            }
+        case .productOfferRelativeDiscount:
+            if let package {
+                return self.percent(
+                    self.offerSavings(package: package, offerContext: offerContext)?.relative,
+                    localizations: localizations
+                )
+            }
+        case .productOfferAbsoluteDiscount:
+            if let package {
+                return self.absoluteDiscount(
+                    self.offerSavings(package: package, offerContext: offerContext),
+                    package: package,
+                    showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
+                )
+            }
+        case .productRelativeDiscountWithOffer:
+            if let package {
+                return self.percent(
+                    self.offerTermSavings(
+                        package: package,
+                        offerContext: offerContext,
+                        mostExpensivePricePerMonth: context.mostExpensivePricePerMonth
+                    )?.relative,
+                    localizations: localizations
+                )
+            }
+        case .productAbsoluteDiscountWithOffer:
+            if let package {
+                return self.absoluteDiscount(
+                    self.offerTermSavings(
+                        package: package,
+                        offerContext: offerContext,
+                        mostExpensivePricePerMonth: context.mostExpensivePricePerMonth
+                    ),
+                    package: package,
+                    showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
+                )
+            }
+        case .productRelativeDiscountWithOfferFullPeriod:
+            if let package {
+                return self.percent(
+                    self.fullPeriodSavings(
+                        package: package,
+                        offerContext: offerContext,
+                        mostExpensivePricePerMonth: context.mostExpensivePricePerMonth
+                    )?.relative,
+                    localizations: localizations
+                )
+            }
+        case .productAbsoluteDiscountWithOfferFullPeriod:
+            if let package {
+                return self.absoluteDiscount(
+                    self.fullPeriodSavings(
+                        package: package,
+                        offerContext: offerContext,
+                        mostExpensivePricePerMonth: context.mostExpensivePricePerMonth
+                    ),
+                    package: package,
+                    showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
+                )
+            }
         case .productStoreProductName:
             if let package {
                 return self.productStoreProductName(package: package)
@@ -1150,6 +1235,7 @@ extension VariablesV2 {
         let daysFromToday = discount.subscriptionPeriod.periodInUnit(unit: .day)
 
         let calendar = Calendar.current
+        // swiftlint:disable:next force_unwrapping
         let futureDate = calendar.date(byAdding: .day, value: daysFromToday, to: date)!
 
         let formatter = DateFormatter()
@@ -1175,10 +1261,20 @@ extension VariablesV2 {
     }
 
     func productRelativeDiscount(
-        discountRelativeToMostExpensivePerMonth: Double?,
+        discountRelativeToMostExpensivePerMonth: Decimal?,
         localizations: [String: String]
     ) -> String {
-        guard let discountRelativeToMostExpensivePerMonth else {
+        guard let discountRelativeToMostExpensivePerMonth,
+              let localizedFormat = localizations[VariableLocalizationKey.percent.rawValue] else {
+            return ""
+        }
+
+        let percent = Localization.discountPercentage(discountRelativeToMostExpensivePerMonth)
+        return String(format: localizedFormat, percent)
+    }
+
+    private func percent(_ fraction: Double?, localizations: [String: String]) -> String {
+        guard let fraction else {
             return ""
         }
 
@@ -1186,8 +1282,95 @@ extension VariablesV2 {
             return ""
         }
 
-        let percent = Int((discountRelativeToMostExpensivePerMonth * 100).rounded(.toNearestOrAwayFromZero))
+        let percent = Int((fraction * 100).rounded(.toNearestOrAwayFromZero))
         return String(format: localizedFormat, percent)
+    }
+
+    private func standardSavings(package: Package, mostExpensivePricePerMonth: Decimal?) -> DiscountSavings? {
+        guard !self.isLifetime(package: package) else {
+            return nil
+        }
+
+        return DiscountSavings(
+            firstPeriodOf: package.storeProduct,
+            discount: nil,
+            baseline: self.mostExpensiveBaseline(
+                package: package,
+                mostExpensivePricePerMonth: mostExpensivePricePerMonth
+            )
+        )
+    }
+
+    /// The most expensive per-month price, scaled to the package's period.
+    private func mostExpensiveBaseline(package: Package, mostExpensivePricePerMonth: Decimal?) -> Decimal? {
+        guard let mostExpensivePricePerMonth, let period = package.storeProduct.subscriptionPeriod else {
+            return nil
+        }
+
+        return mostExpensivePricePerMonth * period.numberOfUnitsAs(unit: .month)
+    }
+
+    /// The offer against the product's own standard price. `nil` without an offer.
+    private func offerSavings(package: Package, offerContext: OfferContext) -> DiscountSavings? {
+        guard !self.isLifetime(package: package),
+              let discount = self.resolvedDiscount(for: package, offerContext: offerContext) else {
+            return nil
+        }
+
+        return DiscountSavings(
+            firstPeriodOf: package.storeProduct,
+            discount: discount,
+            baseline: package.storeProduct.price
+        )
+    }
+
+    /// Without an offer, this matches `product.absolute_discount`.
+    private func fullPeriodSavings(
+        package: Package,
+        offerContext: OfferContext,
+        mostExpensivePricePerMonth: Decimal?
+    ) -> DiscountSavings? {
+        guard !self.isLifetime(package: package) else {
+            return nil
+        }
+
+        return DiscountSavings(
+            firstPeriodOf: package.storeProduct,
+            discount: self.resolvedDiscount(for: package, offerContext: offerContext),
+            baseline: self.mostExpensiveBaseline(
+                package: package,
+                mostExpensivePricePerMonth: mostExpensivePricePerMonth
+            )
+        )
+    }
+
+    /// Without a paid offer, this matches `product.absolute_discount`.
+    private func offerTermSavings(
+        package: Package,
+        offerContext: OfferContext,
+        mostExpensivePricePerMonth: Decimal?
+    ) -> DiscountSavings? {
+        guard !self.isLifetime(package: package) else {
+            return nil
+        }
+
+        return DiscountSavings(
+            offerTermOf: package.storeProduct,
+            discount: self.resolvedDiscount(for: package, offerContext: offerContext),
+            mostExpensivePricePerMonth: mostExpensivePricePerMonth
+        )
+    }
+
+    private func absoluteDiscount(
+        _ savings: DiscountSavings?,
+        package: Package,
+        showZeroDecimalPlacePrices: Bool
+    ) -> String {
+        return self.formatDiscountPrice(
+            savings?.amount,
+            package: package,
+            showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
+        )
     }
 
     func productStoreProductName(package: Package) -> String {
@@ -1435,35 +1618,58 @@ extension FunctionsV2 {
 
 struct Whisker {
 
+    private struct Expression {
+        let range: NSRange
+        let variable: String
+        let function: String?
+    }
+
     // swiftlint:disable:next force_try
     private static let regex = try! NSRegularExpression(pattern: "\\{\\{\\s*(.*?)\\s*\\}\\}")
 
     let template: String
     let resolve: (String, String?) -> String?
 
+    static func variableNames(in template: String) -> [String] {
+        return self.expressions(in: template).map(\.variable)
+    }
+
     func render() -> String {
         var result = template
-        let matches = Self.regex.matches(in: template, range: NSRange(template.startIndex..., in: template))
-
-        for match in matches.reversed() {
-            guard let range = Range(match.range(at: 1), in: template) else { continue }
-            let expression = String(template[range])
-
-            // Split the expression into variable and filter parts
-            let parts = expression.split(separator: "|").map { $0.trimmingCharacters(in: .whitespaces) }
-            let variablePart = parts[0]
-            let functionPart = parts.count > 1 ? parts[1] : nil
-
-            // Use the single callback to resolve the variable and apply the function
-            if let resolvedValue = resolve(variablePart, functionPart) {
+        for expression in Self.expressions(in: template).reversed() {
+            if let resolvedValue = resolve(expression.variable, expression.function) {
                 // Replace the full match range in the result
-                if let fullRange = Range(match.range, in: result) {
+                if let fullRange = Range(expression.range, in: result) {
                     result.replaceSubrange(fullRange, with: "\(resolvedValue)")
                 }
             }
         }
 
         return result
+    }
+
+    private static func expressions(in template: String) -> [Expression] {
+        return self.regex.matches(
+            in: template,
+            range: NSRange(template.startIndex..., in: template)
+        ).compactMap { match in
+            guard let range = Range(match.range(at: 1), in: template) else {
+                return nil
+            }
+
+            let parts = template[range].split(separator: "|").map {
+                $0.trimmingCharacters(in: .whitespaces)
+            }
+            guard let variable = parts.first, !variable.isEmpty else {
+                return nil
+            }
+
+            return Expression(
+                range: match.range,
+                variable: variable,
+                function: parts.count > 1 ? parts[1] : nil
+            )
+        }
     }
 
 }
