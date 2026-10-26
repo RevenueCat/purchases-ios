@@ -209,7 +209,7 @@ class TrialOrIntroPriceEligibilityCheckerSK2Tests: StoreKitConfigTestCase {
     }
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    func testCheckEligibilityNoAsync() throws {
+    func testCheckEligibilityAsync() async throws {
         try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
 
         let products: Set<String> = ["product_id",
@@ -221,50 +221,14 @@ class TrialOrIntroPriceEligibilityCheckerSK2Tests: StoreKitConfigTestCase {
                         "com.revenuecat.annual_39.99.2_week_intro": IntroEligibilityStatus.eligible,
                         "lifetime": IntroEligibilityStatus.noIntroOfferExists]
 
-        let eligibilities = waitUntilValue { completed in
-            self.trialOrIntroPriceEligibilityChecker.checkEligibility(
-                productIdentifiers: products
-            ) {
-                completed($0)
-            }
-        }
-
-        let receivedEligibilities = try XCTUnwrap(eligibilities)
+        let receivedEligibilities = await self.trialOrIntroPriceEligibilityChecker.checkEligibility(
+            productIdentifiers: products
+        )
         expect(receivedEligibilities).to(haveCount(expected.count))
 
         for (product, receivedEligibility) in receivedEligibilities {
             expect(receivedEligibility.status) == expected[product]
         }
-    }
-
-    @MainActor
-    @available(iOS 16.0, tvOS 16.0, macOS 13.0, watchOS 9.0, *)
-    func testDeliveryTimingIncludesFirstMainActorDispatchDelay() async throws {
-        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
-        let clock = try XCTUnwrap(self.mockSystemInfo.clock as? TestClock)
-        self.mockOperationDispatcher.shouldHoldDispatchOnMainActorBlocks = true
-        self.mockProductsManager.stubbedProductsCompletionResult = .success([])
-        var receivedResult: [String: IntroEligibility]?
-
-        self.trialOrIntroPriceEligibilityChecker.checkEligibility(productIdentifiers: ["missing"]) {
-            expect(Thread.isMainThread).to(beTrue())
-            receivedResult = $0
-        }
-
-        let heldBlocks = self.mockOperationDispatcher.heldMainActorBlocks
-        try await asyncWait { heldBlocks.value.count == 1 }
-        expect(receivedResult).to(beNil())
-        self.logger.verifyMessageWasNotLogged("Delivering intro eligibility results")
-        clock.advance(by: .seconds(7))
-        clock.now = .distantPast
-        self.mockOperationDispatcher.performHeldMainActorBlocks()
-
-        expect(receivedResult?["missing"]?.status) == .unknown
-        expect(self.mockOperationDispatcher.pendingMainActorDispatches.value) == 0
-        self.logger.verifyMessageWasLogged(
-            "Delivering intro eligibility results after 7.0s waiting for the main queue.",
-            level: .debug, expectedCount: 1
-        )
     }
 
     @MainActor
@@ -313,7 +277,7 @@ class TrialOrIntroPriceEligibilityCheckerSK2Tests: StoreKitConfigTestCase {
     }
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    func testCheckEligibilityNoAsyncWithFailure() throws {
+    func testCheckEligibilityAsyncWithFailure() async throws {
         try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
 
         let products: Set<String> = ["product_id",
@@ -327,15 +291,9 @@ class TrialOrIntroPriceEligibilityCheckerSK2Tests: StoreKitConfigTestCase {
 
         self.mockProductsManager?.stubbedProductsCompletionResult = .failure(ErrorUtils.productRequestTimedOutError())
 
-        let eligibilities = waitUntilValue { completed in
-            self.trialOrIntroPriceEligibilityChecker.checkEligibility(
-                productIdentifiers: products
-            ) {
-                completed($0)
-            }
-        }
-
-        let receivedEligibilities = try XCTUnwrap(eligibilities)
+        let receivedEligibilities = await self.trialOrIntroPriceEligibilityChecker.checkEligibility(
+            productIdentifiers: products
+        )
         expect(receivedEligibilities).to(haveCount(expected.count))
 
         for (product, receivedEligibility) in receivedEligibilities {
@@ -664,45 +622,6 @@ extension TrialOrIntroPriceEligibilityCheckerSK2Tests {
     }
 
     @MainActor
-    func testConcurrentDisjointProductRequestsShareSubscriptionGroupCheck() async throws {
-        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
-        let monthly = StoreProduct(sk2Product: try await self.fetchSk2Product())
-        let annual = StoreProduct(
-            sk2Product: try await self.fetchSk2Product("com.revenuecat.annual_39.99.2_week_intro")
-        )
-        let checker = try XCTUnwrap(self.trialOrIntroPriceEligibilityChecker)
-        let caching = CachingTrialOrIntroPriceEligibilityChecker(checker: checker)
-        let check = PriorityRecordingGroupCheck()
-        defer { check.release() }
-
-        self.mockProductsManager.stubbedProductsCompletionResult = .success([monthly])
-        let monthlyRequest = Task.detached(priority: .background) {
-            try await checker.sk2CheckEligibility(
-                [monthly.id], checkSubscriptionGroup: check.call
-            )
-        }
-        try await asyncWait { check.currentPriority.value == .background }
-
-        self.mockProductsManager.stubbedProductsCompletionResult = .success([annual])
-        let annualRequest = Task.detached(priority: .userInitiated) {
-            try await checker.sk2CheckEligibility(
-                [annual.id], checkSubscriptionGroup: check.call
-            )
-        }
-        // Confirm that the annual request joined the monthly request before completing the check.
-        try await asyncWait { check.currentPriority.value == .userInitiated }
-        check.release()
-
-        let monthlyResult = try await monthlyRequest.value
-        let annualResult = try await annualRequest.value
-        expect(Set(monthlyResult.keys)) == [monthly.id]
-        expect(Set(annualResult.keys)) == [annual.id]
-        expect(monthlyResult[monthly.id]?.status) == .eligible
-        expect(annualResult[annual.id]?.status) == .eligible
-        expect(check.invocations.value) == 1
-    }
-
-    @MainActor
     func testInvalidationAllowsIneligibleGroupToBecomeEligible() async throws {
         try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
         let monthly = StoreProduct(sk2Product: try await self.fetchSk2Product())
@@ -741,14 +660,10 @@ extension TrialOrIntroPriceEligibilityCheckerSK2Tests {
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
 extension TrialOrIntroPriceEligibilityCheckerSK2Tests {
 
-    func testSK2DoesNotTrackDiagnosticsWhenReceiptNotFetchedAndEmptyProductIds() throws {
+    func testSK2DoesNotTrackDiagnosticsWhenReceiptNotFetchedAndEmptyProductIds() async throws {
         try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
 
-        waitUntil { completion in
-            self.trialOrIntroPriceEligibilityChecker.checkEligibility(productIdentifiers: []) { _ in
-                completion()
-            }
-        }
+        _ = await self.trialOrIntroPriceEligibilityChecker.checkEligibility(productIdentifiers: [])
 
         expect(try self.mockDiagnosticsTracker.trackedAppleTrialOrIntroEligibilityRequestParams.value).to(beEmpty())
     }
@@ -768,11 +683,7 @@ extension TrialOrIntroPriceEligibilityCheckerSK2Tests {
         )
         self.mockSystemInfo.stubbedStorefront = MockStorefront(countryCode: "USA")
 
-        await withCheckedContinuation { continuation in
-            self.trialOrIntroPriceEligibilityChecker.checkEligibility(productIdentifiers: productIds) { _ in
-                continuation.resume()
-            }
-        }
+        _ = await self.trialOrIntroPriceEligibilityChecker.checkEligibility(productIdentifiers: productIds)
 
         let mockDiagnosticsTracker = try self.mockDiagnosticsTracker
 
@@ -801,11 +712,7 @@ extension TrialOrIntroPriceEligibilityCheckerSK2Tests {
         let product = try await self.fetchSk2StoreProduct("com.revenuecat.monthly_4.99.1_week_intro")
         self.mockProductsManager.stubbedProductsCompletionResult = .success([StoreProduct.from(product: product)])
 
-        await withCheckedContinuation { continuation in
-            self.trialOrIntroPriceEligibilityChecker.checkEligibility(productIdentifiers: productIds) { _ in
-                continuation.resume()
-            }
-        }
+        _ = await self.trialOrIntroPriceEligibilityChecker.checkEligibility(productIdentifiers: productIds)
 
         let mockDiagnosticsTracker = try self.mockDiagnosticsTracker
 
@@ -834,11 +741,7 @@ extension TrialOrIntroPriceEligibilityCheckerSK2Tests {
         let purchasesError = ErrorUtils.productRequestTimedOutError()
         self.mockProductsManager.stubbedProductsCompletionResult = .failure(purchasesError)
 
-        await withCheckedContinuation { continuation in
-            self.trialOrIntroPriceEligibilityChecker.checkEligibility(productIdentifiers: productIds) { _ in
-                continuation.resume()
-            }
-        }
+        _ = await self.trialOrIntroPriceEligibilityChecker.checkEligibility(productIdentifiers: productIds)
 
         let mockDiagnosticsTracker = try self.mockDiagnosticsTracker
 

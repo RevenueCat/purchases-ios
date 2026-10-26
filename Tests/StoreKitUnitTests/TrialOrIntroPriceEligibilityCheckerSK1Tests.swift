@@ -259,31 +259,23 @@ class TrialOrIntroPriceEligibilityCheckerSK1Tests: StoreKitConfigTestCase {
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
 extension TrialOrIntroPriceEligibilityCheckerSK1Tests {
 
-    func testSK1DoesNotTrackDiagnosticsWhenReceiptNotFetchedAndEmptyProductIds() throws {
+    func testSK1DoesNotTrackDiagnosticsWhenReceiptNotFetchedAndEmptyProductIds() async throws {
         self.receiptFetcher.shouldReturnReceipt = false
 
-        waitUntil { completion in
-            self.trialOrIntroPriceEligibilityChecker.checkEligibility(productIdentifiers: []) { _ in
-                completion()
-            }
-        }
+        _ = await self.trialOrIntroPriceEligibilityChecker.checkEligibility(productIdentifiers: [])
 
         expect(try self.mockDiagnosticsTracker.trackedAppleTrialOrIntroEligibilityRequestParams.value).to(beEmpty())
     }
 
-    func testSK1DoesNotTrackDiagnosticsWhenReceiptFetchedAndEmptyProductIds() throws {
+    func testSK1DoesNotTrackDiagnosticsWhenReceiptFetchedAndEmptyProductIds() async throws {
         self.receiptFetcher.shouldReturnReceipt = true
 
-        waitUntil { completion in
-            self.trialOrIntroPriceEligibilityChecker.checkEligibility(productIdentifiers: []) { _ in
-                completion()
-            }
-        }
+        _ = await self.trialOrIntroPriceEligibilityChecker.checkEligibility(productIdentifiers: [])
 
         expect(try self.mockDiagnosticsTracker.trackedAppleTrialOrIntroEligibilityRequestParams.value).to(beEmpty())
     }
 
-    func testSK1TracksDiagnosticsWhenReceiptFetchedAndEligibilityCalculatorSuccess() throws {
+    func testSK1TracksDiagnosticsWhenReceiptFetchedAndEligibilityCalculatorSuccess() async throws {
         self.receiptFetcher.shouldReturnReceipt = true
 
         let productIds = Set(["product_id",
@@ -298,11 +290,7 @@ extension TrialOrIntroPriceEligibilityCheckerSK1Tests {
         mockIntroEligibilityCalculator.stubbedCheckTrialOrIntroDiscountEligibilityResult = .success(stubbedEligibility)
         mockSystemInfo.stubbedStorefront = MockStorefront(countryCode: "USA")
 
-        waitUntil { completion in
-            self.trialOrIntroPriceEligibilityChecker.checkEligibility(productIdentifiers: productIds) { _ in
-                completion()
-            }
-        }
+        _ = await self.trialOrIntroPriceEligibilityChecker.checkEligibility(productIdentifiers: productIds)
 
         let mockDiagnosticsTracker = try self.mockDiagnosticsTracker
 
@@ -321,7 +309,7 @@ extension TrialOrIntroPriceEligibilityCheckerSK1Tests {
         expect(params.responseTime) == Self.eventTimestamp2.timeIntervalSince(Self.eventTimestamp1)
     }
 
-    func testSK1TracksDiagnosticsWhenReceiptFetchedAndEligibilityCalculatorFailure() throws {
+    func testSK1TracksDiagnosticsWhenReceiptFetchedAndEligibilityCalculatorFailure() async throws {
         self.receiptFetcher.shouldReturnReceipt = true
 
         let productIds = Set(["product_id",
@@ -336,11 +324,7 @@ extension TrialOrIntroPriceEligibilityCheckerSK1Tests {
         self.mockProductsManager.stubbedProductsCompletionResult = .failure(
             ErrorUtils.productNotAvailableForPurchaseError()
         )
-        waitUntil { completion in
-            self.trialOrIntroPriceEligibilityChecker.checkEligibility(productIdentifiers: productIds) { _ in
-                completion()
-            }
-        }
+        _ = await self.trialOrIntroPriceEligibilityChecker.checkEligibility(productIdentifiers: productIds)
 
         let mockDiagnosticsTracker = try self.mockDiagnosticsTracker
 
@@ -359,7 +343,7 @@ extension TrialOrIntroPriceEligibilityCheckerSK1Tests {
         expect(params.responseTime) == Self.eventTimestamp2.timeIntervalSince(Self.eventTimestamp1)
     }
 
-    func testSK1TracksDiagnosticsWhenEligibilityCalculatorFailurePartialGetProductsAndBackendError() throws {
+    func testSK1TracksDiagnosticsWhenEligibilityCalculatorFailurePartialGetProductsAndBackendError() async throws {
         self.receiptFetcher.shouldReturnReceipt = true
 
         let productIds = Set(["product_id",
@@ -379,11 +363,7 @@ extension TrialOrIntroPriceEligibilityCheckerSK1Tests {
         let backendError = BackendError.networkError(.unexpectedResponse(nil))
         self.mockOfferingsAPI.stubbedGetIntroEligibilityCompletionResult = ([:], backendError)
 
-        waitUntil { completion in
-            self.trialOrIntroPriceEligibilityChecker.checkEligibility(productIdentifiers: productIds) { _ in
-                completion()
-            }
-        }
+        _ = await self.trialOrIntroPriceEligibilityChecker.checkEligibility(productIdentifiers: productIds)
 
         let mockDiagnosticsTracker = try self.mockDiagnosticsTracker
 
@@ -403,7 +383,7 @@ extension TrialOrIntroPriceEligibilityCheckerSK1Tests {
         expect(params.responseTime) == Self.eventTimestamp2.timeIntervalSince(Self.eventTimestamp1)
     }
 
-    func testSK1TracksDiagnosticsWhenEligibilityCalculatorFailurePartialGetProductsAndBackendSuccess() throws {
+    func testSK1TracksDiagnosticsWhenEligibilityCalculatorFailurePartialGetProductsAndBackendSuccess() async throws {
         self.receiptFetcher.shouldReturnReceipt = true
 
         let productIds = Set(["product_id",
@@ -423,11 +403,7 @@ extension TrialOrIntroPriceEligibilityCheckerSK1Tests {
         let stubbedBackendEligibility = ["lifetime": IntroEligibility(eligibilityStatus: .eligible)]
         self.mockOfferingsAPI.stubbedGetIntroEligibilityCompletionResult = (stubbedBackendEligibility, nil)
 
-        waitUntil { completion in
-            self.trialOrIntroPriceEligibilityChecker.checkEligibility(productIdentifiers: productIds) { _ in
-                completion()
-            }
-        }
+        _ = await self.trialOrIntroPriceEligibilityChecker.checkEligibility(productIdentifiers: productIds)
 
         let mockDiagnosticsTracker = try self.mockDiagnosticsTracker
 

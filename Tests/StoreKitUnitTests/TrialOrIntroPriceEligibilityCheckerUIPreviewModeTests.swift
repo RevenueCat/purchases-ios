@@ -57,35 +57,34 @@ class TrialOrIntroPriceEligibilityCheckerUIPreviewModeTests: StoreKitConfigTestC
         )
     }
 
-    func testSK1CheckEligibilityInPreviewModeDoesNothing() throws {
+    func testSK1CheckEligibilityInPreviewModeDoesNothing() async throws {
         try setupUIPreviewMode(storeKitVersion: .storeKit1)
 
         let productIdentifiers: Set<String> = ["com.test.product1", "com.test.product2"]
 
-        let eligibilities = waitUntilValue { completed in
-            self.trialOrIntroPriceEligibilityChecker.checkEligibility(
-                productIdentifiers: productIdentifiers,
-                completion: completed
-            )
-        }
+        let eligibilities = await self.trialOrIntroPriceEligibilityChecker.checkEligibility(
+            productIdentifiers: productIdentifiers
+        )
+
+        expect(Set(eligibilities.keys)) == productIdentifiers
+        expect(eligibilities.values.map(\.status)).to(allPass(equal(IntroEligibilityStatus.unknown)))
 
         expect(self.receiptFetcher.receiptDataCalled) == false
         expect(self.mockIntroEligibilityCalculator.invokedCheckTrialOrIntroDiscountEligibility) == false
         expect(self.mockOfferingsAPI.invokedGetIntroEligibility) == false
     }
 
-    func testSK2CheckEligibilityInPreviewModeDoesNothing() throws {
+    func testSK2CheckEligibilityInPreviewModeDoesNothing() async throws {
         try setupUIPreviewMode(storeKitVersion: .storeKit2)
 
         let productIdentifiers: Set<String> = ["com.test.product1", "com.test.product2"]
 
-        // Verify early return with empty dictionary
-        let eligibilities = waitUntilValue { completed in
-            self.trialOrIntroPriceEligibilityChecker.checkEligibility(
-                productIdentifiers: productIdentifiers,
-                completion: completed
-            )
-        }
+        let eligibilities = await self.trialOrIntroPriceEligibilityChecker.checkEligibility(
+            productIdentifiers: productIdentifiers
+        )
+
+        expect(Set(eligibilities.keys)) == productIdentifiers
+        expect(eligibilities.values.map(\.status)).to(allPass(equal(IntroEligibilityStatus.unknown)))
 
         expect(self.receiptFetcher.receiptDataCalled) == false
         expect(self.mockIntroEligibilityCalculator.invokedCheckTrialOrIntroDiscountEligibility) == false
