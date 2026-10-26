@@ -208,7 +208,7 @@ final class APISourceRecorder: Sendable {
         return self.attempts.value.map(\.source)
     }
 
-    func sources(for path: HTTPRequestPath) -> [String?] {
+    func sources(for path: HTTPRequest.Path) -> [String?] {
         return self.attempts.value.filter { $0.pathName == path.name }.map(\.source)
     }
 
