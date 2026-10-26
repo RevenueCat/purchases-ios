@@ -512,6 +512,16 @@ final class WorkflowPresenterTests: TestCase {
         XCTAssertEqual(context.initialActiveEntitlementIdentifiers, ["pro"])
     }
 
+    func testGateContextReadsTheCurrentAppUserIDFromThePresenterProvider() {
+        var appUserID = "customer-a"
+        let presenter = WorkflowPresenter(presentationStarter: { _ in true }, appUserIDProvider: { appUserID })
+
+        let context = presenter.makeCheckpointGateContext(for: Self.presentation())
+        appUserID = "customer-b"
+
+        XCTAssertEqual(context.currentAppUserID(), "customer-b")
+    }
+
     func testNavigatingBackAfterRestoreCompletesWithRestoredOutcome() throws {
         let presenter = WorkflowPresenter { _ in true }
 
@@ -1293,7 +1303,7 @@ final class DefaultPaywallPresenterTests: TestCase {
 
 }
 
-private func makeCustomerInfo(activeEntitlements: [String]) throws -> CustomerInfo {
+func makeCustomerInfo(activeEntitlements: [String]) throws -> CustomerInfo {
     let infos = Dictionary(uniqueKeysWithValues: activeEntitlements.map { identifier in
         (
             identifier,

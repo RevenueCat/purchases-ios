@@ -51,7 +51,7 @@ final class CheckpointsManager {
         self.appUserIDProvider = appUserIDProvider
         self.preferredUILocaleProvider = preferredUILocaleProvider
         self.checkpointPresenter = checkpointPresenter ?? CheckpointPresenter(
-            workflowPresenter: WorkflowPresenter(),
+            workflowPresenter: WorkflowPresenter(appUserIDProvider: appUserIDProvider),
             cachedCustomerInfoProvider: cachedCustomerInfoProvider,
             customerInfoSynchronizer: customerInfoSynchronizer
         )
