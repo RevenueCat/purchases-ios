@@ -1976,6 +1976,9 @@ jobs:
       - run:
           name: Run api diff helper unit tests
           command: ruby fastlane/api_diff_helper_test.rb
+      - run:
+          name: Run SwiftLint custom rule tests
+          command: ruby Tests/SwiftLintCustomRules/swiftlint_custom_rules_test.rb
       - store_test_results:
           path: fastlane/test_output
       - store_artifacts:

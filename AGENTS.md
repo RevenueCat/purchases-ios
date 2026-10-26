@@ -40,6 +40,8 @@ This policy is enforced by the `no_new_public_enums` SwiftLint custom rule defin
 
 This policy is enforced by the `no_new_public_inits` SwiftLint custom rule defined in `.swiftlint.yml`. Pre-existing public initializers are grandfathered in `swiftlint-baseline.json`.
 
+Baseline entries are matched by line text, so moving code around does not invalidate them. To accept an intentional new violation, regenerate the baseline with `swiftlint lint --write-baseline swiftlint-baseline.json` and commit it. Custom rules have fixtures in `Tests/SwiftLintCustomRules/Fixtures`; when changing a rule, extend its fixture and run `ruby Tests/SwiftLintCustomRules/swiftlint_custom_rules_test.rb`.
+
 The `Tests/APITesters/` targets run in CI to catch unintended API changes. The `api/*.swiftinterface` files track the public API surface. **If API tests fail, you've likely broken the public API.**
 
 ### Objective-C Compatibility
