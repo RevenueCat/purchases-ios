@@ -23,6 +23,9 @@ struct RootView: View {
     @Environment(\.safeAreaInsets)
     private var safeAreaInsets
 
+    @Environment(\.paywallHeroLayout)
+    private var heroLayout
+
     @Environment(\.userInterfaceIdiom)
     private var userInterfaceIdiom
 
@@ -110,6 +113,7 @@ struct RootView: View {
                     onDismiss: onDismiss,
                     additionalPadding: EdgeInsets(top: 0, leading: 0, bottom: overlaidFooterHeight, trailing: 0)
                 )
+                .environment(\.paywallHeroLayout, self.heroLayout)
                 .environment(\.overlaidHeaderHeight, overlaidHeaderHeight)
                 .environment(\.nativePaywallBodyHeroIdentifier,
                              viewModel.firstItemIsFullWidthMedia
@@ -205,6 +209,8 @@ struct RootView: View {
                 )
             }
         }
+        // The body owns this resolution; sheets and footers have independent layout roots.
+        .environment(\.paywallHeroLayout, nil)
     }
 
     /// Returns the package that should be selected after a selection sheet is dismissed.

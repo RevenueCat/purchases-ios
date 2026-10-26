@@ -746,8 +746,36 @@ struct LoadedPaywallsV2View: View {
         )
     }
 
+    @Environment(\.componentViewState) private var componentViewState
+    @Environment(\.paywallStateValues) private var paywallStateValues
+    @Environment(\.paywallStateDefaults) private var paywallStateDefaults
+
+    private var heroLayout: PaywallHeroLayout? {
+        // Header overlay placement retains its existing policy.
+        guard self.paywallState.rootViewModel.headerViewModel == nil else { return nil }
+        return PaywallHeroLayoutResolver(
+            state: self.componentViewState,
+            condition: self.screenCondition,
+            isEligibleForIntroOffer: self.introOfferEligibilityContext.isEligible(
+                package: self.selectedPackageContext.package
+            ),
+            isEligibleForPromoOffer: self.paywallPromoOfferCache.isMostLikelyEligible(
+                for: self.selectedPackageContext.package
+            ),
+            conditionContext: self.uiConfigProvider.conditionContext(
+                selectedPackageId: self.selectedPackageContext.package?.identifier,
+                customVariables: self.customVariables,
+                stateValues: self.paywallStateValues,
+                stateDefaults: self.paywallStateDefaults,
+                windowSize: self.paywallWindowSize
+            ),
+            discardRules: self.paywallState.viewModelFactory.discardRules
+        ).resolve(self.paywallState.rootViewModel.stackViewModel)
+    }
+
     var body: some View {
-        GeometryReader { proxy in
+        let heroLayout = self.heroLayout
+        return GeometryReader { proxy in
             VStack(spacing: 0) {
                 ComponentsView(
                     componentViewModels: [.root(paywallState.rootViewModel)],
@@ -759,13 +787,11 @@ struct LoadedPaywallsV2View: View {
             }
             // Used for header image and sticky footer
             .environment(\.safeAreaInsets, proxy.safeAreaInsets)
-            .applyIf(
-                paywallState.rootViewModel.headerViewModel != nil
-                || paywallState.rootViewModel.firstItemIsFullWidthMedia,
-                apply: { view in
-                view
-                    .edgesIgnoringSafeArea(.top)
-            })
+            .environment(\.paywallHeroLayout, heroLayout)
+            .edgesIgnoringSafeArea(
+                self.paywallState.rootViewModel.headerViewModel != nil
+                    || heroLayout?.heroIdentifier != nil ? .top : []
+            )
             .applyIf(paywallState.rootViewModel.stackViewModel.component.size.height.isFill, apply: { view in
                 view.frame(maxHeight: .infinity, alignment: paywallState.rootViewModel.frameAlignment)
             })
