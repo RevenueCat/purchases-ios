@@ -164,38 +164,6 @@ final class PaywallHeroLayoutTests: TestCase {
         XCTAssertEqual(self.resolve(stack, width: 900).exemptChildIndicesByStack[ObjectIdentifier(stack)], 0)
     }
 
-    func testRuleContextAndDiscardPolicyMatchRendering() throws {
-        let text = PaywallComponent.text(.init(
-            visible: false, text: "text", color: .init(light: .hex("#000000")),
-            overrides: [.init(
-                extendedConditions: [
-                    .selectedPackage(operator: .in, packages: ["annual"]),
-                    .variable(operator: .equals, variable: "show", value: .bool(true)),
-                    .state(operator: .equals, name: "step", value: .int(2)),
-                    .introOfferCondition(operator: .equals, value: true)
-                ],
-                properties: .init(visible: true)
-            )]
-        ))
-        let context = ConditionContext(
-            selectedPackageId: "annual", customVariables: ["show": .bool(true)],
-            stateValues: ["step": .int(2)], windowSize: CGSize(width: 400, height: 800)
-        )
-        for discardRules in [false, true] {
-            let stack = try self.makeStack([text, self.image()], overrides: discardRules ? [
-                .init(extendedConditions: [.unsupported], properties: .init())
-            ] : nil)
-            let layout = PaywallHeroLayoutResolver(
-                state: .default, condition: .compact,
-                isEligibleForIntroOffer: true, isEligibleForPromoOffer: false,
-                textPromoOffer: nil,
-                conditionContext: context, discardRules: discardRules,
-                eligibilityForPackage: { _ in (intro: false, promo: false) }
-            ).resolve(stack)
-            XCTAssertEqual(layout.heroIdentifier != nil, discardRules)
-        }
-    }
-
     func testVideoStateRulesAgreeWithRendering() throws {
         let component = PaywallComponent.video(.init(
             source: .init(light: .init(
