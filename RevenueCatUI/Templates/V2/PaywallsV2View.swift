@@ -762,6 +762,7 @@ struct LoadedPaywallsV2View: View {
             isEligibleForPromoOffer: self.paywallPromoOfferCache.isMostLikelyEligible(
                 for: self.selectedPackageContext.package
             ),
+            textPromoOffer: self.paywallPromoOfferCache.get(for: self.selectedPackageContext.package),
             conditionContext: self.uiConfigProvider.conditionContext(
                 selectedPackageId: self.selectedPackageContext.package?.identifier,
                 customVariables: self.customVariables,

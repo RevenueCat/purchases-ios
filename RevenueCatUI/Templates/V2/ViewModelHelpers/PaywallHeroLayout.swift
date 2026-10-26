@@ -33,6 +33,8 @@ struct PaywallHeroLayoutResolver {
     let condition: ScreenCondition
     let isEligibleForIntroOffer: Bool
     let isEligibleForPromoOffer: Bool
+    /// Text rules require a signed offer; other components use optimistic promo eligibility.
+    let textPromoOffer: PromotionalOffer?
     let conditionContext: ConditionContext
     let discardRules: Bool
     let eligibilityForPackage: (Package) -> (intro: Bool, promo: Bool)
@@ -58,7 +60,7 @@ private extension PaywallHeroLayoutResolver {
             if case .stack(let child) = pair.1 {
                 guard let leaf = self.firstVisibleLeaf(in: child) else { continue }
                 result = leaf
-            } else if let visible = self.compositeVisibility(for: pair.1) {
+            } else if let visible = self.renderedVisibility(for: pair.1) {
                 guard visible else { continue }
                 result = .none
             } else {
@@ -98,23 +100,27 @@ private extension PaywallHeroLayoutResolver {
         case .webView(let component):
             return self.visibility(component.visible, overrides: component.overrides, keyPath: \.visible,
                                    width: component.size.width)
-        case .text(let component):
-            return self.visibility(component.visible, overrides: component.overrides, keyPath: \.visible)
         case .icon(let component):
             return self.visibility(component.visible, overrides: component.overrides, keyPath: \.visible)
-        case .button, .package, .timeline, .tabs, .carousel, .purchaseButton, .stickyFooter,
+        case .text, .button, .package, .timeline, .tabs, .carousel, .purchaseButton, .stickyFooter,
              .tabControl, .tabControlButton, .tabControlToggle, .countdown, .fallbackHeader:
             return .init(visible: true, width: nil, dimension: nil)
         }
     }
 
-    /// Composite renderers own their visibility context, including which condition inputs they support.
-    func compositeVisibility(for viewModel: PaywallComponentViewModel) -> Bool? {
+    /// Renderers own their visibility context, including which condition inputs they support.
+    func renderedVisibility(for viewModel: PaywallComponentViewModel) -> Bool? {
         let component: any CompositeComponentVisibility
         var state = self.state
         var intro = self.isEligibleForIntroOffer
         var promo = self.isEligibleForPromoOffer
         switch viewModel {
+        case .text(let model):
+            return model.visible(
+                state: self.state, condition: self.condition,
+                isEligibleForIntroOffer: self.isEligibleForIntroOffer, promoOffer: self.textPromoOffer,
+                conditionContext: self.conditionContext
+            )
         case .button(let model): component = model
         case .carousel(let model): component = model
         case .tabs(let model): component = model

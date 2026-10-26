@@ -8,7 +8,7 @@
 //      https://opensource.org/licenses/MIT
 //
 
-@_spi(Internal) import RevenueCat
+@_spi(Internal) @testable import RevenueCat
 @testable import RevenueCatUI
 import SwiftUI
 import XCTest
@@ -52,6 +52,50 @@ final class PaywallHeroLayoutTests: TestCase {
                 let layout = self.resolve(stack, width: width)
                 XCTAssertEqual(layout.heroIdentifier != nil, !textIsVisible)
                 XCTAssertEqual(layout.exemptChildIndicesByStack[ObjectIdentifier(stack)], textIsVisible ? nil : 1)
+            }
+        }
+    }
+
+    func testTextPromoVisibilityUsesSignedOfferInsteadOfOptimisticEligibility() throws {
+        let conditions: [PaywallComponent.ExtendedCondition] = [
+            .promoOffer,
+            .promoOfferCondition(operator: .equals, value: true),
+            .promoOfferCondition(operator: .equals, value: false)
+        ]
+        for condition in conditions {
+            for visible in [false, true] {
+                for promoOffer in [nil, self.promoOffer] {
+                    let stack = try self.makeStack([
+                        .text(.init(
+                            visible: visible, text: "text", color: .init(light: .hex("#000000")),
+                            overrides: [.init(extendedConditions: [condition], properties: .init(visible: !visible))]
+                        )),
+                        self.image()
+                    ])
+                    guard case .text(let model) = stack.viewModels[0] else { return XCTFail("Expected text") }
+                    // Subscription history can make optimistic eligibility true without a signed offer.
+                    let layout = PaywallHeroLayoutResolver(
+                        state: .default, condition: .compact,
+                        isEligibleForIntroOffer: false, isEligibleForPromoOffer: true,
+                        textPromoOffer: promoOffer,
+                        conditionContext: ConditionContext(), discardRules: false,
+                        eligibilityForPackage: { _ in (intro: false, promo: false) }
+                    ).resolve(stack)
+                    var renderedVisible: Bool?
+                    _ = model.styles(
+                        state: .default, condition: .compact, selectedPackageId: nil,
+                        packageContext: .init(package: nil, variableContext: .init(packages: [])),
+                        isEligibleForIntroOffer: false, promoOffer: promoOffer
+                    ) { style in
+                        renderedVisible = style.visible
+                        return Color.clear
+                    }
+                    let textIsVisible = try XCTUnwrap(renderedVisible)
+                    XCTAssertEqual(
+                        layout.heroIdentifier != nil, !textIsVisible, "\(condition), base visible: \(visible)"
+                    )
+                    XCTAssertEqual(layout.exemptChildIndicesByStack[ObjectIdentifier(stack)], textIsVisible ? nil : 1)
+                }
             }
         }
     }
@@ -133,15 +177,18 @@ final class PaywallHeroLayoutTests: TestCase {
                 properties: .init(visible: true)
             )]
         ))
-        let stack = try self.makeStack([text, self.image()])
         let context = ConditionContext(
             selectedPackageId: "annual", customVariables: ["show": .bool(true)],
             stateValues: ["step": .int(2)], windowSize: CGSize(width: 400, height: 800)
         )
         for discardRules in [false, true] {
+            let stack = try self.makeStack([text, self.image()], overrides: discardRules ? [
+                .init(extendedConditions: [.unsupported], properties: .init())
+            ] : nil)
             let layout = PaywallHeroLayoutResolver(
                 state: .default, condition: .compact,
                 isEligibleForIntroOffer: true, isEligibleForPromoOffer: false,
+                textPromoOffer: nil,
                 conditionContext: context, discardRules: discardRules,
                 eligibilityForPackage: { _ in (intro: false, promo: false) }
             ).resolve(stack)
@@ -166,6 +213,7 @@ final class PaywallHeroLayoutTests: TestCase {
         let layout = PaywallHeroLayoutResolver(
             state: .default, condition: .compact,
             isEligibleForIntroOffer: false, isEligibleForPromoOffer: false,
+            textPromoOffer: nil,
             conditionContext: ConditionContext(stateValues: stateValues), discardRules: false,
             eligibilityForPackage: { _ in (intro: false, promo: false) }
         ).resolve(stack)
@@ -267,6 +315,7 @@ final class PaywallHeroLayoutTests: TestCase {
                 let layout = PaywallHeroLayoutResolver(
                     state: .default, condition: .compact,
                     isEligibleForIntroOffer: !eligible, isEligibleForPromoOffer: !eligible,
+                    textPromoOffer: nil,
                     conditionContext: ConditionContext(selectedPackageId: selectedPackage.identifier),
                     discardRules: false,
                     eligibilityForPackage: { candidate in
@@ -282,6 +331,32 @@ final class PaywallHeroLayoutTests: TestCase {
                 XCTAssertEqual(layout.heroIdentifier != nil, !renderedVisible)
             }
         }
+    }
+
+    func testMediaRetainsOptimisticPromoEligibilityWithoutSignedOffer() throws {
+        let stack = try self.makeStack([self.image(overrides: [
+            .init(conditions: [.promoOffer], properties: .init(visible: false))
+        ])])
+        let layout = PaywallHeroLayoutResolver(
+            state: .default, condition: .compact,
+            isEligibleForIntroOffer: false, isEligibleForPromoOffer: true,
+            textPromoOffer: nil, conditionContext: ConditionContext(), discardRules: false,
+            eligibilityForPackage: { _ in (intro: false, promo: false) }
+        ).resolve(stack)
+        XCTAssertNil(layout.heroIdentifier)
+    }
+
+    private var promoOffer: PromotionalOffer {
+        PromotionalOffer(
+            discount: MockStoreProductDiscount(
+                offerIdentifier: "promo", currencyCode: "USD", price: 1, localizedPriceString: "$1.00",
+                paymentMode: .payAsYouGo, subscriptionPeriod: .init(value: 1, unit: .month),
+                numberOfPeriods: 1, type: .promotional
+            ),
+            signedData: .init(
+                identifier: "promo", keyIdentifier: "key", nonce: UUID(), signature: "signature", timestamp: 1234
+            )
+        )
     }
 
     private var text: PaywallComponent {
@@ -305,17 +380,19 @@ final class PaywallHeroLayoutTests: TestCase {
         overrides: PaywallComponent.ComponentOverrides<PaywallComponent.PartialStackComponent>? = nil,
         packages: [Package] = []
     ) throws -> StackComponentViewModel {
-        let factory = ViewModelFactory()
-        return try factory.toStackViewModel(
-            component: .init(components: components, dimension: dimension, overrides: overrides),
-            packageValidator: factory.packageValidator, purchaseButtonCollector: nil,
-            localizationProvider: .init(locale: .current, localizedStrings: ["text": .string("Text")]),
-            uiConfigProvider: UIConfigProvider(uiConfig: PreviewUIConfig.make()),
+        var factory = ViewModelFactory()
+        return try factory.toRootViewModel(
+            componentsConfig: .init(
+                stack: .init(components: components, dimension: dimension, overrides: overrides),
+                stickyFooter: nil, background: .color(.init(light: .hex("#FFFFFF")))
+            ),
             offering: .init(
                 identifier: "hero-test", serverDescription: "", availablePackages: packages, webCheckoutUrl: nil
             ),
+            localizationProvider: .init(locale: .current, localizedStrings: ["text": .string("Text")]),
+            uiConfigProvider: UIConfigProvider(uiConfig: PreviewUIConfig.make()),
             colorScheme: .light
-        )
+        ).stackViewModel
     }
 
     private func resolve(
@@ -324,6 +401,7 @@ final class PaywallHeroLayoutTests: TestCase {
         return PaywallHeroLayoutResolver(
             state: .default, condition: .compact,
             isEligibleForIntroOffer: false, isEligibleForPromoOffer: false,
+            textPromoOffer: nil,
             conditionContext: context ?? ConditionContext(windowSize: CGSize(width: width, height: 800)),
             discardRules: false,
             eligibilityForPackage: { _ in (intro: false, promo: false) }
