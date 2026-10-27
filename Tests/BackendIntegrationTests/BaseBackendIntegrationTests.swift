@@ -69,6 +69,7 @@ class BaseBackendIntegrationTests: TestCase {
         return .enforced(Signing.loadPublicKey())
     }
     var enableReceiptFetchRetry: Bool = true
+    var usesRemoteConfigAPISources: Bool { return false }
 
     var apiKey: String { return Constants.apiKey }
     var proxyURL: String? { return Constants.proxyURL }
@@ -294,7 +295,6 @@ extension BaseBackendIntegrationTests: InternalDangerousSettingsType {
     var forceSignatureFailures: Bool { return false }
     var disableHeaderSignatureVerification: Bool { return false }
     var testReceiptIdentifier: String? { return self.testUUID.uuidString }
-    var usesRemoteConfigAPISources: Bool { return false }
 
     final func serverDown() {
         self.forceServerErrorStrategy = .allServersDown

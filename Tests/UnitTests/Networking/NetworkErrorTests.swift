@@ -393,6 +393,15 @@ class NetworkErrorTests: TestCase {
         }
     }
 
+    func testBadURLErrorIsAllowedToRetryWithFallbackHost() {
+        // `-1000` never reaches the host, but it isn't caused by the device lacking connectivity either,
+        // so another host may still succeed.
+        let error = Self.urlError(NSURLErrorBadURL)
+
+        expect(error.isDeviceConnectivityError) == false
+        expect(error.isAllowedToRetryWithFallbackHost) == true
+    }
+
     func testIsDeviceConnectivityErrorFalseForNonNetworkErrors() {
         let errors = [
             error(NetworkError.decodingError()),

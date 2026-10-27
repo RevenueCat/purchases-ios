@@ -178,24 +178,6 @@ extension Purchases {
 
     #endif
 
-    func checkTrialOrIntroductoryDiscountEligibilityAsync(_ product: StoreProduct) async
-    -> IntroEligibilityStatus {
-        return await withUnsafeContinuation { continuation in
-            checkTrialOrIntroDiscountEligibility(product: product) { status in
-                continuation.resume(returning: status)
-            }
-        }
-    }
-
-    func checkTrialOrIntroductoryDiscountEligibilityAsync(_ productIdentifiers: [String]) async
-    -> [String: IntroEligibility] {
-        return await withUnsafeContinuation { continuation in
-            checkTrialOrIntroDiscountEligibility(productIdentifiers: productIdentifiers) { result in
-                continuation.resume(returning: result)
-            }
-        }
-    }
-
 #if os(iOS) || os(macOS) || VISION_OS
 
     @available(iOS 13.0, macOS 10.15, *)
