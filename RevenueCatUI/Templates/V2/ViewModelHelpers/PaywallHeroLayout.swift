@@ -55,28 +55,32 @@ private extension PaywallHeroLayoutResolver {
             if case .fallbackHeader = $0 { return false }
             return true
         }
+        var horizontalHero: PaywallHeroLayout?
         for (index, pair) in zip(components, stack.viewModels).enumerated() {
             var result: PaywallHeroLayout
             if case .stack(let child) = pair.1 {
                 guard let leaf = self.firstVisibleLeaf(in: child) else { continue }
                 result = leaf
-            } else if let visible = self.renderedVisibility(for: pair.1) {
-                guard visible else { continue }
-                result = .none
             } else {
                 let childProperties = self.properties(for: pair.0)
-                guard childProperties.visible != false else { continue }
+                guard self.renderedVisibility(for: pair.1) ?? (childProperties.visible != false) else { continue }
                 result = PaywallHeroLayout(
                     heroIdentifier: childProperties.width?.isFill == true ? pair.1.nativeMediaIdentifier : nil,
                     exemptChildIndicesByStack: [:]
                 )
+            }
+            // A row can bleed only when the hero is its sole visible child.
+            if case .horizontal? = properties.dimension {
+                guard horizontalHero == nil, result.heroIdentifier != nil else { return PaywallHeroLayout.none }
+                horizontalHero = result
+                continue
             }
             if result.heroIdentifier != nil, case .zlayer? = properties.dimension {
                 result.exemptChildIndicesByStack[ObjectIdentifier(stack)] = index
             }
             return result
         }
-        return PaywallHeroLayout.none
+        return horizontalHero ?? PaywallHeroLayout.none
     }
 
     // swiftlint:disable:next function_body_length

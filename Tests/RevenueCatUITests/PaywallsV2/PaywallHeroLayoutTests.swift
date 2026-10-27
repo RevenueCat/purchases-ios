@@ -121,6 +121,25 @@ final class PaywallHeroLayoutTests: TestCase {
         ])
     }
 
+    func testHorizontalHeroRequiresOnlyOneVisibleChild() throws {
+        let row = PaywallComponent.stack(.init(
+            components: [self.image(), .text(.init(
+                visible: false, text: "text", color: .init(light: .hex("#000000")),
+                overrides: [.init(
+                    extendedConditions: [.windowWidth(operator: .greaterThanOrEqual, value: 700)],
+                    properties: .init(visible: true)
+                )]
+            ))],
+            dimension: .horizontal(.top, .start)
+        ))
+        let stack = try self.makeStack([.stack(.init(visible: false, components: [])), row, self.image()])
+        for width: CGFloat in [400, 900, 400] {
+            let layout = self.resolve(stack, width: width)
+            XCTAssertEqual(layout.heroIdentifier != nil, width < 700)
+            XCTAssertEqual(layout.exemptChildIndicesByStack[ObjectIdentifier(stack)], width < 700 ? 1 : nil)
+        }
+    }
+
     func testVisibleNonMediaAndEmptyStacksStopHeroSearch() throws {
         let leadingComponents: [PaywallComponent] = [
             self.text,
