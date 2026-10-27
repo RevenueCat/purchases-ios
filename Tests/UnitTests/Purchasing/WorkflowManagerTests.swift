@@ -379,6 +379,58 @@ class WorkflowManagerTests: TestCase {
         ]
     }
 
+    func testPublishWebBundleURLsDoesNotDecodePublishedWorkflowAgainForSameConfigGeneration() async throws {
+        guard #available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *) else {
+            throw XCTSkip("publishWebBundleURLs requires iOS 15+")
+        }
+        let expected = try Self.workflowDataResult(id: "wf_1")
+        self.mockProvider.stubbedWorkflowIdForOfferingId = ["default": "wf_1"]
+        self.mockProvider.stubbedGetWorkflowResult = ["wf_1": expected]
+        let offerings = Self.offerings()
+
+        await self.manager.publishWebBundleURLs(offerings: offerings)
+        await self.manager.publishWebBundleURLs(offerings: offerings)
+
+        expect(self.mockProvider.invokedDecodeCachedWorkflowForAssetPrewarmingParameters) == ["wf_1"]
+        expect(self.mockWebBundleURLBatcher.invokedPublishCount) == 1
+    }
+
+    func testPublishWebBundleURLsDoesNotDecodePublishedWorkflowAgainForNewConfigGeneration() async throws {
+        guard #available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *) else {
+            throw XCTSkip("publishWebBundleURLs requires iOS 15+")
+        }
+        let expected = try Self.workflowDataResult(id: "wf_1")
+        self.mockProvider.stubbedWorkflowIdForOfferingId = ["default": "wf_1"]
+        self.mockProvider.stubbedGetWorkflowResult = ["wf_1": expected]
+        let offerings = Self.offerings()
+
+        await self.manager.publishWebBundleURLs(offerings: offerings)
+        self.mockProvider.configGeneration = 1
+        await self.manager.publishWebBundleURLs(offerings: offerings)
+
+        expect(self.mockProvider.invokedDecodeCachedWorkflowForAssetPrewarmingParameters) == ["wf_1"]
+        expect(self.mockWebBundleURLBatcher.invokedPublishCount) == 1
+    }
+
+    func testPublishWebBundleURLsRetriesWorkflowThatFailedToDecode() async throws {
+        guard #available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *) else {
+            throw XCTSkip("publishWebBundleURLs requires iOS 15+")
+        }
+        let expected = try Self.workflowDataResult(id: "wf_1")
+        self.mockProvider.stubbedWorkflowIdForOfferingId = ["default": "wf_1"]
+        self.mockProvider.stubbedGetWorkflowError = ["wf_1": .notFound]
+        let offerings = Self.offerings()
+
+        await self.manager.publishWebBundleURLs(offerings: offerings)
+        self.mockProvider.stubbedGetWorkflowError = [:]
+        self.mockProvider.stubbedGetWorkflowResult = ["wf_1": expected]
+        await self.manager.publishWebBundleURLs(offerings: offerings)
+
+        expect(self.mockProvider.invokedDecodeCachedWorkflowForAssetPrewarmingParameters) == ["wf_1", "wf_1"]
+        expect(self.mockWebBundleURLBatcher.invokedPublishCount) == 2
+        expect(self.mockWebBundleURLBatcher.invokedPublishWorkflowsByOfferingId["default"]?.id) == "wf_1"
+    }
+
     func testPublishWebBundleURLsSkipsUncachedWorkflowsWithoutFetching() async throws {
         guard #available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *) else {
             throw XCTSkip("publishWebBundleURLs requires iOS 15+")

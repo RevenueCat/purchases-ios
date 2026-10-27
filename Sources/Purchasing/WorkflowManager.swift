@@ -50,6 +50,7 @@ class WorkflowManager: WorkflowAssetPrewarmingType {
     private let operationDispatcher: OperationDispatcher
     private let webBundleURLBatcher: WebBundleURLBatcherType
     private let workflowPrewarmingDecodeCoordinator: WorkflowPrewarmingDecodeCoordinator
+    private let webBundlePublicationTracker = WorkflowWebBundlePublicationTracker()
 
     init(
         workflowsConfigProvider: WorkflowsConfigProviderType,
@@ -169,16 +170,22 @@ class WorkflowManager: WorkflowAssetPrewarmingType {
     }
 
     /// Publishes cached workflows for target offerings (current, placements, fallback) in visit order.
-    /// Cache-only: no blob fetch. An uncached target offering is published when it is presented.
+    /// Each workflow is published once per SDK instance; failed decodes are retried. Cache-only: no blob fetch.
     func publishWebBundleURLs(offerings: Offerings) async {
         guard #available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *) else { return }
 
         var workflowsByOfferingId: [String: PublishedWorkflow] = [:]
         var resolutionsByWorkflowId: [String: Result<WorkflowDataResult, WorkflowResolutionError>] = [:]
+        var workflowIDsToMarkPublished: Set<String> = []
+        var shouldPublish = false
         for offeringId in WebBundleURLBatcher.targetOfferingIds(from: offerings) {
             guard let workflowId = await self.workflowsConfigProvider.workflowId(forOfferingId: offeringId) else {
+                shouldPublish = true
                 continue
             }
+            guard !(await self.webBundlePublicationTracker.hasPublished(workflowId)) else { continue }
+
+            shouldPublish = true
 
             let resolution: Result<WorkflowDataResult, WorkflowResolutionError>
             if let cachedResolution = resolutionsByWorkflowId[workflowId] {
@@ -193,13 +200,16 @@ class WorkflowManager: WorkflowAssetPrewarmingType {
 
             if case let .success(result) = resolution {
                 workflowsByOfferingId[offeringId] = result.workflow
+                workflowIDsToMarkPublished.insert(workflowId)
             }
         }
 
+        guard shouldPublish else { return }
         await webBundleURLBatcher.publish(
             offerings: offerings,
             workflowsByOfferingId: workflowsByOfferingId
         )
+        await self.webBundlePublicationTracker.markPublished(workflowIDsToMarkPublished)
     }
 
 }
@@ -224,6 +234,21 @@ extension WorkflowManager {
 // @unchecked because:
 // - Class is not `final` (it's mocked). This implicitly makes subclasses `Sendable` even if they're not thread-safe.
 extension WorkflowManager: @unchecked Sendable {}
+
+/// Remembers which workflows already had their web-bundle URLs published during this SDK instance.
+private actor WorkflowWebBundlePublicationTracker {
+
+    private var publishedWorkflowIDs: Set<String> = []
+
+    func hasPublished(_ workflowId: String) -> Bool {
+        return self.publishedWorkflowIDs.contains(workflowId)
+    }
+
+    func markPublished(_ workflowIDs: Set<String>) {
+        self.publishedWorkflowIDs.formUnion(workflowIDs)
+    }
+
+}
 
 /// Shares overlapping workflow prewarming decodes and limits how many run at once.
 /// Completed decodes are not cached.
