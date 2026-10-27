@@ -356,6 +356,27 @@ class WorkflowResponseTests: TestCase {
         expect(trigger.componentId) == "wagcLsIVjN"
     }
 
+    func testDecodePurchasePressWorkflowTriggerDoesNotWarn() throws {
+        let json = Data("\"on_purchase_press\"".utf8)
+
+        let type = try JSONDecoder.default.decode(WorkflowTriggerType.self, from: json)
+
+        expect(type) == .unknown
+        expect(self.logger.messages.filter { $0.level == .warn }).to(beEmpty())
+    }
+
+    func testDecodeUnknownWorkflowTriggerWarns() throws {
+        let json = Data("\"future_trigger\"".utf8)
+
+        let type = try JSONDecoder.default.decode(WorkflowTriggerType.self, from: json)
+
+        expect(type) == .unknown
+        self.logger.verifyMessageWasLogged(
+            Strings.backendError.unknown_workflow_trigger_type(type: "future_trigger"),
+            level: .warn
+        )
+    }
+
     func testDecodeWorkflowScreenOfferingIdentifier() throws {
         let json = """
         {
