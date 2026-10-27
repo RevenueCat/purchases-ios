@@ -50,11 +50,23 @@ extension CheckpointsManager {
                 )
                 return
             }
-            let result = await self.checkpointForCallback(identifier: identifier, params: params)
-            guard !execution.isCancelled else { return }
-            if case let .completed(result) = result { onPassed(result) }
+            let callback = await self.checkpointForCallback(identifier: identifier, params: params)
+            guard case let .completed(result) = callback else { return }
+            // Cancellation suppresses the pass, unless the flow already granted access the app must learn about.
+            guard !execution.isCancelled || result.grantedAccess else { return }
+            onPassed(result)
         }
         return execution
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, *)
+private extension CheckpointResult {
+
+    var grantedAccess: Bool {
+        guard let flow = self.flow else { return false }
+        return !flow.obtainedEntitlements.isEmpty || !flow.obtainedProducts.isEmpty
     }
 
 }

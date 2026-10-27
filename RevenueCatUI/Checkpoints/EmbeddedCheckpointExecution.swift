@@ -51,7 +51,8 @@ public final class EmbeddedCheckpointExecution {
     }
     #endif
 
-    /// Cancels resolution, or removes the embedded flow if it is on screen. `onPassed` is suppressed and
+    /// Cancels resolution, or removes the embedded flow if it is on screen. `onPassed` is suppressed unless
+    /// the flow had already granted access (a purchase or restore the app must still learn about), and
     /// `onFinished` is still delivered exactly once.
     public func cancel() {
         guard !self.isCancelled, self.onFinished != nil else { return }
@@ -81,6 +82,7 @@ public final class EmbeddedCheckpointExecution {
     #if canImport(UIKit) && !os(tvOS) && !os(watchOS)
     func attach(_ presentation: EmbeddedCheckpointPresentation) {
         self.presentation = presentation
+        presentation.onParentLost = { [weak self] in self?.cancel() }
         presentation.onFinished = { [weak self] in
             guard let self else { return }
             self.presentation = nil

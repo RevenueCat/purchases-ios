@@ -458,6 +458,9 @@ public class PaywallViewController: UIViewController {
     /// Disappearance is then not dismissal: a modal covering the parent must not end the checkpoint. The
     /// checkpoint ends only when the SDK removes the child, see ``embeddedCheckpointDidRemove()``.
     var usesEmbeddedCheckpointLifecycle = false
+    /// Set while embedded: called when this controller disappears because its parent is being dismissed
+    /// or removed, which is a teardown of the container rather than a covering modal.
+    var embeddedParentTeardownHandler: (() -> Void)?
     private var didAcknowledgeEmbeddedRemoval = false
 
     func embeddedCheckpointDidRemove() {
@@ -478,6 +481,26 @@ public class PaywallViewController: UIViewController {
             self.notifyCheckpointDismissal()
         }
         super.viewDidDisappear(animated)
+        if self.usesEmbeddedCheckpointLifecycle, self.isDisappearingWithContainer {
+            self.embeddedParentTeardownHandler?()
+        }
+    }
+
+    /// Whether an ancestor is being dismissed or removed, as opposed to this controller merely being covered.
+    /// A covering presentation keeps the container linked to the hierarchy (it is presenting something, or
+    /// is presented itself); a torn-down container has no window, no parent, and no presentation links.
+    private var isDisappearingWithContainer: Bool {
+        var controller: UIViewController? = self.parent
+        var outermost: UIViewController?
+        while let current = controller {
+            if current.isBeingDismissed || current.isMovingFromParent { return true }
+            outermost = current
+            controller = current.parent
+        }
+        guard let outermost else { return false }
+        return outermost.viewIfLoaded?.window == nil
+            && outermost.presentingViewController == nil
+            && outermost.presentedViewController == nil
     }
 
     /// - Warning: For internal use only

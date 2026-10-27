@@ -163,7 +163,8 @@ final class CheckpointPresenter: CheckpointPresenterType {
             self.slot.release(self.token)
             execution?.presentationEnded()
 
-            if result == .failed || execution?.isCancelled == true {
+            // A cancelled execution still continues when the paywall granted access.
+            if result == .failed || (execution?.isCancelled == true && result != .continued) {
                 self.complete(execution: .failed)
             } else if result == .navigatedBack {
                 self.complete(execution: .backedOut)

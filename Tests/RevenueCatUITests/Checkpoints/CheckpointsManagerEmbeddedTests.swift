@@ -396,6 +396,153 @@ final class CheckpointsManagerEmbeddedTests: TestCase {
         XCTAssertEqual(aFinishes, 0)
     }
 
+    func testCancelAfterPurchaseStillPassesWithObtainedAccess() async throws {
+        let synced = expectation(description: "synced")
+        let manager = CheckpointsManager(
+            resolveCheckpoint: { _, _ in
+                .matchedOffering(EmbeddedCheckpointPresentationTests.offering(), traceID: "trace")
+            },
+            customerInfoProvider: { try Self.customerInfo(activeEntitlements: []) },
+            customerInfoSynchronizer: {
+                synced.fulfill()
+                return try Self.customerInfo(activeEntitlements: ["pro"])
+            }
+        )
+        let finished = expectation(description: "finished")
+        var passes: [CheckpointResult] = []
+        var finishes = 0
+        let execution = manager.checkpointEmbedded(
+            "test", customVariables: [:], parentViewController: self.fixture.parent,
+            errorPresenter: { _, _ in XCTFail("Unexpected error") },
+            onPassed: { passes.append($0) },
+            onFinished: { finishes += 1; finished.fulfill() }
+        )
+        await self.waitForEmbeddedController()
+        let controller = try XCTUnwrap(self.fixture.embeddedController)
+        let purchased = try Self.customerInfo(activeEntitlements: ["pro"])
+        controller.delegate?.paywallViewController?(controller, didFinishPurchasingWith: purchased, transaction: nil)
+
+        // The user bought and then the app tore the container down: the purchase must still be reported.
+        execution.cancel()
+
+        XCTAssertTrue(self.fixture.parent.children.isEmpty)
+        await fulfillment(of: [synced, finished], timeout: 2)
+        XCTAssertEqual(finishes, 1)
+        XCTAssertEqual(passes.count, 1)
+        XCTAssertEqual(passes.first?.flow?.obtainedEntitlements.map(\.entitlementInfo.identifier), ["pro"])
+    }
+
+    func testParentDeallocationCancelsAndFinishesWithoutPassing() async throws {
+        var window: UIWindow? = UIWindow(frame: UIScreen.main.bounds)
+        var parent: UIViewController? = UIViewController()
+        window?.rootViewController = parent
+        window?.makeKeyAndVisible()
+        parent?.loadViewIfNeeded()
+        let manager = Self.manager(
+            resolveCheckpoint: { _, _ in
+                .matchedOffering(EmbeddedCheckpointPresentationTests.offering(), traceID: "trace")
+            },
+            customerInfoSynchronizer: { TestData.customerInfo }
+        )
+        let finished = expectation(description: "finished")
+        var finishes = 0
+        _ = manager.checkpointEmbedded(
+            "test", customVariables: [:], parentViewController: try XCTUnwrap(parent),
+            errorPresenter: { _, _ in XCTFail("Unexpected error") },
+            onPassed: { _ in XCTFail("An abandoned parent must not pass") },
+            onFinished: { finishes += 1; finished.fulfill() }
+        )
+        let deadline = Date().addingTimeInterval(2)
+        while parent?.children.isEmpty == true, Date() < deadline {
+            try? await Task.sleep(nanoseconds: 10_000_000)
+        }
+        let controller = try XCTUnwrap(parent?.children.first as? PaywallViewController)
+
+        // The app forgot to cancel and simply let go of the container.
+        window?.rootViewController = UIViewController()
+        window = nil
+        parent = nil
+
+        await fulfillment(of: [finished], timeout: 2)
+        XCTAssertEqual(finishes, 1)
+        XCTAssertNil(controller.parent)
+
+        // The slot is free again: a later checkpoint presents normally.
+        let next = expectation(description: "next shown")
+        _ = manager.checkpointEmbedded(
+            "test", customVariables: [:], parentViewController: self.fixture.parent,
+            errorPresenter: { params, _ in XCTFail("Unexpected error: \(params.error)") },
+            onPassed: { _ in }, onFinished: { next.fulfill() }
+        )
+        await self.waitForEmbeddedController()
+        XCTAssertNotNil(self.fixture.embeddedController)
+        self.fixture.embeddedController?.continueAfterCheckpointError()
+        await fulfillment(of: [next], timeout: 2)
+    }
+
+    func testParentRemovalFromItsContainerCancelsEmbeddedFlow() async throws {
+        // A screen inside a navigation stack hosts the flow; popping the screen tears the container down.
+        let navigation = UINavigationController(rootViewController: UIViewController())
+        let window = UIWindow(frame: UIScreen.main.bounds)
+        window.rootViewController = navigation
+        window.makeKeyAndVisible()
+        let presented = UIViewController()
+        navigation.pushViewController(presented, animated: false)
+        RunLoop.main.run(until: Date().addingTimeInterval(0.1))
+        XCTAssertNotNil(presented.view.window)
+        let manager = Self.manager { _, _ in
+            .matchedOffering(EmbeddedCheckpointPresentationTests.offering(), traceID: "trace")
+        }
+        let finished = expectation(description: "finished")
+        var finishes = 0
+        _ = manager.checkpointEmbedded(
+            "test", customVariables: [:], parentViewController: presented,
+            errorPresenter: { _, _ in XCTFail("Unexpected error") },
+            onPassed: { _ in XCTFail("Removing the container must not pass") },
+            onFinished: { finishes += 1; finished.fulfill() }
+        )
+        let deadline = Date().addingTimeInterval(2)
+        while presented.children.isEmpty, Date() < deadline {
+            try? await Task.sleep(nanoseconds: 10_000_000)
+        }
+        let controller = try XCTUnwrap(presented.children.first as? PaywallViewController)
+
+        // A covering modal over the container is not a dismissal.
+        controller.viewDidDisappear(false)
+        XCTAssertEqual(finishes, 0)
+        XCTAssertTrue(controller.parent === presented)
+
+        // The screen is popped without anyone cancelling the checkpoint.
+        navigation.popViewController(animated: false)
+        RunLoop.main.run(until: Date().addingTimeInterval(0.1))
+
+        await fulfillment(of: [finished], timeout: 2)
+        withExtendedLifetime(window) {}
+        XCTAssertEqual(finishes, 1)
+        XCTAssertNil(controller.parent)
+    }
+
+    private static func customerInfo(activeEntitlements: [String]) throws -> CustomerInfo {
+        let infos = Dictionary(uniqueKeysWithValues: activeEntitlements.map { identifier in
+            (
+                identifier,
+                EntitlementInfo(
+                    identifier: identifier, isActive: true, willRenew: true, periodType: .normal,
+                    latestPurchaseDate: Date(timeIntervalSince1970: 0),
+                    expirationDate: Date(timeIntervalSince1970: 4_102_444_800),
+                    store: .appStore, productIdentifier: "\(identifier)-product",
+                    isSandbox: true, ownershipType: .purchased
+                )
+            )
+        })
+        return CustomerInfo(
+            entitlements: EntitlementInfos(entitlements: infos),
+            purchaseDatesByProductId: [:], allPurchasedProductIds: [],
+            requestDate: Date(timeIntervalSince1970: 0), firstSeen: Date(timeIntervalSince1970: 0),
+            originalAppUserId: "test-user"
+        )
+    }
+
     private static func manager(
         resolveCheckpoint: @escaping (String, CheckpointCallParams) async throws -> CheckpointResolution,
         customerInfoSynchronizer: @escaping CheckpointsManager.CustomerInfoSynchronizer = { throw CancellationError() }
