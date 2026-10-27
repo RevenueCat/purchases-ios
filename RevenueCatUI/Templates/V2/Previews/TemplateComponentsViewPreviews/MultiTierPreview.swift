@@ -237,6 +237,7 @@ private enum MultiTierPreview {
                     ],
                     dimension: .horizontal(.center, .start),
                     size: .init(width: .fit(nil), height: .fit(nil)),
+                    spacing: 8,
                     backgroundColor: .init(light: .hex("#dedede")),
                     padding: .init(top: 3, bottom: 3, leading: 3, trailing: 3),
                     shape: .pill
@@ -254,7 +255,8 @@ private enum MultiTierPreview {
                             monthlyPackageIdentifier: PreviewMock.monthlyStandardPackage.packageIdentifier,
                             isMonthlySelectedByDefault: true
                         ))
-                    ]
+                    ],
+                    spacing: 8
                 )),
                 // Tab 2
                 .init(id: "2", stack: .init(
@@ -267,7 +269,8 @@ private enum MultiTierPreview {
                             monthlyPackageIdentifier: PreviewMock.monthlyPremiumPackage.packageIdentifier,
                             isMonthlySelectedByDefault: false
                         ))
-                    ]
+                    ],
+                    spacing: 8
                 ))
             ]
         )
