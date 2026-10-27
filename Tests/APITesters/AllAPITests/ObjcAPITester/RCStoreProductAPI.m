@@ -67,6 +67,8 @@
         case RCStoreProductTypeNonConsumable: break;
         case RCStoreProductTypeNonRenewableSubscription: break;
         case RCStoreProductTypeAutoRenewableSubscription: break;
+        case RCStoreProductTypeSubscriptionBundle: break;
+        case RCStoreProductTypeSubscriptionSuite: break;
     }
 }
 
