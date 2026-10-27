@@ -1,0 +1,8 @@
+# Run with the app built against the local SDK, installed over the app used by before_update.yaml.
+# Launched without the app user ID argument, so the user can't be logged in again: it must be the persisted one.
+# Requires the same environment variables as before_update.yaml.
+
+appId: com.revenuecat.SDKUpdateTester
+name: Logged in user - after SDK update
+---
+- runFlow: ../utils/assert_state_preserved.yaml

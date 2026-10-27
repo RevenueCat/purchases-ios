@@ -39,6 +39,7 @@ const JOBS = {
   "run-revenuecat-ui-ios-18-and-17": ["slack-secrets"],
   "run-revenuecat-ui-ios-26": ["slack-secrets"],
   "run-revenuecat-ui-ios-27": ["slack-secrets"],
+  "run-sdk-update-test": ["e2e-tests"],
   "run-test-ios-16-and-15": ["slack-secrets"],
   "run-test-ios-18-and-17": ["slack-secrets"],
   "run-test-ios-26": ["slack-secrets"],
