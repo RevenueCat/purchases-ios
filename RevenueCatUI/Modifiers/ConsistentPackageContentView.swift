@@ -36,7 +36,7 @@ struct ConsistentPackageContentView<Content: View>: View {
     }
 
     var body: some View {
-        // We need to layout all possible packages to accomodate for the longest text
+        // We need to layout all possible packages to accommodate for the longest text
         return ZStack {
             ForEach(self.packages, id: \.self.content) { package in
                 self.creator(package).opacity(0)
