@@ -153,6 +153,24 @@ final class CheckpointsManagerEmbeddedTests: TestCase {
         XCTAssertNil(self.fixture.parent.presentedViewController)
     }
 
+    func testNilErrorPresenterFallsBackToTheManagersPresenter() async {
+        let offscreen = EmbeddedParentFixture(inWindow: false)
+        let manager = Self.manager { _, _ in .noAction(.noMatch) }
+        let presenter = RecordingErrorPresenter()
+        manager.errorPresenter = presenter
+        let finished = expectation(description: "finished")
+
+        _ = manager.checkpointEmbedded(
+            "test", customVariables: [:], parentViewController: offscreen.parent,
+            errorPresenter: nil,
+            onPassed: { _ in XCTFail("Must not pass") },
+            onFinished: { finished.fulfill() }
+        )
+        await fulfillment(of: [finished], timeout: 2)
+
+        XCTAssertEqual(presenter.kinds, [.flowCouldNotBeShown])
+    }
+
     func testParentLeavingScreenDuringResolutionFailsWithoutModalFallback() async {
         var resolution: CheckedContinuation<CheckpointResolution, Error>?
         let resolving = expectation(description: "resolving")
@@ -572,6 +590,19 @@ private final class CountingPaywallPresenter: PaywallPresenter {
     func present(params: PaywallPresentationParams, completion: @escaping PaywallPresentationCompletion) {
         self.callCount += 1
         completion(.continued)
+    }
+
+}
+
+@MainActor
+@available(iOS 15.0, macOS 12.0, *)
+private final class RecordingErrorPresenter: ErrorPresenter {
+
+    private(set) var kinds: [CheckpointFailureKind] = []
+
+    func present(params: ErrorPresentationParams, completion: ErrorPresentationCompletion) {
+        self.kinds.append(params.kind)
+        completion.complete()
     }
 
 }

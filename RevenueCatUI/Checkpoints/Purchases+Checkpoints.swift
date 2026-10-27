@@ -104,7 +104,8 @@ public extension Purchases {
     ///   - identifier: The checkpoint identifier configured in the RevenueCat dashboard.
     ///   - customVariables: Values usable in checkpoint targeting rules, feature events, and the presented flow.
     ///   - parentViewController: The on-screen view controller that will contain the flow.
-    ///   - errorPresenter: Presents errors from this checkpoint, including failures before a flow is shown.
+    ///   - errorPresenter: Presents errors from this checkpoint, including failures before a flow is shown. When
+    ///     `nil`, the SDK's default error presentation is used.
     ///   - onPassed: Called on the main actor when the checkpoint passes, with the same semantics as
     ///     ``checkpoint(_:customVariables:presentationMode:paywallPresenter:errorPresenter:_:)``.
     ///   - onFinished: Called on the main actor exactly once on every terminal path, after `onPassed` if it ran.
@@ -117,7 +118,7 @@ public extension Purchases {
         _ identifier: String,
         customVariables: [String: CustomVariableValue],
         parentViewController: UIViewController,
-        errorPresenter: @escaping ErrorPresentationHandler,
+        errorPresenter: ErrorPresentationHandler? = nil,
         onPassed: @escaping (CheckpointResult) -> Void,
         onFinished: @escaping () -> Void
     ) -> EmbeddedCheckpointExecution {

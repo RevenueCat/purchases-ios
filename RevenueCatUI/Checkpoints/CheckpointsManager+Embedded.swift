@@ -28,7 +28,7 @@ extension CheckpointsManager {
         _ identifier: String,
         customVariables: [String: CustomVariableValue],
         parentViewController: UIViewController,
-        errorPresenter: @escaping ErrorPresentationHandler,
+        errorPresenter: ErrorPresentationHandler?,
         onPassed: @escaping (CheckpointResult) -> Void,
         onFinished: @escaping () -> Void
     ) -> EmbeddedCheckpointExecution {
