@@ -104,6 +104,7 @@ final class WorkflowPresenter: NSObject, WorkflowPresenterType {
     private var pendingContinuation: Continuation?
     private weak var presentedViewController: PaywallViewController?
     private var activeErrorPresentation: ActiveErrorPresentation?
+    private var embeddedPresentation: EmbeddedCheckpointPresentation?
 
     init(presentationStarter: PresentationStarter? = nil) {
         self.presentationStarter = presentationStarter
@@ -152,6 +153,7 @@ final class WorkflowPresenter: NSObject, WorkflowPresenterType {
         } catch {
             self.presentationState = nil
             self.presentedViewController = nil
+            self.embeddedPresentation = nil
             throw error
         }
     }
@@ -235,6 +237,7 @@ final class WorkflowPresenter: NSObject, WorkflowPresenterType {
         defer { self.presentationState = nil }
         self.activeErrorPresentation = nil
         self.presentedViewController = nil
+        self.embeddedPresentation = nil
         return self.presentationState
     }
 
@@ -257,6 +260,10 @@ final class WorkflowPresenter: NSObject, WorkflowPresenterType {
     }
 
     private func presentAutomatically(_ presentation: WorkflowPresentationRequest) throws {
+        if let execution = presentation.execution {
+            try self.presentEmbedded(presentation, execution: execution)
+            return
+        }
         guard let presentationContext = UIApplication.extensionSafeApplication?.currentPresentationViewController else {
             throw CheckpointError.noPresentationContext
         }
@@ -269,6 +276,11 @@ final class WorkflowPresenter: NSObject, WorkflowPresenterType {
         }
     }
 
+}
+
+@available(iOS 15.0, macOS 12.0, *)
+extension WorkflowPresenter {
+
     func makePaywallViewController(
         for presentation: WorkflowPresentationRequest
     ) throws -> PaywallViewController {
@@ -280,11 +292,14 @@ final class WorkflowPresenter: NSObject, WorkflowPresenterType {
             traceId: presentation.workflow.traceId,
             checkpointIdentifier: presentation.checkpointIdentifier
         )
+        weak var preparedController: PaywallViewController?
         let viewController = PaywallViewController(
             workflowContext: workflowContext,
             displayCloseButton: true,
             workflowPresentationErrorHandler: { [weak self] error, behavior in
-                guard let self else { return }
+                // A stale controller from an earlier presentation must not affect the current one.
+                guard let self, let preparedController,
+                      self.presentedViewController === preparedController else { return }
                 switch behavior {
                 case .endFlow:
                     guard self.stage(.workflowPresentationError(error)) else { return }
@@ -299,18 +314,41 @@ final class WorkflowPresenter: NSObject, WorkflowPresenterType {
                     Logger.error(error.localizedDescription)
                     self.presentError(error, kind: .flowActionFailed)
                 }
+            },
+            dismissRequestedHandler: presentation.execution.map { _ in
+                return { [weak self] controller in
+                    guard let self, self.presentedViewController === controller else { return }
+                    self.embeddedPresentation?.remove()
+                }
             }
         )
+        preparedController = viewController
         self.presentedViewController = viewController
         viewController.disableExitOffers()
         viewController.customVariables = presentation.customVariables
         return viewController
     }
 
-}
-
-@available(iOS 15.0, macOS 12.0, *)
-extension WorkflowPresenter {
+    /// Embeds the workflow in the execution's parent. The parent is validated again here because resolution
+    /// happened asynchronously; an unusable parent fails the checkpoint without a modal fallback.
+    func presentEmbedded(
+        _ presentation: WorkflowPresentationRequest,
+        execution: EmbeddedCheckpointExecution
+    ) throws {
+        guard let parent = execution.parentViewController,
+              EmbeddedCheckpointPresentation.isUsableParent(parent) else {
+            throw CheckpointError.presentationFailed
+        }
+        let viewController = try self.makePaywallViewController(for: presentation)
+        viewController.delegate = self
+        let embeddedPresentation = EmbeddedCheckpointPresentation(controller: viewController, parent: parent)
+        self.embeddedPresentation = embeddedPresentation
+        execution.attach(embeddedPresentation)
+        guard embeddedPresentation.attach() else {
+            embeddedPresentation.fail()
+            throw CheckpointError.presentationFailed
+        }
+    }
 
     // `PaywallViewController` delivers these UI lifecycle and purchase callbacks
     // synchronously from main-actor-isolated UI paths.

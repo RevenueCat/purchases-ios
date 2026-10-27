@@ -53,7 +53,11 @@ final class CheckpointPresenter: CheckpointPresenterType {
         guard let token = self.slot.claim() else {
             throw CheckpointError.operationAlreadyInProgress
         }
-        defer { self.slot.release(token) }
+        presentation.execution?.presentationStarted()
+        defer {
+            self.slot.release(token)
+            presentation.execution?.presentationEnded()
+        }
 
         do {
             return try await self.workflowPresenter.present(presentation)
@@ -85,10 +89,19 @@ final class CheckpointPresenter: CheckpointPresenterType {
         guard let token = self.slot.claim() else {
             throw CheckpointError.operationAlreadyInProgress
         }
-        defer { self.slot.release(token) }
+        params.execution?.presentationStarted()
+        defer {
+            self.slot.release(token)
+            params.execution?.presentationEnded()
+        }
 
         let presentationHandler: PaywallPresentationHandler
-        if let localPaywallPresentationHandler {
+        if params.execution != nil {
+            // Embedded checkpoints always use the SDK paywall: custom presenters own their own containers.
+            presentationHandler = { [defaultPaywallPresenter] params, completion in
+                defaultPaywallPresenter.present(params: params, completion: completion)
+            }
+        } else if let localPaywallPresentationHandler {
             presentationHandler = localPaywallPresentationHandler
         } else if let paywallPresenter = globalPaywallPresenter {
             presentationHandler = { params, completion in
@@ -137,19 +150,20 @@ final class CheckpointPresenter: CheckpointPresenterType {
             return await withCheckedContinuation { continuation in
                 self.pendingContinuation = continuation
                 presentationHandler(params) { [weak self] result in
-                    self?.completed(result)
+                    self?.completed(result, execution: params.execution)
                 }
             }
         }
 
-        fileprivate func completed(_ result: PaywallPresentationResult) {
+        fileprivate func completed(_ result: PaywallPresentationResult, execution: EmbeddedCheckpointExecution?) {
             guard self.slot.contains(self.token),
                   !self.hasReportedCompletion,
                   self.pendingContinuation != nil else { return }
             self.hasReportedCompletion = true
             self.slot.release(self.token)
+            execution?.presentationEnded()
 
-            if result == .failed {
+            if result == .failed || execution?.isCancelled == true {
                 self.complete(execution: .failed)
             } else if result == .navigatedBack {
                 self.complete(execution: .backedOut)
@@ -233,6 +247,10 @@ final class DefaultPaywallPresenter: NSObject, PaywallPresenter, PaywallViewCont
             )
             return
         }
+        if let execution = params.execution {
+            self.presentEmbedded(params: params, execution: execution, completion: completion)
+            return
+        }
         guard let presentationContext = self.presentationContextProvider() else {
             Self.presentStartupError(
                 .noPresentationContext,
@@ -242,12 +260,7 @@ final class DefaultPaywallPresenter: NSObject, PaywallPresenter, PaywallViewCont
             return
         }
 
-        let controller = makeDefaultCheckpointPaywallViewController(
-            params: params,
-            workflowPresentationErrorHandler: { [weak self] error, behavior in
-                self?.handleWorkflowPresentationError(error, behavior: behavior)
-            }
-        )
+        let controller = self.makeController(params: params)
         self.prepareForPresentation(
             params: params,
             completion: completion,
@@ -343,7 +356,7 @@ final class DefaultPaywallPresenter: NSObject, PaywallPresenter, PaywallViewCont
 
         session.activeErrorPresentationID = nil
         session.didPurchaseOrRestoreAccess = true
-        controller.dismiss(animated: true)
+        controller.continueAfterCheckpointError()
     }
 
     private func dismissAfterTerminalError() {
@@ -481,11 +494,68 @@ final class DefaultPaywallPresenter: NSObject, PaywallPresenter, PaywallViewCont
 
 @MainActor
 @available(iOS 15.0, macOS 12.0, *)
+private extension DefaultPaywallPresenter {
+
+    /// Embeds the SDK paywall in the execution's parent. The parent is validated again here because resolution
+    /// happened asynchronously; an unusable parent fails the checkpoint without a modal fallback.
+    func presentEmbedded(
+        params: PaywallPresentationParams,
+        execution: EmbeddedCheckpointExecution,
+        completion: @escaping PaywallPresentationCompletion
+    ) {
+        guard let parent = execution.parentViewController,
+              EmbeddedCheckpointPresentation.isUsableParent(parent) else {
+            Self.presentStartupError(.presentationFailed, params: params, completion: completion)
+            return
+        }
+
+        let controller = self.makeController(params: params, dismissRequestedHandler: { [weak self] controller in
+            guard let self, self.session?.presentedViewController === controller else { return }
+            self.session?.embeddedPresentation?.remove()
+        })
+        self.prepareForPresentation(params: params, completion: completion, presentedViewController: controller)
+        controller.delegate = self
+        let presentation = EmbeddedCheckpointPresentation(controller: controller, parent: parent)
+        self.session?.embeddedPresentation = presentation
+        execution.attach(presentation)
+        guard presentation.attach() else {
+            presentation.fail()
+            guard let session = self.takeSession() else { return }
+            Self.presentStartupError(.presentationFailed, params: session.params, completion: session.completion)
+            return
+        }
+    }
+
+    /// Only the controller of the current session may report errors or request dismissal: a stale controller
+    /// from an earlier session is ignored.
+    func makeController(
+        params: PaywallPresentationParams,
+        dismissRequestedHandler: ((PaywallViewController) -> Void)? = nil
+    ) -> PaywallViewController {
+        weak var preparedController: PaywallViewController?
+        let controller = makeDefaultCheckpointPaywallViewController(
+            params: params,
+            workflowPresentationErrorHandler: { [weak self] error, behavior in
+                guard let self, let preparedController,
+                      self.session?.presentedViewController === preparedController else { return }
+                self.handleWorkflowPresentationError(error, behavior: behavior)
+            },
+            dismissRequestedHandler: dismissRequestedHandler
+        )
+        preparedController = controller
+        return controller
+    }
+
+}
+
+@MainActor
+@available(iOS 15.0, macOS 12.0, *)
 private final class PresentationSession {
     let params: PaywallPresentationParams
     let completion: PaywallPresentationCompletion
     let initialActiveEntitlementIdentifiers: Set<String>?
     weak var presentedViewController: PaywallViewController?
+    var embeddedPresentation: EmbeddedCheckpointPresentation?
     var activeErrorPresentationID: UUID?
     var didPurchaseOrRestoreAccess = false
     var hasTerminalError = false
@@ -507,12 +577,14 @@ private final class PresentationSession {
 @available(iOS 15.0, macOS 12.0, *)
 func makeDefaultCheckpointPaywallViewController(
     params: PaywallPresentationParams,
-    workflowPresentationErrorHandler: WorkflowPresentationErrorHandler? = nil
+    workflowPresentationErrorHandler: WorkflowPresentationErrorHandler? = nil,
+    dismissRequestedHandler: ((PaywallViewController) -> Void)? = nil
 ) -> PaywallViewController {
     let controller = PaywallViewController(
         checkpointOffering: params.offering,
         displayCloseButton: true,
-        workflowPresentationErrorHandler: workflowPresentationErrorHandler
+        workflowPresentationErrorHandler: workflowPresentationErrorHandler,
+        dismissRequestedHandler: dismissRequestedHandler
     )
     controller.disableExitOffers()
     controller.customVariables = params.customVariables

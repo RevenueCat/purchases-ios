@@ -97,6 +97,7 @@ final class CheckpointsManager {
         customerInfoBefore: CustomerInfo,
         globalPaywallPresenter: PaywallPresenter?
     ) async throws -> CheckpointExecutionResult {
+        guard params.execution?.isCancelled != true else { return .init(outcome: .failed) }
         let errorPresentationHandler = self.errorPresentationHandler(for: params)
 
         switch resolution {
@@ -107,6 +108,7 @@ final class CheckpointsManager {
                 customVariables: params.customVariables,
                 presentationMode: params.presentationMode,
                 initialActiveEntitlementIdentifiers: customerInfoBefore.activeEntitlementIdentifiers,
+                execution: params.execution,
                 errorPresentationHandler: errorPresentationHandler
             )
             return .init(
@@ -121,7 +123,8 @@ final class CheckpointsManager {
                         customVariables: params.customVariables,
                         presentationMode: params.presentationMode,
                         offering: offering,
-                        errorPresentationHandler: errorPresentationHandler
+                        errorPresentationHandler: errorPresentationHandler,
+                        execution: params.execution
                     ),
                     globalPaywallPresenter: globalPaywallPresenter,
                     localPaywallPresentationHandler: params.localPaywallPresentationHandler
@@ -294,11 +297,12 @@ extension CheckpointsManager {
         defaultHandler makeDefaultHandler: @escaping () -> ErrorPresentationHandler
     ) -> ErrorPresentationHandler {
         if let localHandler = params.localErrorPresentationHandler {
-            return { [errorPresentationQueue] params, completion in
+            return { [errorPresentationQueue, execution = params.execution] params, completion in
                 errorPresentationQueue.enqueue(
                     params: params,
                     handler: localHandler,
-                    completion: completion
+                    completion: completion,
+                    execution: execution
                 )
             }
         }
@@ -324,7 +328,7 @@ extension CheckpointsManager {
         }
     }
 
-    private func presentCheckpointError(
+    func presentCheckpointError(
         _ error: any Error,
         identifier: String,
         params: CheckpointCallParams,

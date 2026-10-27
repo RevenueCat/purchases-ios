@@ -16,6 +16,7 @@ import Foundation
 @_spi(Internal) import RevenueCat
 
 #if os(iOS) && !targetEnvironment(macCatalyst)
+import UIKit
 
 @_spi(InviteOnlyCheckpointsApi)
 @available(iOS 15.0, *)
@@ -81,6 +82,53 @@ public extension Purchases {
             errorPresenter: errorPresenter
         )
         self.performCheckpoint(identifier, params: params, onPassed: onPassed)
+    }
+
+}
+
+@available(iOS 15.0, *)
+public extension Purchases {
+
+    /// Passes a checkpoint whose flow the SDK embeds as a child of `parentViewController` instead of presenting
+    /// a modal. The parent decides how the flow reads on screen (sheet, full screen, or an ordinary screen), and
+    /// the caller can show its own UI above the flow, for example error dialogs from `errorPresenter`.
+    ///
+    /// Workflow execution, purchases, restores, attribution, and synchronization stay native. Native close and
+    /// back navigation remove the child; they never dismiss the parent. A modal covering the parent does not end
+    /// the checkpoint. The parent is validated again once resolution completes: if it is no longer on screen the
+    /// checkpoint fails through `errorPresenter` without falling back to a modal.
+    ///
+    /// Custom paywall presenters are not consulted; the SDK paywall is always embedded.
+    ///
+    /// - Parameters:
+    ///   - identifier: The checkpoint identifier configured in the RevenueCat dashboard.
+    ///   - customVariables: Values usable in checkpoint targeting rules, feature events, and the presented flow.
+    ///   - parentViewController: The on-screen view controller that will contain the flow.
+    ///   - errorPresenter: Presents errors from this checkpoint, including failures before a flow is shown.
+    ///   - onPassed: Called on the main actor when the checkpoint passes, with the same semantics as
+    ///     ``checkpoint(_:customVariables:presentationMode:paywallPresenter:errorPresenter:_:)``.
+    ///   - onFinished: Called on the main actor exactly once on every terminal path, after `onPassed` if it ran.
+    /// - Returns: A handle that can cancel resolution or remove the embedded flow.
+    /// - Warning: Experimental, for internal use only.
+    @_spi(Internal)
+    @MainActor
+    // swiftlint:disable:next function_parameter_count
+    func checkpoint(
+        _ identifier: String,
+        customVariables: [String: CustomVariableValue],
+        parentViewController: UIViewController,
+        errorPresenter: @escaping ErrorPresentationHandler,
+        onPassed: @escaping (CheckpointResult) -> Void,
+        onFinished: @escaping () -> Void
+    ) -> EmbeddedCheckpointExecution {
+        return self.checkpointsManager.checkpointEmbedded(
+            identifier,
+            customVariables: customVariables,
+            parentViewController: parentViewController,
+            errorPresenter: errorPresenter,
+            onPassed: onPassed,
+            onFinished: onFinished
+        )
     }
 
 }

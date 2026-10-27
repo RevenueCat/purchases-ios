@@ -156,7 +156,7 @@ public class PaywallViewController: UIViewController {
     }
 
     func continueAfterCheckpointError() {
-        self.dismiss(animated: true)
+        self.dismissPaywall()
     }
 
     /// Prevents this controller from resolving or presenting exit offers.
@@ -209,7 +209,8 @@ public class PaywallViewController: UIViewController {
     internal convenience init(
         checkpointOffering offering: Offering,
         displayCloseButton: Bool,
-        workflowPresentationErrorHandler: WorkflowPresentationErrorHandler?
+        workflowPresentationErrorHandler: WorkflowPresentationErrorHandler?,
+        dismissRequestedHandler: ((_ controller: PaywallViewController) -> Void)? = nil
     ) {
         self.init(
             content: .optionalOffering(offering),
@@ -218,7 +219,7 @@ public class PaywallViewController: UIViewController {
             shouldBlockTouchEvents: false,
             performPurchase: nil,
             performRestore: nil,
-            dismissRequestedHandler: nil
+            dismissRequestedHandler: dismissRequestedHandler
         )
 
         var configuration = self.configuration
@@ -235,7 +236,8 @@ public class PaywallViewController: UIViewController {
         introEligibility: TrialOrIntroEligibilityChecker? = nil,
         performPurchase: PerformPurchase? = nil,
         performRestore: PerformRestore? = nil,
-        workflowPresentationErrorHandler: WorkflowPresentationErrorHandler? = nil
+        workflowPresentationErrorHandler: WorkflowPresentationErrorHandler? = nil,
+        dismissRequestedHandler: ((_ controller: PaywallViewController) -> Void)? = nil
     ) {
         self.init(
             content: .offering(workflowContext.initialOffering),
@@ -244,7 +246,7 @@ public class PaywallViewController: UIViewController {
             shouldBlockTouchEvents: false,
             performPurchase: performPurchase,
             performRestore: performRestore,
-            dismissRequestedHandler: nil
+            dismissRequestedHandler: dismissRequestedHandler
         )
 
         var configuration = self.configuration
@@ -452,11 +454,28 @@ public class PaywallViewController: UIViewController {
         self.presentationController?.delegate = self
     }
 
+    /// Set when the SDK embeds this controller as a child of a caller-supplied parent for a checkpoint.
+    /// Disappearance is then not dismissal: a modal covering the parent must not end the checkpoint. The
+    /// checkpoint ends only when the SDK removes the child, see ``embeddedCheckpointDidRemove()``.
+    var usesEmbeddedCheckpointLifecycle = false
+    private var didAcknowledgeEmbeddedRemoval = false
+
+    func embeddedCheckpointDidRemove() {
+        guard !self.didAcknowledgeEmbeddedRemoval else { return }
+        self.didAcknowledgeEmbeddedRemoval = true
+        self.notifyCheckpointDismissal()
+        self.delegate = nil
+    }
+
+    private func notifyCheckpointDismissal() {
+        self.delegate?.paywallViewControllerWasDismissed?(self)
+        _ = self.purchaseHandler.trackPaywallClose()
+        self.purchaseHandler.resetForNewSession()
+    }
+
     public override func viewDidDisappear(_ animated: Bool) {
-        if self.isBeingDismissed && !self.isDismissingForExitOffer {
-            self.delegate?.paywallViewControllerWasDismissed?(self)
-            _ = self.purchaseHandler.trackPaywallClose()
-            self.purchaseHandler.resetForNewSession()
+        if !self.usesEmbeddedCheckpointLifecycle && self.isBeingDismissed && !self.isDismissingForExitOffer {
+            self.notifyCheckpointDismissal()
         }
         super.viewDidDisappear(animated)
     }
@@ -592,6 +611,12 @@ public class PaywallViewController: UIViewController {
 
     /// Handles dismissal requests, checking for exit offers before calling the original handler.
     private func handleDismissalRequest() {
+        // Embedded checkpoints track their close and reset when the SDK removes the child.
+        if self.usesEmbeddedCheckpointLifecycle {
+            self.dismissPaywall()
+            return
+        }
+
         // If purchased, dismiss immediately without showing exit offer
         guard !self.purchaseHandler.hasPurchasedInSession else {
             _ = self.purchaseHandler.trackPaywallClose()

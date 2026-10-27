@@ -34,17 +34,21 @@ final class CheckpointCallParams: @unchecked Sendable {
     let localPaywallPresentationHandler: PaywallPresentationHandler?
     let presentationMode: FlowPresentationMode
     let localErrorPresentationHandler: ErrorPresentationHandler?
+    /// Set when the checkpoint is embedded in a caller-supplied parent instead of presented modally.
+    let execution: EmbeddedCheckpointExecution?
 
     init(
         customVariables: [String: CustomVariableValue] = [:],
         presentationMode: FlowPresentationMode = .default,
         paywallPresenter: PaywallPresentationHandler? = nil,
-        errorPresenter: ErrorPresentationHandler? = nil
+        errorPresenter: ErrorPresentationHandler? = nil,
+        execution: EmbeddedCheckpointExecution? = nil
     ) {
         self.customVariables = RevenueCat.CustomVariableKeyValidator.validateAndFilter(customVariables)
         self.presentationMode = presentationMode.resolved
         self.localPaywallPresentationHandler = paywallPresenter
         self.localErrorPresentationHandler = errorPresenter
+        self.execution = execution
     }
 
     var coreParams: RevenueCat.CheckpointParams {

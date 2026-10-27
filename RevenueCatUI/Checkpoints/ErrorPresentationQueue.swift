@@ -19,42 +19,60 @@ import Foundation
 final class ErrorPresentationQueue {
 
     private struct Presentation {
+        let id: UUID
         let params: ErrorPresentationParams
         let handler: ErrorPresentationHandler
         let completion: ErrorPresentationCompletion
     }
 
     private var pendingPresentations: [Presentation] = []
-    private var isPresenting = false
+    private var activePresentationID: UUID?
 
     func enqueue(
         params: ErrorPresentationParams,
         handler: @escaping ErrorPresentationHandler,
-        completion: ErrorPresentationCompletion
+        completion: ErrorPresentationCompletion,
+        execution: EmbeddedCheckpointExecution? = nil
     ) {
-        self.pendingPresentations.append(.init(
-            params: params,
-            handler: handler,
-            completion: completion
-        ))
-        self.presentNextIfNeeded()
+        let id = UUID()
+        let queueCompletion = ErrorPresentationCompletion { [weak self] in
+            completion.complete()
+            self?.removePresentation(id)
+        }
+        let enqueue: ErrorPresentationHandler = { [weak self] params, completion in
+            guard let self else {
+                completion.complete()
+                return
+            }
+            self.pendingPresentations.append(.init(
+                id: id,
+                params: params,
+                handler: handler,
+                completion: completion
+            ))
+            self.presentNextIfNeeded()
+        }
+        // Register cancellation before waiting behind another execution's error UI, so a cancelled
+        // execution leaves the queue even if its error was never shown.
+        let enqueueForExecution = execution?.wrap(enqueue) ?? enqueue
+        enqueueForExecution(params, queueCompletion)
+    }
+
+    private func removePresentation(_ id: UUID) {
+        self.pendingPresentations.removeAll { $0.id == id }
+        guard self.activePresentationID == id else { return }
+        self.activePresentationID = nil
+        Task { @MainActor [weak self] in
+            self?.presentNextIfNeeded()
+        }
     }
 
     private func presentNextIfNeeded() {
-        guard !self.isPresenting, !self.pendingPresentations.isEmpty else { return }
+        guard self.activePresentationID == nil, !self.pendingPresentations.isEmpty else { return }
 
-        self.isPresenting = true
         let presentation = self.pendingPresentations.removeFirst()
-        presentation.handler(
-            presentation.params,
-            .init { [weak self] in
-                presentation.completion.complete()
-                Task { @MainActor [weak self] in
-                    self?.isPresenting = false
-                    self?.presentNextIfNeeded()
-                }
-            }
-        )
+        self.activePresentationID = presentation.id
+        presentation.handler(presentation.params, presentation.completion)
     }
 
 }
