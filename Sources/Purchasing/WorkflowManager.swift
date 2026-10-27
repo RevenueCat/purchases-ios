@@ -49,17 +49,20 @@ class WorkflowManager: WorkflowAssetPrewarmingType {
     private let paywallCache: PaywallCacheWarmingType?
     private let operationDispatcher: OperationDispatcher
     private let webBundleURLBatcher: WebBundleURLBatcherType
+    private let workflowPrewarmingDecodeCoordinator: WorkflowPrewarmingDecodeCoordinator
 
     init(
         workflowsConfigProvider: WorkflowsConfigProviderType,
         paywallCache: PaywallCacheWarmingType?,
         operationDispatcher: OperationDispatcher,
-        webBundleURLBatcher: WebBundleURLBatcherType = WebBundleURLBatcher.shared
+        webBundleURLBatcher: WebBundleURLBatcherType = WebBundleURLBatcher.shared,
+        workflowPrewarmingDecodeCoordinator: WorkflowPrewarmingDecodeCoordinator = .init()
     ) {
         self.workflowsConfigProvider = workflowsConfigProvider
         self.paywallCache = paywallCache
         self.operationDispatcher = operationDispatcher
         self.webBundleURLBatcher = webBundleURLBatcher
+        self.workflowPrewarmingDecodeCoordinator = workflowPrewarmingDecodeCoordinator
     }
 
     /// Resolves `workflowId`, or throws the error explaining why it couldn't be resolved: genuinely
@@ -148,8 +151,9 @@ class WorkflowManager: WorkflowAssetPrewarmingType {
                 )
                 guard !hasStartedAssetPrewarming else { continue }
 
-                let resolution = await self.workflowsConfigProvider.decodeCachedWorkflowForAssetPrewarming(
-                    workflowId: workflowId
+                let resolution = await self.workflowPrewarmingDecodeCoordinator.decode(
+                    workflowId: workflowId,
+                    using: self.workflowsConfigProvider
                 )
                 switch resolution {
                 case let .success(result):
@@ -180,8 +184,9 @@ class WorkflowManager: WorkflowAssetPrewarmingType {
             if let cachedResolution = resolutionsByWorkflowId[workflowId] {
                 resolution = cachedResolution
             } else {
-                resolution = await self.workflowsConfigProvider.decodeCachedWorkflowForAssetPrewarming(
-                    workflowId: workflowId
+                resolution = await self.workflowPrewarmingDecodeCoordinator.decode(
+                    workflowId: workflowId,
+                    using: self.workflowsConfigProvider
                 )
                 resolutionsByWorkflowId[workflowId] = resolution
             }
@@ -219,6 +224,97 @@ extension WorkflowManager {
 // @unchecked because:
 // - Class is not `final` (it's mocked). This implicitly makes subclasses `Sendable` even if they're not thread-safe.
 extension WorkflowManager: @unchecked Sendable {}
+
+/// Shares overlapping workflow prewarming decodes and limits how many run at once.
+/// Completed decodes are not cached.
+actor WorkflowPrewarmingDecodeCoordinator {
+
+    private struct InFlightDecode {
+        let identifier: UUID
+        let task: Task<Result<WorkflowDataResult, WorkflowResolutionError>, Never>
+    }
+
+    private struct DecodeID: Hashable {
+        let workflowId: String
+        let configGeneration: Int
+    }
+
+    private let decodeLimiter: DecodeLimiter
+    private var inFlightDecodes: [DecodeID: InFlightDecode] = [:]
+    private(set) var activeRequestCount = 0
+
+    init(maxConcurrentDecodes: Int = 4) {
+        self.decodeLimiter = .init(maxConcurrentDecodes: maxConcurrentDecodes)
+    }
+
+    /// Shares only active work from the same config generation. Completed graphs are released instead of becoming
+    /// another workflow cache. Distinct decodes are limited to four at a time to bound CPU and peak memory.
+    func decode(
+        workflowId: String,
+        using provider: WorkflowsConfigProviderType
+    ) async -> Result<WorkflowDataResult, WorkflowResolutionError> {
+        let decodeID = DecodeID(
+            workflowId: workflowId,
+            configGeneration: provider.configGeneration
+        )
+
+        self.activeRequestCount += 1
+        defer { self.activeRequestCount -= 1 }
+
+        if let inFlightDecode = self.inFlightDecodes[decodeID] {
+            return await inFlightDecode.task.value
+        }
+
+        let identifier = UUID()
+        let decodeLimiter = self.decodeLimiter
+        let task = Task {
+            await decodeLimiter.acquire()
+            let result = await provider.decodeCachedWorkflowForAssetPrewarming(workflowId: workflowId)
+            await decodeLimiter.release()
+            return result
+        }
+        self.inFlightDecodes[decodeID] = InFlightDecode(identifier: identifier, task: task)
+
+        let result = await task.value
+        if self.inFlightDecodes[decodeID]?.identifier == identifier {
+            self.inFlightDecodes[decodeID] = nil
+        }
+        return result
+    }
+
+    private actor DecodeLimiter {
+
+        private var availablePermits: Int
+        private var waiters: [CheckedContinuation<Void, Never>] = []
+
+        init(maxConcurrentDecodes: Int) {
+            precondition(maxConcurrentDecodes > 0)
+            self.availablePermits = maxConcurrentDecodes
+        }
+
+        func acquire() async {
+            guard self.availablePermits == 0 else {
+                self.availablePermits -= 1
+                return
+            }
+
+            await withCheckedContinuation { continuation in
+                self.waiters.append(continuation)
+            }
+        }
+
+        func release() {
+            guard !self.waiters.isEmpty else {
+                self.availablePermits += 1
+                return
+            }
+
+            self.waiters.removeFirst().resume()
+        }
+
+    }
+
+}
 
 extension WorkflowStep {
 

@@ -409,6 +409,102 @@ class WorkflowManagerTests: TestCase {
         expect(self.mockWebBundleURLBatcher.invokedPublishWorkflowsByOfferingId).to(beEmpty())
     }
 
+    // MARK: - WorkflowPrewarmingDecodeCoordinator
+
+    func testPrewarmingAndWebBundlePublishingShareTransientDecode() async throws {
+        guard #available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *) else {
+            throw XCTSkip("Workflow asset prewarming requires iOS 15+")
+        }
+        let provider = BlockingWorkflowPrewarmingDecodeProvider(result: try Self.workflowDataResult(id: "wf_1"))
+        let coordinator = WorkflowPrewarmingDecodeCoordinator()
+        let manager = WorkflowManager(
+            workflowsConfigProvider: provider,
+            paywallCache: self.mockPaywallCache,
+            operationDispatcher: self.mockOperationDispatcher,
+            webBundleURLBatcher: self.mockWebBundleURLBatcher,
+            workflowPrewarmingDecodeCoordinator: coordinator
+        )
+
+        await manager.scheduleAssetPrewarmingForPrefetchedWorkflows(includingOfferingId: "default")
+        let prewarming = Task {
+            await self.mockOperationDispatcher.invokeAllDispatchedAsyncWorkerThreadBlocks()
+        }
+        let publishing = Task {
+            await manager.publishWebBundleURLs(offerings: Self.offerings())
+        }
+
+        await expect { await coordinator.activeRequestCount }.toEventually(equal(2))
+        expect(provider.decodeCount) == 1
+
+        await provider.releaseDecodes()
+        _ = await (prewarming.value, publishing.value)
+
+        expect(provider.decodeCount) == 1
+        expect(self.mockPaywallCache.invokedPrewarmWorkflowAssetsCount) == 1
+        expect(self.mockWebBundleURLBatcher.invokedPublishWorkflowsByOfferingId["default"]?.id) == "wf_1"
+    }
+
+    func testWorkflowPrewarmingDecodeCoordinatorCoalescesConcurrentRequestsForSameWorkflow() async throws {
+        let provider = BlockingWorkflowPrewarmingDecodeProvider(result: try Self.workflowDataResult(id: "wf_1"))
+        let coordinator = WorkflowPrewarmingDecodeCoordinator()
+        let tasks = (0..<20).map { _ in
+            Task {
+                await coordinator.decode(workflowId: "wf_1", using: provider)
+            }
+        }
+
+        await expect { await coordinator.activeRequestCount }.toEventually(equal(20))
+        expect(provider.decodeCount) == 1
+        await provider.releaseDecodes()
+        for task in tasks {
+            let result = try await task.value.get()
+            expect(result.workflow.id) == "wf_1"
+        }
+
+        expect(provider.decodeCount) == 1
+    }
+
+    func testWorkflowPrewarmingDecodeCoordinatorDoesNotShareAcrossConfigGenerations() async throws {
+        let provider = BlockingWorkflowPrewarmingDecodeProvider(result: try Self.workflowDataResult(id: "wf_1"))
+        let coordinator = WorkflowPrewarmingDecodeCoordinator()
+        let first = Task {
+            await coordinator.decode(workflowId: "wf_1", using: provider)
+        }
+        await expect(provider.decodeCount).toEventually(equal(1))
+
+        provider.configGeneration = 1
+        let second = Task {
+            await coordinator.decode(workflowId: "wf_1", using: provider)
+        }
+
+        await expect(provider.decodeCount).toEventually(equal(2))
+        await provider.releaseDecodes()
+        _ = await (first.value, second.value)
+
+        expect(provider.decodeCount) == 2
+    }
+
+    func testWorkflowPrewarmingDecodeCoordinatorLimitsConcurrentDecodes() async throws {
+        let provider = BlockingWorkflowPrewarmingDecodeProvider(result: try Self.workflowDataResult(id: "resolved"))
+        let coordinator = WorkflowPrewarmingDecodeCoordinator(maxConcurrentDecodes: 4)
+        let tasks = (0..<10).map { index in
+            Task {
+                await coordinator.decode(workflowId: "wf_\(index)", using: provider)
+            }
+        }
+
+        await expect { await coordinator.activeRequestCount }.toEventually(equal(10))
+        expect(provider.decodeCount) == 4
+
+        await provider.releaseDecodes()
+        for task in tasks {
+            _ = await task.value
+        }
+
+        expect(provider.decodeCount) == 10
+        expect(provider.maxConcurrentDecodeCount) == 4
+    }
+
     // MARK: - Helpers
 
     private static func offerings(placements: Offerings.Placements? = nil) -> Offerings {
@@ -481,6 +577,78 @@ class WorkflowManagerTests: TestCase {
         """
         let data = try XCTUnwrap(json.data(using: .utf8))
         return try JSONDecoder.default.decode(PublishedWorkflow.self, from: data)
+    }
+
+}
+
+private final class BlockingWorkflowPrewarmingDecodeProvider: WorkflowsConfigProviderType, @unchecked Sendable {
+
+    private let result: WorkflowDataResult
+    private let gate = WorkflowDecodeGate()
+    private let decodeCounter: Atomic<Int> = .init(0)
+    private let activeDecodeCounter: Atomic<Int> = .init(0)
+    private let maximumActiveDecodeCounter: Atomic<Int> = .init(0)
+    private let generation: Atomic<Int> = .init(0)
+
+    var decodeCount: Int { self.decodeCounter.value }
+    var maxConcurrentDecodeCount: Int { self.maximumActiveDecodeCounter.value }
+    var configGeneration: Int {
+        get { self.generation.value }
+        set { self.generation.value = newValue }
+    }
+
+    init(result: WorkflowDataResult) {
+        self.result = result
+    }
+
+    func workflowId(forOfferingId offeringId: String) async -> String? { self.result.workflow.id }
+    func workflowIds() async -> [String] { [] }
+
+    func getWorkflow(workflowId: String) async -> Result<WorkflowDataResult, WorkflowResolutionError> {
+        return .failure(.notFound)
+    }
+
+    func decodeCachedWorkflowForAssetPrewarming(
+        workflowId: String
+    ) async -> Result<WorkflowDataResult, WorkflowResolutionError> {
+        self.decodeCounter.modify { $0 += 1 }
+        let activeDecodeCount = self.activeDecodeCounter.modify {
+            $0 += 1
+            return $0
+        }
+        self.maximumActiveDecodeCounter.modify { $0 = max($0, activeDecodeCount) }
+        await self.gate.wait()
+        self.activeDecodeCounter.modify { $0 -= 1 }
+        return .success(self.result)
+    }
+
+    func cachePrefetchedWorkflowBodyData(includingOfferingId: String?) async -> [String] {
+        return [self.result.workflow.id]
+    }
+    func cachedWorkflow(forOfferingId offeringId: String) -> WorkflowDataResult? { nil }
+
+    func releaseDecodes() async {
+        await self.gate.open()
+    }
+
+}
+
+private actor WorkflowDecodeGate {
+
+    private var isOpen = false
+    private var continuations: [CheckedContinuation<Void, Never>] = []
+
+    func wait() async {
+        guard !self.isOpen else { return }
+        await withCheckedContinuation { continuation in
+            self.continuations.append(continuation)
+        }
+    }
+
+    func open() {
+        self.isOpen = true
+        self.continuations.forEach { $0.resume() }
+        self.continuations.removeAll()
     }
 
 }
