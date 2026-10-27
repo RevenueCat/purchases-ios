@@ -67,7 +67,6 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
     private var pendingCurrentOfferingProductIdentifiers: Set<String> = []
     private var pendingEligibilityProductIdentifiers: Set<String> = []
     private var eligibilityWarmupTask: Task<Void, Never>?
-    private var eligibilityCacheGeneration = 0
     private var hasLoadedPaywallAssets = false
     private var workflowIDsWithAssetPrewarmingStarted: Set<String> = []
     private var workflowFontAssetsWithPrewarmingAttempted: Set<DownloadableFont> = []
@@ -110,8 +109,7 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
             Logger.debug(Strings.paywalls.joining_eligibility_cache_warmup)
             await task.value
         } else if !self.pendingEligibilityProductIdentifiers.isEmpty {
-            let generation = self.eligibilityCacheGeneration
-            let task = Task { await self.warmUpPendingEligibility(generation: generation) }
+            let task = Task { await self.warmUpPendingEligibility() }
             self.eligibilityWarmupTask = task
             await task.value
         }
@@ -124,15 +122,16 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
     /// re-populates the cache.
     func clearEligibilityCache() {
         // New warm-ups must not wait for checks started before eligibility was invalidated.
-        self.eligibilityCacheGeneration += 1
+        // The eligibility check's shared task can still finish for its existing callers.
+        self.eligibilityWarmupTask?.cancel()
         self.eligibilityWarmupTask = nil
         self.warmedEligibilityProductIdentifiers.removeAll(keepingCapacity: false)
         self.pendingCurrentOfferingProductIdentifiers.removeAll(keepingCapacity: false)
         self.pendingEligibilityProductIdentifiers.removeAll(keepingCapacity: false)
     }
 
-    private func warmUpPendingEligibility(generation: Int) async {
-        while self.eligibilityCacheGeneration == generation {
+    private func warmUpPendingEligibility() async {
+        while !Task.isCancelled {
             let products = self.pendingCurrentOfferingProductIdentifiers.isEmpty
                 ? self.pendingEligibilityProductIdentifiers
                 : self.pendingCurrentOfferingProductIdentifiers
@@ -144,8 +143,8 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
 
             await Self.checkEligibility(productIdentifiers: products, checker: self.introEligibiltyChecker)
 
-            // An older completion must not consume pending work or mark products warmed in a new generation.
-            guard self.eligibilityCacheGeneration == generation else { return }
+            // An invalidated warm-up must not update tracking or consume a replacement warm-up's pending work.
+            guard !Task.isCancelled else { return }
 
             self.warmedEligibilityProductIdentifiers.formUnion(products)
             self.pendingCurrentOfferingProductIdentifiers.subtract(products)

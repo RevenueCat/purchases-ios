@@ -344,6 +344,44 @@ final class PaywallCacheWarmingTests: TestCase {
         await self.fulfillment(of: [second], timeout: 5)
     }
 
+    func testInvalidatingWarmupPreservesSharedEligibilityResultForExistingCallers() async throws {
+        let check = HeldSubscriptionGroupEligibilityCheck()
+        defer { check.completeAll() }
+        self.eligibilityChecker.asyncCheckEligibility = { productIDs in
+            let eligible = await check.call("group")
+            return productIDs.dictionaryWithValues { _ in
+                IntroEligibility(eligibilityStatus: eligible ? .eligible : .ineligible)
+            }
+        }
+        let cachingChecker = CachingTrialOrIntroPriceEligibilityChecker(checker: self.eligibilityChecker)
+        self.cache = PaywallCacheWarming(
+            introEligibiltyChecker: cachingChecker,
+            webBundleURLBatcher: self.mockWebBundleURLBatcher
+        )
+        let offerings = try Self.eligibilityOfferings(current: "current", other: ["other"])
+        let first = self.startEligibilityWarmup(offerings)
+        try await asyncWait { check.invocations == ["group"] }
+        let second = self.startEligibilityWarmup(offerings)
+        try await self.waitForWarmupJoins(count: 1)
+
+        let requestFinished = self.expectation(description: "Shared eligibility result delivered")
+        cachingChecker.checkEligibility(productIdentifiers: ["current"]) { result in
+            expect(result["current"]?.status) == .eligible
+            requestFinished.fulfill()
+        }
+        try await self.logger.verifyMessageIsEventuallyLogged(
+            Strings.eligibility.waiting_for_intro_eligibility(["current"]), level: .debug
+        )
+
+        cachingChecker.clearCache()
+        await self.cache.clearEligibilityCache()
+        check.complete(at: 0, eligible: true)
+        await self.fulfillment(of: [first, second, requestFinished], timeout: 5)
+
+        expect(check.wasCancelled.value) == false
+        expect(check.invocations) == ["group"]
+    }
+
     func testOldCompletionDoesNotInterfereWithReplacementWarmup() async throws {
         let checker = self.useDelayedEligibilityChecker()
         let first = self.startEligibilityWarmup(
@@ -356,7 +394,7 @@ final class PaywallCacheWarmingTests: TestCase {
         let second = self.startEligibilityWarmup(offerings)
         await expect(checker.invocations).toEventually(equal([["current"], ["current"]]))
 
-        // Finish the old generation while its replacement is still waiting for the same product.
+        // Finish the invalidated warm-up while its replacement is still waiting for the same product.
         checker.complete(productIdentifiers: ["current"], with: [:])
         await self.fulfillment(of: [first], timeout: 5)
         let third = self.startEligibilityWarmup(offerings)
