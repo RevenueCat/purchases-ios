@@ -1666,6 +1666,19 @@ public extension Purchases {
         return result[product.id]?.status ?? .unknown
     }
 
+    @objc(checkTrialOrIntroDiscountEligibilityForPackage:completion:)
+    func checkTrialOrIntroDiscountEligibility(package: Package,
+                                              completion: @escaping (IntroEligibilityStatus) -> Void) {
+        trialOrIntroPriceEligibilityChecker.checkEligibility(
+            product: package.storeProduct,
+            completion: completion
+        )
+    }
+
+    func checkTrialOrIntroDiscountEligibility(package: Package) async -> IntroEligibilityStatus {
+        return await checkTrialOrIntroductoryDiscountEligibilityAsync(package.storeProduct)
+    }
+
 #if os(iOS) || targetEnvironment(macCatalyst) || VISION_OS
     @available(iOS 13.4, macCatalyst 13.4, *)
     @objc func showPriceConsentIfNeeded() {
