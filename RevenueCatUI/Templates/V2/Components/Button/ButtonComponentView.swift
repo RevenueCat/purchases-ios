@@ -124,6 +124,7 @@ struct ButtonComponentView: View {
                 isWorkflowClose: self.viewModel.component.isCloseWorkflowAction,
                 componentIdentifier: ObjectIdentifier(self.viewModel),
                 interactionEnabled: !self.purchaseHandler.actionInProgress,
+                registrationDelayMilliseconds: self.viewModel.component.transition?.animation?.msDelay ?? 0,
                 action: {
                     guard !self.purchaseHandler.actionInProgress else { return }
                     try await self.performAction()

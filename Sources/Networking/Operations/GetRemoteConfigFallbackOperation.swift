@@ -52,7 +52,7 @@ extension GetRemoteConfigFallbackOperation: @unchecked Sendable {}
 private extension GetRemoteConfigFallbackOperation {
 
     func getRemoteConfigFallback(completion: @escaping () -> Void) {
-        let request = HTTPRequest(method: .get, path: HTTPRequest.FallbackPath.remoteConfig(domain: self.domain))
+        let request = HTTPRequest(method: .get, path: .remoteConfigFallback(domain: self.domain))
 
         self.httpClient.perform(request) { (response: VerifiedHTTPResponse<RemoteConfiguration>.Result) in
             defer {

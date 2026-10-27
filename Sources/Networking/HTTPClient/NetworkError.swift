@@ -72,7 +72,7 @@ extension NetworkError {
     }
 
     static func unableToCreateRequest(
-        _ path: HTTPRequestPath,
+        _ path: HTTPRequest.Path,
         file: String = #fileID, function: String = #function, line: UInt = #line
     ) -> Self {
         return .unableToCreateRequest(path: path.relativePath, .init(file: file, function: function, line: line))
@@ -93,7 +93,7 @@ extension NetworkError {
     }
 
     static func signatureVerificationFailed(
-        path: HTTPRequestPath,
+        path: HTTPRequest.Path,
         code: HTTPStatusCode,
         file: String = #fileID, function: String = #function, line: UInt = #line
     ) -> Self {

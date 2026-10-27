@@ -158,11 +158,7 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
         checker: TrialOrIntroPriceEligibilityCheckerType
     ) async {
         Logger.debug(Strings.paywalls.warming_up_eligibility_cache(products: productIdentifiers))
-        _ = await Async.call { completion in
-            checker.checkEligibility(productIdentifiers: productIdentifiers) { result in
-                completion(result)
-            }
-        }
+        _ = await checker.checkEligibility(productIdentifiers: productIdentifiers)
     }
 
     /// Walks paywall component trees once, then downloads images.
