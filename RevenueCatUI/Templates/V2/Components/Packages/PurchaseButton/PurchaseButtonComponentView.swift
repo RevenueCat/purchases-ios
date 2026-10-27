@@ -39,6 +39,7 @@ struct PurchaseButtonComponentView: View {
     private var componentInteractionLogger
 
     @State private var inAppBrowserURL: URL?
+    @State private var inAppBrowserDidDisappearCompletion: (() -> Void)?
 
     @State private var showingPurchaseUnavailableAlert = false
 
@@ -94,6 +95,11 @@ struct PurchaseButtonComponentView: View {
         #if canImport(SafariServices) && canImport(UIKit)
         .sheet(isPresented: .isNotNil(self.$inAppBrowserURL)) {
             SafariView(url: self.inAppBrowserURL!)
+        }
+        .onChangeOf(self.inAppBrowserURL) { inAppBrowserURL in
+            guard inAppBrowserURL == nil else { return }
+            inAppBrowserDidDisappearCompletion?()
+            inAppBrowserDidDisappearCompletion = nil
         }
         #endif
         #if os(iOS) && canImport(WebKit)
@@ -352,7 +358,13 @@ struct PurchaseButtonComponentView: View {
         self.purchaseHandler.signalWebCheckoutOpened()
 
         if launchWebCheckout.autoDismiss {
-            self.onDismiss()
+            if case .inAppBrowser = method {
+                self.inAppBrowserDidDisappearCompletion = {
+                    self.onDismiss()
+                }
+            } else {
+                self.onDismiss()
+            }
         }
     }
 
