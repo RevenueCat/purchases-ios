@@ -73,7 +73,7 @@ class BackendLoginTests: BaseBackendLoginTests {
         }
     }
 
-    func testLoginCallsCompletionWithCustomerInfoAndCreatedFalseIf201() throws {
+    func testLoginCallsCompletionWithCustomerInfoAndCreatedTrueIf201() throws {
         let newAppUserID = "new id"
 
         let currentAppUserID = "old id"
