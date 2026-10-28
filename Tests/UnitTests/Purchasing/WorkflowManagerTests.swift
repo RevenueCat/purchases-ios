@@ -395,7 +395,7 @@ class WorkflowManagerTests: TestCase {
         expect(self.mockWebBundleURLBatcher.invokedPublishCount) == 1
     }
 
-    func testPublishWebBundleURLsDoesNotDecodePublishedWorkflowAgainForNewConfigGeneration() async throws {
+    func testPublishWebBundleURLsPublishesWorkflowAgainForNewConfigGeneration() async throws {
         guard #available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *) else {
             throw XCTSkip("publishWebBundleURLs requires iOS 15+")
         }
@@ -408,8 +408,8 @@ class WorkflowManagerTests: TestCase {
         self.mockProvider.configGeneration = 1
         await self.manager.publishWebBundleURLs(offerings: offerings)
 
-        expect(self.mockProvider.invokedDecodeCachedWorkflowForAssetPrewarmingParameters) == ["wf_1"]
-        expect(self.mockWebBundleURLBatcher.invokedPublishCount) == 1
+        expect(self.mockProvider.invokedDecodeCachedWorkflowForAssetPrewarmingParameters) == ["wf_1", "wf_1"]
+        expect(self.mockWebBundleURLBatcher.invokedPublishCount) == 2
     }
 
     func testPublishWebBundleURLsRetriesWorkflowThatFailedToDecode() async throws {

@@ -178,12 +178,16 @@ class WorkflowManager: WorkflowAssetPrewarmingType {
         var resolutionsByWorkflowId: [String: Result<WorkflowDataResult, WorkflowResolutionError>] = [:]
         var workflowIDsToMarkPublished: Set<String> = []
         var shouldPublish = false
+        let configGeneration = self.workflowsConfigProvider.configGeneration
         for offeringId in WebBundleURLBatcher.targetOfferingIds(from: offerings) {
             guard let workflowId = await self.workflowsConfigProvider.workflowId(forOfferingId: offeringId) else {
                 shouldPublish = true
                 continue
             }
-            guard !(await self.webBundlePublicationTracker.hasPublished(workflowId)) else { continue }
+            guard !(await self.webBundlePublicationTracker.hasPublished(
+                workflowId,
+                configGeneration: configGeneration
+            )) else { continue }
 
             shouldPublish = true
 
@@ -209,7 +213,10 @@ class WorkflowManager: WorkflowAssetPrewarmingType {
             offerings: offerings,
             workflowsByOfferingId: workflowsByOfferingId
         )
-        await self.webBundlePublicationTracker.markPublished(workflowIDsToMarkPublished)
+        await self.webBundlePublicationTracker.markPublished(
+            workflowIDsToMarkPublished,
+            configGeneration: configGeneration
+        )
     }
 
 }
@@ -235,17 +242,29 @@ extension WorkflowManager {
 // - Class is not `final` (it's mocked). This implicitly makes subclasses `Sendable` even if they're not thread-safe.
 extension WorkflowManager: @unchecked Sendable {}
 
-/// Remembers which workflows already had their web-bundle URLs published during this SDK instance.
+/// Remembers which workflows already had their web-bundle URLs published for the current config.
 private actor WorkflowWebBundlePublicationTracker {
 
+    private var configGeneration: Int?
     private var publishedWorkflowIDs: Set<String> = []
 
-    func hasPublished(_ workflowId: String) -> Bool {
+    func hasPublished(_ workflowId: String, configGeneration: Int) -> Bool {
+        guard self.prepareForConfigGeneration(configGeneration) else { return true }
         return self.publishedWorkflowIDs.contains(workflowId)
     }
 
-    func markPublished(_ workflowIDs: Set<String>) {
+    func markPublished(_ workflowIDs: Set<String>, configGeneration: Int) {
+        guard self.prepareForConfigGeneration(configGeneration) else { return }
         self.publishedWorkflowIDs.formUnion(workflowIDs)
+    }
+
+    private func prepareForConfigGeneration(_ configGeneration: Int) -> Bool {
+        guard self.configGeneration.map({ configGeneration >= $0 }) ?? true else { return false }
+        guard self.configGeneration != configGeneration else { return true }
+
+        self.configGeneration = configGeneration
+        self.publishedWorkflowIDs.removeAll()
+        return true
     }
 
 }
