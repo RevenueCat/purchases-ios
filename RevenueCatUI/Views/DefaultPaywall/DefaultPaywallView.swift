@@ -61,6 +61,16 @@ struct DefaultPaywallView: View {
 
     @StateObject var appIconDetailProvider: AppIconDetailProvider
 
+    @MainActor
+    func restorePurchases() async {
+        do {
+            let result = try await self.handler.restorePurchases()
+            self.handler.setRestored(result.info, success: result.success)
+        } catch {
+            Logger.debug(Strings.restore_purchases_failed(error))
+        }
+    }
+
     // MARK: - Colors
 
     var iconColor: Color {
@@ -209,11 +219,7 @@ struct DefaultPaywallView: View {
                     let restoreButton = Button {
                         self.componentInteractionLogger(.paywallFooterRestorePurchases())
                         Task(priority: .userInitiated) {
-                            do {
-                                _ = try await handler.restorePurchases()
-                            } catch {
-                                Logger.debug(Strings.restore_purchases_failed(error))
-                            }
+                            await self.restorePurchases()
                         }
                     } label: {
                         Text(Localization.localizedBundle(locale)

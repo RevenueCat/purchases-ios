@@ -1115,6 +1115,64 @@ final class CheckpointsManagerTests: TestCase {
         XCTAssertFalse(checkpointResult.didObtainProduct("lifetime"))
     }
 
+    func testWorkflowCompletionExcludesProductsFromUnreferencedOfferings() async throws {
+        let monthly = Self.storeProduct(identifier: "monthly")
+        let unrelated = Self.storeProduct(identifier: "unrelated")
+        let executor = MockWorkflowPresenter()
+        executor.execution = .completed(
+            customerInfo: try Self.customerInfo(
+                activeEntitlements: ["pro"],
+                purchaseDatesByProductId: [
+                    "monthly": Date(timeIntervalSince1970: 10),
+                    "unrelated": Date(timeIntervalSince1970: 10)
+                ]
+            )
+        )
+        let workflow = Self.workflow(
+            products: [monthly], extraOfferings: [Self.offering(identifier: "other", products: [unrelated])]
+        )
+        let manager = CheckpointsManager(
+            resolveCheckpoint: { _, _ in .matchedWorkflow(workflow) },
+            workflowPresenter: executor,
+            customerInfoProvider: { try Self.customerInfo(activeEntitlements: []) }
+        )
+
+        let result = await manager.checkpointForCallback(identifier: "soft_paywall", params: .init())
+
+        guard case let .completed(checkpointResult) = result else {
+            return XCTFail("Expected a completed callback")
+        }
+        XCTAssertEqual(checkpointResult.flow?.obtainedProducts.map(\.product.productIdentifier), ["monthly"])
+        XCTAssertFalse(checkpointResult.didObtainProduct("unrelated"))
+    }
+
+    func testDismissedWorkflowExcludesRestoredProductsFromUnreferencedOfferings() async throws {
+        let unrelated = Self.storeProduct(identifier: "unrelated")
+        let restoredCustomerInfo = try Self.customerInfo(
+            activeEntitlements: ["other"],
+            purchaseDatesByProductId: ["unrelated": Date(timeIntervalSince1970: 10)]
+        )
+        let workflow = Self.workflow(
+            products: [Self.storeProduct(identifier: "monthly")],
+            extraOfferings: [Self.offering(identifier: "other", products: [unrelated])]
+        )
+        let manager = CheckpointsManager(
+            resolveCheckpoint: { _, _ in .matchedWorkflow(workflow) },
+            workflowPresenter: MockWorkflowPresenter(),
+            customerInfoProvider: { try Self.customerInfo(activeEntitlements: []) },
+            cachedCustomerInfoProvider: { restoredCustomerInfo }
+        )
+
+        let result = await manager.checkpointForCallback(identifier: "soft_paywall", params: .init())
+
+        guard case let .completed(checkpointResult) = result else {
+            return XCTFail("Expected a completed callback")
+        }
+        XCTAssertEqual(checkpointResult.customer, restoredCustomerInfo)
+        XCTAssertEqual(checkpointResult.flow?.obtainedProducts, [])
+        XCTAssertFalse(checkpointResult.didObtainProduct("unrelated"))
+    }
+
     func testCustomerInfoSynchronizationFailurePresentsErrorThenReturnsTheLatestKnownCustomer() async throws {
         let expectedError = NSError(domain: "test", code: 42)
         let product = Self.storeProduct(identifier: "premium-product")
@@ -1423,16 +1481,16 @@ final class CheckpointsManagerTests: TestCase {
         )
     }
 
-    private static func offering(products: [StoreProduct] = []) -> Offering {
+    private static func offering(identifier: String = "offering-id", products: [StoreProduct] = []) -> Offering {
         return Offering(
-            identifier: "offering-id",
+            identifier: identifier,
             serverDescription: "Test offering",
             availablePackages: products.map { product in
                 Package(
                     identifier: product.productIdentifier,
                     packageType: .custom,
                     storeProduct: product,
-                    offeringIdentifier: "offering-id",
+                    offeringIdentifier: identifier,
                     webCheckoutUrl: nil
                 )
             },
@@ -1489,19 +1547,24 @@ final class CheckpointsManagerTests: TestCase {
         ).toStoreProduct()
     }
 
-    private static func workflow(products: [StoreProduct] = []) -> ResolvedCheckpointWorkflow {
+    private static func workflow(
+        products: [StoreProduct] = [],
+        extraOfferings: [Offering] = []
+    ) -> ResolvedCheckpointWorkflow {
         let offering = Self.offering(products: products)
+        var step = WorkflowStep(id: "step-id", type: "screen", screenId: nil)
+        step.paramValues = ["offering_identifier": .string(offering.identifier)]
         return ResolvedCheckpointWorkflow(
             workflow: PublishedWorkflow(
                 id: "workflow-id",
                 displayName: "Test",
                 initialStepId: "step-id",
                 singleStepFallbackId: nil,
-                steps: ["step-id": WorkflowStep(id: "step-id", type: "screen", screenId: nil)],
+                steps: ["step-id": step],
                 screens: [:]
             ),
             uiConfig: .empty,
-            offerings: .preview(offerings: [offering])
+            offerings: .preview(offerings: [offering] + extraOfferings)
         )
     }
 

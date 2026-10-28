@@ -1517,6 +1517,11 @@ public extension Purchases {
         return try await self.customerInfoAsync(fetchPolicy: fetchPolicy)
     }
 
+    /// The cached product-to-entitlement mapping. Reading this does not initiate a fetch.
+    @_spi(Internal) var cachedProductEntitlementMapping: [String: [String]]? {
+        return self.deviceCache.cachedProductEntitlementMapping?.entitlementsByProduct
+    }
+
     var cachedCustomerInfo: CustomerInfo? {
         return try? self.customerInfoManager.cachedCustomerInfo(appUserID: self.appUserID)
     }
