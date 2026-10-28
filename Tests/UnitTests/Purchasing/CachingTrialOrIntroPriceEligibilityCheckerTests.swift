@@ -194,7 +194,7 @@ class CachingTrialOrIntroPriceEligibilityCheckerTests: TestCase {
     }
 
     func testIdenticalRequestsShareInFlightCheck() async {
-        let checker = DelayedTrialOrIntroPriceEligibilityChecker()
+        let checker = DelayedIntroEligibilityChecker()
         let caching = CachingTrialOrIntroPriceEligibilityChecker(checker: checker)
         let productIDs: Set<String> = [Self.productID1, Self.productID2]
 
@@ -228,7 +228,7 @@ class CachingTrialOrIntroPriceEligibilityCheckerTests: TestCase {
     }
 
     func testRequestSharesInFlightCheckContainingAllItsProducts() async {
-        let checker = DelayedTrialOrIntroPriceEligibilityChecker()
+        let checker = DelayedIntroEligibilityChecker()
         let caching = CachingTrialOrIntroPriceEligibilityChecker(checker: checker)
         let firstProductIDs: Set<String> = [Self.productID1, Self.productID2]
         let secondProductIDs: Set<String> = [Self.productID1]
@@ -260,7 +260,7 @@ class CachingTrialOrIntroPriceEligibilityCheckerTests: TestCase {
     }
 
     func testRequestDoesNotShareInFlightCheckMissingSomeOfItsProducts() async {
-        let checker = DelayedTrialOrIntroPriceEligibilityChecker()
+        let checker = DelayedIntroEligibilityChecker()
         let caching = CachingTrialOrIntroPriceEligibilityChecker(checker: checker)
         let firstProductIDs: Set<String> = [Self.productID1]
         let secondProductIDs: Set<String> = [Self.productID1, Self.productID2]
@@ -296,7 +296,7 @@ class CachingTrialOrIntroPriceEligibilityCheckerTests: TestCase {
     }
 
     func testClearCacheDoesNotShareOrCacheInFlightRequestFromPreviousGeneration() async {
-        let checker = DelayedTrialOrIntroPriceEligibilityChecker()
+        let checker = DelayedIntroEligibilityChecker()
         let caching = CachingTrialOrIntroPriceEligibilityChecker(checker: checker)
         let productIDs: Set<String> = [Self.productID1]
 
@@ -345,7 +345,7 @@ class CachingTrialOrIntroPriceEligibilityCheckerTests: TestCase {
     }
 
     func testAsyncRequestCombinesCachedResultWithSubsetOfPendingCallbackRequest() async throws {
-        let checker = DelayedTrialOrIntroPriceEligibilityChecker()
+        let checker = DelayedIntroEligibilityChecker()
         let caching = CachingTrialOrIntroPriceEligibilityChecker(checker: checker)
         let cached: Result = [Self.productID1: .init(eligibilityStatus: .eligible)]
         let prime = Task { await caching.checkEligibility(productIdentifiers: [Self.productID1]) }
@@ -428,49 +428,6 @@ class CachingTrialOrIntroPriceEligibilityCheckerTests: TestCase {
             [Self.productID1],
             [Self.productID1]
         ]
-    }
-
-}
-
-private final class DelayedTrialOrIntroPriceEligibilityChecker: MockTrialOrIntroPriceEligibilityChecker,
-                                                                @unchecked Sendable {
-
-    private struct State {
-        var invocations: [Set<String>] = []
-        var completions: [Set<String>: [ReceiveIntroEligibilityBlock]] = [:]
-    }
-
-    private let state = Atomic(State())
-
-    var invocations: [Set<String>] {
-        return self.state.value.invocations
-    }
-
-    override func checkEligibility(
-        productIdentifiers: Set<String>
-    ) async -> [String: IntroEligibility] {
-        return await withCheckedContinuation { continuation in
-            self.state.modify {
-                $0.invocations.append(productIdentifiers)
-                $0.completions[productIdentifiers, default: []].append { continuation.resume(returning: $0) }
-            }
-        }
-    }
-
-    func complete(
-        productIdentifiers: Set<String>,
-        with result: [String: IntroEligibility]
-    ) {
-        let completion: ReceiveIntroEligibilityBlock? = self.state.modify { state in
-            guard var completions = state.completions[productIdentifiers], !completions.isEmpty else {
-                return nil
-            }
-
-            let completion = completions.removeFirst()
-            state.completions[productIdentifiers] = completions.isEmpty ? nil : completions
-            return completion
-        }
-        completion?(result)
     }
 
 }

@@ -307,6 +307,9 @@ final class DefaultCheckpointWorkflowResolver: CheckpointWorkflowResolver {
         guard let initialStep = workflow.steps[workflow.initialStepId] else {
             return Self.unservable(rule, reason: "its initial step was not found")
         }
+        if let step = workflow.steps.values.first(where: { $0.gating == .invalid }) {
+            return Self.unservable(rule, reason: "step '\(step.id)' has invalid gating")
+        }
 
         if initialStep.isOfferingStep {
             guard workflow.steps.count == 1 else {
@@ -324,8 +327,8 @@ final class DefaultCheckpointWorkflowResolver: CheckpointWorkflowResolver {
 
     /// Serves a workflow whose only step is a terminal `offering` step as an offering the app owns.
     ///
-    /// Only the offering identifier is validated. Anything else the step happens to carry is ignored rather
-    /// than treated as unservable, since a step of this kind renders nothing.
+    /// Gating has already been validated. Other than that, only the offering identifier is validated,
+    /// since a step of this kind renders nothing.
     private func resolveOffering(
         _ rule: CheckpointRule, step: WorkflowStep, checkpointIdentifier: String
     ) async -> CheckpointResolution {

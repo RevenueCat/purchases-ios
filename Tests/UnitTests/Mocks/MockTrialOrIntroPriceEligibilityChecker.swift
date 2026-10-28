@@ -96,3 +96,62 @@ class MockTrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCheck
 }
 
 extension MockTrialOrIntroPriceEligibilityChecker: @unchecked Sendable {}
+
+final class DelayedIntroEligibilityChecker: MockTrialOrIntroPriceEligibilityChecker,
+                                           @unchecked Sendable {
+
+    private struct State {
+        var invocations: [Set<String>] = []
+        var completions: [Set<String>: [ReceiveIntroEligibilityBlock]] = [:]
+        var completesImmediately = false
+    }
+
+    private let state = Atomic(State())
+
+    var invocations: [Set<String>] {
+        return self.state.value.invocations
+    }
+
+    override func checkEligibility(
+        productIdentifiers: Set<String>
+    ) async -> [String: IntroEligibility] {
+        return await withCheckedContinuation { continuation in
+            let completesImmediately = self.state.modify {
+                $0.invocations.append(productIdentifiers)
+                if !$0.completesImmediately {
+                    $0.completions[productIdentifiers, default: []].append { continuation.resume(returning: $0) }
+                }
+                return $0.completesImmediately
+            }
+            if completesImmediately { continuation.resume(returning: [:]) }
+        }
+    }
+
+    func complete(
+        productIdentifiers: Set<String>,
+        with result: [String: IntroEligibility]
+    ) {
+        let completion: ReceiveIntroEligibilityBlock? = self.state.modify { state in
+            guard var completions = state.completions[productIdentifiers], !completions.isEmpty else {
+                return nil
+            }
+
+            let completion = completions.removeFirst()
+            state.completions[productIdentifiers] = completions.isEmpty ? nil : completions
+            return completion
+        }
+        completion?(result)
+    }
+
+    /// Releases outstanding checks and any subsequent checks, including when a test fails before releasing its gates.
+    func completeAll() {
+        let completions = self.state.modify {
+            $0.completesImmediately = true
+            let completions = $0.completions.values.flatMap { $0 }
+            $0.completions.removeAll()
+            return completions
+        }
+        completions.forEach { $0([:]) }
+    }
+
+}

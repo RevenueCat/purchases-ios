@@ -1,0 +1,10 @@
+import Foundation
+
+public enum PlainEnum { case a } // violation
+public indirect enum IndirectEnum { case a } // violation
+@_spi(Experimental) public enum ExperimentalEnum { case a } // violation
+@_spi(Internal) public enum InternalSpiEnum { case a }
+@_spi(Internal)
+public enum InternalSpiEnumOnNextLine { case a }
+internal enum InternalEnum { case a }
+enum ImplicitlyInternalEnum { case a }
