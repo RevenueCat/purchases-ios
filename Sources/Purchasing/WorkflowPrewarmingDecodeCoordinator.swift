@@ -77,8 +77,7 @@ actor WorkflowPrewarmingDecodeCoordinator {
         private var waiters: [CheckedContinuation<Void, Never>] = []
 
         init(maxConcurrentDecodes: Int) {
-            precondition(maxConcurrentDecodes > 0)
-            self.availablePermits = maxConcurrentDecodes
+            self.availablePermits = max(1, maxConcurrentDecodes)
         }
 
         func acquire() async {
