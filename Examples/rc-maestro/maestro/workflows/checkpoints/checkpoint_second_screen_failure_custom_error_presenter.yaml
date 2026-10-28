@@ -1,0 +1,42 @@
+# The first Flow screen renders, then the missing second screen is handed to the E2E app's custom ErrorPresenter.
+
+appId: com.revenuecat.maestro.ios
+name: Custom error presenter receives a second Flow screen failure
+env:
+  MAESTRO_STORE: ${MAESTRO_STORE || 'test_store'}
+
+---
+- clearState
+- pressKey: home
+- launchApp:
+    arguments:
+      e2e_test_flow: checkpoint_second_screen_failure_custom_error_presenter
+- extendedWaitUntil:
+    visible: "Using custom error presenter"
+    timeout: 15000
+- tapOn:
+    text: "Hit checkpoint"
+
+- extendedWaitUntil:
+    visible: "First screen loaded"
+    timeout: 20000
+- tapOn:
+    text: "Continue"
+
+- extendedWaitUntil:
+    visible: "Custom error presenter: flowActionFailed"
+    timeout: 15000
+- assertVisible: ".*Checkpoint: maestro_checkpoint.*"
+- assertVisible: ".*Screen '__maestro_missing_screen__' not found in workflow.*"
+- takeScreenshot: "checkpoint_second_screen_failure_custom_error_presenter - context"
+- tapOn:
+    text: "Dismiss custom error"
+
+- assertVisible: "First screen loaded"
+- swipe:
+    start: "50%,10%"
+    end: "50%,90%"
+    duration: 600
+- extendedWaitUntil:
+    visible: "Callback: none (call #1)"
+    timeout: 15000

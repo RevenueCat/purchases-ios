@@ -1,0 +1,38 @@
+# The same real offering completion routes the injected synchronization failure and its context to the custom
+# checkpoint error presenter.
+
+appId: com.revenuecat.maestro.ios
+name: Completed offering with failed result synchronization passes context to the custom error presenter
+env:
+  MAESTRO_STORE: ${MAESTRO_STORE || 'test_store'}
+
+---
+- clearState
+- pressKey: home
+- launchApp:
+    arguments:
+      e2e_test_flow: checkpoint_result_sync_failure_custom_error_presenter
+- extendedWaitUntil:
+    visible: "Using custom error presenter"
+    timeout: 15000
+- tapOn: "Hit checkpoint"
+
+- extendedWaitUntil:
+    visible: "Ignite your child's curiosity"
+    timeout: 20000
+- swipe:
+    start: "50%,10%"
+    end: "50%,90%"
+    duration: 600
+
+- extendedWaitUntil:
+    visible: "Custom error presenter: flowResultSyncFailed"
+    timeout: 15000
+- assertVisible: ".*Checkpoint: maestro_checkpoint.*"
+- assertVisible: ".*Maestro customer info synchronization failed.*"
+- takeScreenshot: "checkpoint_result_sync_failure_custom_error_presenter - context"
+- tapOn: "Dismiss custom error"
+
+- extendedWaitUntil:
+    visible: "Callback: none (call #1)"
+    timeout: 15000

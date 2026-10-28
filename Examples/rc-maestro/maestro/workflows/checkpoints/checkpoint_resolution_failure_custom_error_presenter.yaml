@@ -1,0 +1,33 @@
+# A native resolver error is handed to the E2E app's custom ErrorPresenter with its failure context.
+
+appId: com.revenuecat.maestro.ios
+name: Custom error presenter receives a checkpoint resolution failure
+env:
+  MAESTRO_STORE: ${MAESTRO_STORE || 'test_store'}
+
+---
+- clearState
+- pressKey: home
+- launchApp:
+    arguments:
+      e2e_test_flow: checkpoint_resolution_failure_custom_error_presenter
+- extendedWaitUntil:
+    visible: "Using custom error presenter"
+    timeout: 15000
+- tapOn:
+    text: "Hit checkpoint"
+
+- extendedWaitUntil:
+    visible: "Custom error presenter: flowCouldNotBeShown"
+    timeout: 15000
+- assertVisible: ".*Checkpoint: maestro_checkpoint.*"
+- assertVisible: ".*Error: Maestro checkpoint resolution failed.*"
+- takeScreenshot: "checkpoint_resolution_failure_custom_error_presenter - context"
+- tapOn:
+    text: "Dismiss custom error"
+
+- extendedWaitUntil:
+    visible: "Callback: not invoked"
+    timeout: 15000
+- waitForAnimationToEnd
+- assertNotVisible: ".*call #.*"

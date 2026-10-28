@@ -1,0 +1,42 @@
+# The checkpoint resolves to a Flow whose initial step references a missing screen. The Flow cannot render, the SDK
+# presents the concrete error, and the callback is not invoked.
+
+appId: com.revenuecat.maestro.ios
+name: Checkpoint presents an error when its initial Flow screen fails to load
+env:
+  MAESTRO_STORE: ${MAESTRO_STORE || 'test_store'}
+
+---
+- clearState
+- pressKey: home
+- launchApp:
+    arguments:
+      e2e_test_flow: checkpoint_initial_screen_failure
+- extendedWaitUntil:
+    visible: "Hit checkpoint"
+    timeout: 15000
+- tapOn:
+    text: "Hit checkpoint"
+
+- extendedWaitUntil:
+    visible: "This content couldn't be loaded. Please try again later."
+    timeout: 15000
+- takeScreenshot: "checkpoint_initial_screen_failure - error"
+- tapOn:
+    text: "OK"
+
+- extendedWaitUntil:
+    visible: "Callback: not invoked"
+    timeout: 15000
+- assertNotVisible: "First screen loaded"
+- waitForAnimationToEnd
+- assertNotVisible: ".*call #.*"
+
+# A second presentation proves the failed initial Flow fully closed and released the checkpoint presentation slot.
+- tapOn: "Hit checkpoint"
+- extendedWaitUntil:
+    visible: "This content couldn't be loaded. Please try again later."
+    timeout: 15000
+- tapOn: "OK"
+- waitForAnimationToEnd
+- assertNotVisible: ".*call #.*"
