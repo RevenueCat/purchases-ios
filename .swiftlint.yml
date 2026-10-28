@@ -119,6 +119,21 @@ custom_rules:
       - "AdapterSDKs/RevenueCatAdMob/Sources/.*\\.swift"
     regex: '(?s)(?<!@_spi\(Internal\)\s)\bpublic\s+(?:indirect\s+)?enum\s+[A-Z]'
 
+  no_new_public_inits:
+    name: "No new public initializers in consumer-facing APIs"
+    message: "Public initializers are part of the SDK's binary API and cannot change without breaking consumers. Make the init internal or private, or mark it `@_spi(Internal)` if hybrid SDKs need it."
+    severity: error
+    included:
+      - "Sources/.*\\.swift"
+      - "RevenueCatUI/.*\\.swift"
+      - "AdapterSDKs/RevenueCatAdMob/Sources/.*\\.swift"
+    excluded_match_kinds:
+      - comment
+      - doccomment
+      - doccomment.field
+      - string
+    regex: '(?<!@_spi\(Internal\)(?:\s{1,30}|@[\w.]{1,40}(?:\([^)]{0,200}\))?){0,10})\b(?:(?:public|open)\s+(?:(?:convenience|required|override|nonisolated)\s+)*|(?:convenience|required|override)\s+(?:public|open)\s+)init[?!]?\s*(?:<[^(]*>)?\s*\((?!\s*(?:from\s+decoder|rawValue|coder)\b)'
+
   no_protocol_suffix_naming:
     included: ".*\\.swift"
     name: "No 'Protocol' suffix on protocols"
