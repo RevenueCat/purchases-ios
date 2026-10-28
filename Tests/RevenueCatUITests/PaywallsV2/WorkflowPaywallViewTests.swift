@@ -123,6 +123,10 @@ final class WorkflowPaywallViewTests: TestCase {
         NotificationCenter.default.post(name: AVPlayerItem.didPlayToEndTimeNotification,
                                         object: videoPlayer.currentItem)
         XCTAssertEqual(videoPlayer.rate, 0)
+        activation.isActive = true
+        await expect(videoPlayer.rate).toAlways(equal(0), until: .milliseconds(200))
+        videoPlayer.play()
+        await expect(videoPlayer.rate).toEventually(equal(1), timeout: .seconds(2))
         controller.rootView = AnyView(EmptyView())
         await expect(videoPlayer.rate).toEventually(equal(0), timeout: .seconds(2))
     }
