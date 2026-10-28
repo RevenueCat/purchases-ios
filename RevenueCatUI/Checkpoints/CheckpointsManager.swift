@@ -332,6 +332,15 @@ extension CheckpointsManager {
             }
         }
 
+        if let factory = params.localErrorDialogFactory {
+            let handler = makeErrorDialogFactoryHandler(
+                factory: factory, preferredUILocaleProvider: self.preferredUILocaleProvider
+            )
+            return { [errorPresentationQueue] params, completion in
+                errorPresentationQueue.enqueue(params: params, handler: handler, completion: completion)
+            }
+        }
+
         var defaultHandler: ErrorPresentationHandler?
         return { [weak self, errorPresentationQueue] params, completion in
             let handler: ErrorPresentationHandler

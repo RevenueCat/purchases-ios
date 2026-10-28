@@ -160,6 +160,35 @@ final class DefaultErrorPresenter: ErrorPresenter {
 }
 
 @available(iOS 15.0, macOS 12.0, *)
+extension DefaultErrorPresenter {
+
+    static func makePresenter(
+        for dialog: CheckpointErrorDialog?,
+        preferredUILocaleProvider: @escaping PreferredUILocaleProvider
+    ) -> DefaultErrorPresenter {
+        guard let dialog else {
+            return DefaultErrorPresenter(preferredUILocaleProvider: preferredUILocaleProvider)
+        }
+        return DefaultErrorPresenter(
+            preferredUILocaleProvider: preferredUILocaleProvider,
+            alertFactory: { host, _, _, _, acknowledged in
+                let alert = UIAlertController(
+                    title: nil,
+                    message: dialog.message,
+                    preferredStyle: .alert
+                )
+                alert.addAction(UIAlertAction(title: dialog.buttonTitle, style: .default) { _ in
+                    acknowledged()
+                })
+                host.present(alert, animated: true)
+                return alert
+            }
+        )
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, *)
 private extension ErrorPresentationParams {
 
     func localizedMessage(in bundle: Bundle) -> String {
@@ -216,6 +245,18 @@ final class DefaultErrorPresenter: ErrorPresenter {
 
     func present(params: ErrorPresentationParams, completion: ErrorPresentationCompletion) {
         completion.complete()
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension DefaultErrorPresenter {
+
+    static func makePresenter(
+        for dialog: CheckpointErrorDialog?,
+        preferredUILocaleProvider: @escaping PreferredUILocaleProvider
+    ) -> DefaultErrorPresenter {
+        return DefaultErrorPresenter(preferredUILocaleProvider: preferredUILocaleProvider)
     }
 
 }
