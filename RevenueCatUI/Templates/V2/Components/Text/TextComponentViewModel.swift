@@ -88,7 +88,6 @@ class TextComponentViewModel {
         isVoiceOverRunning: Bool = false,
         @ViewBuilder apply: @escaping (TextComponentStyle) -> some View
     ) -> some View {
-        let isEligibleForPromoOffer = promoOffer != nil
         let conditionContext = uiConfigProvider.conditionContext(
             selectedPackageId: selectedPackageId,
             customVariables: customVariables,
@@ -96,13 +95,12 @@ class TextComponentViewModel {
             stateDefaults: stateDefaults,
             windowSize: windowSize
         )
-        let localizedPartial = LocalizedTextPartial.buildPartial(
+        let localizedPartial = self.resolveOverrides(
             state: state,
             condition: condition,
             isEligibleForIntroOffer: isEligibleForIntroOffer,
-            isEligibleForPromoOffer: isEligibleForPromoOffer,
-            conditionContext: conditionContext,
-            with: self.presentedOverrides
+            promoOffer: promoOffer,
+            conditionContext: conditionContext
         )
         let partial = localizedPartial?.partial
         let text = localizedPartial?.text ?? self.text
@@ -144,6 +142,21 @@ class TextComponentViewModel {
         )
 
         apply(style)
+    }
+
+    func visible(
+        state: ComponentViewState,
+        condition: ScreenCondition,
+        isEligibleForIntroOffer: Bool,
+        promoOffer: PromotionalOffer?,
+        conditionContext: ConditionContext
+    ) -> Bool {
+        let partial = self.resolveOverrides(
+            state: state, condition: condition,
+            isEligibleForIntroOffer: isEligibleForIntroOffer, promoOffer: promoOffer,
+            conditionContext: conditionContext
+        )
+        return partial?.partial.visible ?? self.component.visible ?? true
     }
 
     /// True when intro or promo eligibility can change the string this component shows, or whether it is shown.
@@ -288,6 +301,25 @@ class TextComponentViewModel {
             with: package,
             context: context,
             locale: locale
+        )
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private extension TextComponentViewModel {
+
+    func resolveOverrides(
+        state: ComponentViewState,
+        condition: ScreenCondition,
+        isEligibleForIntroOffer: Bool,
+        promoOffer: PromotionalOffer?,
+        conditionContext: ConditionContext
+    ) -> LocalizedTextPartial? {
+        return LocalizedTextPartial.buildPartial(
+            state: state, condition: condition,
+            isEligibleForIntroOffer: isEligibleForIntroOffer, isEligibleForPromoOffer: promoOffer != nil,
+            conditionContext: conditionContext, with: self.presentedOverrides
         )
     }
 

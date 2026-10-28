@@ -54,6 +54,16 @@ struct StackComponentView: View {
     @Environment(\.paywallStateDefaults)
     private var paywallStateDefaults
 
+    @Environment(\.paywallHeroLayout)
+    private var heroLayout
+
+    private var safeAreaExemptChildIndex: Int? {
+        if let heroLayout = self.heroLayout {
+            return heroLayout.exemptChildIndicesByStack[ObjectIdentifier(self.viewModel)]
+        }
+        return self.viewModel.firstChildIsFullWidthMedia ? 0 : nil
+    }
+
     @Environment(\.paywallRootStackIsZLayer)
     private var paywallRootStackIsZLayer
 
@@ -215,8 +225,8 @@ struct StackComponentView: View {
                 ZStack(alignment: alignment.stackAlignment) {
                     ComponentsView(
                         componentViewModels: self.viewModel.viewModels,
-                        pushNonFirstChildrenBelowSafeArea: self.viewModel.firstChildIsFullWidthMedia,
-                        onDismiss: self.onDismiss
+                        onDismiss: self.onDismiss,
+                        safeAreaExemptChildIndex: self.safeAreaExemptChildIndex
                     )
                 }
                 // These alignments define the position of inner components inside the ZStack
