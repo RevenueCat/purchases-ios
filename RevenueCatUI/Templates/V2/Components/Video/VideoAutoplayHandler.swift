@@ -20,8 +20,9 @@ import UIKit
 // MARK: - Protocols for testability
 
 protocol VideoPlaybackController: AnyObject {
-    var isPlaying: Bool { get }
+    var isPlaybackRequested: Bool { get }
     func play()
+    func pause()
 }
 
 protocol AppLifecycleObserving {
@@ -37,10 +38,18 @@ final class VideoAutoplayHandler {
 
     private let playbackController: VideoPlaybackController
     private var wasPlayingBeforeBackground = false
+    private var wasPlayingBeforeDisabled = false
+    private var isAppActive = true
+    private(set) var isPlaybackEnabled: Bool
     private var cancellables = Set<AnyCancellable>()
 
-    init(playbackController: VideoPlaybackController, lifecycleObserver: AppLifecycleObserving) {
+    init(
+        playbackController: VideoPlaybackController,
+        lifecycleObserver: AppLifecycleObserving,
+        isPlaybackEnabled: Bool = true
+    ) {
         self.playbackController = playbackController
+        self.isPlaybackEnabled = isPlaybackEnabled
 
         lifecycleObserver.willResignActivePublisher
             .sink { [weak self] in self?.handleWillResignActive() }
@@ -51,14 +60,42 @@ final class VideoAutoplayHandler {
             .store(in: &cancellables)
     }
 
+    func play() {
+        guard isPlaybackEnabled else {
+            wasPlayingBeforeDisabled = true
+            return
+        }
+        guard isAppActive else {
+            wasPlayingBeforeBackground = true
+            return
+        }
+        playbackController.play()
+    }
+
+    func setPlaybackEnabled(_ enabled: Bool) {
+        guard enabled != isPlaybackEnabled else { return }
+        isPlaybackEnabled = enabled
+        if enabled {
+            if wasPlayingBeforeDisabled { play() }
+            wasPlayingBeforeDisabled = false
+        } else {
+            wasPlayingBeforeDisabled = playbackController.isPlaybackRequested || wasPlayingBeforeBackground
+            wasPlayingBeforeBackground = false
+            playbackController.pause()
+        }
+    }
+
     func handleWillResignActive() {
-        wasPlayingBeforeBackground = playbackController.isPlaying
+        isAppActive = false
+        if isPlaybackEnabled {
+            wasPlayingBeforeBackground = playbackController.isPlaybackRequested
+        }
     }
 
     func handleDidBecomeActive() {
-        if wasPlayingBeforeBackground {
-            playbackController.play()
-        }
+        isAppActive = true
+        if wasPlayingBeforeBackground { play() }
+        wasPlayingBeforeBackground = false
     }
 
     /// Stops responding to lifecycle transitions. Call when the player is being torn down so a
@@ -66,6 +103,8 @@ final class VideoAutoplayHandler {
     func invalidate() {
         cancellables.removeAll()
         wasPlayingBeforeBackground = false
+        wasPlayingBeforeDisabled = false
+        isPlaybackEnabled = false
     }
 
 }
