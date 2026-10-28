@@ -30,6 +30,7 @@ actor WorkflowPrewarmingDecodeCoordinator {
 
     private let decodeLimiter: DecodeLimiter
     private var inFlightDecodes: [DecodeID: InFlightDecode] = [:]
+    // Used by tests to track callers waiting for a decode.
     private(set) var activeRequestCount = 0
 
     init(maxConcurrentDecodes: Int = 4) {

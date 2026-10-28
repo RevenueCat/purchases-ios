@@ -395,6 +395,34 @@ class WorkflowManagerTests: TestCase {
         expect(self.mockWebBundleURLBatcher.invokedPublishCount) == 1
     }
 
+    func testPublishWebBundleURLsPublishesConcurrentWorkflowOnlyOncePerConfigGeneration() async throws {
+        guard #available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *) else {
+            throw XCTSkip("publishWebBundleURLs requires iOS 15+")
+        }
+        let provider = BlockingWorkflowPrewarmingDecodeProvider(result: try Self.workflowDataResult(id: "wf_1"))
+        let coordinator = WorkflowPrewarmingDecodeCoordinator()
+        let manager = WorkflowManager(
+            workflowsConfigProvider: provider,
+            paywallCache: self.mockPaywallCache,
+            operationDispatcher: self.mockOperationDispatcher,
+            webBundleURLBatcher: self.mockWebBundleURLBatcher,
+            workflowPrewarmingDecodeCoordinator: coordinator
+        )
+        let offerings = Self.offerings()
+        let tasks = (0..<20).map { _ in
+            Task { await manager.publishWebBundleURLs(offerings: offerings) }
+        }
+
+        await expect { await coordinator.activeRequestCount }.toEventually(equal(1))
+        await expect(provider.decodeCount).toEventually(equal(1))
+        await provider.releaseDecodes()
+        for task in tasks {
+            await task.value
+        }
+
+        expect(self.mockWebBundleURLBatcher.invokedPublishCount) == 1
+    }
+
     func testPublishWebBundleURLsPublishesWorkflowAgainForNewConfigGeneration() async throws {
         guard #available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *) else {
             throw XCTSkip("publishWebBundleURLs requires iOS 15+")
@@ -486,7 +514,7 @@ class WorkflowManagerTests: TestCase {
         }
 
         await expect { await coordinator.activeRequestCount }.toEventually(equal(2))
-        expect(provider.decodeCount) == 1
+        await expect(provider.decodeCount).toEventually(equal(1))
 
         await provider.releaseDecodes()
         _ = await (prewarming.value, publishing.value)
@@ -506,7 +534,7 @@ class WorkflowManagerTests: TestCase {
         }
 
         await expect { await coordinator.activeRequestCount }.toEventually(equal(20))
-        expect(provider.decodeCount) == 1
+        await expect(provider.decodeCount).toEventually(equal(1))
         await provider.releaseDecodes()
         for task in tasks {
             let result = try await task.value.get()
@@ -546,7 +574,7 @@ class WorkflowManagerTests: TestCase {
         }
 
         await expect { await coordinator.activeRequestCount }.toEventually(equal(10))
-        expect(provider.decodeCount) == 4
+        await expect(provider.decodeCount).toEventually(equal(4))
 
         await provider.releaseDecodes()
         for task in tasks {

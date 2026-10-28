@@ -170,12 +170,13 @@ class WorkflowManager: WorkflowAssetPrewarmingType {
     }
 
     /// Publishes cached workflows for target offerings (current, placements, fallback) in visit order.
-    /// Each workflow is published once per SDK instance; failed decodes are retried. Cache-only: no blob fetch.
+    /// Each workflow is published once per config generation; failed decodes are retried. Cache-only: no blob fetch.
     func publishWebBundleURLs(offerings: Offerings) async {
         guard #available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *) else { return }
 
         var workflowsByOfferingId: [String: PublishedWorkflow] = [:]
         var resolutionsByWorkflowId: [String: Result<WorkflowDataResult, WorkflowResolutionError>] = [:]
+        var claimedWorkflowIDs: Set<String> = []
         var workflowIDsToMarkPublished: Set<String> = []
         var shouldPublish = false
         let configGeneration = self.workflowsConfigProvider.configGeneration
@@ -184,17 +185,18 @@ class WorkflowManager: WorkflowAssetPrewarmingType {
                 shouldPublish = true
                 continue
             }
-            guard !(await self.webBundlePublicationTracker.hasPublished(
-                workflowId,
-                configGeneration: configGeneration
-            )) else { continue }
-
-            shouldPublish = true
 
             let resolution: Result<WorkflowDataResult, WorkflowResolutionError>
             if let cachedResolution = resolutionsByWorkflowId[workflowId] {
                 resolution = cachedResolution
             } else {
+                guard await self.webBundlePublicationTracker.claimIfNeeded(
+                    workflowId,
+                    configGeneration: configGeneration
+                ) else { continue }
+
+                shouldPublish = true
+                claimedWorkflowIDs.insert(workflowId)
                 resolution = await self.workflowPrewarmingDecodeCoordinator.decode(
                     workflowId: workflowId,
                     using: self.workflowsConfigProvider
@@ -213,8 +215,9 @@ class WorkflowManager: WorkflowAssetPrewarmingType {
             offerings: offerings,
             workflowsByOfferingId: workflowsByOfferingId
         )
-        await self.webBundlePublicationTracker.markPublished(
-            workflowIDsToMarkPublished,
+        await self.webBundlePublicationTracker.completeClaims(
+            claimedWorkflowIDs,
+            publishedWorkflowIDs: workflowIDsToMarkPublished,
             configGeneration: configGeneration
         )
     }
@@ -246,16 +249,28 @@ extension WorkflowManager: @unchecked Sendable {}
 private actor WorkflowWebBundlePublicationTracker {
 
     private var configGeneration: Int?
+    private var claimedWorkflowIDs: Set<String> = []
     private var publishedWorkflowIDs: Set<String> = []
 
-    func hasPublished(_ workflowId: String, configGeneration: Int) -> Bool {
-        guard self.prepareForConfigGeneration(configGeneration) else { return true }
-        return self.publishedWorkflowIDs.contains(workflowId)
+    func claimIfNeeded(_ workflowId: String, configGeneration: Int) -> Bool {
+        guard self.prepareForConfigGeneration(configGeneration),
+              !self.claimedWorkflowIDs.contains(workflowId),
+              !self.publishedWorkflowIDs.contains(workflowId) else {
+            return false
+        }
+
+        self.claimedWorkflowIDs.insert(workflowId)
+        return true
     }
 
-    func markPublished(_ workflowIDs: Set<String>, configGeneration: Int) {
-        guard self.prepareForConfigGeneration(configGeneration) else { return }
-        self.publishedWorkflowIDs.formUnion(workflowIDs)
+    func completeClaims(
+        _ claimedWorkflowIDs: Set<String>,
+        publishedWorkflowIDs: Set<String>,
+        configGeneration: Int
+    ) {
+        guard self.configGeneration == configGeneration else { return }
+        self.claimedWorkflowIDs.subtract(claimedWorkflowIDs)
+        self.publishedWorkflowIDs.formUnion(publishedWorkflowIDs)
     }
 
     private func prepareForConfigGeneration(_ configGeneration: Int) -> Bool {
@@ -263,6 +278,7 @@ private actor WorkflowWebBundlePublicationTracker {
         guard self.configGeneration != configGeneration else { return true }
 
         self.configGeneration = configGeneration
+        self.claimedWorkflowIDs.removeAll()
         self.publishedWorkflowIDs.removeAll()
         return true
     }
