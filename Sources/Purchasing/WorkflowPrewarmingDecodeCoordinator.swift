@@ -30,8 +30,10 @@ actor WorkflowPrewarmingDecodeCoordinator {
 
     private let decodeLimiter: DecodeLimiter
     private var inFlightDecodes: [DecodeID: InFlightDecode] = [:]
+#if DEBUG
     // Used by tests to track callers waiting for a decode.
     private(set) var activeRequestCount = 0
+#endif
 
     init(maxConcurrentDecodes: Int = 4) {
         self.decodeLimiter = .init(maxConcurrentDecodes: maxConcurrentDecodes)
@@ -48,8 +50,10 @@ actor WorkflowPrewarmingDecodeCoordinator {
             configGeneration: provider.configGeneration
         )
 
+#if DEBUG
         self.activeRequestCount += 1
         defer { self.activeRequestCount -= 1 }
+#endif
 
         if let inFlightDecode = self.inFlightDecodes[decodeID] {
             return await inFlightDecode.task.value
