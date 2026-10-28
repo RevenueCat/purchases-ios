@@ -34,9 +34,8 @@ struct ComponentsView: View {
     @Environment(\.nativePaywallLayoutButtons) private var registeredLayoutButtons
 
     let componentViewModels: [PaywallComponentViewModel]
-    /// When true, applies safe area top padding to all children except the first.
-    /// Used for ZStacks where the first child is a hero image that bleeds into the safe area.
-    private let pushNonFirstChildrenBelowSafeArea: Bool
+    /// The hero branch stays above the safe area while overlapping siblings receive padding.
+    private let safeAreaExemptChildIndex: Int?
     private let onDismiss: () -> Void
     private let defaultPackage: Package?
 
@@ -48,12 +47,12 @@ struct ComponentsView: View {
 
     init(
         componentViewModels: [PaywallComponentViewModel],
-        pushNonFirstChildrenBelowSafeArea: Bool = false,
         onDismiss: @escaping () -> Void,
-        defaultPackage: Package? = nil
+        defaultPackage: Package? = nil,
+        safeAreaExemptChildIndex: Int? = nil
     ) {
         self.componentViewModels = componentViewModels
-        self.pushNonFirstChildrenBelowSafeArea = pushNonFirstChildrenBelowSafeArea
+        self.safeAreaExemptChildIndex = safeAreaExemptChildIndex
         self.onDismiss = onDismiss
         self.defaultPackage = defaultPackage
     }
@@ -76,7 +75,9 @@ struct ComponentsView: View {
                 }
                 .padding(
                     .top,
-                    index > 0 && pushNonFirstChildrenBelowSafeArea && !self.bodyHeroInsetAlreadyRestored
+                    self.safeAreaExemptChildIndex != nil
+                        && index != self.safeAreaExemptChildIndex
+                        && !self.bodyHeroInsetAlreadyRestored
                         ? max(safeAreaInsets.top, overlaidHeaderHeight)
                         : 0
                 )
