@@ -134,10 +134,16 @@ extension CustomerInfo {
         }
     }
 
-    func grantsNewEntitlements(
-        comparedTo initialActiveEntitlementIdentifiers: Set<String>?
+    /// A restore qualifies when it completes one offered product's entitlement set and adds access within that set.
+    func grantsPresentedEntitlement(
+        comparedTo initialActiveEntitlementIdentifiers: Set<String>?,
+        presentedEntitlements: [Set<String>]
     ) -> Bool {
-        return !self.obtainedEntitlements(comparedTo: initialActiveEntitlementIdentifiers).isEmpty
+        let active = self.activeEntitlementIdentifiers
+        let newlyActive = active.subtracting(initialActiveEntitlementIdentifiers ?? [])
+        return presentedEntitlements.contains { entitlements in
+            entitlements.isSubset(of: active) && !entitlements.isDisjoint(with: newlyActive)
+        }
     }
 
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -159,6 +165,33 @@ extension CustomerInfo {
 
             return ObtainedProduct(product: product)
         }
+    }
+
+}
+
+// MARK: - Restore eligibility
+
+extension Array where Element == Offering {
+
+    /// Returns one complete, nonempty entitlement set per offered product.
+    func entitlementsGrantedBy(_ mapping: [String: [String]]?) -> [Set<String>] {
+        guard let mapping else { return [] }
+        return self.flatMap(\.availablePackages).compactMap { package in
+            let product = package.storeProduct
+            let entitlements = Set(mapping[product.id] ?? mapping[product.productIdentifier] ?? [])
+            return entitlements.isEmpty ? nil : entitlements
+        }
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension ResolvedCheckpointWorkflow {
+
+    /// Offerings referenced anywhere in the workflow, excluding unrelated cached offerings.
+    var presentedOfferings: [Offering] {
+        let identifiers = Set(self.workflow.steps.values.compactMap { self.workflow.offeringIdentifier(for: $0) })
+        return identifiers.compactMap { self.offerings.all[$0] }
     }
 
 }

@@ -66,6 +66,7 @@ final class WorkflowPresenter: NSObject, WorkflowPresenterType {
         let customVariables: [String: CustomVariableValue]
         let errorPresentationHandler: ErrorPresentationHandler
         let initialActiveEntitlementIdentifiers: Set<String>
+        let presentedOfferings: [Offering]
         var outcomeState: WorkflowOutcomeState = .none
         var dismissalReason: WorkflowDismissalReason = .close
 
@@ -99,13 +100,18 @@ final class WorkflowPresenter: NSObject, WorkflowPresenterType {
         let id: UUID
     }
 
+    private let productEntitlementMappingProvider: CheckpointsManager.ProductEntitlementMappingProvider
     private let presentationStarter: PresentationStarter?
     private var presentationState: PresentationState?
     private var pendingContinuation: Continuation?
     private weak var presentedViewController: PaywallViewController?
     private var activeErrorPresentation: ActiveErrorPresentation?
 
-    init(presentationStarter: PresentationStarter? = nil) {
+    init(
+        productEntitlementMappingProvider: @escaping CheckpointsManager.ProductEntitlementMappingProvider,
+        presentationStarter: PresentationStarter? = nil
+    ) {
+        self.productEntitlementMappingProvider = productEntitlementMappingProvider
         self.presentationStarter = presentationStarter
         super.init()
     }
@@ -138,7 +144,8 @@ final class WorkflowPresenter: NSObject, WorkflowPresenterType {
             checkpointIdentifier: presentation.checkpointIdentifier,
             customVariables: presentation.customVariables,
             errorPresentationHandler: presentation.errorPresentationHandler,
-            initialActiveEntitlementIdentifiers: presentation.initialActiveEntitlementIdentifiers
+            initialActiveEntitlementIdentifiers: presentation.initialActiveEntitlementIdentifiers,
+            presentedOfferings: presentation.workflow.presentedOfferings
         )
 
         do {
@@ -243,18 +250,6 @@ final class WorkflowPresenter: NSObject, WorkflowPresenterType {
         _ = self.presentationDidDismiss()
     }
 
-    private func didCompleteRestore(
-        controller: PaywallViewController,
-        customerInfo: CustomerInfo
-    ) {
-        guard customerInfo.grantsNewEntitlements(
-            comparedTo: self.presentationState?.initialActiveEntitlementIdentifiers
-        ) else { return }
-
-        self.stage(.outcome(.completed(customerInfo: customerInfo)))
-        controller.dismiss(animated: true)
-    }
-
     private func stageDismissalReasonIfNeeded(_ reason: WorkflowDismissalReason) {
         guard reason == .navigatedBack else { return }
         self.stage(.dismissalReason(reason))
@@ -315,6 +310,26 @@ final class WorkflowPresenter: NSObject, WorkflowPresenterType {
 
 @available(iOS 15.0, macOS 12.0, *)
 extension WorkflowPresenter {
+
+    convenience init(presentationStarter: PresentationStarter? = nil) {
+        self.init(productEntitlementMappingProvider: { nil }, presentationStarter: presentationStarter)
+    }
+
+    private func didCompleteRestore(
+        controller: PaywallViewController,
+        customerInfo: CustomerInfo
+    ) {
+        guard let state = self.presentationState else { return }
+        // Read the mapping when restoring so a late cache fill is picked up. Missing mapping leaves the paywall open.
+        let entitlements = state.presentedOfferings.entitlementsGrantedBy(self.productEntitlementMappingProvider())
+        guard customerInfo.grantsPresentedEntitlement(
+            comparedTo: state.initialActiveEntitlementIdentifiers,
+            presentedEntitlements: entitlements
+        ) else { return }
+
+        self.stage(.outcome(.completed(customerInfo: customerInfo)))
+        controller.dismiss(animated: true)
+    }
 
     // `PaywallViewController` delivers these UI lifecycle and purchase callbacks
     // synchronously from main-actor-isolated UI paths.
@@ -450,6 +465,10 @@ extension WorkflowPresenter: PaywallViewControllerDelegate {}
 @MainActor
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 final class WorkflowPresenter: WorkflowPresenterType {
+
+    init(
+        productEntitlementMappingProvider _: @escaping CheckpointsManager.ProductEntitlementMappingProvider = { nil }
+    ) {}
 
     func present(_ presentation: WorkflowPresentationRequest) async throws -> CheckpointPresentationOutcome {
         return .failed
