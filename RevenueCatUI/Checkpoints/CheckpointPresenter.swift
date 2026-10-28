@@ -306,13 +306,16 @@ final class DefaultPaywallPresenter: NSObject, PaywallPresenter, PaywallViewCont
               let handler = session.params.errorPresentationHandler else { return }
         let presentationID = UUID()
         session.activeErrorPresentationID = presentationID
+        session.errorContext = ErrorPresentationContext(viewController: session.presentedViewController)
+        let params = ErrorPresentationParams(
+            checkpointIdentifier: session.params.checkpointIdentifier,
+            error: error,
+            customVariables: session.params.customVariables,
+            kind: kind
+        )
+        params.presentationContext = session.errorContext
         handler(
-            .init(
-                checkpointIdentifier: session.params.checkpointIdentifier,
-                error: error,
-                customVariables: session.params.customVariables,
-                kind: kind
-            ),
+            params,
             .init { [weak self] in
                 self?.handleErrorPresentationResult(
                     presentationID: presentationID,
@@ -371,6 +374,7 @@ final class DefaultPaywallPresenter: NSObject, PaywallPresenter, PaywallViewCont
     }
 
     private func takeSession() -> PresentationSession? {
+        self.session?.activeErrorPresentationID = nil
         defer { self.session = nil }
         return self.session
     }
@@ -486,7 +490,16 @@ private final class PresentationSession {
     let completion: PaywallPresentationCompletion
     let initialActiveEntitlementIdentifiers: Set<String>?
     weak var presentedViewController: PaywallViewController?
-    var activeErrorPresentationID: UUID?
+    var errorContext: ErrorPresentationContext?
+    var activeErrorPresentationID: UUID? {
+        didSet {
+            if oldValue != self.activeErrorPresentationID {
+                let context = self.errorContext
+                self.errorContext = nil
+                context?.invalidate()
+            }
+        }
+    }
     var didPurchaseOrRestoreAccess = false
     var hasTerminalError = false
 
