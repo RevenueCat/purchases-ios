@@ -73,13 +73,8 @@ class StoreKit2TransactionFetcherTests: StoreKitConfigTestCase {
     }
 
     func testFiltersOutFinishedTransaction() async throws {
-        _ = try await self.createTransaction(productID: Self.product1, finished: true)
+        _ = try await self.createTransactionInTestSession(productID: Self.product1, finished: true)
         let transaction = try await self.createTransaction(productID: Self.product2, finished: false)
-
-        // `finish()` is eventually consistent on OS 27: the finished transaction can still be
-        // listed in `Transaction.unfinished` for a short while after it returns, which would
-        // otherwise make the fetcher report both transactions here.
-        try await self.waitUntilUnfinishedTransactions(condition: { $0 == 1 }, timeout: .seconds(10))
 
         let result = await self.fetcher.unfinishedVerifiedTransactions
         expect(result) == [transaction]
@@ -262,8 +257,24 @@ private extension StoreKit2TransactionFetcherTests {
             return transaction
         }
         #endif
-        let transaction = try await self.createTransaction(productID: productID, finished: finished)
-        return try XCTUnwrap(transaction.sk2Transaction)
+        let storeTransaction = try await self.createTransaction(productID: productID, finished: false)
+        let transaction = try XCTUnwrap(storeTransaction.sk2Transaction)
+
+        if finished {
+            // On iOS 17, purchase() can return before StoreKit adds the transaction to this queue.
+            // Calling finish() before then can be lost.
+            try await asyncWait(description: "Fixture transaction did not appear in StoreKit's unfinished queue",
+                                timeout: .seconds(10)) {
+                await StoreKit.Transaction.unfinished.contains { $0.underlyingTransaction.id == transaction.id }
+            }
+            await transaction.finish()
+            // Wait for StoreKit to reflect finish() before the test creates its second transaction.
+            try await asyncWait(description: "Fixture transaction remained unfinished after finish()",
+                                timeout: .seconds(10)) {
+                await !StoreKit.Transaction.unfinished.contains { $0.underlyingTransaction.id == transaction.id }
+            }
+        }
+        return transaction
     }
 
     static let product1 = "com.revenuecat.monthly_4.99.1_week_intro"
