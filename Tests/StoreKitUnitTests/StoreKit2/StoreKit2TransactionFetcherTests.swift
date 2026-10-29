@@ -242,23 +242,18 @@ private extension StoreKit2TransactionFetcherTests {
         // inconsistent across consecutive purchases or after finishing a consumable. Keep the original
         // purchase fixtures on older OS versions, where buyProduct does not reliably leave purchases unfinished.
         // buyProduct(identifier:) was added in Xcode 15.
+        let transaction: StoreKit.Transaction
         #if compiler(>=5.9)
         if #available(iOS 27.0, tvOS 27.0, watchOS 27.0, macOS 27.0, *) {
-            let transaction = try await self.testSession.buyProduct(identifier: productID)
-            if finished {
-                try await asyncWait(description: "Fixture transaction did not appear in StoreKit's unfinished queue") {
-                    await StoreKit.Transaction.unfinished.contains { $0.underlyingTransaction.id == transaction.id }
-                }
-                await transaction.finish()
-                try await asyncWait(description: "Fixture transaction remained unfinished after finish()") {
-                    await !StoreKit.Transaction.unfinished.contains { $0.underlyingTransaction.id == transaction.id }
-                }
-            }
-            return transaction
+            transaction = try await self.testSession.buyProduct(identifier: productID)
+        } else {
+            let storeTransaction = try await self.createTransaction(productID: productID, finished: false)
+            transaction = try XCTUnwrap(storeTransaction.sk2Transaction)
         }
-        #endif
+        #else
         let storeTransaction = try await self.createTransaction(productID: productID, finished: false)
-        let transaction = try XCTUnwrap(storeTransaction.sk2Transaction)
+        transaction = try XCTUnwrap(storeTransaction.sk2Transaction)
+        #endif
 
         if finished {
             // On iOS 17, purchase() can return before StoreKit adds the transaction to this queue.
