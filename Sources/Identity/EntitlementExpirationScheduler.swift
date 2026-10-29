@@ -19,14 +19,14 @@ import Foundation
 /// the request-date grace period (see `CustomerInfo.isDateActive`), so re-decoding the cached
 /// `CustomerInfo` after they expire is enough to make them inactive.
 ///
-/// The scheduler is purely local: it never touches the network. It arms a single sleeping `Task`
+/// The scheduler is purely local: it never touches the network. It schedules a single sleeping `Task`
 /// for the earliest future expiration, re-evaluates when it wakes, and reports every entitlement
 /// whose expiration is already in the past. Each `(identifier, expirationDate)` pair is reported at
 /// most once; a newer `CustomerInfo` with a different `expirationDate` for the same entitlement
 /// re-enables it.
 ///
 /// `Task.sleep` does not reliably advance while the process is suspended, so callers must
-/// ``rearm()`` on foreground to catch expirations that happened while backgrounded.
+/// ``checkExpirations()`` on foreground to catch expirations that happened while backgrounded.
 final class EntitlementExpirationScheduler {
 
     typealias ExpirationHandler = @Sendable (_ appUserID: String) -> Void
@@ -70,7 +70,7 @@ final class EntitlementExpirationScheduler {
 
     /// Replaces the tracked `CustomerInfo` and re-evaluates. Switching `appUserID` forgets
     /// everything reported for the previous user.
-    func arm(with customerInfo: CustomerInfo, appUserID: String) {
+    func track(_ customerInfo: CustomerInfo, appUserID: String) {
         self.evaluate { state in
             if state.appUserID != appUserID {
                 state.notified = []
@@ -81,12 +81,12 @@ final class EntitlementExpirationScheduler {
     }
 
     /// Re-evaluates against the wall clock using the last tracked `CustomerInfo`.
-    func rearm() {
+    func checkExpirations() {
         self.evaluate { _ in }
     }
 
     // Visible for tests
-    var isArmed: Bool { self.state.value.task != nil }
+    var isScheduled: Bool { self.state.value.task != nil }
 
 }
 
@@ -131,7 +131,7 @@ private extension EntitlementExpirationScheduler {
         return Task { [weak self, sleeper] in
             try? await sleeper.sleep(seconds: min(date.timeIntervalSince(now), Self.maxSleepInterval.seconds))
             guard !Task.isCancelled else { return }
-            self?.rearm()
+            self?.checkExpirations()
         }
     }
 
