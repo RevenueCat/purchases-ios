@@ -33,10 +33,89 @@ import UIKit
 struct SheetViewModel: Equatable {
     let sheet: RevenueCat.PaywallComponent.ButtonComponent.Sheet
     let sheetStackViewModel: StackComponentViewModel
+    let packageValidator: PackageValidator?
 
     static func == (lhs: SheetViewModel, rhs: SheetViewModel) -> Bool {
         lhs.sheet.id == rhs.sheet.id
     }
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private struct SheetPackageSelectionModifier: ViewModifier {
+
+    @EnvironmentObject private var parentPackageContext: PackageContext
+    @ObservedObject var packageContext: PackageContext
+    @EnvironmentObject private var introOfferEligibilityContext: IntroOfferEligibilityContext
+    @EnvironmentObject private var paywallPromoOfferCache: PaywallPromoOfferCache
+    @Environment(\.planSelectionDefaultPackage) private var inheritedDefaultPackage
+    @Environment(\.screenCondition) private var screenCondition
+    @Environment(\.customPaywallVariables) private var customVariables
+    @Environment(\.paywallWindowSize) private var paywallWindowSize
+    @Environment(\.offerEligibilityLoading) private var offerEligibilityLoading
+    @Environment(\.offerEligibilityAvailability) private var offerEligibilityAvailability
+    let viewModel: SheetViewModel
+
+    init(
+        viewModel: SheetViewModel,
+        packageContext: PackageContext
+    ) {
+        self.viewModel = viewModel
+        self.packageContext = packageContext
+    }
+
+    private var selectionContext: PackageSelectionContext {
+        .init(
+            condition: self.screenCondition,
+            customVariables: self.customVariables,
+            windowSize: self.paywallWindowSize,
+            isEligibleForIntroOffer: { self.introOfferEligibilityContext.isEligible(package: $0) },
+            isEligibleForPromoOffer: { self.paywallPromoOfferCache.isMostLikelyEligible(for: $0) }
+        )
+    }
+
+    private var defaultPackage: Package? {
+        guard let validator = self.viewModel.packageValidator,
+              !validator.packages.isEmpty else { return self.inheritedDefaultPackage }
+        return validator.defaultSelectedPackage(in: self.selectionContext)
+    }
+
+    private func reconcileSelection() {
+        guard self.parentPackageContext.presentedSheetContext === self.packageContext,
+              let resolved = self.viewModel.packageValidator?.reconciledSelection(
+                current: self.packageContext.package,
+                in: self.selectionContext,
+                offerEligibilityLoading: self.offerEligibilityLoading,
+                offerEligibilityAvailability: self.offerEligibilityAvailability
+              ) else { return }
+        self.packageContext.update(
+            package: resolved,
+            variableContext: self.packageContext.variableContext,
+            isReconcile: true
+        )
+    }
+
+    func body(content: Content) -> some View {
+        content
+        .environmentObject(self.packageContext)
+        .environment(\.selectedPackageId, self.packageContext.package?.identifier)
+        .environment(\.workflowPackageContext, nil)
+        .environment(\.planSelectionDefaultPackage, self.defaultPackage)
+        .onAppear { self.reconcileSelection() }
+        .onChangeOf(self.offerEligibilityLoading) { _ in self.reconcileSelection() }
+        .onChangeOf(self.paywallWindowSize) { _ in self.reconcileSelection() }
+        .onChangeOf(self.customVariables) { _ in self.reconcileSelection() }
+        .onChangeOf(self.screenCondition) { _ in self.reconcileSelection() }
+        .onReceive(self.packageContext.$variableContext.dropFirst()) { variableContext in
+            // A dismissed sheet can remain mounted during its removal animation.
+            guard self.parentPackageContext.presentedSheetContext === self.packageContext else { return }
+            self.parentPackageContext.update(
+                package: self.packageContext.package,
+                variableContext: variableContext,
+                isReconcile: true
+            )
+        }
+    }
+
 }
 
 /// Decides whether a sheet's content should be visible yet.
@@ -89,6 +168,7 @@ struct BottomSheetOverlayModifier: ViewModifier {
     @Binding var sheetViewModel: SheetViewModel?
     let safeAreaInsets: EdgeInsets
     let onSheetContentAppear: (() -> Void)?
+    let packageContext: PackageContext?
 
     @Environment(\.workflowRenderingContext) private var workflowRenderingContext
 
@@ -105,11 +185,13 @@ struct BottomSheetOverlayModifier: ViewModifier {
     init(
         sheetViewModel: Binding<SheetViewModel?>,
         safeAreaInsets: EdgeInsets,
-        onSheetContentAppear: (() -> Void)?
+        onSheetContentAppear: (() -> Void)?,
+        packageContext: PackageContext?
     ) {
         self._sheetViewModel = sheetViewModel
         self.safeAreaInsets = safeAreaInsets
         self.onSheetContentAppear = onSheetContentAppear
+        self.packageContext = packageContext
         // A sheet that is already requested when the overlay is created has nothing to slide in from.
         self._settledSheetID = State(initialValue: sheetViewModel.wrappedValue?.sheet.id)
     }
@@ -194,6 +276,12 @@ struct BottomSheetOverlayModifier: ViewModifier {
                             trailing: 0
                         )
                     )
+                    .applyIfLet(self.packageContext) { content, packageContext in
+                        content.modifier(SheetPackageSelectionModifier(
+                            viewModel: sheetViewModel,
+                            packageContext: packageContext
+                        ))
+                    }
                     .environment(\.nativePaywallCloseEnabled, false)
                     // Dismissal in here closes the sheet, so a `navigate_back` button must not
                     // inherit the workflow's back stack or handler. Its label and tap both refer
@@ -326,13 +414,15 @@ extension View {
     func bottomSheet(
         sheet: Binding<SheetViewModel?>,
         safeAreaInsets: EdgeInsets,
-        onSheetContentAppear: (() -> Void)? = nil
+        onSheetContentAppear: (() -> Void)? = nil,
+        packageContext: PackageContext? = nil
     ) -> some View {
         self.modifier(
             BottomSheetOverlayModifier(
                 sheetViewModel: sheet,
                 safeAreaInsets: safeAreaInsets,
-                onSheetContentAppear: onSheetContentAppear
+                onSheetContentAppear: onSheetContentAppear,
+                packageContext: packageContext
             )
         )
     }
@@ -376,7 +466,8 @@ struct BottomSheetViewTestView: View {
                 "buttonText": PaywallComponentsData.LocalizationData.string("Do something")
             ]
         ), colorScheme: .light
-        )
+        ),
+        packageValidator: nil
     )
     var body: some View {
         GeometryReader { proxy in

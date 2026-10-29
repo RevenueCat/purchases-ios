@@ -168,7 +168,7 @@ class PackageValidator {
     ///
     /// Blind to which tab is showing: counting a tab copy protects the showing tab's selection, at the
     /// cost of the limitation pinned by `testDuplicateInAnotherTabMasksAHiddenPageDefault`.
-    private func couldBeRendering(
+    func couldBeRendering(
         _ package: Package,
         in context: PackageSelectionContext,
         offerEligibilityLoading: OfferEligibilityLoading,
