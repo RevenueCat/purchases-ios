@@ -44,7 +44,7 @@ class InstallationTests: XCTestCase {
         #elseif COCOAPODS_INSTALLATION
         let expected = "cocoapods"
         #elseif CARTHAGE_INSTALLATION
-        let expected = "unknown"
+        let expected = "carthage"
         #elseif XCODE_INSTALLATION
         let expected = "unknown"
         #else

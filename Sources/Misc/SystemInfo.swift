@@ -128,6 +128,9 @@ class SystemInfo {
         return "spm"
         #elseif COCOAPODS
         return "cocoapods"
+        #elseif RC_CARTHAGE
+        // The Xcode project enables this condition when Carthage passes CARTHAGE=YES.
+        return "carthage"
         #elseif RC_XCFRAMEWORK
         return "xcframework"
         #else
