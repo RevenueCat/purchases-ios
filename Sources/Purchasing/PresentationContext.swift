@@ -29,7 +29,7 @@ import AppKit
     let scene: UIScene
 
     /// Creates a presentation context anchored to a UIKit scene.
-    public init(scene: UIScene) {
+    @_spi(Internal) public init(scene: UIScene) {
         self.scene = scene
     }
 
@@ -38,7 +38,7 @@ import AppKit
     let window: NSWindow
 
     /// Creates a presentation context anchored to an AppKit window.
-    public init(window: NSWindow) {
+    @_spi(Internal) public init(window: NSWindow) {
         self.window = window
     }
 
