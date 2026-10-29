@@ -171,17 +171,14 @@ extension DefaultErrorPresenter {
         }
         return DefaultErrorPresenter(
             preferredUILocaleProvider: preferredUILocaleProvider,
-            alertFactory: { host, _, _, _, acknowledged in
-                let alert = UIAlertController(
-                    title: nil,
+            alertFactory: { host, title, _, _, acknowledged in
+                DefaultErrorPresenter.makeAlert(
+                    host: host,
+                    title: title,
                     message: dialog.message,
-                    preferredStyle: .alert
+                    acknowledgementTitle: dialog.buttonTitle,
+                    acknowledged: acknowledged
                 )
-                alert.addAction(UIAlertAction(title: dialog.buttonTitle, style: .default) { _ in
-                    acknowledged()
-                })
-                host.present(alert, animated: true)
-                return alert
             }
         )
     }
