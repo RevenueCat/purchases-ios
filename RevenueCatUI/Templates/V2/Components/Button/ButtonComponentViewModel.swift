@@ -52,6 +52,7 @@ class ButtonComponentViewModel: OfferEligibilityVisibilityDependency {
     let action: Action
     let stackViewModel: StackComponentViewModel
     let sheetStackViewModel: StackComponentViewModel?
+    let sheetPackageValidator: PackageValidator?
 
     private let componentVisible: Bool?
     private let announcesOwnContent: Bool
@@ -67,6 +68,7 @@ class ButtonComponentViewModel: OfferEligibilityVisibilityDependency {
         offering: Offering,
         stackViewModel: StackComponentViewModel,
         sheetStackViewModel: StackComponentViewModel? = nil,
+        sheetPackageValidator: PackageValidator? = nil,
         uiConfigProvider: UIConfigProvider,
         discardRules: Bool = false
     ) throws {
@@ -75,6 +77,7 @@ class ButtonComponentViewModel: OfferEligibilityVisibilityDependency {
         self.localizationProvider = localizationProvider
         self.stackViewModel = stackViewModel
         self.sheetStackViewModel = sheetStackViewModel
+        self.sheetPackageValidator = sheetPackageValidator
         self.componentVisible = component.visible
         self.uiConfigProvider = uiConfigProvider
         let presentedOverrides = component.overrides?.toPresentedOverrides(discardRules: discardRules)

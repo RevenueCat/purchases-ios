@@ -225,7 +225,7 @@ private enum WorkflowDiscountPreviewData {
                 localizationProvider: .init(locale: Locale(identifier: "en_US"), localizedStrings: Self.localizations),
                 uiConfigProvider: .init(uiConfig: context.uiConfig),
                 offering: context.initialOffering, colorScheme: .dark
-            ))
+            ), packageValidator: factory.packageValidator)
         } catch {
             fatalError("Invalid plans sheet preview: \(error)")
         }
