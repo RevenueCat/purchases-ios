@@ -24,10 +24,20 @@ import AppKit
 
     #if canImport(UIKit) && !os(watchOS)
     let scene: UIScene
+    let window: UIWindow?
 
     /// Creates a presentation context anchored to a UIKit scene.
     @_spi(Internal) public init(scene: UIScene) {
         self.scene = scene
+        self.window = nil
+    }
+
+    /// Creates a presentation context anchored to a UIKit window.
+    public init?(window: UIWindow) {
+        guard let scene = window.windowScene else { return nil }
+
+        self.scene = scene
+        self.window = window
     }
     #elseif canImport(AppKit) && !targetEnvironment(macCatalyst)
     let window: NSWindow
@@ -82,6 +92,10 @@ import AppKit
     @available(watchOSApplicationExtension, unavailable)
     @MainActor
     var presentationViewController: UIViewController? {
+        if let window = self.window {
+            return window.currentPresentationViewController
+        }
+
         return (self.scene as? UIWindowScene)?.currentPresentationViewController
     }
     #endif

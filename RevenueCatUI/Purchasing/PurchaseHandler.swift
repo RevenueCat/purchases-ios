@@ -54,7 +54,7 @@ final class PurchaseHandler: ObservableObject {
     // Keep the host weak because its view hierarchy owns this handler. A strong
     // PresentationContext here would retain that hierarchy through its scene or window.
     #if canImport(UIKit) && !os(watchOS)
-    weak var presentationScene: UIWindowScene?
+    weak var presentationWindow: UIWindow?
     #elseif canImport(AppKit)
     weak var presentationWindow: NSWindow?
     #endif
@@ -62,7 +62,7 @@ final class PurchaseHandler: ObservableObject {
     @MainActor
     private var presentationContext: PresentationContext? {
         #if canImport(UIKit) && !os(watchOS)
-        return self.presentationScene.map(PresentationContext.init(scene:))
+        return self.presentationWindow.flatMap(PresentationContext.init(window:))
         #elseif canImport(AppKit)
         return self.presentationWindow.map(PresentationContext.init(window:))
         #else
