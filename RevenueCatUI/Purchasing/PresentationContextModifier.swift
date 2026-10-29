@@ -27,8 +27,8 @@ struct PresentationContextModifier: ViewModifier {
     func body(content: Content) -> some View {
         #if canImport(UIKit) && !os(watchOS)
         content.background {
-            PresentationContextReader { scene in
-                self.purchaseHandler.presentationScene = scene
+            PresentationContextReader { window in
+                self.purchaseHandler.presentationWindow = window
             }
             .frame(width: 0, height: 0)
         }
@@ -50,31 +50,31 @@ struct PresentationContextModifier: ViewModifier {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private struct PresentationContextReader: UIViewRepresentable {
 
-    let onSceneChange: @MainActor (UIWindowScene?) -> Void
+    let onWindowChange: @MainActor (UIWindow?) -> Void
 
-    func makeUIView(context: Context) -> SceneReaderView {
-        let view = SceneReaderView()
-        view.onSceneChange = self.onSceneChange
+    func makeUIView(context: Context) -> WindowReaderView {
+        let view = WindowReaderView()
+        view.onWindowChange = self.onWindowChange
         return view
     }
 
-    func updateUIView(_ view: SceneReaderView, context: Context) {
-        view.onSceneChange = self.onSceneChange
-        view.notifySceneChange()
+    func updateUIView(_ view: WindowReaderView, context: Context) {
+        view.onWindowChange = self.onWindowChange
+        view.notifyWindowChange()
     }
 
     @MainActor
-    final class SceneReaderView: UIView {
+    final class WindowReaderView: UIView {
 
-        var onSceneChange: (@MainActor (UIWindowScene?) -> Void)?
+        var onWindowChange: (@MainActor (UIWindow?) -> Void)?
 
         override func didMoveToWindow() {
             super.didMoveToWindow()
-            self.notifySceneChange()
+            self.notifyWindowChange()
         }
 
-        func notifySceneChange() {
-            self.onSceneChange?(self.window?.windowScene)
+        func notifyWindowChange() {
+            self.onWindowChange?(self.window)
         }
 
     }
