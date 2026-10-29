@@ -9,6 +9,8 @@
 //
 //  Created by Monika Mateska on 09/04/2026.
 
+#if DEBUG
+
 import Foundation
 @testable import RevenueCat
 @testable import RevenueCatUI
@@ -31,3 +33,5 @@ enum PaywallEventTrackerTestDispatcher {
     }
 
 }
+
+#endif

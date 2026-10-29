@@ -17,7 +17,7 @@ import StoreKit
 
 // MARK: -
 
-/// Basic implemenation of a `ProductsManagerType`
+/// Fetches Apple products using the configured StoreKit version.
 class ProductsManager: NSObject, ProductsManagerType {
 
     private let productsFetcherSK1: ProductsFetcherSK1
@@ -87,23 +87,9 @@ class ProductsManager: NSObject, ProductsManagerType {
         }
     }
 
-    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-    func sk2Products(withIdentifiers identifiers: Set<String>, completion: @escaping SK2Completion) {
-        Async.call(with: completion) {
-            do {
-                let products = try await self.productsFetcherSK2.products(identifiers: identifiers)
-                Logger.debug(Strings.storeKit.store_product_request_finished)
-                return products
-            } catch let error as NSError {
-                Logger.debug(Strings.storeKit.store_products_request_failed(error))
-                throw ErrorUtils.storeProblemError(error: error)
-            }
-        }
-    }
+    // Product caching is owned by `CachingProductsManager`.
+    func cache(_ product: StoreProductType) { }
 
-    // This class does not implement caching.
-    // See `CachingProductsManager`.
-    func cache(_ product: StoreProductType) {}
     func clearCache() {
         self.productsFetcherSK1.clearCache()
     }
@@ -117,6 +103,21 @@ class ProductsManager: NSObject, ProductsManagerType {
 // MARK: - private
 
 private extension ProductsManager {
+
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    func sk2Products(withIdentifiers identifiers: Set<String>,
+                     completion: @escaping (Result<Set<SK2StoreProduct>, PurchasesError>) -> Void) {
+        Async.call(with: completion) {
+            do {
+                let products = try await self.productsFetcherSK2.products(identifiers: identifiers)
+                Logger.debug(Strings.storeKit.store_product_request_finished)
+                return products
+            } catch let error as NSError {
+                Logger.debug(Strings.storeKit.store_products_request_failed(error))
+                throw ErrorUtils.storeProblemError(error: error)
+            }
+        }
+    }
 
     func sk1Products(withIdentifiers identifiers: Set<String>,
                      completion: @escaping (Result<Set<SK1StoreProduct>, PurchasesError>) -> Void) {
@@ -160,16 +161,6 @@ extension ProductsManagerType {
     func products(withIdentifiers identifiers: Set<String>) async throws -> Set<StoreProduct> {
         return try await Async.call { completion in
             self.products(withIdentifiers: identifiers, completion: completion)
-        }
-    }
-
-    /// `async` overload for `sk2Products(withIdentifiers:)`
-    ///
-    /// - Throws: `PurchasesError`.
-    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-    func sk2Products(withIdentifiers identifiers: Set<String>) async throws -> Set<SK2StoreProduct> {
-        return try await Async.call { completion in
-            self.sk2Products(withIdentifiers: identifiers, completion: completion)
         }
     }
 

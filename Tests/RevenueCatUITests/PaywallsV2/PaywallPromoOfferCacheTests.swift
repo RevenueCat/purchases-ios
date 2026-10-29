@@ -178,6 +178,50 @@ final class PaywallPromoOfferCacheTests: TestCase {
         XCTAssertEqual(cache.get(for: annual)?.signedData.identifier, "annual-promo")
     }
 
+    func testBatchKeepsBillingPlanResultsSeparate() async {
+        let upfront = Self.makePackage(promoDiscountIdentifier: Self.promoCode)
+        let installments = Self.makePackage(promoDiscountIdentifier: "installments-promo", hasBillingPlan: true)
+        let cache = PaywallPromoOfferCache(subscriptionHistoryTracker: nil) { requests in
+            return [Self.result(for: requests[0]),
+                    PromotionalOfferResult(request: requests[1], result: .failure(ErrorUtils.ineligibleError()))]
+        }
+
+        XCTAssertEqual(upfront.storeProduct.productIdentifier, installments.storeProduct.productIdentifier)
+        XCTAssertNotEqual(upfront.storeProduct.id, installments.storeProduct.id)
+        await cache.computeEligibility(for: [(upfront, Self.promoCode), (installments, "installments-promo")])
+
+        XCTAssertNotNil(cache.purchasableOffer(for: upfront))
+        XCTAssertTrue(cache.isMostLikelyEligible(for: upfront))
+        XCTAssertNil(cache.purchasableOffer(for: installments))
+        XCTAssertFalse(cache.isMostLikelyEligible(for: installments))
+    }
+
+    func testConcurrentBillingPlanRefreshesPreserveBothOffers() async {
+        let upfront = Self.makePackage(promoDiscountIdentifier: Self.promoCode)
+        let installments = Self.makePackage(promoDiscountIdentifier: "installments-promo", hasBillingPlan: true)
+        var pending: CheckedContinuation<[PromotionalOfferResult], Never>?
+        var upfrontResults: [PromotionalOfferResult] = []
+        let started = self.expectation(description: "Upfront request suspended")
+        let cache = PaywallPromoOfferCache(subscriptionHistoryTracker: nil) { requests in
+            if requests[0].product.id == upfront.storeProduct.id {
+                upfrontResults = requests.map { Self.result(for: $0) }
+                return await withCheckedContinuation {
+                    pending = $0
+                    started.fulfill()
+                }
+            }
+            return requests.map { Self.result(for: $0) }
+        }
+        let upfrontRefresh = Task { await cache.computeEligibility(for: [(upfront, Self.promoCode)]) }
+        await self.fulfillment(of: [started], timeout: 1)
+        await cache.computeEligibility(for: [(installments, "installments-promo")])
+        pending?.resume(returning: upfrontResults)
+        await upfrontRefresh.value
+
+        XCTAssertEqual(cache.get(for: upfront)?.signedData.identifier, Self.promoCode)
+        XCTAssertEqual(cache.get(for: installments)?.signedData.identifier, "installments-promo")
+    }
+
     func testFailedRefreshRemovesPreviousSignedOffer() async {
         let package = Self.makePackage(promoDiscountIdentifier: Self.promoCode)
         var shouldFail = false
@@ -365,8 +409,9 @@ private extension PaywallPromoOfferCacheTests {
     }
 
     static func makePackage(promoDiscountIdentifier: String,
-                            productIdentifier: String = "com.revenuecat.monthly") -> Package {
-        let product = TestStoreProduct(
+                            productIdentifier: String = "com.revenuecat.monthly",
+                            hasBillingPlan: Bool = false) -> Package {
+        var product = TestStoreProduct(
             localizedTitle: "PRO monthly",
             price: 3.99,
             currencyCode: "USD",
@@ -389,6 +434,19 @@ private extension PaywallPromoOfferCacheTests {
             ],
             locale: Locale(identifier: "en_US")
         )
+
+        if hasBillingPlan {
+            product.installmentsInfo = .init(
+                commitmentInstallmentsCount: 12,
+                commitmentInstallmentPeriod: .init(value: 1, unit: .month),
+                installmentBillingPrice: 1,
+                installmentBillingDisplayPrice: "$1",
+                commitmentTotalPeriod: .init(value: 1, unit: .year),
+                commitmentTotalPrice: 12,
+                commitmentTotalDisplayPrice: "$12",
+                billingPlanType: .monthly
+            )
+        }
 
         return Package(
             identifier: "monthly",

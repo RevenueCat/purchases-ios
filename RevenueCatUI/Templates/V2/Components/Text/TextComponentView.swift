@@ -65,6 +65,9 @@ struct TextComponentView: View {
     @Environment(\.offerEligibilityLoading)
     private var offerEligibilityLoading
 
+    @Environment(\.offerEligibilityAvailability)
+    private var offerEligibilityAvailability
+
     @Environment(\.accessibilityVoiceOverEnabled)
     private var accessibilityVoiceOverEnabled
 
@@ -102,7 +105,10 @@ struct TextComponentView: View {
             offerEligibility: .init(
                 isEligibleForIntroOffer: isEligibleForIntroOffer,
                 isEligibleForPromoOffer: isEligibleForPromoOffer,
-                loading: self.offerEligibilityLoading
+                loading: self.offerEligibilityAvailability.loading(
+                    self.offerEligibilityLoading,
+                    for: self.packageContext.package
+                )
             ),
             conditionContext: self.viewModel.uiConfigProvider.conditionContext(
                 selectedPackageId: self.selectedPackageId,

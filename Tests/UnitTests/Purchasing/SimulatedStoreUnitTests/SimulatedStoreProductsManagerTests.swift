@@ -117,9 +117,49 @@ class SimulatedStoreProductsManagerTests: TestCase {
         expect(result).to(beFailure())
     }
 
+    func testConfiguredStoreCacheReusesTestStoreProductsWithSK1Setting() async throws {
+        try await self.verifyConfiguredStoreCache(storeKitVersion: .storeKit1)
+    }
+
+    func testConfiguredStoreCacheReusesTestStoreProductsWithSK2Setting() async throws {
+        try await self.verifyConfiguredStoreCache(storeKitVersion: .storeKit2)
+    }
+
     fileprivate func createManager() -> SimulatedStoreProductsManager {
         return SimulatedStoreProductsManager(backend: self.backend,
                                              deviceCache: self.deviceCache,
                                              requestTimeout: Self.requestTimeout)
     }
+}
+
+private extension SimulatedStoreProductsManagerTests {
+
+    func verifyConfiguredStoreCache(storeKitVersion: StoreKitVersion) async throws {
+        self.webBilling.stubbedGetWebBillingProductsCompletionResult = .success(
+            SimulatedStoreMockData.yearlyAndMonthlyWebBillingProductsResponse
+        )
+        let identifiers: Set<String> = [SimulatedStoreMockData.monthlyProduct.identifier]
+        let systemInfo = MockSystemInfo(finishTransactions: true, storeKitVersion: storeKitVersion)
+        systemInfo.stubbedApiKeyValidationResult = .simulatedStore
+        let manager = CachingProductsManager(manager: ProductsManagerFactory.createManager(
+            apiKeyValidationResult: .simulatedStore,
+            diagnosticsTracker: nil,
+            systemInfo: systemInfo,
+            backend: self.backend,
+            deviceCache: self.deviceCache,
+            requestTimeout: Self.requestTimeout
+        ))
+
+        let first = try await manager.products(withIdentifiers: identifiers)
+        let cached = try await manager.products(withIdentifiers: identifiers)
+        let product = try XCTUnwrap(cached.onlyElement)
+        expect(product.testStoreProduct).toNot(beNil())
+        expect(product) === first.onlyElement
+        expect(self.webBilling.invokedGetWebBillingProductsCount) == 1
+
+        manager.clearCache()
+        _ = try await manager.products(withIdentifiers: identifiers)
+        expect(self.webBilling.invokedGetWebBillingProductsCount) == 2
+    }
+
 }

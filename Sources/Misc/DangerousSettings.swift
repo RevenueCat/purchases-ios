@@ -199,8 +199,8 @@ internal protocol InternalDangerousSettingsType: Sendable {
     var usesRemoteConfigAPISources: Bool { get }
 
     #if DEBUG
-    /// The strategy for the `HTTPClient` to fake server errors. Meant for tests only.
-    /// `nil` means no server errors are forced.
+    /// The strategy for the `HTTPClient` to fake server errors, and for `SourceHealthChecker` to fake
+    /// health check outcomes. Meant for tests only. `nil` means no server errors are forced.
     ///
     /// See `ForceServerErrorStrategy.Action` for the ways a request can be intercepted.
     var forceServerErrorStrategy: ForceServerErrorStrategy? { get }
@@ -248,7 +248,39 @@ struct ForceServerErrorStrategy {
     // swiftlint:disable:next force_unwrapping
     static let defaultServerErrorURL = URL(string: "https://api.revenuecat.com/force-server-failure")!
 
+    /// What `SourceHealthChecker` does when checking a source's health.
+    ///
+    /// Faked outcomes are cached like real ones.
+    enum HealthCheckAction {
+
+        /// The source is reported healthy without performing the health check.
+        case fakeHealthy
+
+        /// The source is reported unhealthy without performing the health check.
+        /// Combined with an `action` that fails the source's requests, this simulates the source being down.
+        case fakeUnhealthy
+
+        /// The health check is performed as usual.
+        case performHealthCheck
+
+    }
+
     let action: (HTTPClient.Request) -> Action
+
+    /// Decides what `SourceHealthChecker` does for each source, given its base URL.
+    /// Health checks don't go through `HTTPClient`, so they never consult `action`.
+    let healthCheckAction: (URL) -> HealthCheckAction
+
+    /// Creates a strategy that performs every health check.
+    init(action: @escaping (HTTPClient.Request) -> Action) {
+        self.init(action: action, healthCheckAction: { _ in .performHealthCheck })
+    }
+
+    init(action: @escaping (HTTPClient.Request) -> Action,
+         healthCheckAction: @escaping (URL) -> HealthCheckAction) {
+        self.action = action
+        self.healthCheckAction = healthCheckAction
+    }
 
 }
 

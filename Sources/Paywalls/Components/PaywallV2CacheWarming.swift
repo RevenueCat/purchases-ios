@@ -124,7 +124,6 @@ extension PaywallComponentsData.PaywallComponentsConfig {
         return self.allCacheAssets.videoSourcesToDownload
     }
 
-    // swiftlint:disable:next cyclomatic_complexity function_body_length
     private func collectAssets(
         in stack: PaywallComponent.StackComponent,
         rendersSynchronously: Bool,
@@ -138,7 +137,9 @@ extension PaywallComponentsData.PaywallComponentsConfig {
             let rendersSynchronously = rendersSynchronously || component.isSheetButton
 
             switch component {
-            case .text, .tabControl, .tabControlToggle, .fallbackHeader:
+            case .text, .tabControl, .tabControlToggle, .fallbackHeader,
+                 .stack, .button, .package, .purchaseButton, .stickyFooter,
+                 .tabs, .tabControlButton, .carousel, .countdown:
                 break
             case .icon(let icon):
                 collector.imageURLs += icon.cacheMedia(rendersSynchronously: rendersSynchronously)
@@ -147,84 +148,9 @@ extension PaywallComponentsData.PaywallComponentsConfig {
                 collector.imageURLs += image.overrides?.flatMap {
                     $0.properties.source?.cacheMedia(rendersSynchronously: rendersSynchronously) ?? []
                 } ?? []
-            case .stack(let stack):
-                self.collectAssets(
-                    in: stack,
-                    rendersSynchronously: rendersSynchronously,
-                    into: &collector
-                )
-            case .button(let button):
-                self.collectAssets(
-                    in: button.stack,
-                    rendersSynchronously: rendersSynchronously,
-                    into: &collector
-                )
-
-                switch button.action {
-                case .navigateTo(let destination):
-                    switch destination {
-                    case .sheet(sheet: let sheet):
-                        if let sheet {
-                            self.collectAssets(
-                                in: sheet.stack,
-                                rendersSynchronously: rendersSynchronously,
-                                into: &collector
-                            )
-                        }
-                    case .customerCenter, .offerCode, .privacyPolicy, .terms, .webPaywallLink, .url, .unknown:
-                        break
-                    }
-                case .restorePurchases, .navigateBack, .workflowTrigger, .unknown:
-                    break
-                }
-            case .package(let package):
-                self.collectAssets(
-                    in: package.stack,
-                    rendersSynchronously: rendersSynchronously,
-                    into: &collector
-                )
-            case .purchaseButton(let purchaseButton):
-                self.collectAssets(
-                    in: purchaseButton.stack,
-                    rendersSynchronously: rendersSynchronously,
-                    into: &collector
-                )
-            case .stickyFooter(let stickyFooter):
-                self.collectAssets(
-                    in: stickyFooter.stack,
-                    rendersSynchronously: rendersSynchronously,
-                    into: &collector
-                )
             case .timeline(let timeline):
                 collector.imageURLs += timeline.items.flatMap {
                     $0.icon.cacheMedia(rendersSynchronously: rendersSynchronously)
-                }
-            case .tabs(let tabs):
-                self.collectAssets(
-                    in: tabs.control.stack,
-                    rendersSynchronously: rendersSynchronously,
-                    into: &collector
-                )
-                for tab in tabs.tabs {
-                    self.collectAssets(
-                        in: tab.stack,
-                        rendersSynchronously: rendersSynchronously,
-                        into: &collector
-                    )
-                }
-            case .tabControlButton(let controlButton):
-                self.collectAssets(
-                    in: controlButton.stack,
-                    rendersSynchronously: rendersSynchronously,
-                    into: &collector
-                )
-            case .carousel(let carousel):
-                for page in carousel.pages {
-                    self.collectAssets(
-                        in: page,
-                        rendersSynchronously: rendersSynchronously,
-                        into: &collector
-                    )
                 }
             case .video(let video):
                 collector.videoURLs += collector.videoSource(
@@ -240,30 +166,14 @@ extension PaywallComponentsData.PaywallComponentsConfig {
                 collector.imageURLs += video.fallbackSource?.cacheMedia(
                     rendersSynchronously: rendersSynchronously
                 ) ?? []
-            case .countdown(let countdown):
-                self.collectAssets(
-                    in: countdown.countdownStack,
-                    rendersSynchronously: rendersSynchronously,
-                    into: &collector
-                )
-                if let endStack = countdown.endStack {
-                    self.collectAssets(
-                        in: endStack,
-                        rendersSynchronously: rendersSynchronously,
-                        into: &collector
-                    )
-                }
-                if let fallback = countdown.fallback {
-                    self.collectAssets(
-                        in: fallback,
-                        rendersSynchronously: rendersSynchronously,
-                        into: &collector
-                    )
-                }
             case .webView(let webView):
                 if let url = PaywallComponent.WebViewComponent.validatedHTTPSURL(from: webView.url) {
                     collector.webViewURLs.append(.init(url: url, checksum: nil))
                 }
+            }
+
+            for childStack in component.childStacks(includeSheetDestinations: true) {
+                self.collectAssets(in: childStack, rendersSynchronously: rendersSynchronously, into: &collector)
             }
         }
     }

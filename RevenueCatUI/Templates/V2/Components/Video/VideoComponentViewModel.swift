@@ -87,6 +87,8 @@ class VideoComponentViewModel {
         isEligibleForPromoOffer: Bool,
         selectedPackageId: String?,
         customVariables: [String: CustomVariableValue],
+        stateValues: [String: PaywallComponent.ConditionValue] = [:],
+        stateDefaults: [String: PaywallComponent.ConditionValue] = [:],
         windowSize: CGSize? = nil,
         colorScheme: ColorScheme,
         @ViewBuilder apply: @escaping (VideoComponentStyle) -> some View
@@ -94,6 +96,8 @@ class VideoComponentViewModel {
         let conditionContext = self.uiConfigProvider.conditionContext(
             selectedPackageId: selectedPackageId,
             customVariables: customVariables,
+            stateValues: stateValues,
+            stateDefaults: stateDefaults,
             windowSize: windowSize
         )
         let localizedPartial = LocalizedVideoPartial.buildPartial(

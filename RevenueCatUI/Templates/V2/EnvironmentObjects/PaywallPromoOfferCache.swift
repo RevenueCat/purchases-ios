@@ -20,6 +20,7 @@ import SwiftUI
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 internal final class PaywallPromoOfferCache: ObservableObject {
 
+    // Includes the billing plan: variants of the same App Store product can have different offers.
     typealias ProductID = String
     typealias PackageInfo = (package: Package, promotionalOfferProductCode: String?)
 
@@ -94,7 +95,7 @@ internal final class PaywallPromoOfferCache: ObservableObject {
         guard let package else { return false }
 
         let status = self.cachedAppUserID == self.appUserID()
-            ? self.cache[package.storeProduct.productIdentifier] ?? .ineligible
+            ? self.cache[package.storeProduct.id] ?? .ineligible
             : .ineligible
         switch status {
         case .unknown, .signedEligible:
@@ -108,7 +109,7 @@ internal final class PaywallPromoOfferCache: ObservableObject {
         guard let package,
               self.cachedAppUserID == self.appUserID() else { return nil }
 
-        if case .signedEligible(let promoOffer) = cache[package.storeProduct.productIdentifier] {
+        if case .signedEligible(let promoOffer) = cache[package.storeProduct.id] {
             return promoOffer
         }
 
@@ -136,10 +137,10 @@ internal final class PaywallPromoOfferCache: ObservableObject {
             let storeProduct = packageInfo.package.storeProduct
             if let productCode = packageInfo.promotionalOfferProductCode,
                let discount = storeProduct.discounts.first(where: { $0.offerIdentifier == productCode }) {
-                self.latestRequestIDsByProductID[storeProduct.productIdentifier] = requestID
+                self.latestRequestIDsByProductID[storeProduct.id] = requestID
 
                 if let simulatedEligibility = self.simulatedEligibility {
-                    newCacheEntries[storeProduct.productIdentifier] = simulatedEligibility
+                    newCacheEntries[storeProduct.id] = simulatedEligibility
                         ? .signedEligible(Self.makeSimulatedOffer(for: discount))
                         : .ineligible
                     continue
@@ -152,10 +153,10 @@ internal final class PaywallPromoOfferCache: ObservableObject {
         if !requests.isEmpty {
             // Missing results must also invalidate any previous signature for the requested product.
             for request in requests {
-                newCacheEntries[request.product.productIdentifier] = .ineligible
+                newCacheEntries[request.product.id] = .ineligible
             }
             for result in await self.promotionalOffers(requests) {
-                newCacheEntries[result.request.product.productIdentifier] = result.offer.map(Status.signedEligible)
+                newCacheEntries[result.request.product.id] = result.offer.map(Status.signedEligible)
                     ?? .ineligible
             }
         }

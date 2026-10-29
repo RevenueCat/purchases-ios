@@ -20,7 +20,7 @@ import Foundation
     @objc public let product: StoreProduct
 
     /// Creates a request for a promotional discount belonging to `product`.
-    @objc public init(discount: StoreProductDiscount, product: StoreProduct) {
+    @_spi(Internal) @objc public init(discount: StoreProductDiscount, product: StoreProduct) {
         self.discount = discount
         self.product = product
         super.init()

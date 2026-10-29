@@ -59,13 +59,33 @@ internal struct CompoundProductIdentifier: Hashable {
     /// base product identifier and product plan identifier. Strings with more than one colon are invalid and will
     /// return nil.
     init?(compoundProductIdentifier: String) {
+        self.init(
+            compoundProductIdentifier: compoundProductIdentifier,
+            logInvalidIdentifier: true
+        )
+    }
+
+    /// Normalizes SDK-facing identifiers for cache lookups without logging.
+    /// An empty plan suffix aliases the base product. Invalid identifiers are returned unchanged so the
+    /// fetcher can validate and log them, while non-empty plan identifiers retain their spelling and case.
+    static func canonicalIdentifier(_ identifier: String) -> String {
+        return Self(compoundProductIdentifier: identifier, logInvalidIdentifier: false)?.compoundProductIdentifier
+            ?? identifier
+    }
+}
+
+private extension CompoundProductIdentifier {
+
+    init?(compoundProductIdentifier: String, logInvalidIdentifier: Bool) {
         let components = compoundProductIdentifier.components(separatedBy: ":")
         guard components.count <= 2 else {
-            Logger.warn(
-                StoreKitStrings.cannot_request_product_with_more_than_one_colon(
-                    productIdentifier: compoundProductIdentifier
+            if logInvalidIdentifier {
+                Logger.warn(
+                    StoreKitStrings.cannot_request_product_with_more_than_one_colon(
+                        productIdentifier: compoundProductIdentifier
+                    )
                 )
-            )
+            }
             return nil
         }
         self.init(
@@ -73,6 +93,7 @@ internal struct CompoundProductIdentifier: Hashable {
             productPlanIdentifier: components[safe: 1]
         )
     }
+
 }
 
 // MARK: - Computed Properties

@@ -1,0 +1,31 @@
+# Starting from the home screen, navigates to the purchase screen, purchases a subscription through the
+# Test Store and takes the reference screenshot of the active entitlements.
+# Requires the SCREENSHOTS_DIR environment variable.
+
+appId: com.revenuecat.SDKUpdateTester
+name: Purchase subscription
+env:
+  EXPECTED_ENTITLEMENT: ${EXPECTED_ENTITLEMENT || 'pro'}
+---
+- tapOn:
+    id: purchase_screen_button
+- extendedWaitUntil:
+    visible:
+      id: active_entitlements
+      text: "None"
+    timeout: 30000
+- tapOn:
+    id: purchase_button
+- extendedWaitUntil:
+    visible: "Test Store Purchase"
+    timeout: 30000
+- tapOn: "Test valid purchase"
+- extendedWaitUntil:
+    visible:
+      id: active_entitlements
+      text: ${EXPECTED_ENTITLEMENT}
+    timeout: 30000
+- takeScreenshot:
+    path: ${SCREENSHOTS_DIR}/active_entitlements
+    cropOn:
+      id: active_entitlements
