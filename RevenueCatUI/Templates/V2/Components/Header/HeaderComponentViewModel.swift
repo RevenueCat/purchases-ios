@@ -33,6 +33,12 @@ class HeaderComponentViewModel {
         self.firstItemIgnoresSafeArea = firstItemIgnoresSafeArea
     }
 
+    /// The header's first image when it bleeds into the top safe area. Other media get the header's top padding.
+    var heroMediaIdentifier: ObjectIdentifier? {
+        guard self.firstItemIgnoresSafeArea else { return nil }
+        return self.stackViewModel.viewModels.first?.firstNativeMediaIdentifier
+    }
+
 }
 
 struct NativePaywallHeaderContentKey: PreferenceKey {

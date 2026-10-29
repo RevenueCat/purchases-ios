@@ -42,7 +42,7 @@ struct ComponentsView: View {
     private var bodyHeroInsetAlreadyRestored: Bool {
         guard let bodyHeroIdentifier else { return false }
         return self.bodySafeAreaRestored
-            && self.componentViewModels.first?.nativeMediaIdentifier == bodyHeroIdentifier
+            && self.componentViewModels.first?.firstNativeMediaIdentifier == bodyHeroIdentifier
     }
 
     init(
