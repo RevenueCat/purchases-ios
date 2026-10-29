@@ -112,6 +112,112 @@ class StoreKit2ObserverModePurchaseDetectorTests: StoreKitConfigTestCase {
         expect(self.deviceCache.invokedRegisterNewSyncedSK2ObserverModeTransactionID) == true
     }
 
+    func testRejectedReceiptIsNotSyncedAndCooldownSurvivesRecreation() async throws {
+        let transaction = try await self.createFinishedTransactionFixture()
+        let provider = MockAllTransactionsProvider(mockedTransactions: [transaction])
+        let clock = MockCurrentDateProvider()
+        let delegate = MockStoreKit2ObserverModePurchaseDetectorDelegate()
+        delegate.error = Self.rejectedReceiptError
+
+        let detector = StoreKit2ObserverModePurchaseDetector(
+            deviceCache: self.deviceCache, allTransactionsProvider: provider, dateProvider: clock
+        )
+        await detector.detectUnobservedTransactions(delegate: delegate)
+        await detector.detectUnobservedTransactions(delegate: delegate)
+
+        let recreatedDetector = StoreKit2ObserverModePurchaseDetector(
+            deviceCache: self.deviceCache, allTransactionsProvider: provider, dateProvider: clock
+        )
+        await recreatedDetector.detectUnobservedTransactions(delegate: delegate)
+
+        expect(delegate.handleSK2ObserverModeTransactionCount) == 1
+        expect(self.deviceCache.cachedSyncedSK2ObserverModeTransactionIDs()).to(beEmpty())
+        expect(self.deviceCache.cachedSK2ObserverModeReceiptRetry()).toNot(beNil())
+
+        clock.advance(by: 5 * 60)
+        delegate.error = nil
+        await recreatedDetector.detectUnobservedTransactions(delegate: delegate)
+        await recreatedDetector.detectUnobservedTransactions(delegate: delegate)
+
+        expect(delegate.handleSK2ObserverModeTransactionCount) == 2
+        expect(self.deviceCache.cachedSyncedSK2ObserverModeTransactionIDs()).toNot(beEmpty())
+        expect(self.deviceCache.cachedSK2ObserverModeReceiptRetry()).to(beNil())
+    }
+
+    func testCooldownForAnotherTransactionDoesNotDelayNewTransaction() async throws {
+        let transaction = try await self.createFinishedTransactionFixture()
+        let clock = MockCurrentDateProvider()
+        let transactionID = try XCTUnwrap(transaction.verifiedTransaction?.id)
+        self.deviceCache.cacheSK2ObserverModeReceiptRetry(.init(
+            transactionID: transactionID + 1,
+            retryAfter: clock.now().addingTimeInterval(5 * 60)
+        ))
+        let delegate = MockStoreKit2ObserverModePurchaseDetectorDelegate()
+        let detector = StoreKit2ObserverModePurchaseDetector(
+            deviceCache: self.deviceCache,
+            allTransactionsProvider: MockAllTransactionsProvider(mockedTransactions: [transaction]),
+            dateProvider: clock
+        )
+
+        await detector.detectUnobservedTransactions(delegate: delegate)
+
+        expect(delegate.handleSK2ObserverModeTransactionCount) == 1
+    }
+
+    func testOtherErrorsRemainRetryableWithoutReceiptCooldown() async throws {
+        let transaction = try await self.createFinishedTransactionFixture()
+        let delegate = MockStoreKit2ObserverModePurchaseDetectorDelegate()
+        delegate.error = BackendError.networkError(.networkError(URLError(.notConnectedToInternet)))
+        let detector = StoreKit2ObserverModePurchaseDetector(
+            deviceCache: self.deviceCache,
+            allTransactionsProvider: MockAllTransactionsProvider(mockedTransactions: [transaction])
+        )
+
+        await detector.detectUnobservedTransactions(delegate: delegate)
+        await detector.detectUnobservedTransactions(delegate: delegate)
+
+        expect(delegate.handleSK2ObserverModeTransactionCount) == 2
+        expect(self.deviceCache.cachedSK2ObserverModeReceiptRetry()).to(beNil())
+        expect(self.deviceCache.cachedSyncedSK2ObserverModeTransactionIDs()).to(beEmpty())
+    }
+
+    func testConcurrentDetectionsDoNotPostSameTransactionTwice() async throws {
+        let transaction = try await self.createFinishedTransactionFixture()
+        let delegate = MockStoreKit2ObserverModePurchaseDetectorDelegate()
+        let detector = StoreKit2ObserverModePurchaseDetector(
+            deviceCache: self.deviceCache,
+            allTransactionsProvider: MockAllTransactionsProvider(mockedTransactions: [transaction])
+        )
+        let started = self.expectation(description: "First receipt post started")
+        let gate = AsyncStream<Void>.makeStream()
+        let startedOnce: Atomic<Bool> = false
+        delegate.beforeCompletion = {
+            if !startedOnce.getAndSet(true) { started.fulfill() }
+            for await _ in gate.stream { break }
+        }
+        let first = Task { await detector.detectUnobservedTransactions(delegate: delegate) }
+        await self.fulfillment(of: [started], timeout: 5)
+
+        let secondReturned = self.expectation(description: "Concurrent detection returned without another post")
+        let second = Task {
+            await detector.detectUnobservedTransactions(delegate: delegate)
+            secondReturned.fulfill()
+        }
+        await self.fulfillment(of: [secondReturned], timeout: 5)
+        gate.continuation.finish()
+        await first.value
+        await second.value
+
+        expect(delegate.handleSK2ObserverModeTransactionCount) == 1
+    }
+
+    private static var rejectedReceiptError: BackendError {
+        .networkError(.errorResponse(
+            .init(code: .unknownBackendError, originalCode: 7934, message: "Rejecting receipt."),
+            .invalidRequest
+        ))
+    }
+
     private func createFinishedTransactionFixture() async throws -> StoreKit.VerificationResult<StoreKit.Transaction> {
         // buyProduct(identifier:) was added in Xcode 15.
         #if compiler(>=5.9)
@@ -140,6 +246,8 @@ final class MockStoreKit2ObserverModePurchaseDetectorDelegate: StoreKit2Observer
 
     var handleSK2ObserverModeTransactionCalled = false
     var handleSK2ObserverModeTransactionCount = 0
+    var error: Error?
+    var beforeCompletion: (@Sendable () async -> Void)?
     var handleSK2ObserverModeTransactionInvocations: [HandleSK2ObserverModeTransactionInvocation] = []
     struct HandleSK2ObserverModeTransactionInvocation {
         let verifiedTransaction: Transaction
@@ -151,6 +259,8 @@ final class MockStoreKit2ObserverModePurchaseDetectorDelegate: StoreKit2Observer
         handleSK2ObserverModeTransactionCount += 1
         handleSK2ObserverModeTransactionInvocations.append(.init(verifiedTransaction: verifiedTransaction,
                                                                  jwsRepresentation: jwsRepresentation))
+        await self.beforeCompletion?()
+        if let error = self.error { throw error }
     }
 
 }

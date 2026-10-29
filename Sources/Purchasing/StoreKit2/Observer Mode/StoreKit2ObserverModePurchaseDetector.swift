@@ -43,13 +43,19 @@ actor StoreKit2ObserverModePurchaseDetector: StoreKit2ObserverModePurchaseDetect
 
     private let deviceCache: DeviceCache
     private let allTransactionsProvider: AllTransactionsProviderType
+    private let dateProvider: DateProvider
+    private var inFlightTransactionIDs: Set<UInt64> = []
+
+    private static let rejectedReceiptRetryDelay: TimeInterval = 5 * 60
 
     init(
         deviceCache: DeviceCache,
-        allTransactionsProvider: AllTransactionsProviderType
+        allTransactionsProvider: AllTransactionsProviderType,
+        dateProvider: DateProvider = DateProvider()
     ) {
         self.deviceCache = deviceCache
         self.allTransactionsProvider = allTransactionsProvider
+        self.dateProvider = dateProvider
     }
 
     /// Detects unobserved transactions and forwards them to the StoreKit2ObserverModeManagerDelegate
@@ -72,6 +78,17 @@ actor StoreKit2ObserverModePurchaseDetector: StoreKit2ObserverModePurchaseDetect
         )
         if cachedSyncedSK2ObserverModeTransactionIDs.contains(transaction.id) { return }
 
+        // Actor methods can reenter while the receipt post awaits the backend.
+        guard !self.inFlightTransactionIDs.contains(transaction.id) else { return }
+        if let retry = self.deviceCache.cachedSK2ObserverModeReceiptRetry(),
+           retry.transactionID == transaction.id,
+           self.dateProvider.now() < retry.retryAfter {
+            return
+        }
+
+        self.inFlightTransactionIDs.insert(transaction.id)
+        defer { self.inFlightTransactionIDs.remove(transaction.id) }
+
         let unsyncedTransactionIDs = allTransactions
             .filter {
                 !cachedSyncedSK2ObserverModeTransactionIDs.contains($0.underlyingTransaction.id)
@@ -85,10 +102,30 @@ actor StoreKit2ObserverModePurchaseDetector: StoreKit2ObserverModePurchaseDetect
             )
 
             deviceCache.registerNewSyncedSK2ObserverModeTransactionIDs(unsyncedTransactionIDs)
+            if self.deviceCache.cachedSK2ObserverModeReceiptRetry()?.transactionID == transaction.id {
+                self.deviceCache.cacheSK2ObserverModeReceiptRetry(nil)
+            }
         } catch {
+            // 7934 is a temporary rejection of old queue receipts, not confirmation of processing.
+            // Persist a cooldown rather than marking the transaction as successfully synced.
+            if let backendError = error as? BackendError,
+               case let .networkError(.errorResponse(response, _, _)) = backendError,
+               response.originalCode == 7934 {
+                self.deviceCache.cacheSK2ObserverModeReceiptRetry(.init(
+                    transactionID: transaction.id,
+                    retryAfter: self.dateProvider.now().addingTimeInterval(Self.rejectedReceiptRetryDelay)
+                ))
+            }
             Logger.error(Strings.purchase.sk2_observer_mode_error_processing_transaction(error))
         }
     }
+}
+
+struct SK2ObserverModeReceiptRetry: Codable, Equatable {
+
+    let transactionID: UInt64
+    let retryAfter: Date
+
 }
 
 /// A wrapper protocol that allows for abstracting out calls to an `AsyncSequence<VerificationResult<Transaction>>`.
