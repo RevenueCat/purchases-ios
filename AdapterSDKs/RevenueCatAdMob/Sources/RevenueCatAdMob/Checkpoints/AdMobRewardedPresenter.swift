@@ -32,7 +32,7 @@ public final class AdMobRewardedPresenter: AdPresenter {
     private var activePresentations: Set<RewardedPresentation> = []
 
     /// Creates a presenter that loads and shows AdMob rewarded ads for checkpoint ad steps.
-    public init() {}
+    @_spi(Internal) public init() {}
 
     /// Loads and presents the rewarded ad for `params.adIdentifier`, completing once it is dismissed and any
     /// earned reward has been verified, or once it fails.

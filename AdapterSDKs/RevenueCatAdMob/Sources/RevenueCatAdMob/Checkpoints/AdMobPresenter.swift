@@ -59,7 +59,7 @@ public final class AdMobPresenter: AdPresenter {
     private let rewardedInterstitialPresenter: AdPresenter
 
     /// Creates a presenter that delegates to the adapter's format-specific AdMob presenters.
-    public convenience init() {
+    @_spi(Internal) public convenience init() {
         self.init(
             interstitialPresenter: AdMobInterstitialPresenter(),
             rewardedPresenter: AdMobRewardedPresenter(),

@@ -29,7 +29,7 @@ public final class AdMobInterstitialPresenter: AdPresenter {
     private var activePresentations: Set<InterstitialPresentation> = []
 
     /// Creates a presenter that loads and shows AdMob interstitials for checkpoint ad steps.
-    public init() {}
+    @_spi(Internal) public init() {}
 
     /// Loads and presents the interstitial for `params.adIdentifier`, completing once it is dismissed or fails.
     public func present(
