@@ -131,3 +131,32 @@ private final class CheckpointAPIErrorPresenter: ErrorPresenter {
     }
 
 }
+
+@MainActor
+private func checkAdPresentationAPI(
+    _ purchases: Purchases
+) {
+    let presenter = CheckpointAPIAdPresenter()
+    purchases.adPresenter = presenter
+    let _: AdPresenter? = purchases.adPresenter
+
+    let error: PublicError = NSError(domain: "", code: 0)
+    let _: AdPresentationResult = .shown
+    let _: AdPresentationResult = .failed(error: error)
+    let _: Bool = AdPresentationResult.shown == AdPresentationResult.shown
+}
+
+@MainActor
+private final class CheckpointAPIAdPresenter: AdPresenter {
+
+    func present(
+        params: AdPresentationParams,
+        completion: @escaping AdPresentationCompletion
+    ) {
+        let _: String = params.checkpointIdentifier
+        let _: String = params.adIdentifier
+        let _: MediatorName = params.mediator
+        completion(.shown)
+    }
+
+}

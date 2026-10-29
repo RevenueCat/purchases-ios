@@ -49,6 +49,7 @@ struct HeaderComponentView: View {
             ),
             isHeaderContainer: true
         )
+        .environment(\.paywallHeroMediaIdentifier, self.viewModel.heroMediaIdentifier)
         .environment(\.workflowRenderingContext, self.workflowRenderingContext.markingHeader())
         .environment(\.nativePaywallHeaderCollapsed, self.collapsesNativeOnlyHeader)
         .onPreferenceChange(NativePaywallHeaderContentKey.self) { self.contentVisibility = $0 }

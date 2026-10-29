@@ -815,6 +815,113 @@ final class CheckpointsManagerTests: TestCase {
         XCTAssertEqual(global.receivedParams?.offering.identifier, "offering-id")
     }
 
+    func testResolvedAdWithoutARegisteredPresenterPresentsNothing() async throws {
+        let manager = CheckpointsManager(
+            resolveCheckpoint: { _, _ in .matchedAd(Self.adStep()) },
+            workflowPresenter: MockWorkflowPresenter()
+        )
+
+        let execution = try await manager.executeCheckpoint(identifier: "onboarding", params: .init())
+
+        guard case .nothingPresented = execution else {
+            return XCTFail("Expected nothing to be presented")
+        }
+        self.logger.verifyMessageWasLogged(
+            Strings.checkpoint_ad_step_without_ad_presenter(checkpointIdentifier: "onboarding"),
+            level: .warn
+        )
+    }
+
+    func testResolvedAdUsesRegisteredAdPresenter() async throws {
+        let presenter = MockAdPresenter()
+        let manager = CheckpointsManager(
+            resolveCheckpoint: { _, _ in .matchedAd(Self.adStep()) },
+            workflowPresenter: MockWorkflowPresenter()
+        )
+        manager.adPresenter = presenter
+
+        let execution = try await manager.executeCheckpoint(
+            identifier: "onboarding",
+            params: .init(customVariables: ["source": "test"])
+        )
+
+        guard case .completed(customerInfo: .none) = execution else {
+            return XCTFail("Expected a completed execution with no customer information of its own")
+        }
+        XCTAssertEqual(presenter.callCount, 1)
+        XCTAssertEqual(presenter.receivedParams?.checkpointIdentifier, "onboarding")
+        XCTAssertEqual(presenter.receivedParams?.adIdentifier, "test-ad-identifier")
+        XCTAssertEqual(presenter.receivedParams?.mediator, MediatorName(rawValue: "admob"))
+    }
+
+    func testResolvedAdThatCouldNotBeShownPresentsTheErrorAndFails() async throws {
+        let expectedError = NSError(domain: "gma", code: 3)
+        let presenter = MockAdPresenter()
+        presenter.result = .failed(error: expectedError)
+        var presentations: [ErrorPresentationParams] = []
+        let manager = CheckpointsManager(
+            resolveCheckpoint: { _, _ in .matchedAd(Self.adStep()) },
+            workflowPresenter: MockWorkflowPresenter()
+        )
+        manager.adPresenter = presenter
+
+        let execution = try await manager.executeCheckpoint(
+            identifier: "onboarding",
+            params: .init(
+                customVariables: ["source": "test"],
+                errorPresenter: { params, completion in
+                    presentations.append(params)
+                    completion.complete()
+                }
+            )
+        )
+
+        guard case .failed = execution else {
+            return XCTFail("Expected a failed execution")
+        }
+        XCTAssertEqual(presentations.count, 1)
+        XCTAssertEqual(presentations.first?.checkpointIdentifier, "onboarding")
+        XCTAssertEqual(presentations.first?.error as NSError?, expectedError)
+        XCTAssertEqual(presentations.first?.kind, .flowCouldNotBeShown)
+        XCTAssertEqual(presentations.first?.customVariables, ["source": "test"])
+    }
+
+    func testAdErrorPresentationKeepsThePresentationSlot() async throws {
+        let errorPresented = self.expectation(description: "Ad error presentation starts")
+        var errorCompletion: ErrorPresentationCompletion?
+        let presenter = MockAdPresenter()
+        presenter.result = .failed(error: NSError(domain: "gma", code: 3))
+        let manager = CheckpointsManager(
+            resolveCheckpoint: { _, _ in .matchedAd(Self.adStep()) },
+            workflowPresenter: MockWorkflowPresenter()
+        )
+        manager.adPresenter = presenter
+
+        let failing = Task {
+            try await manager.executeCheckpoint(
+                identifier: "level_complete",
+                params: .init(errorPresenter: { _, completion in
+                    errorCompletion = completion
+                    errorPresented.fulfill()
+                })
+            )
+        }
+        await self.fulfillment(of: [errorPresented], timeout: 1)
+
+        do {
+            _ = try await manager.executeCheckpoint(identifier: "next_level", params: .init())
+            XCTFail("Expected the error presentation to keep owning the slot")
+        } catch {
+            XCTAssertEqual((error as NSError).code, ErrorCode.operationAlreadyInProgressForProductError.rawValue)
+        }
+
+        errorCompletion?.complete()
+        guard case .failed = try await failing.value else {
+            return XCTFail("Expected a failed execution")
+        }
+        XCTAssertEqual(presenter.callCount, 1)
+    }
+
     func testGlobalPaywallPresenterIsCapturedBeforeCheckpointResolution() async throws {
         let resolutionStarted = self.expectation(description: "Checkpoint resolution starts")
         var resolutionContinuation: CheckedContinuation<CheckpointResolution, Never>?
@@ -1365,6 +1472,10 @@ final class CheckpointsManagerTests: TestCase {
         )
     }
 
+    private static func adStep(adIdentifier: String = "test-ad-identifier") -> ResolvedAdStep {
+        return ResolvedAdStep(adIdentifier: adIdentifier, mediator: MediatorName(rawValue: "admob"))
+    }
+
     private static func storeProduct(identifier: String) -> StoreProduct {
         return TestStoreProduct(
             localizedTitle: identifier,
@@ -1507,6 +1618,25 @@ private final class MockErrorPresenter: ErrorPresenter {
 
     func present(params: ErrorPresentationParams, completion: ErrorPresentationCompletion) {
         self.callCount += 1
+    }
+
+}
+
+@MainActor
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private final class MockAdPresenter: AdPresenter {
+
+    private(set) var callCount = 0
+    private(set) var receivedParams: AdPresentationParams?
+    var result: AdPresentationResult = .shown
+
+    func present(
+        params: AdPresentationParams,
+        completion: @escaping AdPresentationCompletion
+    ) {
+        self.callCount += 1
+        self.receivedParams = params
+        completion(self.result)
     }
 
 }
