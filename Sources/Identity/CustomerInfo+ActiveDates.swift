@@ -22,13 +22,20 @@ extension CustomerInfo {
     /// since that would allow a user to get a free trial, then go offline and keep the entitlement with no time limit.
     static let requestDateGracePeriod: DispatchTimeInterval = .days(3)
 
+    #if DEBUG
+    // Mutable in tests so it can be overriden
+    static var dateProvider: DateProvider = .init()
+    #else
+    static let dateProvider: DateProvider = .init()
+    #endif
+
     static func isDateActive(expirationDate: Date?, for requestDate: Date, store: Store) -> Bool {
         guard let expirationDate = expirationDate else {
             return true
         }
 
         if store == .promotional {
-            return expirationDate >= max(requestDate, Date())
+            return expirationDate >= max(requestDate, Self.dateProvider.now())
         }
 
         let (referenceDate, inGracePeriod) = Self.referenceDate(for: requestDate)
@@ -152,10 +159,11 @@ private extension CustomerInfo {
     }
 
     static func referenceDate(for requestDate: Date) -> (Date, inGracePeriod: Bool) {
-        if Date().timeIntervalSince(requestDate) <= Self.requestDateGracePeriod.seconds {
+        let now = Self.dateProvider.now()
+        if now.timeIntervalSince(requestDate) <= Self.requestDateGracePeriod.seconds {
             return (requestDate, true)
         } else {
-            return (Date(), false)
+            return (now, false)
         }
     }
 
