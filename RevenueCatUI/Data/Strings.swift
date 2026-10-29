@@ -149,7 +149,6 @@ enum Strings {
     case offering_has_no_workflow_falling_back_to_default_paywall(offeringIdentifier: String)
     case checkpoint_ad_step_without_ad_presenter(checkpointIdentifier: String)
     case purchases_did_configure
-    case error_dialog_factory_timed_out(timeoutInterval: TimeInterval)
 
 }
 
@@ -157,10 +156,6 @@ extension Strings: CustomStringConvertible {
 
     var description: String {
         switch self {
-        case let .error_dialog_factory_timed_out(timeoutInterval):
-            return "ErrorDialogFactory timed out after \(timeoutInterval) seconds; " +
-                "falling back to the default error dialog."
-
         case .customer_center_preview_action_failed(let error):
             return "Customer Center preview action failed: \(error)"
         case let .package_not_subscription(package):

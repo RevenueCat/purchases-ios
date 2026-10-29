@@ -25,7 +25,7 @@ final class ErrorDialogFactoryTests: TestCase {
     func testCompletionInvokesHandlerWithProvidedDialog() {
         var receivedDialog: CheckpointErrorDialog?
         var callCount = 0
-        let completion = ErrorDialogFactoryCompletion(timeoutInterval: 60) { dialog in
+        let completion = ErrorDialogFactoryCompletion { dialog in
             receivedDialog = dialog
             callCount += 1
         }
@@ -41,7 +41,7 @@ final class ErrorDialogFactoryTests: TestCase {
     func testCompletionInvokesHandlerWithNilDialog() {
         var receivedDialog: CheckpointErrorDialog?
         var callCount = 0
-        let completion = ErrorDialogFactoryCompletion(timeoutInterval: 60) { dialog in
+        let completion = ErrorDialogFactoryCompletion { dialog in
             receivedDialog = dialog
             callCount += 1
         }
@@ -54,59 +54,12 @@ final class ErrorDialogFactoryTests: TestCase {
 
     func testSecondCompletionCallIsIgnored() {
         var callCount = 0
-        let completion = ErrorDialogFactoryCompletion(timeoutInterval: 60) { _ in callCount += 1 }
+        let completion = ErrorDialogFactoryCompletion { _ in callCount += 1 }
 
         completion.complete(with: nil)
         completion.complete(with: nil)
         completion.complete(with: CheckpointErrorDialog(message: "Second", buttonTitle: "OK"))
 
-        XCTAssertEqual(callCount, 1)
-    }
-
-    func testTimeoutFiresWithNilAndWarningIsLogged() async {
-        let completed = self.expectation(description: "Timeout fires")
-        var receivedDialog: CheckpointErrorDialog?? = .none
-        _ = ErrorDialogFactoryCompletion(timeoutInterval: 0.05) { dialog in
-            receivedDialog = .some(dialog)
-            completed.fulfill()
-        }
-
-        await self.fulfillment(of: [completed], timeout: 2)
-        XCTAssertEqual(receivedDialog, .some(nil))
-        self.logger.verifyMessageWasLogged(
-            "ErrorDialogFactory timed out",
-            level: .warn
-        )
-    }
-
-    func testTimeoutFiresWhenFactoryDropsCompletion() async {
-        let timedOut = self.expectation(description: "Dropped completion falls back")
-        var completion: ErrorDialogFactoryCompletion? = ErrorDialogFactoryCompletion(timeoutInterval: 0.05) { dialog in
-            XCTAssertNil(dialog)
-            timedOut.fulfill()
-        }
-        weak var weakCompletion: ErrorDialogFactoryCompletion?
-        weakCompletion = completion
-
-        completion = nil
-
-        XCTAssertNotNil(weakCompletion)
-        await self.fulfillment(of: [timedOut], timeout: 1)
-        XCTAssertNil(weakCompletion)
-    }
-
-    func testCompletionAfterTimeoutIsIgnored() async {
-        let timedOut = self.expectation(description: "Timeout fires")
-        var callCount = 0
-        let completion = ErrorDialogFactoryCompletion(timeoutInterval: 0.05) { _ in
-            callCount += 1
-            timedOut.fulfill()
-        }
-
-        await self.fulfillment(of: [timedOut], timeout: 2)
-        XCTAssertEqual(callCount, 1)
-
-        completion.complete(with: CheckpointErrorDialog(message: "Late", buttonTitle: "OK"))
         XCTAssertEqual(callCount, 1)
     }
 
