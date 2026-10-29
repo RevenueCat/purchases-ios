@@ -91,13 +91,12 @@ extension ProductRequestData: Encodable {
 
         if let introDuration = self.introDuration {
             switch self.introDurationType {
-            case .payUpFront:
+            case .payUpFront, .payAsYouGo:
                 try container.encode(introDuration, forKey: .introDuration)
-
             case .freeTrial:
                 try container.encode(introDuration, forKey: .trialDuration)
-
-            default: break
+            case nil:
+                print("hi")
             }
         }
     }
