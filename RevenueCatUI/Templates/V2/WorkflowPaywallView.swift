@@ -1039,7 +1039,8 @@ struct WorkflowPaywallView: View {
         guard context.offering(for: step) != nil else {
             return WorkflowPresentationError.offeringNotFound(
                 offeringID: offeringIdentifier,
-                stepID: step.id
+                stepID: step.id,
+                workflowID: context.workflow.id
             ) as NSError
         }
 
@@ -1232,7 +1233,7 @@ private enum WorkflowPresentationError: Error {
     case stepNotFound(stepID: String, workflowID: String)
     case missingScreenIdentifier(stepID: String, workflowID: String)
     case screenNotFound(screenID: String, workflowID: String)
-    case offeringNotFound(offeringID: String, stepID: String)
+    case offeringNotFound(offeringID: String, stepID: String, workflowID: String)
 
 }
 
@@ -1254,8 +1255,11 @@ extension WorkflowPresentationError: CustomNSError {
             return "Step '\(stepID)' has no screen_id in workflow '\(workflowID)'."
         case let .screenNotFound(screenID, workflowID):
             return "Screen '\(screenID)' not found in workflow '\(workflowID)'."
-        case let .offeringNotFound(offeringID, stepID):
-            return "Offering '\(offeringID)' not found for step '\(stepID)'."
+        case let .offeringNotFound(offeringID, stepID, workflowID):
+            return "Offering '\(offeringID)' not found for step '\(stepID)' of workflow '\(workflowID)'. " +
+                "The offering is either missing from the offerings response, or was dropped because none of " +
+                "its packages resolved to a product fetched from the store. Check the logs for a " +
+                "\"No packages could be found for offering\" warning."
         }
     }
 
