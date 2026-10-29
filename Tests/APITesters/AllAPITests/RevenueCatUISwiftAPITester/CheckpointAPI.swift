@@ -14,6 +14,9 @@
 
 import RevenueCat
 @_spi(InviteOnlyCheckpointsApi) import RevenueCatUI
+#if os(iOS) && !targetEnvironment(macCatalyst)
+import UIKit
+#endif
 
 func checkCheckpointAPI(_ purchases: Purchases) {
     let literalCustomVariables: [String: CustomVariableValue] = [
@@ -47,6 +50,13 @@ func checkCheckpointAPI(_ purchases: Purchases) {
     let product: ObtainedProduct? = nil
     let _: StoreProduct? = product?.product
 }
+
+#if os(iOS) && !targetEnvironment(macCatalyst)
+@MainActor
+private func checkCheckpointWindowSceneAPI(_ purchases: Purchases, windowScene: UIWindowScene) {
+    purchases.checkpoint("test_checkpoint", in: windowScene) { (_: CheckpointResult) in }
+}
+#endif
 
 private func checkCheckpointResultAPI(_ result: CheckpointResult) {
     let _: FlowResult? = result.flow

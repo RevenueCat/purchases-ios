@@ -16,7 +16,7 @@ import Foundation
 #if canImport(UIKit) && !os(watchOS)
 import UIKit
 
-/// The platform UI context for presenting SDK-owned UI.
+/// A platform UI context where the SDK can present UI.
 @_spi(Internal) public struct PresentationContext: @unchecked Sendable {
 
     let scene: UIScene
@@ -49,12 +49,13 @@ import UIKit
         return self.scene is UIWindowScene
     }
 
+    /// The view controller suitable for presenting UI from this context.
     @available(macCatalyst 13.1, *)
     @available(macOS, unavailable)
     @available(watchOS, unavailable)
     @available(watchOSApplicationExtension, unavailable)
     @MainActor
-    var presentationViewController: UIViewController? {
+    @_spi(Internal) public var presentationViewController: UIViewController? {
         if let window = self.window {
             return window.currentPresentationViewController
         }
@@ -67,7 +68,7 @@ import UIKit
 #elseif canImport(AppKit) && !targetEnvironment(macCatalyst)
 import AppKit
 
-/// The platform UI context for presenting SDK-owned UI.
+/// A platform UI context where the SDK can present UI.
 @_spi(Internal) public struct PresentationContext: @unchecked Sendable {
 
     let window: NSWindow
@@ -90,7 +91,7 @@ import AppKit
 
 #else
 
-/// The platform UI context for presenting SDK-owned UI.
+/// A platform UI context where the SDK can present UI.
 @_spi(Internal) public struct PresentationContext: @unchecked Sendable {
 
 }

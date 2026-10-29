@@ -114,7 +114,8 @@ final class CheckpointsManager {
                 customVariables: params.customVariables,
                 presentationMode: params.presentationMode,
                 initialActiveEntitlementIdentifiers: customerInfoBefore.activeEntitlementIdentifiers,
-                errorPresentationHandler: errorPresentationHandler
+                errorPresentationHandler: errorPresentationHandler,
+                presentationContext: params.presentationContext
             )
             return .init(
                 outcome: try await self.checkpointPresenter.presentWorkflow(presentation),
@@ -128,7 +129,8 @@ final class CheckpointsManager {
                         customVariables: params.customVariables,
                         presentationMode: params.presentationMode,
                         offering: offering,
-                        errorPresentationHandler: errorPresentationHandler
+                        errorPresentationHandler: errorPresentationHandler,
+                        presentationContext: params.presentationContext
                     ),
                     globalPaywallPresenter: globalPaywallPresenter,
                     localPaywallPresentationHandler: params.localPaywallPresentationHandler
@@ -379,7 +381,10 @@ extension CheckpointsManager {
             for: params,
             defaultHandler: {
                 let preferredUILocaleProvider = self.preferredUILocaleProvider
-                let presenter = DefaultErrorPresenter(preferredUILocaleProvider: preferredUILocaleProvider)
+                let presenter = DefaultErrorPresenter(
+                    presentationContext: params.presentationContext,
+                    preferredUILocaleProvider: preferredUILocaleProvider
+                )
                 return { params, completion in
                     presenter.present(params: params, completion: completion)
                 }
