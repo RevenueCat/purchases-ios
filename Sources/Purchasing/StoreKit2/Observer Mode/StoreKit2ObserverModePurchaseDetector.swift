@@ -80,9 +80,11 @@ actor StoreKit2ObserverModePurchaseDetector: StoreKit2ObserverModePurchaseDetect
 
         // Actor methods can reenter while the receipt post awaits the backend.
         guard !self.inFlightTransactionIDs.contains(transaction.id) else { return }
+        let now = self.dateProvider.now()
         if let retry = self.deviceCache.cachedSK2ObserverModeReceiptRetry(),
            retry.transactionID == transaction.id,
-           self.dateProvider.now() < retry.retryAfter {
+           now < retry.retryAfter,
+           retry.retryAfter.timeIntervalSince(now) <= Self.rejectedReceiptRetryDelay {
             return
         }
 
@@ -106,11 +108,11 @@ actor StoreKit2ObserverModePurchaseDetector: StoreKit2ObserverModePurchaseDetect
                 self.deviceCache.cacheSK2ObserverModeReceiptRetry(nil)
             }
         } catch {
-            // 7934 is a temporary rejection of old queue receipts, not confirmation of processing.
+            // An old receipt rejection is temporary, not confirmation of processing.
             // Persist a cooldown rather than marking the transaction as successfully synced.
             if let backendError = error as? BackendError,
                case let .networkError(.errorResponse(response, _, _)) = backendError,
-               response.originalCode == 7934 {
+               response.code == .oldReplayedReceipt {
                 self.deviceCache.cacheSK2ObserverModeReceiptRetry(.init(
                     transactionID: transaction.id,
                     retryAfter: self.dateProvider.now().addingTimeInterval(Self.rejectedReceiptRetryDelay)

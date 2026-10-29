@@ -164,6 +164,32 @@ class StoreKit2ObserverModePurchaseDetectorTests: StoreKitConfigTestCase {
         expect(delegate.handleSK2ObserverModeTransactionCount) == 1
     }
 
+    func testClockCorrectionDoesNotExtendReceiptCooldown() async throws {
+        let transaction = try await self.createFinishedTransactionFixture()
+        let provider = MockAllTransactionsProvider(mockedTransactions: [transaction])
+        let clock = MockCurrentDateProvider()
+        clock.advance(by: 60 * 60)
+        let delegate = MockStoreKit2ObserverModePurchaseDetectorDelegate()
+        delegate.error = Self.rejectedReceiptError
+
+        let detector = StoreKit2ObserverModePurchaseDetector(
+            deviceCache: self.deviceCache, allTransactionsProvider: provider, dateProvider: clock
+        )
+        await detector.detectUnobservedTransactions(delegate: delegate)
+        expect(delegate.handleSK2ObserverModeTransactionCount) == 1
+
+        clock.advance(by: -60 * 60)
+        delegate.error = nil
+        let recreatedDetector = StoreKit2ObserverModePurchaseDetector(
+            deviceCache: self.deviceCache, allTransactionsProvider: provider, dateProvider: clock
+        )
+        await recreatedDetector.detectUnobservedTransactions(delegate: delegate)
+
+        expect(delegate.handleSK2ObserverModeTransactionCount) == 2
+        expect(self.deviceCache.cachedSyncedSK2ObserverModeTransactionIDs()).toNot(beEmpty())
+        expect(self.deviceCache.cachedSK2ObserverModeReceiptRetry()).to(beNil())
+    }
+
     func testOtherErrorsRemainRetryableWithoutReceiptCooldown() async throws {
         let transaction = try await self.createFinishedTransactionFixture()
         let delegate = MockStoreKit2ObserverModePurchaseDetectorDelegate()
@@ -213,7 +239,9 @@ class StoreKit2ObserverModePurchaseDetectorTests: StoreKitConfigTestCase {
 
     private static var rejectedReceiptError: BackendError {
         .networkError(.errorResponse(
-            .init(code: .unknownBackendError, originalCode: 7934, message: "Rejecting receipt."),
+            .init(code: .oldReplayedReceipt,
+                  originalCode: BackendErrorCode.oldReplayedReceipt.rawValue,
+                  message: "Rejecting receipt."),
             .invalidRequest
         ))
     }
