@@ -59,17 +59,6 @@ final class PurchaseHandler: ObservableObject {
     weak var presentationWindow: NSWindow?
     #endif
 
-    @MainActor
-    private var presentationContext: PresentationContext? {
-        #if canImport(UIKit) && !os(watchOS)
-        return self.presentationWindow.flatMap(PresentationContext.init(window:))
-        #elseif canImport(AppKit)
-        return self.presentationWindow.map(PresentationContext.init(window:))
-        #else
-        return nil
-        #endif
-    }
-
     /// Side-by-side paywalls should use separate `PurchaseHandler` instances so each keeps its own session.
     private var activePaywallSessionID: PaywallEvent.SessionID?
 
@@ -157,10 +146,6 @@ final class PurchaseHandler: ObservableObject {
                 self.consecutiveCancellationRequestID = UUID()
             }
         }
-    }
-
-    private func haveBothBeenCanceled(lhs: PaywallPurchaseResult?, rhs: PaywallPurchaseResult?) -> Bool {
-        return lhs == .cancelled && rhs == .cancelled
     }
 
     /// Unique identifier for the latest `consecutiveCancellationRequestID`.
@@ -1372,6 +1357,21 @@ extension PurchaseHandler {
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private extension PurchaseHandler {
+
+    @MainActor
+    var presentationContext: PresentationContext? {
+        #if canImport(UIKit) && !os(watchOS)
+        return self.presentationWindow.flatMap(PresentationContext.init(window:))
+        #elseif canImport(AppKit)
+        return self.presentationWindow.map(PresentationContext.init(window:))
+        #else
+        return nil
+        #endif
+    }
+
+    func haveBothBeenCanceled(lhs: PaywallPurchaseResult?, rhs: PaywallPurchaseResult?) -> Bool {
+        return lhs == .cancelled && rhs == .cancelled
+    }
 
     func track(_ event: PaywallEvent) {
         self.paywallEventTracker.track(event)
