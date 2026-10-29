@@ -25,6 +25,7 @@ struct WorkflowPresentationRequest {
     let presentationMode: FlowPresentationMode
     let initialActiveEntitlementIdentifiers: Set<String>
     let errorPresentationHandler: ErrorPresentationHandler
+    let presentationContext: PresentationContext?
 
     init(
         checkpointIdentifier: String,
@@ -32,7 +33,8 @@ struct WorkflowPresentationRequest {
         customVariables: [String: CustomVariableValue],
         presentationMode: FlowPresentationMode,
         initialActiveEntitlementIdentifiers: Set<String>,
-        errorPresentationHandler: @escaping ErrorPresentationHandler
+        errorPresentationHandler: @escaping ErrorPresentationHandler,
+        presentationContext: PresentationContext? = nil
     ) {
         self.checkpointIdentifier = checkpointIdentifier
         self.workflow = workflow
@@ -40,6 +42,7 @@ struct WorkflowPresentationRequest {
         self.presentationMode = presentationMode
         self.initialActiveEntitlementIdentifiers = initialActiveEntitlementIdentifiers
         self.errorPresentationHandler = errorPresentationHandler
+        self.presentationContext = presentationContext
     }
 
 }

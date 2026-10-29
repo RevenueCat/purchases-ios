@@ -19,7 +19,7 @@ import UIKit
 import AppKit
 #endif
 
-/// The platform UI context for presenting SDK-owned UI.
+/// A platform UI context where the SDK can present UI.
 @_spi(Internal) public struct PresentationContext: Sendable {
 
     let allowsDefaultPresentationFallback: Bool
@@ -106,12 +106,13 @@ import AppKit
     #endif
 
     #if canImport(UIKit) && !os(watchOS)
+    /// The view controller suitable for presenting UI from this context.
     @available(macCatalyst 13.1, *)
     @available(macOS, unavailable)
     @available(watchOS, unavailable)
     @available(watchOSApplicationExtension, unavailable)
     @MainActor
-    var presentationViewController: UIViewController? {
+    @_spi(Internal) public var presentationViewController: UIViewController? {
         if let window = self.window {
             return window.currentPresentationViewController
         }

@@ -23,6 +23,28 @@ import UIKit
 @MainActor
 final class DefaultErrorPresenterTests: TestCase {
 
+    func testExplicitPresentationContextDoesNotFallBackToAnotherScene() throws {
+        let sceneClass = try XCTUnwrap(NSClassFromString("UIScene") as? NSObject.Type)
+        let scene = try XCTUnwrap(sceneClass.init() as? UIScene)
+        var fallbackCallCount = 0
+        var completionCount = 0
+        let presenter = DefaultErrorPresenter(
+            presentationContext: .init(scene: scene),
+            presentationContextProvider: {
+                fallbackCallCount += 1
+                return UIViewController()
+            }
+        )
+
+        presenter.present(
+            params: Self.params(),
+            completion: .init { completionCount += 1 }
+        )
+
+        XCTAssertEqual(fallbackCallCount, 0)
+        XCTAssertEqual(completionCount, 1)
+    }
+
     func testPresentCreatesAlertWithoutCompletingFlow() {
         let harness = Harness()
 
