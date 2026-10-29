@@ -33,7 +33,7 @@ import AppKit
     }
 
     /// Creates a presentation context anchored to a UIKit window.
-    public init?(window: UIWindow) {
+    @_spi(Internal) public init?(window: UIWindow) {
         guard let scene = window.windowScene else { return nil }
 
         self.scene = scene
