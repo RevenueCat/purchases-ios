@@ -19,7 +19,7 @@ import SwiftUI
 
 #if canImport(GoogleMobileAds)
 import GoogleMobileAds
-@_spi(CheckpointsInternal) import RevenueCatAdMob
+@_spi(CheckpointsInternal) @_spi(Internal) import RevenueCatAdMob
 #endif
 
 @main
