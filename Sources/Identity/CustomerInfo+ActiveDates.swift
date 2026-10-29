@@ -22,9 +22,13 @@ extension CustomerInfo {
     /// since that would allow a user to get a free trial, then go offline and keep the entitlement with no time limit.
     static let requestDateGracePeriod: DispatchTimeInterval = .days(3)
 
-    static func isDateActive(expirationDate: Date?, for requestDate: Date) -> Bool {
+    static func isDateActive(expirationDate: Date?, for requestDate: Date, store: Store) -> Bool {
         guard let expirationDate = expirationDate else {
             return true
+        }
+
+        if store == .promotional {
+            return expirationDate >= max(requestDate, Date())
         }
 
         let (referenceDate, inGracePeriod) = Self.referenceDate(for: requestDate)
@@ -38,26 +42,21 @@ extension CustomerInfo {
         return isActive
     }
 
-    func activeKeys(dates: [String: Date?]) -> Set<String> {
+    func activeKeys(dates: [String: Date?], stores: [String: Store]) -> Set<String> {
         return Set(
             dates
                 .lazy
-                .filter { self.isDateActive($1) }
+                .filter { self.isDateActive($1, store: stores[$0] ?? .unknownStore) }
                 .map { key, _ in key }
         )
     }
 
     static func extractExpirationDates(_ subscriber: CustomerInfoResponse.Subscriber) -> [String: Date?] {
-        return Dictionary(
-                    uniqueKeysWithValues: subscriber
-                        .subscriptions
-                        .lazy
-                        .map { productID, subscription in
-                            let key = Self.extractProductIDAndBasePlan(from: productID, purchase: subscription)
-                            let value = subscription.expiresDate
-                            return (key, value)
-                        }
-                )
+        return Self.extractSubscriptionValues(subscriber, \.expiresDate)
+    }
+
+    static func extractStores(_ subscriber: CustomerInfoResponse.Subscriber) -> [String: Store] {
+        return Self.extractSubscriptionValues(subscriber, \.store)
     }
 
     static func extractPurchaseDates(_ subscriber: CustomerInfoResponse.Subscriber) -> [String: Date?] {
@@ -137,6 +136,21 @@ private extension CustomerInfo {
         }
     }
 
+    static func extractSubscriptionValues<Value>(
+        _ subscriber: CustomerInfoResponse.Subscriber,
+        _ keyPath: KeyPath<CustomerInfoResponse.Subscription, Value>
+    ) -> [String: Value] {
+        return Dictionary(
+                    uniqueKeysWithValues: subscriber
+                        .subscriptions
+                        .lazy
+                        .map { productID, subscription in
+                            let key = Self.extractProductIDAndBasePlan(from: productID, purchase: subscription)
+                            return (key, subscription[keyPath: keyPath])
+                        }
+                )
+    }
+
     static func referenceDate(for requestDate: Date) -> (Date, inGracePeriod: Bool) {
         if Date().timeIntervalSince(requestDate) <= Self.requestDateGracePeriod.seconds {
             return (requestDate, true)
@@ -145,8 +159,8 @@ private extension CustomerInfo {
         }
     }
 
-    func isDateActive(_ date: Date?) -> Bool {
-        return Self.isDateActive(expirationDate: date, for: self.requestDate)
+    func isDateActive(_ date: Date?, store: Store) -> Bool {
+        return Self.isDateActive(expirationDate: date, for: self.requestDate, store: store)
     }
 
 }

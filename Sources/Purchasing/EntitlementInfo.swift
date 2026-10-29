@@ -253,7 +253,9 @@ extension PeriodType: DefaultValueProvider {
     ) {
         self.contents = .init(
             identifier: identifier,
-            isActive: CustomerInfo.isDateActive(expirationDate: entitlement.expiresDate, for: requestDate),
+            isActive: CustomerInfo.isDateActive(expirationDate: entitlement.expiresDate,
+                                                for: requestDate,
+                                                store: subscription.store),
             willRenew: Self.willRenewWithExpirationDate(expirationDate: subscription.expiresDate,
                                                         store: subscription.store,
                                                         unsubscribeDetectedAt: subscription.unsubscribeDetectedAt,
