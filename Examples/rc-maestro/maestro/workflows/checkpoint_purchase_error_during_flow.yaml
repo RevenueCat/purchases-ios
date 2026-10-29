@@ -1,5 +1,5 @@
 # The SDK presents the paywall of `donottouch_sdk_everyone`, and the purchase fails. The SDK shows its error
-# dialog and the paywall stays on screen. Closing the paywall then passes the checkpoint
+# dialog and the paywall stays on screen. Its close button then passes the checkpoint
 # with nothing obtained and no active entitlement.
 #
 # Fixtures live in the Automated SDK Tests project (6627e5bc). Do not edit them.
@@ -48,11 +48,9 @@ env:
 # The paywall is still up.
 - assertVisible: "Continue"
 
-# Swiping the sheet down closes the flow, and the checkpoint passes with nothing obtained.
-- swipe:
-    start: "50%,10%"
-    end: "50%,90%"
-    duration: 600
+# Closing the paywall ends the flow, and the checkpoint passes with nothing obtained.
+- tapOn:
+    id: "RevenueCat.NativePaywallClose"
 - extendedWaitUntil:
     visible: "callback: obtained"
     timeout: 15000
