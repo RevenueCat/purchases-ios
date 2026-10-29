@@ -252,9 +252,7 @@ final class CheckpointsManager {
                     customerInfoBefore: customerInfoBefore,
                     availableProducts: execution.availableProducts
                 ))
-            case .nothingPresented:
-                return .completed(CheckpointResult(flow: nil, customer: customerInfoBefore))
-            case .backedOut, .failed:
+            case .backedOut, .failed, .nothingPresented:
                 return .suppressed
             }
         } catch CheckpointError.operationAlreadyInProgress,

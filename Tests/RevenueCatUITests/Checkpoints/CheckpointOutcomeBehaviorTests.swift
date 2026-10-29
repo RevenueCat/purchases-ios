@@ -287,6 +287,24 @@ final class CheckpointOutcomeBehaviorTests: TestCase {
         XCTAssertEqual(errorPresenter.presentations.first?.kind, .flowResultSyncFailed)
     }
 
+    // Ad step without a registered ad presenter: do not invoke the callback or the error presenter.
+    func testAdStepWithoutAdPresenter() async {
+        let errorPresenter = ErrorPresentationRecorder()
+        let manager = CheckpointsManager(
+            resolveCheckpoint: { _, _ in
+                .matchedAd(ResolvedAdStep(adIdentifier: "ad-unit", mediator: MediatorName(rawValue: "admob")))
+            }
+        )
+
+        let result = await manager.checkpointForCallback(
+            identifier: "soft_paywall",
+            params: self.params(errorPresenter: errorPresenter)
+        )
+
+        self.assertSuppressed(result)
+        XCTAssertTrue(errorPresenter.presentations.isEmpty)
+    }
+
     // Ad that could not be shown: invoke the error presenter and do not invoke the callback, like a flow that
     // could not be shown.
     func testAdPresentationFailure() async {
