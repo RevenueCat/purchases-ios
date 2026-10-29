@@ -189,21 +189,6 @@ private extension BottomSheetSwitchTests {
                               packageValidator: factory.packageValidator)
     }
 
-    static func accessibilityButton(in view: UIView) -> NSObject? {
-        var pending: [NSObject] = [view]
-        var visited: Set<ObjectIdentifier> = []
-        while let element = pending.popLast() {
-            guard visited.insert(ObjectIdentifier(element)).inserted else { continue }
-            if element.accessibilityTraits.contains(.button),
-               element.accessibilityLabel == "Purchase from sheet" {
-                return element
-            }
-            let children = element.accessibilityElements ?? (element as? UIView)?.subviews ?? []
-            pending.append(contentsOf: children.compactMap { $0 as? NSObject })
-        }
-        return nil
-    }
-
     static func host<Content: View>(_ view: Content) -> (UIWindow, UIView) {
         let controller = UIHostingController(rootView: view)
         let window = UIWindow(frame: CGRect(origin: .zero, size: CGSize(width: 400, height: 600)))
@@ -223,24 +208,13 @@ private extension BottomSheetSwitchTests {
 @available(iOS 15.0, *)
 extension BottomSheetSwitchTests {
 
-    func testPW11HostedSheetOwnsPurchaseAndVariablesWithoutChangingTabMemory() async throws {
+    func testPW11SheetOwnsSelectionAndVariablesWithoutChangingTabMemory() async throws {
         let fixture = try PackageResolutionTestFixture(competingDefaults: true)
         let validator = fixture.state.viewModelFactory.packageValidator
         XCTAssertFalse(validator.packages.contains { $0.identifier == "annual_xl" })
         XCTAssertTrue(fixture.state.packages.contains { $0.identifier == "annual_xl" },
                       "Sheet packages must still participate in offer loading")
         XCTAssertEqual(validator.defaultSelectedPackage(in: .provisional)?.identifier, "$rc_monthly")
-        let purchased = expectation(description: "Sheet purchase button invoked the purchase callback")
-        var purchasedPackageIdentifier: String?
-        let purchaseHandler = PurchaseHandler.default(
-            performPurchase: { package in
-                purchasedPackageIdentifier = package.identifier
-                purchased.fulfill()
-                return (userCancelled: true, error: nil)
-            },
-            customerInfo: TestData.customerInfo,
-            purchasesAreCompletedBy: .myApp
-        )
         let holder = SheetHolder()
         let button = try XCTUnwrap(fixture.state.rootViewModel.stackViewModel.viewModels.compactMap {
             if case .button(let button) = $0, button.sheetStackViewModel != nil { return button }
@@ -252,8 +226,8 @@ extension BottomSheetSwitchTests {
             sheetStackViewModel: try XCTUnwrap(button.sheetStackViewModel),
             packageValidator: button.sheetPackageValidator
         )
-        let host = PackageResolutionSheetHost(fixture: fixture, holder: holder, purchaseHandler: purchaseHandler)
-        let (window, hostedView) = Self.host(host)
+        let host = PackageResolutionSheetHost(fixture: fixture, holder: holder)
+        let (window, _) = Self.host(host)
         defer {
             holder.openSheet = nil
             window.isHidden = true
@@ -279,11 +253,6 @@ extension BottomSheetSwitchTests {
         )
         XCTAssertEqual(fixture.context.variableContext.exactMostExpensivePricePerMonth,
                        variables.exactMostExpensivePricePerMonth)
-        let purchaseButton = try XCTUnwrap(Self.accessibilityButton(in: hostedView))
-        XCTAssertTrue(purchaseButton.accessibilityActivate())
-        await fulfillment(of: [purchased], timeout: 2)
-        XCTAssertEqual(purchasedPackageIdentifier, "annual_xl")
-
         // Replacing the active sheet takes ownership before its content mounts. Updates from
         // the outgoing sheet (including an animation's last render) cannot overwrite the new one.
         let outgoingContext = try XCTUnwrap(fixture.context.presentedSheetContext)
@@ -309,11 +278,10 @@ private struct PackageResolutionSheetHost: View {
 
     let fixture: PackageResolutionTestFixture
     @ObservedObject var holder: SheetHolder
-    let purchaseHandler: PurchaseHandler
 
     var body: some View {
         VStack {
-            self.fixture.view(purchaseHandler: self.purchaseHandler)
+            self.fixture.view()
             SheetOpenProbe(holder: self.holder)
         }
             .modifier(RootPackageSelectionSheetModifier(
@@ -321,7 +289,7 @@ private struct PackageResolutionSheetHost: View {
                     .defaultSelectedPackage(in: .provisional)
             ))
             .environmentObject(self.fixture.context)
-            .environmentObject(self.purchaseHandler)
+            .environmentObject(PurchaseHandler.mock())
             .environmentObject(IntroOfferEligibilityContext(introEligibilityChecker: BaseSnapshotTest.eligibleChecker))
             .environmentObject(PaywallPromoOfferCache(subscriptionHistoryTracker: SubscriptionHistoryTracker()))
     }

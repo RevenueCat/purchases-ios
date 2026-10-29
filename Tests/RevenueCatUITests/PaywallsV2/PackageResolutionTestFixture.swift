@@ -97,7 +97,7 @@ struct PackageResolutionTestFixture {
         )
     }
 
-    func view(purchaseHandler: PurchaseHandler = .mock()) -> some View {
+    func view() -> some View {
         let intro = IntroOfferEligibilityContext(introEligibilityChecker: BaseSnapshotTest.eligibleChecker)
         return LoadedPaywallsV2View(
             introOfferEligibilityContext: intro,
@@ -107,7 +107,7 @@ struct PackageResolutionTestFixture {
             workflowDefaultPackage: nil,
             onDismiss: {}
         )
-        .environmentObject(purchaseHandler)
+        .environmentObject(PurchaseHandler.mock())
         .environmentObject(intro)
         .environmentObject(PaywallPromoOfferCache(subscriptionHistoryTracker: SubscriptionHistoryTracker()))
         .environment(\.screenCondition, .compact)

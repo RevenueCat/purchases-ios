@@ -26,7 +26,11 @@ struct PaywallFixturesApp: App {
     init() {
         if ProcessInfo.processInfo.environment["PAYWALL_FIXTURE"] != CustomerCenterPreviewFixture.name
             || ProcessInfo.processInfo.environment["PREVIEW_CONFIGURE_SDK"] == "1" {
-            Purchases.configure(withAPIKey: "appl_paywallFixtures")
+            let configuration = Configuration.builder(withAPIKey: "appl_paywallFixtures")
+            if ProcessInfo.processInfo.environment["PAYWALL_FIXTURE"] == PaywallFixture.competingSheetDefaults.rawValue {
+                _ = configuration.with(purchasesAreCompletedBy: .myApp, storeKitVersion: .storeKit2)
+            }
+            Purchases.configure(with: configuration)
         }
     }
 
