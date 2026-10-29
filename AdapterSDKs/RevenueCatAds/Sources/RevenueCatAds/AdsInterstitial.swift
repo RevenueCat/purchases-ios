@@ -46,8 +46,9 @@ import UIKit
     private var loadContinuation: CheckedContinuation<Void, Error>?
     private var impressionRecorded = false
 
+    // The whole type is `@_spi(Experimental)`, so this init is not yet part of the stable binary API.
     /// Creates an interstitial for the given placement. Requires ``RCAds/configure(with:)`` before ``load()``.
-    public convenience init(placementID: String) {
+    public convenience init(placementID: String) { // swiftlint:disable:this no_new_public_inits
         self.init(placementID: placementID, moduleProvider: { RCAds.module })
     }
 
