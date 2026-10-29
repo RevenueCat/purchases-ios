@@ -1545,6 +1545,8 @@
 		73A640000000000000000004 /* WorkflowPresentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73A640000000000000000014 /* WorkflowPresentation.swift */; };
 		73A640000000000000000020 /* FlowPresentationMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73A640000000000000000021 /* FlowPresentationMode.swift */; };
 		B3A1C0DE00000000000000A1 /* CheckpointGateContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3A1C0DE00000000000000B1 /* CheckpointGateContext.swift */; };
+		B3A1C0DE00000000000000A2 /* WorkflowGateEvaluator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3A1C0DE00000000000000B2 /* WorkflowGateEvaluator.swift */; };
+		B3A1C0DE00000000000000A3 /* CheckpointWorkflowGateController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3A1C0DE00000000000000B3 /* CheckpointWorkflowGateController.swift */; };
 		73A640000000000000000005 /* CheckpointsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73A640000000000000000015 /* CheckpointsManager.swift */; };
 		73A680000000000000000001 /* CheckpointPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73A680000000000000000011 /* CheckpointPresenter.swift */; };
 		73A680000000000000000003 /* PaywallPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73A680000000000000000013 /* PaywallPresenter.swift */; };
@@ -2252,6 +2254,8 @@
 		73A640000000000000000014 /* WorkflowPresentation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkflowPresentation.swift; sourceTree = "<group>"; };
 		73A640000000000000000021 /* FlowPresentationMode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlowPresentationMode.swift; sourceTree = "<group>"; };
 		B3A1C0DE00000000000000B1 /* CheckpointGateContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckpointGateContext.swift; sourceTree = "<group>"; };
+		B3A1C0DE00000000000000B2 /* WorkflowGateEvaluator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkflowGateEvaluator.swift; sourceTree = "<group>"; };
+		B3A1C0DE00000000000000B3 /* CheckpointWorkflowGateController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckpointWorkflowGateController.swift; sourceTree = "<group>"; };
 		73A640000000000000000015 /* CheckpointsManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckpointsManager.swift; sourceTree = "<group>"; };
 		73A680000000000000000011 /* CheckpointPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckpointPresenter.swift; sourceTree = "<group>"; };
 		73A680000000000000000013 /* PaywallPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallPresenter.swift; sourceTree = "<group>"; };
@@ -4030,6 +4034,8 @@
 				73A640000000000000000021 /* FlowPresentationMode.swift */,
 				73A640000000000000000013 /* WorkflowPresenter.swift */,
 				B3A1C0DE00000000000000B1 /* CheckpointGateContext.swift */,
+				B3A1C0DE00000000000000B2 /* WorkflowGateEvaluator.swift */,
+				B3A1C0DE00000000000000B3 /* CheckpointWorkflowGateController.swift */,
 				73A640000000000000000015 /* CheckpointsManager.swift */,
 				73A680000000000000000013 /* PaywallPresenter.swift */,
 				73A690000000000000000011 /* ErrorPresenter.swift */,
@@ -9288,6 +9294,8 @@
 				73A640000000000000000020 /* FlowPresentationMode.swift in Sources */,
 				73A640000000000000000003 /* WorkflowPresenter.swift in Sources */,
 				B3A1C0DE00000000000000A1 /* CheckpointGateContext.swift in Sources */,
+				B3A1C0DE00000000000000A2 /* WorkflowGateEvaluator.swift in Sources */,
+				B3A1C0DE00000000000000A3 /* CheckpointWorkflowGateController.swift in Sources */,
 				73A640000000000000000005 /* CheckpointsManager.swift in Sources */,
 				73A680000000000000000003 /* PaywallPresenter.swift in Sources */,
 				73A690000000000000000001 /* ErrorPresenter.swift in Sources */,

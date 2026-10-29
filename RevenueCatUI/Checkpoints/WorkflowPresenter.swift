@@ -106,13 +106,18 @@ final class WorkflowPresenter: NSObject, WorkflowPresenterType {
     }
 
     private let presentationStarter: PresentationStarter?
+    private let appUserIDProvider: @MainActor () -> String
     private var presentationState: PresentationState?
     private var pendingContinuation: Continuation?
     private weak var presentedViewController: PaywallViewController?
     private var activeErrorPresentation: ActiveErrorPresentation?
 
-    init(presentationStarter: PresentationStarter? = nil) {
+    init(
+        presentationStarter: PresentationStarter? = nil,
+        appUserIDProvider: @escaping @MainActor () -> String = { "" }
+    ) {
         self.presentationStarter = presentationStarter
+        self.appUserIDProvider = appUserIDProvider
         super.init()
     }
 
@@ -333,6 +338,7 @@ extension WorkflowPresenter {
         return CheckpointGateContext(
             initialAppUserID: presentation.initialAppUserID,
             initialActiveEntitlementIdentifiers: presentation.initialActiveEntitlementIdentifiers,
+            currentAppUserID: self.appUserIDProvider,
             onOutcomeChanged: { [weak self] outcome in
                 guard let self, self.presentationState?.id == presentationID else { return }
                 self.stage(.gateOutcome(outcome))
@@ -479,6 +485,8 @@ extension WorkflowPresenter: PaywallViewControllerDelegate {}
 @MainActor
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 final class WorkflowPresenter: WorkflowPresenterType {
+
+    init(appUserIDProvider: @escaping @MainActor () -> String = { "" }) {}
 
     func present(_ presentation: WorkflowPresentationRequest) async throws -> CheckpointPresentationOutcome {
         return .failed

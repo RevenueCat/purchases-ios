@@ -40,8 +40,8 @@ struct HardPaywallUseCaseView: View {
 
                     Text(
                         self.hasAccess
-                            ? "This checkpoint reported an active entitlement, so the gated content is available."
-                            : "Only a result containing an active entitlement unlocks the content."
+                            ? "The checkpoint callback ran, so the gated content is available."
+                            : "Remote hard gating suppresses the callback until any configured entitlement is active."
                     )
                     .foregroundStyle(.secondary)
                 }
@@ -80,15 +80,10 @@ struct HardPaywallUseCaseView: View {
             errorPresenter: self.model.localErrorPresenter
         ) { result in
             let obtained = result.flow?.obtainedEntitlements.map(\.entitlementInfo.identifier).sorted() ?? []
-            guard !obtained.isEmpty else {
-                self.status = result.flow == nil
-                    ? "No completed flow. Content remains locked."
-                    : "Checkpoint completed without an active entitlement. Content remains locked."
-                return
-            }
-
             self.hasAccess = true
-            self.status = "Obtained: \(obtained.joined(separator: ", ")). Content unlocked."
+            self.status = obtained.isEmpty
+                ? "Checkpoint callback ran. Content unlocked."
+                : "Obtained: \(obtained.joined(separator: ", ")). Content unlocked."
         }
     }
 
