@@ -207,7 +207,7 @@ final class WorkflowPaywallViewTests: TestCase {
         )
 
         expect(error?.code) == ErrorCode.configurationError.rawValue
-        expect(error?.localizedDescription) == "Offering 'missing_offering' not found for step 'step_initial'."
+        expect(error?.localizedDescription) == Self.offeringNotFoundMessage(stepID: "step_initial")
     }
 
     func testPresentationErrorForReachedSecondStepWithUnavailableOffering() throws {
@@ -219,7 +219,7 @@ final class WorkflowPaywallViewTests: TestCase {
         let error = WorkflowPaywallView.presentationError(for: "step_terminal", in: context)
 
         expect(error?.code) == ErrorCode.configurationError.rawValue
-        expect(error?.localizedDescription) == "Offering 'missing_offering' not found for step 'step_terminal'."
+        expect(error?.localizedDescription) == Self.offeringNotFoundMessage(stepID: "step_terminal")
     }
 
     func testPresentationErrorForReachedStepWithoutScreen() throws {
@@ -615,6 +615,13 @@ extension WorkflowPaywallViewTests {
 private extension WorkflowPaywallViewTests {
 
     typealias PackageSpec = (id: String, isDefault: Bool)
+
+    static func offeringNotFoundMessage(stepID: String) -> String {
+        return "Offering 'missing_offering' not found for step '\(stepID)' of workflow 'wf_test'. " +
+            "The offering is either missing from the offerings response, or was dropped because none of " +
+            "its packages resolved to a product fetched from the store. Check the logs for a " +
+            "\"No packages could be found for offering\" log message."
+    }
 
     static func makeContext(
         singleStepFallbackId: String?,
@@ -1090,7 +1097,7 @@ extension WorkflowPaywallViewTests {
             currentStepId: "step_initial",
             screenId: "screen_initial"
         )
-        let expectedLog = "\(expectedMessage): Offering 'missing_offering' not found for step 'step_initial'."
+        let expectedLog = "\(expectedMessage): \(Self.offeringNotFoundMessage(stepID: "step_initial"))"
         self.logger.verifyMessageWasLogged(
             expectedLog,
             level: .error,
@@ -1153,7 +1160,7 @@ extension WorkflowPaywallViewTests {
             screenId: "screen_terminal"
         )
         self.logger.verifyMessageWasLogged(
-            "\(expectedMessage): Offering 'missing_offering' not found for step 'step_terminal'.",
+            "\(expectedMessage): \(Self.offeringNotFoundMessage(stepID: "step_terminal"))",
             level: .error,
             expectedCount: 1
         )
@@ -1183,7 +1190,7 @@ extension WorkflowPaywallViewTests {
             currentStepId: "step_terminal",
             screenId: "screen_terminal"
         )
-        let expectedLog = "\(expectedMessage): Offering 'missing_offering' not found for step 'step_terminal'."
+        let expectedLog = "\(expectedMessage): \(Self.offeringNotFoundMessage(stepID: "step_terminal"))"
         self.logger.verifyMessageWasLogged(
             expectedLog,
             level: .error,

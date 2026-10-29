@@ -57,11 +57,14 @@ struct StackComponentView: View {
     @Environment(\.paywallHeroLayout)
     private var heroLayout
 
+    @Environment(\.paywallHeroMediaIdentifier)
+    private var heroMediaIdentifier
+
     private var safeAreaExemptChildIndex: Int? {
         if let heroLayout = self.heroLayout {
             return heroLayout.exemptChildIndicesByStack[ObjectIdentifier(self.viewModel)]
         }
-        return self.viewModel.firstChildIsFullWidthMedia ? 0 : nil
+        return self.viewModel.firstChildLeadsToHero(self.heroMediaIdentifier) ? 0 : nil
     }
 
     @Environment(\.paywallRootStackIsZLayer)
