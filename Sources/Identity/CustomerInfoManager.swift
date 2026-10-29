@@ -296,7 +296,7 @@ class CustomerInfoManager {
         }
 
         self.sendUpdateIfChanged(customerInfo: customerInfo, appUserID: appUserID)
-        self.armEntitlementExpiration(with: customerInfo, appUserID: appUserID)
+        self.trackEntitlementExpirations(of: customerInfo, appUserID: appUserID)
     }
 
     func clearCustomerInfoCache(forAppUserID appUserID: String) {
@@ -422,20 +422,24 @@ extension CustomerInfoManager {
     /// Starts (or restarts) tracking expirations of `customerInfo`'s active entitlements.
     /// `cache(customerInfo:appUserID:)` does this automatically; this exists for `CustomerInfo`
     /// that was read from cache without going through it.
-    func armEntitlementExpiration(with customerInfo: CustomerInfo, appUserID: String) {
+    func trackEntitlementExpirations(of customerInfo: CustomerInfo, appUserID: String) {
         #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
         guard !self.systemInfo.dangerousSettings.customEntitlementComputation,
               !self.systemInfo.dangerousSettings.uiPreviewMode else {
             return
         }
-        self.entitlementExpirationScheduler.arm(with: customerInfo, appUserID: appUserID)
+        // A late response for a user that is no longer current must not replace the current user's tracking.
+        if let currentAppUserID = self.currentUserProvider?.currentAppUserID, currentAppUserID != appUserID {
+            return
+        }
+        self.entitlementExpirationScheduler.track(customerInfo, appUserID: appUserID)
         #endif
     }
 
     /// Re-checks the last tracked `CustomerInfo` against the wall clock. Call on foreground: the
     /// sleeping task does not advance while the process is suspended.
-    func rearmEntitlementExpiration() {
-        self.entitlementExpirationScheduler.rearm()
+    func checkEntitlementExpirations() {
+        self.entitlementExpirationScheduler.checkExpirations()
     }
 
     /// Sends observers the cached `CustomerInfo` decoded again now, which is what `customerInfo()`
