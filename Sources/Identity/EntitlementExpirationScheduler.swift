@@ -12,14 +12,12 @@
 
 import Foundation
 
-/// Async sleep abstraction used by ``EntitlementExpirationScheduler``.
-/// Production wiring is ``EntitlementExpirationScheduler/TaskSleeper``.
-protocol EntitlementExpirationSleeper: Sendable {
-    func sleep(seconds: TimeInterval) async throws
-}
-
-/// Watches the active entitlements of the most recent `CustomerInfo` and reports the moment
-/// their `expirationDate` passes according to the device clock.
+/// Watches the active promotional entitlements of the most recent `CustomerInfo` and reports the
+/// moment their `expirationDate` passes according to the device clock.
+///
+/// Only promotional entitlements are tracked because they are the only ones whose `isActive` ignores
+/// the request-date grace period (see `CustomerInfo.isDateActive`), so re-decoding the cached
+/// `CustomerInfo` after they expire is enough to make them inactive.
 ///
 /// The scheduler is purely local: it never touches the network. It arms a single sleeping `Task`
 /// for the earliest future expiration, re-evaluates when it wakes, and reports every entitlement
@@ -31,7 +29,11 @@ protocol EntitlementExpirationSleeper: Sendable {
 /// ``rearm()`` on foreground to catch expirations that happened while backgrounded.
 final class EntitlementExpirationScheduler {
 
-    typealias ExpirationHandler = @Sendable (_ appUserID: String, _ identifiers: [String]) -> Void
+    typealias ExpirationHandler = @Sendable (_ appUserID: String) -> Void
+
+    /// Promotional grants can expire centuries away; sleeping in bounded steps keeps the
+    /// nanosecond conversion in range and simply re-evaluates when each step ends.
+    static let maxSleepInterval: DispatchTimeInterval = .days(1)
 
     fileprivate struct Key: Hashable {
         let identifier: String
@@ -46,11 +48,11 @@ final class EntitlementExpirationScheduler {
         var handler: ExpirationHandler?
     }
 
-    private let sleeper: EntitlementExpirationSleeper
+    private let sleeper: AsyncSleeper
     private let dateProvider: DateProvider
     private let state: Atomic<State> = .init(.init())
 
-    init(sleeper: EntitlementExpirationSleeper = TaskSleeper(),
+    init(sleeper: AsyncSleeper = TaskSleeper(),
          dateProvider: DateProvider = DateProvider()) {
         self.sleeper = sleeper
         self.dateProvider = dateProvider
@@ -60,7 +62,7 @@ final class EntitlementExpirationScheduler {
         self.state.value.task?.cancel()
     }
 
-    /// Invoked off the lock, on an arbitrary thread, with the identifiers that just expired.
+    /// Invoked off the lock, on an arbitrary thread, after at least one entitlement expired.
     var handler: ExpirationHandler? {
         get { self.state.value.handler }
         set { self.state.modify { $0.handler = newValue } }
@@ -83,13 +85,6 @@ final class EntitlementExpirationScheduler {
         self.evaluate { _ in }
     }
 
-    func reset() {
-        self.state.modify {
-            $0.task?.cancel()
-            $0 = .init(handler: $0.handler)
-        }
-    }
-
     // Visible for tests
     var isArmed: Bool { self.state.value.task != nil }
 
@@ -108,8 +103,9 @@ private extension EntitlementExpirationScheduler {
 
             guard let appUserID = state.appUserID, let customerInfo = state.customerInfo else { return nil }
 
-            let keys = Set(customerInfo.entitlements.active.compactMap { identifier, entitlement in
-                entitlement.expirationDate.map { Key(identifier: identifier, expirationDate: $0) }
+            let keys = Set(customerInfo.entitlements.active.compactMap { identifier, entitlement -> Key? in
+                guard entitlement.store == .promotional else { return nil }
+                return entitlement.expirationDate.map { Key(identifier: identifier, expirationDate: $0) }
             })
             state.notified.formIntersection(keys)
 
@@ -127,28 +123,16 @@ private extension EntitlementExpirationScheduler {
 
         if let fired {
             Logger.debug(Strings.customerInfo.entitlements_reached_expiration(identifiers: fired.identifiers))
-            fired.handler(fired.appUserID, fired.identifiers)
+            fired.handler(fired.appUserID)
         }
     }
 
     func makeTask(firingAt date: Date, from now: Date) -> Task<Void, Never> {
         return Task { [weak self, sleeper] in
-            try? await sleeper.sleep(seconds: date.timeIntervalSince(now))
+            try? await sleeper.sleep(seconds: min(date.timeIntervalSince(now), Self.maxSleepInterval.seconds))
             guard !Task.isCancelled else { return }
             self?.rearm()
         }
-    }
-
-}
-
-extension EntitlementExpirationScheduler {
-
-    struct TaskSleeper: EntitlementExpirationSleeper {
-
-        func sleep(seconds: TimeInterval) async throws {
-            try await Task.sleep(nanoseconds: UInt64(max(0, seconds) * 1_000_000_000))
-        }
-
     }
 
 }

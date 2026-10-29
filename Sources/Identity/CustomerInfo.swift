@@ -31,7 +31,7 @@ public typealias ProductIdentifier = String
 
     /// All *subscription* product identifiers with expiration dates in the future.
     @objc public var activeSubscriptions: Set<ProductIdentifier> {
-        self.activeKeys(dates: self.expirationDatesByProductId)
+        self.activeKeys(dates: self.expirationDatesByProductId, stores: self.storesByProductId)
     }
 
     /// All product identifiers purchases by the user regardless of expiration.
@@ -253,6 +253,7 @@ public typealias ProductIdentifier = String
             originalApplicationVersion: nil,
             managementURL: managementURL,
             expirationDatesByProductId: expirationDatesByProductId,
+            storesByProductId: [:],
             purchaseDatesByProductId: purchaseDatesByProductId,
             allPurchasedProductIdentifiers: allPurchasedProductIds,
             subscriptionsByProductIdentifier: [:]
@@ -277,6 +278,7 @@ public typealias ProductIdentifier = String
             withSubscriptionsData: subscriber.nonSubscriptions
         )
         let expirationDatesByProductId = Self.extractExpirationDates(subscriber)
+        let storesByProductId = Self.extractStores(subscriber)
         let purchaseDatesByProductId = Self.extractPurchaseDates(subscriber)
 
         let allPurchasedProductIdentifiers = Set(expirationDatesByProductId.keys)
@@ -324,6 +326,7 @@ public typealias ProductIdentifier = String
             originalApplicationVersion: subscriber.originalApplicationVersion,
             managementURL: subscriber.managementUrl,
             expirationDatesByProductId: expirationDatesByProductId,
+            storesByProductId: storesByProductId,
             purchaseDatesByProductId: purchaseDatesByProductId,
             allPurchasedProductIdentifiers: allPurchasedProductIdentifiers,
             subscriptionsByProductIdentifier: subscriptionsByProductIdentifier
@@ -341,6 +344,7 @@ public typealias ProductIdentifier = String
         originalApplicationVersion: String?,
         managementURL: URL?,
         expirationDatesByProductId: [String: Date?],
+        storesByProductId: [String: Store],
         purchaseDatesByProductId: [String: Date?],
         allPurchasedProductIdentifiers: Set<String>,
         subscriptionsByProductIdentifier: [String: SubscriptionInfo]
@@ -355,12 +359,14 @@ public typealias ProductIdentifier = String
         self.originalApplicationVersion = originalApplicationVersion
         self.managementURL = managementURL
         self.expirationDatesByProductId = expirationDatesByProductId
+        self.storesByProductId = storesByProductId
         self.purchaseDatesByProductId = purchaseDatesByProductId
         self.allPurchasedProductIdentifiers = allPurchasedProductIdentifiers
         self.subscriptionsByProductIdentifier = subscriptionsByProductIdentifier
     }
 
     private let expirationDatesByProductId: [String: Date?]
+    private let storesByProductId: [String: Store]
     private let purchaseDatesByProductId: [String: Date?]
 }
 

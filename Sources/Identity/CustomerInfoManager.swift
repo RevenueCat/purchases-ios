@@ -61,7 +61,7 @@ class CustomerInfoManager {
 
         self.data = .init(.init())
 
-        self.entitlementExpirationScheduler.handler = { [weak self] appUserID, _ in
+        self.entitlementExpirationScheduler.handler = { [weak self] appUserID in
             self?.handleEntitlementsExpired(appUserID: appUserID)
         }
     }
@@ -438,16 +438,16 @@ extension CustomerInfoManager {
         self.entitlementExpirationScheduler.rearm()
     }
 
-    /// Re-evaluates the last sent `CustomerInfo` against the device clock so observers see the expired
-    /// entitlements as inactive, exactly as they would after a network refresh.
-    ///
-    /// The copy is intentionally not written to `DeviceCache`: persisting a device-generated `requestDate`
-    /// would extend the offline grace period (see `CustomerInfo.requestDateGracePeriod`) past what the
-    /// backend last attested.
+    /// Sends observers the cached `CustomerInfo` decoded again now, which is what `customerInfo()`
+    /// would return: its promotional entitlements are evaluated against the device clock.
     private func handleEntitlementsExpired(appUserID: String) {
-        let now = self.dateProvider.now()
+        // Read outside of the lock: `DeviceCache` must not be accessed while holding `data`.
+        guard let customerInfo = try? self.cachedCustomerInfo(appUserID: appUserID) else { return }
 
-        self.sendUpdateIfChanged(appUserID: appUserID) { $0?.copy(with: now) }
+        self.sendUpdateIfChanged(appUserID: appUserID) { lastSentCustomerInfo in
+            // A different `lastSentCustomerInfo` means a newer one landed in between and already superseded this.
+            return lastSentCustomerInfo == customerInfo ? customerInfo : nil
+        }
     }
 
 }
