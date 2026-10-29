@@ -111,12 +111,13 @@ final class PrebidInterstitial: NSObject, AdModuleInterstitial {
         return AdsError(code: .loadFailed, message: "The ad failed to load.", underlyingError: error)
     }
 
-    private nonisolated func deliver(_ event: AdModuleEvent) {
+    private nonisolated func deliver(_ events: AdModuleEvent...) {
         // Prebid documents main-thread delivery; hop rather than trap if that ever changes.
+        // Events passed together share one hop so their order survives it.
         if Thread.isMainThread {
-            MainActor.assumeIsolated { self.onEvent?(event) }
+            MainActor.assumeIsolated { events.forEach { self.onEvent?($0) } }
         } else {
-            Task { @MainActor in self.onEvent?(event) }
+            Task { @MainActor in events.forEach { self.onEvent?($0) } }
         }
     }
 
@@ -134,10 +135,9 @@ extension PrebidInterstitial: InterstitialAdUnitDelegate {
     }
 
     nonisolated func interstitialWillPresentAd(_ interstitial: InterstitialRenderingAdUnit) {
-        self.deliver(.presented)
         // Prebid Mobile 3.3.1 fires its impression trackers internally on display but never surfaces
         // an impression callback for rendering interstitials, so presentation is the closest signal.
-        self.deliver(.impression)
+        self.deliver(.presented, .impression)
     }
 
     nonisolated func interstitialDidClickAd(_ interstitial: InterstitialRenderingAdUnit) {
