@@ -11,6 +11,7 @@
 //
 //  Created by RevenueCat.
 
+@preconcurrency import Combine
 import Foundation
 import Nimble
 import XCTest
@@ -395,6 +396,68 @@ class WorkflowManagerTests: TestCase {
         expect(self.mockWebBundleURLBatcher.invokedPublishCount) == 1
     }
 
+    func testPublishWebBundleURLsDoesNotPublishFallbackAssetsForPublishedWorkflowOffering() async throws {
+        guard #available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *) else {
+            throw XCTSkip("publishWebBundleURLs requires iOS 15+")
+        }
+        let eventBus = WebBundleEventBus()
+        let manager = WorkflowManager(
+            workflowsConfigProvider: self.mockProvider,
+            paywallCache: self.mockPaywallCache,
+            operationDispatcher: self.mockOperationDispatcher,
+            webBundleURLBatcher: WebBundleURLBatcher(eventBus: eventBus)
+        )
+        self.mockProvider.stubbedWorkflowIdForOfferingId = ["workflow": "wf_1"]
+        self.mockProvider.stubbedGetWorkflowResult = ["wf_1": try Self.workflowDataResult(id: "wf_1")]
+        let offerings = try Self.workflowAndInlineOfferings()
+        var receivedEvents: [WebBundleEvent] = []
+        var cancellables: Set<AnyCancellable> = []
+        eventBus.publisher
+            .dropFirst()
+            .sink { receivedEvents.append($0) }
+            .store(in: &cancellables)
+
+        await manager.publishWebBundleURLs(offerings: offerings)
+        receivedEvents.removeAll()
+        await manager.publishWebBundleURLs(offerings: offerings)
+
+        expect(Self.webBundleURLStrings(in: receivedEvents)) == ["https://example.com/inline"]
+    }
+
+    func testPublishWebBundleURLsDoesNotPublishFallbackAssetsForClaimedWorkflowOffering() async throws {
+        guard #available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *) else {
+            throw XCTSkip("publishWebBundleURLs requires iOS 15+")
+        }
+        let provider = BlockingWorkflowPrewarmingDecodeProvider(
+            result: try Self.workflowDataResult(id: "wf_1"),
+            workflowIdByOfferingId: ["workflow": "wf_1"]
+        )
+        let eventBus = WebBundleEventBus()
+        let manager = WorkflowManager(
+            workflowsConfigProvider: provider,
+            paywallCache: self.mockPaywallCache,
+            operationDispatcher: self.mockOperationDispatcher,
+            webBundleURLBatcher: WebBundleURLBatcher(eventBus: eventBus)
+        )
+        let offerings = try Self.workflowAndInlineOfferings()
+        var receivedEvents: [WebBundleEvent] = []
+        var cancellables: Set<AnyCancellable> = []
+        eventBus.publisher
+            .dropFirst()
+            .sink { receivedEvents.append($0) }
+            .store(in: &cancellables)
+        let firstPublication = Task {
+            await manager.publishWebBundleURLs(offerings: offerings)
+        }
+
+        await expect(provider.decodeCount).toEventually(equal(1))
+        await manager.publishWebBundleURLs(offerings: offerings)
+
+        expect(Self.webBundleURLStrings(in: receivedEvents)) == ["https://example.com/inline"]
+        await provider.releaseDecodes()
+        await firstPublication.value
+    }
+
     func testPublishWebBundleURLsPublishesConcurrentWorkflowOnlyOncePerConfigGeneration() async throws {
         guard #available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *) else {
             throw XCTSkip("publishWebBundleURLs requires iOS 15+")
@@ -611,6 +674,73 @@ class WorkflowManagerTests: TestCase {
         )
     }
 
+    private static func workflowAndInlineOfferings() throws -> Offerings {
+        let workflowOffering = try self.offering(
+            id: "workflow",
+            webViewURL: "https://example.com/workflow-fallback"
+        )
+        let inlineOffering = try self.offering(
+            id: "inline",
+            webViewURL: "https://example.com/inline"
+        )
+        let response = OfferingsResponse(
+            currentOfferingId: workflowOffering.identifier,
+            offerings: [],
+            placements: nil,
+            targeting: nil,
+            uiConfig: nil
+        )
+        return Offerings(
+            offerings: [
+                workflowOffering.identifier: workflowOffering,
+                inlineOffering.identifier: inlineOffering
+            ],
+            currentOfferingID: workflowOffering.identifier,
+            placements: .init(
+                fallbackOfferingId: nil,
+                offeringIdsByPlacement: ["inline": inlineOffering.identifier]
+            ),
+            targeting: nil,
+            contents: .init(response: response, httpResponseOriginalSource: .mainServer),
+            loadedFromDiskCache: false
+        )
+    }
+
+    private static func offering(id: String, webViewURL: String) throws -> Offering {
+        let components: [PaywallComponent] = [
+            .webView(.init(id: "web", protocolVersion: 1, url: webViewURL))
+        ]
+        let paywallComponents = Offering.PaywallComponents(
+            uiConfig: .empty,
+            data: .init(
+                templateName: "test",
+                assetBaseURL: try XCTUnwrap(URL(string: "https://assets.example.com")),
+                componentsConfig: .init(base: .init(
+                    stack: .init(components: components),
+                    stickyFooter: nil,
+                    background: .color(.init(light: .hex("#ffffff")))
+                )),
+                componentsLocalizations: [:],
+                revision: 1,
+                defaultLocaleIdentifier: "en_US"
+            )
+        )
+        return Offering(
+            identifier: id,
+            serverDescription: id,
+            paywallComponents: paywallComponents,
+            availablePackages: [],
+            webCheckoutUrl: nil
+        )
+    }
+
+    private static func webBundleURLStrings(in events: [WebBundleEvent]) -> [String] {
+        return events.flatMap { event -> [String] in
+            guard case let .receivedAssetURLs(urls) = event else { return [] }
+            return urls.map(\.url.absoluteString)
+        }
+    }
+
     private static func workflowDataResult(id: String) throws -> WorkflowDataResult {
         return .init(workflow: try self.publishedWorkflow(id: id), uiConfig: .empty, enrolledVariants: nil)
     }
@@ -669,6 +799,7 @@ private final class BlockingWorkflowPrewarmingDecodeProvider: WorkflowsConfigPro
     private let activeDecodeCounter: Atomic<Int> = .init(0)
     private let maximumActiveDecodeCounter: Atomic<Int> = .init(0)
     private let generation: Atomic<Int> = .init(0)
+    private let workflowIdByOfferingId: [String: String]?
 
     var decodeCount: Int { self.decodeCounter.value }
     var maxConcurrentDecodeCount: Int { self.maximumActiveDecodeCounter.value }
@@ -677,11 +808,17 @@ private final class BlockingWorkflowPrewarmingDecodeProvider: WorkflowsConfigPro
         set { self.generation.value = newValue }
     }
 
-    init(result: WorkflowDataResult) {
+    init(result: WorkflowDataResult, workflowIdByOfferingId: [String: String]? = nil) {
         self.result = result
+        self.workflowIdByOfferingId = workflowIdByOfferingId
     }
 
-    func workflowId(forOfferingId offeringId: String) async -> String? { self.result.workflow.id }
+    func workflowId(forOfferingId offeringId: String) async -> String? {
+        if let workflowIdByOfferingId {
+            return workflowIdByOfferingId[offeringId]
+        }
+        return self.result.workflow.id
+    }
     func workflowIds() async -> [String] { [] }
 
     func getWorkflow(workflowId: String) async -> Result<WorkflowDataResult, WorkflowResolutionError> {
