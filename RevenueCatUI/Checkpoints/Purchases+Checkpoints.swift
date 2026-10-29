@@ -126,6 +126,7 @@ private extension Purchases {
                 return try await self.customerInfo(fetchPolicy: .cachedOrFetched)
             },
             cachedCustomerInfoProvider: { [weak self] in self?.cachedCustomerInfo },
+            appUserIDProvider: { [weak self] in self?.appUserID ?? "" },
             preferredUILocaleProvider: { [weak self] in self?.preferredLocaleOverride },
             customerInfoSynchronizer: { [weak self] in
                 guard let self else { throw CancellationError() }

@@ -24,10 +24,12 @@ final class CheckpointsManager {
     typealias CustomerInfoProvider = @MainActor () async throws -> CustomerInfo
     typealias CachedCustomerInfoProvider = @MainActor () -> CustomerInfo?
     typealias PreferredUILocaleProvider = @MainActor () -> String?
+    typealias AppUserIDProvider = @MainActor () -> String
 
     private let resolveCheckpoint: (String, CheckpointCallParams) async throws -> CheckpointResolution
     private let customerInfoProvider: CustomerInfoProvider
     private let cachedCustomerInfoProvider: CachedCustomerInfoProvider
+    private let appUserIDProvider: AppUserIDProvider
     private let preferredUILocaleProvider: PreferredUILocaleProvider
     private let checkpointPresenter: CheckpointPresenterType
     private let errorPresentationQueue = ErrorPresentationQueue()
@@ -39,12 +41,14 @@ final class CheckpointsManager {
         customerInfoProvider: @escaping CustomerInfoProvider,
         checkpointPresenter: CheckpointPresenterType? = nil,
         cachedCustomerInfoProvider: @escaping CachedCustomerInfoProvider = { nil },
+        appUserIDProvider: @escaping AppUserIDProvider = { "" },
         preferredUILocaleProvider: @escaping PreferredUILocaleProvider = { nil },
         customerInfoSynchronizer: @escaping CustomerInfoSynchronizer = { throw CancellationError() }
     ) {
         self.resolveCheckpoint = resolveCheckpoint
         self.customerInfoProvider = customerInfoProvider
         self.cachedCustomerInfoProvider = cachedCustomerInfoProvider
+        self.appUserIDProvider = appUserIDProvider
         self.preferredUILocaleProvider = preferredUILocaleProvider
         self.checkpointPresenter = checkpointPresenter ?? CheckpointPresenter(
             workflowPresenter: WorkflowPresenter(),
@@ -80,12 +84,12 @@ final class CheckpointsManager {
         }
 
         let resolution = try await self.resolveCheckpoint(identifier, params)
-        let customerInfoBefore = try await self.customerInfoBefore(identifier: identifier)
+        let baseline = try await self.baseline(identifier: identifier)
         return try await self.executeCheckpoint(
             identifier: identifier,
             params: params,
             resolution: resolution,
-            customerInfoBefore: customerInfoBefore,
+            baseline: baseline,
             globalPaywallPresenter: globalPaywallPresenter
         )
     }
@@ -94,7 +98,7 @@ final class CheckpointsManager {
         identifier: String,
         params: CheckpointCallParams,
         resolution: CheckpointResolution,
-        customerInfoBefore: CustomerInfo,
+        baseline: CheckpointBaseline,
         globalPaywallPresenter: PaywallPresenter?
     ) async throws -> CheckpointExecutionResult {
         let errorPresentationHandler = self.errorPresentationHandler(for: params)
@@ -106,7 +110,8 @@ final class CheckpointsManager {
                 workflow: workflow,
                 customVariables: params.customVariables,
                 presentationMode: params.presentationMode,
-                initialActiveEntitlementIdentifiers: customerInfoBefore.activeEntitlementIdentifiers,
+                initialAppUserID: baseline.appUserID,
+                initialActiveEntitlementIdentifiers: baseline.customerInfo.activeEntitlementIdentifiers,
                 errorPresentationHandler: errorPresentationHandler
             )
             return .init(
@@ -179,9 +184,9 @@ final class CheckpointsManager {
             return .failed(error)
         }
 
-        let customerInfoBefore: CustomerInfo
+        let baseline: CheckpointBaseline
         do {
-            customerInfoBefore = try await self.customerInfoBefore(identifier: identifier)
+            baseline = try await self.baseline(identifier: identifier)
         } catch {
             return .failed(error)
         }
@@ -190,13 +195,13 @@ final class CheckpointsManager {
         case .noAction(.configurationUnavailable):
             return .failed(CheckpointError.configurationUnavailable)
         case .noAction(.unknownCheckpoint), .noAction(.noMatch):
-            return .completed(CheckpointResult(flow: nil, customer: customerInfoBefore))
+            return .completed(CheckpointResult(flow: nil, customer: baseline.customerInfo))
         case .matchedWorkflow, .matchedOffering:
             return await self.presentedOutcome(
                 identifier: identifier,
                 params: params,
                 resolution: resolution,
-                customerInfoBefore: customerInfoBefore,
+                baseline: baseline,
                 globalPaywallPresenter: globalPaywallPresenter
             )
         }
@@ -206,15 +211,16 @@ final class CheckpointsManager {
         identifier: String,
         params: CheckpointCallParams,
         resolution: CheckpointResolution,
-        customerInfoBefore: CustomerInfo,
+        baseline: CheckpointBaseline,
         globalPaywallPresenter: PaywallPresenter?
     ) async -> CheckpointOutcome {
+        let customerInfoBefore = baseline.customerInfo
         do {
             let execution = try await self.executeCheckpoint(
                 identifier: identifier,
                 params: params,
                 resolution: resolution,
-                customerInfoBefore: customerInfoBefore,
+                baseline: baseline,
                 globalPaywallPresenter: globalPaywallPresenter
             )
             switch execution.outcome {
@@ -244,10 +250,12 @@ final class CheckpointsManager {
     /// The customer's information read once the checkpoint is resolved and before anything is presented: cached
     /// when warm, fetched otherwise, so a run that goes on always has one to deliver and to compare against. It comes
     /// after resolving so the checkpoint hit is tracked either way, and so the resolver's own read has already
-    /// warmed the cache for a configured checkpoint.
-    private func customerInfoBefore(identifier: String) async throws -> CustomerInfo {
+    /// warmed the cache for a configured checkpoint. The app user ID is captured before the read, which can suspend
+    /// while the identity changes.
+    private func baseline(identifier: String) async throws -> CheckpointBaseline {
+        let appUserID = self.appUserIDProvider()
         do {
-            return try await self.customerInfoProvider()
+            return CheckpointBaseline(appUserID: appUserID, customerInfo: try await self.customerInfoProvider())
         } catch {
             Logger.error(
                 "Checkpoint '\(identifier)': the customer's information could not be read: " +

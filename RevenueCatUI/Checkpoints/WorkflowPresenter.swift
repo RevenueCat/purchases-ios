@@ -26,6 +26,7 @@ import UIKit
 /// only after the presented UI has fully dismissed.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @MainActor
+// swiftlint:disable:next type_body_length
 final class WorkflowPresenter: NSObject, WorkflowPresenterType {
 
     typealias PresentationStarter = (WorkflowPresentationRequest) throws -> Bool
@@ -36,6 +37,7 @@ final class WorkflowPresenter: NSObject, WorkflowPresenterType {
         case recoverableErrorHandled
         case workflowPresentationError(NSError)
         case dismissalReason(WorkflowDismissalReason)
+        case gateOutcome(CheckpointGateOutcome)
     }
 
     private enum WorkflowOutcomeState {
@@ -62,12 +64,14 @@ final class WorkflowPresenter: NSObject, WorkflowPresenterType {
     }
 
     private struct PresentationState {
+        let id = UUID()
         let checkpointIdentifier: String
         let customVariables: [String: CustomVariableValue]
         let errorPresentationHandler: ErrorPresentationHandler
         let initialActiveEntitlementIdentifiers: Set<String>
         var outcomeState: WorkflowOutcomeState = .none
         var dismissalReason: WorkflowDismissalReason = .close
+        var gateOutcome: CheckpointGateOutcome = .notApplicable
 
         mutating func record(_ update: PresentationUpdate) -> Bool {
             switch update {
@@ -90,6 +94,8 @@ final class WorkflowPresenter: NSObject, WorkflowPresenterType {
                 self.outcomeState = .terminalError
             case let .dismissalReason(reason):
                 self.dismissalReason = reason
+            case let .gateOutcome(outcome):
+                self.gateOutcome = outcome
             }
             return true
         }
@@ -207,10 +213,17 @@ final class WorkflowPresenter: NSObject, WorkflowPresenterType {
         guard let state = self.takePresentationState() else { return nil }
 
         let execution: CheckpointPresentationOutcome
-        if state.dismissalReason == .navigatedBack, !state.outcomeState.outcome.hasCustomerInfo {
+        switch state.gateOutcome {
+        case .notPassed:
             execution = .backedOut
-        } else {
+        case .passed:
             execution = state.outcomeState.outcome
+        case .notApplicable:
+            if state.dismissalReason == .navigatedBack, !state.outcomeState.outcome.hasCustomerInfo {
+                execution = .backedOut
+            } else {
+                execution = state.outcomeState.outcome
+            }
         }
         self.finish(execution)
         return execution
@@ -299,12 +312,32 @@ final class WorkflowPresenter: NSObject, WorkflowPresenterType {
                     Logger.error(error.localizedDescription)
                     self.presentError(error, kind: .flowActionFailed)
                 }
-            }
+            },
+            checkpointGateContext: self.makeCheckpointGateContext(for: presentation)
         )
         self.presentedViewController = viewController
         viewController.disableExitOffers()
         viewController.customVariables = presentation.customVariables
         return viewController
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension WorkflowPresenter {
+
+    /// Reports gate outcomes only to the presentation that is active when the context is made, so a context
+    /// left over from an abandoned presentation cannot change a later one.
+    func makeCheckpointGateContext(for presentation: WorkflowPresentationRequest) -> CheckpointGateContext {
+        let presentationID = self.presentationState?.id
+        return CheckpointGateContext(
+            initialAppUserID: presentation.initialAppUserID,
+            initialActiveEntitlementIdentifiers: presentation.initialActiveEntitlementIdentifiers,
+            onOutcomeChanged: { [weak self] outcome in
+                guard let self, self.presentationState?.id == presentationID else { return }
+                self.stage(.gateOutcome(outcome))
+            }
+        )
     }
 
 }
