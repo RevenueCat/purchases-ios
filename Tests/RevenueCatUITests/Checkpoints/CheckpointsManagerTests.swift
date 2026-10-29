@@ -900,10 +900,13 @@ final class CheckpointsManagerTests: TestCase {
         )
         manager.adPresenter = presenter
 
-        let failed = try await manager.executeCheckpoint(identifier: "level_complete", params: .init())
+        let failed = try await manager.executeCheckpoint(
+            identifier: "level_complete",
+            params: .init(errorPresenter: { _, completion in completion.complete() })
+        )
         let shown = try await manager.executeCheckpoint(identifier: "next_level", params: .init())
 
-        guard case .adFailed = failed else {
+        guard case .failed = failed else {
             return XCTFail("Expected the first checkpoint to end on the failed ad")
         }
         XCTAssertTrue(Self.adWasShown(shown))

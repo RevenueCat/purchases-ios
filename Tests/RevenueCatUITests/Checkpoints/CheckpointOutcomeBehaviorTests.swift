@@ -312,7 +312,11 @@ final class CheckpointOutcomeBehaviorTests: TestCase {
         let errorPresenter = ErrorPresentationRecorder()
         let manager = CheckpointsManager(
             resolveCheckpoint: { _, _ in
-                .matchedAd(ResolvedAdStep(adIdentifier: "ad-unit", mediator: MediatorName(rawValue: "admob")))
+                .matchedAd(ResolvedAdStep(
+                    adIdentifier: "ad-unit",
+                    mediator: MediatorName(rawValue: "admob"),
+                    adFormat: .interstitial
+                ))
             }
         )
         manager.adPresenter = FailingAdPresenter(error: expectedError)
