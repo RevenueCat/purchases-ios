@@ -74,7 +74,7 @@ internal enum RewardedPresentationError: Error, CustomNSError {
 /// AdMob reports the earned reward while the ad is still on screen, and verification polling usually
 /// outlives the dismissal. The outcome is therefore reported only once the ad is dismissed *and*, if
 /// verification started, its result has arrived — so the checkpoint never resolves underneath a visible ad
-/// and never resolves as merely ``Outcome/shown`` while a reward is still being verified.
+/// and never resolves while a reward is still being verified.
 @available(iOS 15.0, *)
 @MainActor
 internal final class RewardedPresentation: NSObject, GoogleMobileAds.FullScreenContentDelegate {
@@ -103,9 +103,9 @@ internal final class RewardedPresentation: NSObject, GoogleMobileAds.FullScreenC
 
     enum Outcome {
 
-        case shown
-        case rewarded(RevenueCat.AdReward, moreRewards: [RevenueCat.AdReward])
-        case rewardVerificationFailed
+        /// The ad was dismissed. The verification result is `nil` when the customer closed the ad before
+        /// earning the reward, so verification never started.
+        case shown(RewardVerificationResult?)
         case failed(NSError)
 
         /// A verified reward reaches the app through the checkpoint result, as whatever it granted. A reward that
@@ -114,7 +114,7 @@ internal final class RewardedPresentation: NSObject, GoogleMobileAds.FullScreenC
         @MainActor
         var presentationResult: AdPresentationResult {
             switch self {
-            case .shown, .rewarded, .rewardVerificationFailed:
+            case .shown:
                 return .shown
             case let .failed(error):
                 return .failed(error: error)
@@ -232,21 +232,19 @@ internal final class RewardedPresentation: NSObject, GoogleMobileAds.FullScreenC
         guard self.isDismissed else { return }
 
         guard self.isAwaitingVerification else {
-            self.finish(.shown)
+            self.finish(.shown(nil))
             return
         }
 
         guard let result = self.verificationResult else { return }
 
-        if let reward = result.verifiedReward {
-            self.finish(.rewarded(reward, moreRewards: result.moreRewards))
-        } else {
+        if result.verifiedReward == nil {
             Logger.warn(CheckpointPresenterStrings.rewarded_verification_failed(
                 adFormat: self.format.adFormat,
                 adUnitID: self.adUnitID ?? ""
             ))
-            self.finish(.rewardVerificationFailed)
         }
+        self.finish(.shown(result))
     }
 
     private func finish(_ outcome: Outcome) {
