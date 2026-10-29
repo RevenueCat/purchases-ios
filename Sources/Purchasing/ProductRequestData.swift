@@ -96,7 +96,7 @@ extension ProductRequestData: Encodable {
             case .freeTrial:
                 try container.encode(introDuration, forKey: .trialDuration)
             case nil:
-                print("hi")
+                break
             }
         }
     }
