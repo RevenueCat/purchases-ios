@@ -620,7 +620,7 @@ private extension WorkflowPaywallViewTests {
         return "Offering 'missing_offering' not found for step '\(stepID)' of workflow 'wf_test'. " +
             "The offering is either missing from the offerings response, or was dropped because none of " +
             "its packages resolved to a product fetched from the store. Check the logs for a " +
-            "\"No packages could be found for offering\" warning."
+            "\"No packages could be found for offering\" log message."
     }
 
     static func makeContext(
