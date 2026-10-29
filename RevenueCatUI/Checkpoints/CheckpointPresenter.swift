@@ -138,6 +138,8 @@ final class CheckpointPresenter: CheckpointPresenterType {
             presenter: adPresenter
         )
         guard let error = result.error else {
+            // A verified reward refreshes the cached customer before the presenter completes, so the result
+            // reads the cache like any flow that produced no customer of its own.
             return .completed(customerInfo: nil)
         }
 

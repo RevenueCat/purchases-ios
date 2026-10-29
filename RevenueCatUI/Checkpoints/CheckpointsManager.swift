@@ -276,7 +276,7 @@ private extension CheckpointsManager {
     /// when warm, fetched otherwise, so a run that goes on always has one to deliver and to compare against. It comes
     /// after resolving so the checkpoint hit is tracked either way, and so the resolver's own read has already
     /// warmed the cache for a configured checkpoint.
-    func customerInfoBefore(identifier: String) async throws -> CustomerInfo {
+    private func customerInfoBefore(identifier: String) async throws -> CustomerInfo {
         do {
             return try await self.customerInfoProvider()
         } catch {
@@ -293,7 +293,7 @@ private extension CheckpointsManager {
     /// granted nothing new, or a web checkout, refreshed it without being an outcome), else `customerInfoBefore`,
     /// which the cache can only have lost to an identity change meanwhile. Whatever the outcome, what was obtained
     /// is read from that customer against `customerInfoBefore`.
-    func checkpointResult(
+    private func checkpointResult(
         customerInfo: CustomerInfo?,
         customerInfoBefore: CustomerInfo,
         availableProducts: [StoreProduct]
