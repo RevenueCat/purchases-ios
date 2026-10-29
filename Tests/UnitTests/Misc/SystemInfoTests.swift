@@ -36,7 +36,7 @@ class SystemInfoTests: TestCase {
     func testInstallationMethodIsNotEmpty() {
         let method = SystemInfo.installationMethod
         expect(method).toNot(beEmpty())
-        expect(["spm", "cocoapods", "carthage", "xcframework", "unknown"]).to(contain(method))
+        expect(["spm", "cocoapods", "carthage_source", "xcframework", "unknown"]).to(contain(method))
     }
 
     func testFinishTransactions() {
