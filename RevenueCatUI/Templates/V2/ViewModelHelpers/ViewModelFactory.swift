@@ -29,6 +29,8 @@ class PurchaseButtonCollector {
 struct ViewModelFactory {
 
     let packageValidator = PackageValidator()
+    /// Sheet inventory is still needed for offer loading, but never for page or tab selection.
+    let sheetPackageValidator = PackageValidator()
 
     /// When true, all rule-based overrides are discarded globally across all components.
     /// Set when any component in the paywall contains unsupported conditions.
@@ -169,17 +171,21 @@ struct ViewModelFactory {
             )
 
             var sheetStackViewModel: StackComponentViewModel?
+            var sheetPackageValidator: PackageValidator?
 
             if case let .navigateTo(.sheet(sheet)) = component.action, let sheet {
+                let validator = PackageValidator()
+                sheetPackageValidator = validator
                 sheetStackViewModel = try toStackViewModel(
                     component: sheet.stack,
-                    packageValidator: packageValidator,
+                    packageValidator: validator,
                     purchaseButtonCollector: purchaseButtonCollector,
                     localizationProvider: localizationProvider,
                     uiConfigProvider: uiConfigProvider,
                     offering: offering,
                     colorScheme: colorScheme
                 )
+                validator.packageInfos.forEach { self.sheetPackageValidator.add($0) }
             }
 
             return .button(
@@ -189,6 +195,7 @@ struct ViewModelFactory {
                     offering: offering,
                     stackViewModel: stackViewModel,
                     sheetStackViewModel: sheetStackViewModel,
+                    sheetPackageValidator: sheetPackageValidator,
                     uiConfigProvider: uiConfigProvider,
                     discardRules: discardRules
                 )

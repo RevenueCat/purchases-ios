@@ -723,6 +723,7 @@ struct LoadedPaywallsV2View: View {
     /// Scoped to packages outside the tabs; a tab's own selection is reconciled in
     /// `LoadedTabsComponentView`.
     private func reconcileSelection() {
+        guard !self.selectedPackageContext.isPresentingSheet else { return }
         let packageValidator = self.paywallState.viewModelFactory.packageValidator
 
         guard let resolved = packageValidator.reconciledSelection(
@@ -817,6 +818,9 @@ struct LoadedPaywallsV2View: View {
             .onAppear {
                 self.reconcileSelection()
             }
+            .onChangeOf(self.selectedPackageContext.isPresentingSheet) { isPresenting in
+                if !isPresenting { self.reconcileSelection() }
+            }
             // Each eligibility result can independently flip package visibility.
             .onChangeOf(self.offerEligibilityLoading) { _ in
                 self.reconcileSelection()
@@ -892,7 +896,8 @@ extension PaywallsV2View {
 //                throw PackageGroupValidationError.noAvailablePackages("No available packages found")
 //            }
 
-            let packageInfos = factory.packageValidator.packageInfos.map { info in
+            let allPackageInfos = factory.packageValidator.packageInfos + factory.sheetPackageValidator.packageInfos
+            let packageInfos = allPackageInfos.map { info in
                 return (package: info.package, promotionalOfferProductCode: info.promotionalOfferProductCode)
             }
 
