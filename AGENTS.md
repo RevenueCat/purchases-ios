@@ -36,6 +36,12 @@ When implementing features or debugging, check these repos for reference and pat
 
 This policy is enforced by the `no_new_public_enums` SwiftLint custom rule defined in `.swiftlint.yml`. Pre-existing public enums are grandfathered in `swiftlint-baseline.json`.
 
+**Do NOT add new `public init`s to the SDK's consumer-facing surface.** Public initializers are part of the binary API and cannot change without breaking consumers. Keep initializers `internal` or `private`, or mark them `@_spi(Internal)` (on the same line or the line above) when hybrid SDKs need them. Initializers required by `Decodable`, `RawRepresentable` and `NSCoding` are exempt. The rule cannot see an enclosing `@_spi(Internal)` extension, so inits inside one still need `@_spi(Internal)` on the init itself.
+
+This policy is enforced by the `no_new_public_inits` SwiftLint custom rule defined in `.swiftlint.yml`. Pre-existing public initializers are grandfathered in `swiftlint-baseline.json`.
+
+Baseline entries are matched by line text, so moving code around does not invalidate them. To accept an intentional new violation, regenerate the baseline with `swiftlint lint --write-baseline swiftlint-baseline.json` and commit it. Custom rules have fixtures in `Tests/SwiftLintCustomRules/Fixtures`; when changing a rule, extend its fixture and run `ruby Tests/SwiftLintCustomRules/swiftlint_custom_rules_test.rb`.
+
 The `Tests/APITesters/` targets run in CI to catch unintended API changes. The `api/*.swiftinterface` files track the public API surface. **If API tests fail, you've likely broken the public API.**
 
 ### Objective-C Compatibility
@@ -183,7 +189,7 @@ For snapshot testing, sample applications, pre-commit hooks, and release process
 - `Local.xcconfig` - Local development configuration (not committed)
 - `CI.xcconfig` - CI-specific configuration
 - `api/*.swiftinterface` - Public API surface tracking
-- `swiftlint-baseline.json` - Pre-existing SwiftLint violations grandfathered by the linter (notably for `no_new_public_enums`)
+- `swiftlint-baseline.json` - Pre-existing SwiftLint violations grandfathered by the linter (notably for `no_new_public_enums` and `no_new_public_inits`)
 
 ## Pull Requests
 

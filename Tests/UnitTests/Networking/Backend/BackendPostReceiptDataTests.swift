@@ -817,7 +817,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
         expect(updatedSubscriberInfo.value) == postSubscriberInfo.value
         expect(updatedSubscriberInfo.value) != originalSubscriberInfo.value
 
-        expect(self.httpClient.calls.map { $0.request.path as? HTTPRequest.Path }) == [
+        expect(self.httpClient.calls.map(\.request.path)) == [
             getCustomerInfoPath,
             .postReceiptData
         ]

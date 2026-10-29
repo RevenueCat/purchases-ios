@@ -64,6 +64,9 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
     private let preferredLocalesProvider: @Sendable () -> [String]
 
     private var warmedEligibilityProductIdentifiers: Set<String> = []
+    private var pendingCurrentOfferingProductIdentifiers: Set<String> = []
+    private var pendingEligibilityProductIdentifiers: Set<String> = []
+    private var eligibilityWarmupTask: Task<Void, Never>?
     private var hasLoadedPaywallAssets = false
     private var workflowIDsWithAssetPrewarmingStarted: Set<String> = []
     private var workflowFontAssetsWithPrewarmingAttempted: Set<DownloadableFont> = []
@@ -88,24 +91,27 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
     /// To avoid penalizing the current offering's warm-up with the cost of fetching eligibility for
     /// the rest of the offerings, the work is staggered: the current offering's products are
     /// warmed up first, and only after that completes are the remaining offerings warmed up.
+    /// Overlapping calls share the running warm-up and add any new products to its pending work.
+    /// Each subsequent batch prioritizes pending current-offering products; a batch already
+    /// running is allowed to finish.
     ///
     /// Products that have already been warmed up are skipped on subsequent calls.
     /// Call ``clearEligibilityCache()`` to reset the tracking (e.g. when `CustomerInfo` changes).
     func warmUpEligibilityCache(offerings: Offerings) async {
-        let currentProducts = offerings.productIdentifiersInCurrentOffering
-            .subtracting(self.warmedEligibilityProductIdentifiers)
+        self.pendingCurrentOfferingProductIdentifiers.formUnion(
+            offerings.productIdentifiersInCurrentOffering.subtracting(self.warmedEligibilityProductIdentifiers)
+        )
+        self.pendingEligibilityProductIdentifiers.formUnion(
+            offerings.allProductIdentifiers.subtracting(self.warmedEligibilityProductIdentifiers)
+        )
 
-        if !currentProducts.isEmpty {
-            self.warmedEligibilityProductIdentifiers.formUnion(currentProducts)
-            await Self.checkEligibility(productIdentifiers: currentProducts, checker: self.introEligibiltyChecker)
-        }
-
-        let remainingProducts = offerings.allProductIdentifiers
-            .subtracting(self.warmedEligibilityProductIdentifiers)
-
-        if !remainingProducts.isEmpty {
-            self.warmedEligibilityProductIdentifiers.formUnion(remainingProducts)
-            await Self.checkEligibility(productIdentifiers: remainingProducts, checker: self.introEligibiltyChecker)
+        if let task = self.eligibilityWarmupTask {
+            Logger.debug(Strings.paywalls.joining_eligibility_cache_warmup)
+            await task.value
+        } else if !self.pendingEligibilityProductIdentifiers.isEmpty {
+            let task = Task { await self.warmUpPendingEligibility() }
+            self.eligibilityWarmupTask = task
+            await task.value
         }
     }
 
@@ -115,7 +121,35 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
     /// `CustomerInfo` changes) so that the next call to ``warmUpEligibilityCache(offerings:)``
     /// re-populates the cache.
     func clearEligibilityCache() {
+        // New warm-ups must not wait for checks started before eligibility was invalidated.
+        // The eligibility check's shared task can still finish for its existing callers.
+        self.eligibilityWarmupTask?.cancel()
+        self.eligibilityWarmupTask = nil
         self.warmedEligibilityProductIdentifiers.removeAll(keepingCapacity: false)
+        self.pendingCurrentOfferingProductIdentifiers.removeAll(keepingCapacity: false)
+        self.pendingEligibilityProductIdentifiers.removeAll(keepingCapacity: false)
+    }
+
+    private func warmUpPendingEligibility() async {
+        while !Task.isCancelled {
+            let products = self.pendingCurrentOfferingProductIdentifiers.isEmpty
+                ? self.pendingEligibilityProductIdentifiers
+                : self.pendingCurrentOfferingProductIdentifiers
+
+            guard !products.isEmpty else {
+                self.eligibilityWarmupTask = nil
+                return
+            }
+
+            await Self.checkEligibility(productIdentifiers: products, checker: self.introEligibiltyChecker)
+
+            // An invalidated warm-up must not update tracking or consume a replacement warm-up's pending work.
+            guard !Task.isCancelled else { return }
+
+            self.warmedEligibilityProductIdentifiers.formUnion(products)
+            self.pendingCurrentOfferingProductIdentifiers.subtract(products)
+            self.pendingEligibilityProductIdentifiers.subtract(products)
+        }
     }
 
     private static func checkEligibility(
@@ -123,11 +157,7 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
         checker: TrialOrIntroPriceEligibilityCheckerType
     ) async {
         Logger.debug(Strings.paywalls.warming_up_eligibility_cache(products: productIdentifiers))
-        _ = await Async.call { completion in
-            checker.checkEligibility(productIdentifiers: productIdentifiers) { result in
-                completion(result)
-            }
-        }
+        _ = await checker.checkEligibility(productIdentifiers: productIdentifiers)
     }
 
     /// Walks paywall component trees once, then downloads images.
@@ -138,7 +168,8 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
     func warmUpPaywallAssetsCache(offerings: Offerings) async {
         await self.webBundleURLBatcher.publish(
             offerings: offerings,
-            workflowsByOfferingId: [:]
+            workflowsByOfferingId: [:],
+            workflowBackedOfferingIds: []
         )
 
         guard !self.hasLoadedPaywallAssets else { return }

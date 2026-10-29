@@ -18,6 +18,7 @@ import Foundation
 enum PaywallsStrings {
 
     case warming_up_eligibility_cache(products: Set<String>)
+    case joining_eligibility_cache_warmup
     case warming_up_images(imageURLs: Set<URL>)
     case warming_up_fonts(fontsURLS: Set<URL>)
     case warming_up_videos(videoURLs: Set<URLWithValidation>)
@@ -79,6 +80,9 @@ extension PaywallsStrings: LogMessage {
         switch self {
         case let .warming_up_eligibility_cache(products):
             return "Warming up intro eligibility cache for \(products.count) products"
+
+        case .joining_eligibility_cache_warmup:
+            return "Joining the in-flight intro eligibility cache warm-up"
 
         case let .warming_up_images(imageURLs):
             return "Warming up paywall images cache: \(imageURLs)"

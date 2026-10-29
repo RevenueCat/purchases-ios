@@ -18,7 +18,8 @@ protocol WebBundleURLBatcherType: Sendable {
     @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
     func publish(
         offerings: Offerings,
-        workflowsByOfferingId: [String: PublishedWorkflow]
+        workflowsByOfferingId: [String: PublishedWorkflow],
+        workflowBackedOfferingIds: Set<String>
     ) async
 
     @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
@@ -48,12 +49,14 @@ actor WebBundleURLBatcher: WebBundleURLBatcherType {
     @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
     func publish(
         offerings: Offerings,
-        workflowsByOfferingId: [String: PublishedWorkflow]
+        workflowsByOfferingId: [String: PublishedWorkflow],
+        workflowBackedOfferingIds: Set<String>
     ) async {
         await self.publishBatches(
             Self.orderedScreenURLBatches(
                 offerings: offerings,
-                workflowsByOfferingId: workflowsByOfferingId
+                workflowsByOfferingId: workflowsByOfferingId,
+                workflowBackedOfferingIds: workflowBackedOfferingIds
             )
         )
     }
@@ -96,12 +99,13 @@ extension WebBundleURLBatcher {
     }
 
     /// One batch per screen, in cache-priority order. Workflows first (remote config), otherwise the
-    /// offering's inline V2 tree as a single screen. Same workflow behind several offerings is
-    /// enqueued once, at the first offering that mapped to it.
+    /// offering's inline V2 tree as a single screen. Workflow-backed offerings without a supplied
+    /// workflow are skipped. Same workflow behind several offerings is enqueued once.
     @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
     nonisolated static func orderedScreenURLBatches(
         offerings: Offerings,
-        workflowsByOfferingId: [String: PublishedWorkflow]
+        workflowsByOfferingId: [String: PublishedWorkflow],
+        workflowBackedOfferingIds: Set<String> = []
     ) -> [[URLWithValidation]] {
         var batches: [[URLWithValidation]] = []
         var seenWorkflowIDs: Set<String> = []
@@ -112,6 +116,8 @@ extension WebBundleURLBatcher {
                 batches.append(contentsOf: Self.screenURLBatches(in: workflow))
                 continue
             }
+
+            guard !workflowBackedOfferingIds.contains(offeringId) else { continue }
 
             if let components = offerings.all[offeringId]?.internalPaywallComponents?.data {
                 let urls = Self.uniqueURLs(components.allCacheAssets.webBundles)
@@ -128,12 +134,14 @@ extension WebBundleURLBatcher {
     @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
     nonisolated static func orderedWebViewURLs(
         offerings: Offerings,
-        workflowsByOfferingId: [String: PublishedWorkflow]
+        workflowsByOfferingId: [String: PublishedWorkflow],
+        workflowBackedOfferingIds: Set<String> = []
     ) -> [URLWithValidation] {
         return Self.uniqueURLs(
             Self.orderedScreenURLBatches(
                 offerings: offerings,
-                workflowsByOfferingId: workflowsByOfferingId
+                workflowsByOfferingId: workflowsByOfferingId,
+                workflowBackedOfferingIds: workflowBackedOfferingIds
             ).flatMap { $0 }
         )
     }

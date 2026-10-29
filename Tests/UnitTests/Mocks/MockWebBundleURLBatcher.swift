@@ -19,6 +19,7 @@ final class MockWebBundleURLBatcher: WebBundleURLBatcherType, @unchecked Sendabl
     private let _invokedPublishCount: Atomic<Int> = .init(0)
     private let _invokedPublishOfferings: Atomic<Offerings?> = nil
     private let _invokedPublishWorkflowsByOfferingId: Atomic<[String: PublishedWorkflow]> = .init([:])
+    private let _invokedPublishWorkflowBackedOfferingIds: Atomic<Set<String>> = .init([])
     private let _invokedPublishPresentedWorkflowIDs: Atomic<[String]> = .init([])
 
     var invokedPublishCount: Int {
@@ -30,6 +31,9 @@ final class MockWebBundleURLBatcher: WebBundleURLBatcherType, @unchecked Sendabl
     var invokedPublishWorkflowsByOfferingId: [String: PublishedWorkflow] {
         return self._invokedPublishWorkflowsByOfferingId.value
     }
+    var invokedPublishWorkflowBackedOfferingIds: Set<String> {
+        return self._invokedPublishWorkflowBackedOfferingIds.value
+    }
     var invokedPublishPresentedWorkflowIDs: [String] {
         return self._invokedPublishPresentedWorkflowIDs.value
     }
@@ -37,11 +41,13 @@ final class MockWebBundleURLBatcher: WebBundleURLBatcherType, @unchecked Sendabl
     @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
     func publish(
         offerings: Offerings,
-        workflowsByOfferingId: [String: PublishedWorkflow]
+        workflowsByOfferingId: [String: PublishedWorkflow],
+        workflowBackedOfferingIds: Set<String>
     ) async {
         self._invokedPublishCount.modify { $0 += 1 }
         self._invokedPublishOfferings.value = offerings
         self._invokedPublishWorkflowsByOfferingId.value = workflowsByOfferingId
+        self._invokedPublishWorkflowBackedOfferingIds.value = workflowBackedOfferingIds
     }
 
     @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)

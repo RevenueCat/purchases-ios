@@ -15,7 +15,8 @@ import Foundation
 
 // swiftlint:disable type_name
 
-/// `TrialOrIntroPriceEligibilityCheckerType` decorator that adds caching behavior on each request.
+/// Owns per-product eligibility caching and request sharing, preserving synchronous cache hits.
+/// Also invalidates the injected SK2 group cache used by the underlying checker.
 class CachingTrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCheckerType {
 
     private struct RequestKey: Hashable, Sendable {
@@ -23,64 +24,32 @@ class CachingTrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCh
         let cacheGeneration: Int
     }
 
-    private enum RequestAction {
+    private enum Request {
         case complete([String: IntroEligibility])
-        case wait
-        case start(RequestKey)
+        case pending(Task<[String: IntroEligibility], Never>, cached: [String: IntroEligibility], missing: Set<String>)
+
+        var value: [String: IntroEligibility] {
+            get async {
+                switch self {
+                case .complete(let result):
+                    return result
+                case let .pending(task, cached, missing):
+                    return cached + (await task.value).filter { missing.contains($0.key) }
+                }
+            }
+        }
     }
 
     private struct State {
         var cachedEligibilities: [String: IntroEligibility] = [:]
         var cacheGeneration = 0
-        var inFlightRequests: [RequestKey: [ReceiveIntroEligibilityBlock]] = [:]
-
-        mutating func prepareRequest(
-            productIdentifiers: Set<String>,
-            completion: @escaping ReceiveIntroEligibilityBlock
-        ) -> (action: RequestAction, cachedProductIdentifiers: Set<String>) {
-            let cached = self.cachedEligibilities.filter { productIdentifiers.contains($0.key) }
-            let cachedProductIdentifiers = Set(cached.keys)
-            let missingProducts = productIdentifiers.subtracting(cached.keys)
-
-            guard !missingProducts.isEmpty else {
-                return (.complete(cached), cachedProductIdentifiers)
-            }
-
-            let requestKey = RequestKey(
-                productIdentifiers: missingProducts,
-                cacheGeneration: self.cacheGeneration
-            )
-            let containingRequestKey = self.inFlightRequests.keys.first { inFlightRequestKey in
-                inFlightRequestKey.cacheGeneration == requestKey.cacheGeneration
-                    && inFlightRequestKey.productIdentifiers.isSuperset(of: requestKey.productIdentifiers)
-            }
-            let key = containingRequestKey ?? requestKey
-            self.inFlightRequests[key, default: []].append { fetched in
-                let requestedProducts = fetched.filter { requestKey.productIdentifiers.contains($0.key) }
-                completion(cached + requestedProducts)
-            }
-
-            let action: RequestAction = containingRequestKey == nil ? .start(requestKey) : .wait
-            return (action, cachedProductIdentifiers)
-        }
+        var inFlightRequests: [RequestKey: Task<[String: IntroEligibility], Never>] = [:]
     }
 
-    private let checker: TrialOrIntroPriceEligibilityCheckerType
+    private let checker: TrialOrIntroPriceEligibilityChecker
     private let state: Atomic<State> = .init(.init())
 
-    /// Creates a `CachingTrialOrIntroPriceEligibilityChecker` wrapping the underlying checker,
-    /// or returns `checker` if it already is this type.
-    static func create(
-        with checker: TrialOrIntroPriceEligibilityCheckerType
-    ) -> CachingTrialOrIntroPriceEligibilityChecker {
-        if let checker = checker as? Self {
-            return checker
-        } else {
-            return CachingTrialOrIntroPriceEligibilityChecker(checker: checker)
-        }
-    }
-
-    init(checker: TrialOrIntroPriceEligibilityCheckerType) {
+    init(checker: TrialOrIntroPriceEligibilityChecker) {
         self.checker = checker
     }
 
@@ -88,8 +57,10 @@ class CachingTrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCh
         Logger.debug(Strings.eligibility.clearing_intro_eligibility_cache)
 
         self.state.modify {
+            self.checker.clearCache()
             $0.cacheGeneration += 1
             $0.cachedEligibilities.removeAll(keepingCapacity: false)
+            $0.inFlightRequests.removeAll(keepingCapacity: false)
         }
     }
 
@@ -97,54 +68,78 @@ class CachingTrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCh
 
 extension CachingTrialOrIntroPriceEligibilityChecker {
 
+    func checkEligibility(product: StoreProductType, completion: @escaping (IntroEligibilityStatus) -> Void) {
+        self.checkEligibility(productIdentifiers: [product.id]) { eligibility in
+            completion(eligibility[product.id]?.status ?? .unknown)
+        }
+    }
+
     func checkEligibility(
         productIdentifiers: Set<String>,
         completion: @escaping ReceiveIntroEligibilityBlock
     ) {
-        guard !productIdentifiers.isEmpty else {
-            completion([:])
-            return
-        }
-
-        let (action, cachedProductIdentifiers) = self.state.modify {
-            $0.prepareRequest(productIdentifiers: productIdentifiers, completion: completion)
-        }
-
-        if !cachedProductIdentifiers.isEmpty {
-            Logger.debug(Strings.eligibility.found_cached_eligibility_for_products(cachedProductIdentifiers))
-        }
-
-        switch action {
-        case .complete(let cached):
+        let request = self.prepareRequest(productIdentifiers: productIdentifiers)
+        if case .complete(let cached) = request {
             completion(cached)
-        case .wait:
+        } else {
+            _ = Task<Void, Never> {
+                let result = await request.value
+                self.checker.deliverEligibility(result, completion: completion)
+            }
+        }
+    }
+
+    func checkEligibility(productIdentifiers: Set<String>) async -> [String: IntroEligibility] {
+        return await self.prepareRequest(productIdentifiers: productIdentifiers).value
+    }
+
+}
+
+private extension CachingTrialOrIntroPriceEligibilityChecker {
+
+    private func prepareRequest(productIdentifiers: Set<String>) -> Request {
+        let (request, cachedProductIDs, joined) = self.state.modify { state -> (Request, Set<String>, Bool) in
+            let cached = state.cachedEligibilities.filter { productIdentifiers.contains($0.key) }
+            let cachedProductIDs = Set(cached.keys)
+            let missingProducts = productIdentifiers.subtracting(cached.keys)
+            guard !missingProducts.isEmpty else { return (.complete(cached), cachedProductIDs, false) }
+
+            if let pending = state.inFlightRequests.first(where: {
+                $0.key.productIdentifiers.isSuperset(of: missingProducts)
+            }) {
+                return (.pending(pending.value, cached: cached, missing: missingProducts), cachedProductIDs, true)
+            }
+
+            let key = RequestKey(productIdentifiers: missingProducts, cacheGeneration: state.cacheGeneration)
+            // Keep an awaitable task at both cache layers so joining async callers can raise the work's priority.
+            // Propagation through already-waiting tasks requires the Swift 5.9 runtime (iOS 17 and equivalents).
+            let task = Task {
+                let result = await self.checker.checkEligibility(productIdentifiers: missingProducts)
+                self.cache(result, for: key)
+                return result
+            }
+            state.inFlightRequests[key] = task
+            return (.pending(task, cached: cached, missing: missingProducts), cachedProductIDs, false)
+        }
+        if !cachedProductIDs.isEmpty {
+            Logger.debug(Strings.eligibility.found_cached_eligibility_for_products(cachedProductIDs))
+        }
+        if joined {
             Logger.debug(Strings.eligibility.waiting_for_intro_eligibility(productIdentifiers))
-            return
-        case .start(let requestKey):
-            self.checker.checkEligibility(
-                productIdentifiers: requestKey.productIdentifiers,
-                completion: { result in
-                    let productsToCache = result.filter { $0.value.shouldCache }
-                    let (completions, didCache) = self.state.modify { state in
-                        let didCache = state.cacheGeneration == requestKey.cacheGeneration
-                        if didCache {
-                            state.cachedEligibilities += productsToCache
-                        }
-                        let completions = state.inFlightRequests.removeValue(forKey: requestKey) ?? []
-                        return (completions, didCache)
-                    }
+        }
+        return request
+    }
 
-                    if didCache {
-                        Logger.debug(
-                            Strings.eligibility.caching_intro_eligibility_for_products(Set(productsToCache.keys))
-                        )
-                    }
-
-                    Task { @MainActor in
-                        completions.forEach { $0(result) }
-                    }
-                }
-            )
+    private func cache(_ result: [String: IntroEligibility], for key: RequestKey) {
+        let productsToCache = result.filter { $0.value.shouldCache }
+        let didCache = self.state.modify { state in
+            guard state.cacheGeneration == key.cacheGeneration else { return false }
+            state.cachedEligibilities += productsToCache
+            state.inFlightRequests.removeValue(forKey: key)
+            return true
+        }
+        if didCache {
+            Logger.debug(Strings.eligibility.caching_intro_eligibility_for_products(Set(productsToCache.keys)))
         }
     }
 

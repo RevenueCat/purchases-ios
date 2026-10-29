@@ -563,6 +563,59 @@ class WorkflowResponseTests: TestCase {
         )
     }
 
+    func testWorkflowStepGatingParsesSoftAndHardGates() throws {
+        let gates: [(String, WorkflowStepGating)] = [
+            (#"{"type":"soft"}"#, .soft),
+            (#"{"type":"hard","entitlement_identifiers":["pro","premium"]}"#,
+             .hard(entitlementIdentifiers: ["pro", "premium"])),
+            (#"{"type":"soft","new_field":{"a":1}}"#, .soft),
+            (#"{"type":"hard","entitlement_identifiers":["pro"],"new_field":true}"#,
+             .hard(entitlementIdentifiers: ["pro"]))
+        ]
+
+        for (json, expected) in gates {
+            XCTAssertEqual(try Self.stepWithGating(json).gating, expected, json)
+        }
+    }
+
+    func testWorkflowStepGatingIsNilWhenAbsent() throws {
+        let step = try JSONDecoder.default.decode(
+            WorkflowStep.self,
+            from: Data(#"{"id":"step_1","type":"screen","param_values":{"other":true}}"#.utf8)
+        )
+
+        XCTAssertNil(step.gating)
+    }
+
+    func testWorkflowStepGatingFailsClosedForMalformedOrUnknownValues() throws {
+        let invalidGates = [
+            "null", "true", "42", #""hard""#, "[]", "{}",
+            #"{"type":null}"#,
+            #"{"type":42}"#,
+            #"{"type":"unknown"}"#,
+            #"{"type":"hard"}"#,
+            #"{"type":"hard","entitlement_identifiers":null}"#,
+            #"{"type":"hard","entitlement_identifiers":"pro"}"#,
+            #"{"type":"hard","entitlement_identifiers":{}}"#,
+            #"{"type":"hard","entitlement_identifiers":[]}"#,
+            #"{"type":"hard","entitlement_identifiers":[""]}"#,
+            #"{"type":"hard","entitlement_identifiers":["  "]}"#,
+            #"{"type":"hard","entitlement_identifiers":["\t\n"]}"#,
+            #"{"type":"hard","entitlement_identifiers":["pro",null]}"#,
+            #"{"type":"hard","entitlement_identifiers":["pro",42]}"#,
+            #"{"type":"hard","entitlement_identifiers":["pro",true]}"#,
+            #"{"type":"hard","entitlement_identifiers":["pro",{}]}"#,
+            #"{"type":"hard","entitlement_identifiers":["pro",[]]}"#,
+            #"{"type":"hard","entitlement_identifiers":["pro","pro"]}"#,
+            #"{"type":"soft","entitlement_identifiers":["pro"]}"#,
+            #"{"type":"soft","entitlement_identifiers":null}"#
+        ]
+
+        for json in invalidGates {
+            XCTAssertEqual(try Self.stepWithGating(json).gating, .invalid, json)
+        }
+    }
+
     func testDecodeWorkflowStepOfferingIdentifier() throws {
         let step = try JSONDecoder.default.decode(
             WorkflowStep.self,
@@ -975,6 +1028,11 @@ class WorkflowResponseTests: TestCase {
 }
 
 private extension WorkflowResponseTests {
+
+    static func stepWithGating(_ json: String) throws -> WorkflowStep {
+        let json = #"{"id":"step_1","type":"screen","param_values":{"gating":\#(json)}}"#
+        return try JSONDecoder.default.decode(WorkflowStep.self, from: Data(json.utf8))
+    }
 
     /// - Parameter defaultLocaleJSON: the raw JSON value for `default_locale`, or `nil` to omit the key
     /// entirely. The backend sends `null` here for template-derived screens.

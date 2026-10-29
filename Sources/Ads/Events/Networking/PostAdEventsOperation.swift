@@ -19,13 +19,13 @@ final class PostAdEventsOperation: NetworkOperation {
 
     private let configuration: Configuration
     private let request: AdEventsRequest
-    private let path: HTTPRequestPath
+    private let path: HTTPRequest.Path
     private let responseHandler: CustomerAPI.SimpleResponseHandler?
 
     init(
         configuration: Configuration,
         request: AdEventsRequest,
-        path: HTTPRequestPath,
+        path: HTTPRequest.Path,
         responseHandler: CustomerAPI.SimpleResponseHandler?
     ) {
         self.request = request
@@ -37,7 +37,7 @@ final class PostAdEventsOperation: NetworkOperation {
     }
 
     override func begin(completion: @escaping () -> Void) {
-        let httpRequest = HTTPRequest(method: .post(self.request), requestPath: self.path)
+        let httpRequest = HTTPRequest(method: .post(self.request), path: self.path)
 
         self.httpClient.perform(httpRequest) { (response: VerifiedHTTPResponse<HTTPEmptyResponseBody>.Result) in
             defer {
