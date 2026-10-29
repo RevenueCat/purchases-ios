@@ -43,7 +43,8 @@ internal final class PaywallPromoOfferCache: ObservableObject {
     private let appUserID: () -> String?
     private let promotionalOffers: ([PromotionalOfferRequest]) async -> [PromotionalOfferResult]
     private var cachedAppUserID: String?
-    private var latestRequestIDsByProductID: [ProductID: UUID] = [:]
+    private var nextRequestID = 0
+    private var latestPublishedRequestIDsByProductID: [ProductID: Int] = [:]
 
     // MARK: - Init
 
@@ -126,7 +127,8 @@ internal final class PaywallPromoOfferCache: ObservableObject {
 
     private func checkSignedEligibility(packageInfos: [PackageInfo]) async {
         let appUserID = self.appUserID()
-        let requestID = UUID()
+        let requestID = self.nextRequestID
+        self.nextRequestID += 1
         // Build up results in a local dictionary first, then assign all at once.
         // This ensures a single atomic update to the @Published property,
         // which reliably triggers objectWillChange and view updates.
@@ -137,8 +139,6 @@ internal final class PaywallPromoOfferCache: ObservableObject {
             let storeProduct = packageInfo.package.storeProduct
             if let productCode = packageInfo.promotionalOfferProductCode,
                let discount = storeProduct.discounts.first(where: { $0.offerIdentifier == productCode }) {
-                self.latestRequestIDsByProductID[storeProduct.id] = requestID
-
                 if let simulatedEligibility = self.simulatedEligibility {
                     newCacheEntries[storeProduct.id] = simulatedEligibility
                         ? .signedEligible(Self.makeSimulatedOffer(for: discount))
@@ -166,8 +166,14 @@ internal final class PaywallPromoOfferCache: ObservableObject {
 
         // Single atomic assignment to trigger @Published and objectWillChange
         var updatedCache = self.cachedAppUserID == appUserID ? self.cache : [:]
+        if self.cachedAppUserID != appUserID {
+            self.latestPublishedRequestIDsByProductID = [:]
+        }
         // Other workflow screens may refresh disjoint products while this batch is suspended.
-        for (key, value) in newCacheEntries where self.latestRequestIDsByProductID[key] == requestID {
+        for (key, value) in newCacheEntries {
+            // A pending refresh must not suppress an offer that is ready for its caller to use.
+            guard requestID > self.latestPublishedRequestIDsByProductID[key, default: -1] else { continue }
+            self.latestPublishedRequestIDsByProductID[key] = requestID
             updatedCache[key] = value
         }
         self.cachedAppUserID = appUserID

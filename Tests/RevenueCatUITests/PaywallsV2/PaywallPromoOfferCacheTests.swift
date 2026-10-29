@@ -306,6 +306,36 @@ final class PaywallPromoOfferCacheTests: TestCase {
         XCTAssertNil(cache.purchasableOffer(for: package))
     }
 
+    func testEarlierRefreshPublishesOfferWhileNewerRefreshIsPending() async {
+        let package = Self.makePackage(promoDiscountIdentifier: Self.promoCode)
+        let started = [self.expectation(description: "First refresh suspended"),
+                       self.expectation(description: "Second refresh suspended")]
+        var pending: [(results: [PromotionalOfferResult],
+                       continuation: CheckedContinuation<[PromotionalOfferResult], Never>)] = []
+        let cache = PaywallPromoOfferCache(subscriptionHistoryTracker: nil, appUserID: { "user" },
+                                           promotionalOffers: { requests in
+            return await withCheckedContinuation { continuation in
+                pending.append((requests.map { Self.result(for: $0) }, continuation))
+                started[pending.count - 1].fulfill()
+            }
+        })
+        let earlierRefresh = Task { await cache.computeEligibility(for: [(package, Self.promoCode)]) }
+        await self.fulfillment(of: [started[0]], timeout: 1)
+        let newerRefresh = Task { await cache.computeEligibility(for: [(package, Self.promoCode)]) }
+        await self.fulfillment(of: [started[1]], timeout: 1)
+
+        pending[0].continuation.resume(returning: pending[0].results)
+        await earlierRefresh.value
+
+        XCTAssertTrue(cache.purchasableOffer(for: package) === pending[0].results[0].offer,
+                      "A completed refresh must expose its offer while the newer refresh is still pending.")
+
+        pending[1].continuation.resume(returning: pending[1].results)
+        await newerRefresh.value
+
+        XCTAssertTrue(cache.purchasableOffer(for: package) === pending[1].results[0].offer)
+    }
+
     func testOlderRefreshCannotReplaceNewerOffer() async throws {
         for nextUserID in ["A", "B"] {
             let package = Self.makePackage(promoDiscountIdentifier: Self.promoCode)
