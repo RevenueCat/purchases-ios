@@ -65,7 +65,7 @@ public struct AdPresentationParams {
     ///   - adIdentifier: The identifier of the ad configured for the ad step.
     ///   - mediator: The mediation network configured to serve `adIdentifier`.
     ///   - adFormat: The ad format `adIdentifier` was created for.
-    public init(
+    @_spi(Internal) public init(
         checkpointIdentifier: String,
         adIdentifier: String,
         mediator: MediatorName,
