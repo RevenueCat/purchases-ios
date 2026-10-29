@@ -102,25 +102,15 @@ public extension Purchases {
 
     /// Passes a checkpoint and calls `onPassed` when the app can continue past it.
     ///
-    /// This overload adds `errorDialogFactory` for use by hybrid bridges. Its behavior is identical to
-    /// ``checkpoint(_:customVariables:presentationMode:paywallPresenter:errorPresenter:_:)``; see that method for
-    /// full documentation.
-    /// - Parameters:
-    ///   - identifier: The checkpoint identifier.
-    ///   - customVariables: Values usable in checkpoint targeting and the presented flow.
-    ///   - presentationMode: How the SDK presents a matching workflow or its own paywall.
-    ///   - paywallPresenter: A custom presenter for checkpoints that select an offering.
-    ///   - errorDialogFactory: A factory that provides the content of the error dialog. The factory is called
-    ///     on the main actor and must call its completion exactly once within 5 seconds; a timeout falls back to
-    ///     the SDK's default content. This is ignored when `errorPresenter` is also provided.
-    ///   - onPassed: Called on the main actor when the checkpoint passes.
+    /// Behaves like ``checkpoint(_:customVariables:presentationMode:paywallPresenter:errorPresenter:_:)``, but
+    /// takes an `errorDialogFactory` for hybrid bridges. It overrides the global ``errorPresenter`` for this call.
     @MainActor
     func checkpoint(
         _ identifier: String,
         customVariables: [String: CustomVariableValue] = [:],
         presentationMode: FlowPresentationMode = .default,
         paywallPresenter: PaywallPresentationHandler? = nil,
-        errorDialogFactory: ErrorDialogFactory? = nil,
+        errorDialogFactory: ErrorDialogFactory?,
         _ onPassed: @escaping (CheckpointResult) -> Void
     ) {
         let params = CheckpointCallParams(

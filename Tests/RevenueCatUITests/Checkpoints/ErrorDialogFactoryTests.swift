@@ -66,8 +66,7 @@ final class ErrorDialogFactoryTests: TestCase {
     func testTimeoutFiresWithNilAndWarningIsLogged() async {
         let completed = self.expectation(description: "Timeout fires")
         var receivedDialog: CheckpointErrorDialog?? = .none
-        // Keep a strong reference so the timeout task can fire via [weak self].
-        let completion = ErrorDialogFactoryCompletion(timeoutInterval: 0.05) { dialog in
+        _ = ErrorDialogFactoryCompletion(timeoutInterval: 0.05) { dialog in
             receivedDialog = .some(dialog)
             completed.fulfill()
         }
@@ -78,7 +77,22 @@ final class ErrorDialogFactoryTests: TestCase {
             "ErrorDialogFactory timed out",
             level: .warn
         )
-        _ = completion // Keep alive until the assertion above
+    }
+
+    func testTimeoutFiresWhenFactoryDropsCompletion() async {
+        let timedOut = self.expectation(description: "Dropped completion falls back")
+        var completion: ErrorDialogFactoryCompletion? = ErrorDialogFactoryCompletion(timeoutInterval: 0.05) { dialog in
+            XCTAssertNil(dialog)
+            timedOut.fulfill()
+        }
+        weak var weakCompletion: ErrorDialogFactoryCompletion?
+        weakCompletion = completion
+
+        completion = nil
+
+        XCTAssertNotNil(weakCompletion)
+        await self.fulfillment(of: [timedOut], timeout: 1)
+        XCTAssertNil(weakCompletion)
     }
 
     func testCompletionAfterTimeoutIsIgnored() async {
@@ -92,9 +106,33 @@ final class ErrorDialogFactoryTests: TestCase {
         await self.fulfillment(of: [timedOut], timeout: 2)
         XCTAssertEqual(callCount, 1)
 
-        // Late call after timeout
         completion.complete(with: CheckpointErrorDialog(message: "Late", buttonTitle: "OK"))
         XCTAssertEqual(callCount, 1)
+    }
+
+    func testFactoryPresenterLivesUntilPresentationCompletes() {
+        weak var weakPresenter: DeferredErrorPresenter?
+        var completionCount = 0
+        let handler = makeErrorDialogFactoryHandler(
+            factory: { _, completion in completion.complete(with: nil) },
+            makePresenter: { _ in
+                let presenter = DeferredErrorPresenter()
+                weakPresenter = presenter
+                return presenter
+            }
+        )
+
+        handler(Self.errorPresentationParams, .init { completionCount += 1 })
+        let acknowledgement = weakPresenter?.completion
+
+        XCTAssertNotNil(weakPresenter)
+        XCTAssertEqual(completionCount, 0)
+
+        acknowledgement?.complete()
+        acknowledgement?.complete()
+
+        XCTAssertEqual(completionCount, 1)
+        XCTAssertNil(weakPresenter)
     }
 
     // MARK: - CheckpointCallParams factory parameter
@@ -102,7 +140,10 @@ final class ErrorDialogFactoryTests: TestCase {
     func testCheckpointCallParamsStoresFactory() {
         var factoryCalled = false
         let params = CheckpointCallParams(
-            errorDialogFactory: { _, _ in factoryCalled = true }
+            errorDialogFactory: { _, completion in
+                factoryCalled = true
+                completion.complete(with: nil)
+            }
         )
 
         XCTAssertNotNil(params.localErrorDialogFactory)
@@ -130,7 +171,8 @@ final class ErrorDialogFactoryTests: TestCase {
             }),
             defaultHandler: {
                 return { _, _ in defaultCallCount += 1 }
-            }
+            },
+            dialogPresenterFactory: { _ in MockErrorPresenter() }
         )
         handler(Self.errorPresentationParams, Self.errorPresentationCompletion)
 
@@ -148,7 +190,8 @@ final class ErrorDialogFactoryTests: TestCase {
                 errorPresenter: { _, _ in presenterCallCount += 1 },
                 errorDialogFactory: { _, _ in factoryCallCount += 1 }
             ),
-            defaultHandler: { return { _, _ in } }
+            defaultHandler: { return { _, _ in } },
+            dialogPresenterFactory: { _ in MockErrorPresenter() }
         )
         handler(Self.errorPresentationParams, Self.errorPresentationCompletion)
 
@@ -168,7 +211,8 @@ final class ErrorDialogFactoryTests: TestCase {
                 factoryCallCount += 1
                 completion.complete(with: nil)
             }),
-            defaultHandler: { return { _, _ in } }
+            defaultHandler: { return { _, _ in } },
+            dialogPresenterFactory: { _ in MockErrorPresenter() }
         )
         handler(Self.errorPresentationParams, Self.errorPresentationCompletion)
 
@@ -195,6 +239,7 @@ final class ErrorDialogFactoryTests: TestCase {
         let manager = CheckpointsManager { _, _ in .noAction(.unknownCheckpoint) }
         var presentationOrder: [String] = []
         var firstFactoryCompletion: ErrorDialogFactoryCompletion?
+        weak var firstPresenter: DeferredErrorPresenter?
         let secondStarted = self.expectation(description: "Second error presented")
 
         let firstHandler = manager.errorPresentationHandler(
@@ -202,7 +247,12 @@ final class ErrorDialogFactoryTests: TestCase {
                 presentationOrder.append("factory-\(params.checkpointIdentifier)")
                 firstFactoryCompletion = completion
             }),
-            defaultHandler: { XCTFail("Default not expected"); return { _, _ in } }
+            defaultHandler: { XCTFail("Default not expected"); return { _, _ in } },
+            dialogPresenterFactory: { _ in
+                let presenter = DeferredErrorPresenter()
+                firstPresenter = presenter
+                return presenter
+            }
         )
         let secondHandler = manager.errorPresentationHandler(
             for: .init(errorDialogFactory: { params, completion in
@@ -210,7 +260,8 @@ final class ErrorDialogFactoryTests: TestCase {
                 completion.complete(with: nil)
                 secondStarted.fulfill()
             }),
-            defaultHandler: { XCTFail("Default not expected"); return { _, _ in } }
+            defaultHandler: { XCTFail("Default not expected"); return { _, _ in } },
+            dialogPresenterFactory: { _ in MockErrorPresenter() }
         )
 
         let firstParams = ErrorPresentationParams(
@@ -229,10 +280,12 @@ final class ErrorDialogFactoryTests: TestCase {
         firstHandler(firstParams, Self.errorPresentationCompletion)
         secondHandler(secondParams, Self.errorPresentationCompletion)
 
-        // Only first should be presenting; second waits in the queue.
         XCTAssertEqual(presentationOrder, ["factory-first"])
 
         firstFactoryCompletion?.complete(with: nil)
+        XCTAssertEqual(presentationOrder, ["factory-first"])
+
+        firstPresenter?.completion?.complete()
 
         await self.fulfillment(of: [secondStarted], timeout: 1)
         XCTAssertEqual(presentationOrder, ["factory-first", "factory-second"])
@@ -309,6 +362,19 @@ private final class MockErrorPresenter: ErrorPresenter {
 
     func present(params: ErrorPresentationParams, completion: ErrorPresentationCompletion) {
         self.callCount += 1
+        completion.complete()
+    }
+
+}
+
+@MainActor
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private final class DeferredErrorPresenter: ErrorPresenter {
+
+    private(set) var completion: ErrorPresentationCompletion?
+
+    func present(params: ErrorPresentationParams, completion: ErrorPresentationCompletion) {
+        self.completion = completion
     }
 
 }

@@ -15,13 +15,7 @@
 import Foundation
 @_spi(Internal) import RevenueCat
 
-/// Provides custom content for a checkpoint error dialog.
-///
-/// The factory is called with the error parameters for the failed checkpoint. Call
-/// ``ErrorDialogFactoryCompletion/complete(with:)`` exactly once with the dialog content to use,
-/// or with `nil` to use the SDK's default content. If the completion is not called within
-/// ``ErrorDialogFactoryCompletion/timeoutInterval`` seconds, the SDK falls back to the default content
-/// and any later completion call is ignored.
+/// Provides custom content for a checkpoint error dialog through an ``ErrorDialogFactoryCompletion``.
 @_spi(Internal)
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public typealias ErrorDialogFactory = @MainActor (
@@ -29,11 +23,10 @@ public typealias ErrorDialogFactory = @MainActor (
     ErrorDialogFactoryCompletion
 ) -> Void
 
-/// Delivers the dialog content for the SDK to show for a checkpoint error.
+/// Delivers the dialog content for a checkpoint error, or `nil` for the SDK's default content.
 ///
-/// Call ``complete(with:)`` exactly once. Later calls on the same completion are ignored.
-/// If the completion is not called within the timeout the SDK falls back to the default content;
-/// any later call is then also ignored.
+/// Call ``complete(with:)`` exactly once. Later calls are ignored. If it isn't called within five seconds,
+/// the SDK falls back to the default content.
 @_spi(Internal)
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @MainActor
@@ -49,35 +42,35 @@ public final class ErrorDialogFactoryCompletion {
         onComplete: @escaping @MainActor (CheckpointErrorDialog?) -> Void
     ) {
         self.handler = onComplete
-        self.timeoutTask = Task { @MainActor [weak self] in
+        // Keep the completion alive even if the factory does not retain it.
+        self.timeoutTask = Task { @MainActor in
             try? await Task.sleep(nanoseconds: UInt64(timeoutInterval * 1_000_000_000))
             guard !Task.isCancelled else { return }
-            self?.invokeOnTimeout()
+            self.invokeOnTimeout(timeoutInterval: timeoutInterval)
         }
     }
 
     /// Delivers the dialog content to the SDK.
-    ///
-    /// Pass `nil` to use the SDK's default dialog content. Later calls after the first, or calls received
-    /// after the timeout has elapsed, are ignored.
     public func complete(with dialog: CheckpointErrorDialog?) {
-        self.invoke(dialog, fromTimeout: false)
+        self.invoke(dialog)
     }
 
-    private func invoke(_ dialog: CheckpointErrorDialog?, fromTimeout: Bool) {
-        if !fromTimeout {
-            self.timeoutTask?.cancel()
-            self.timeoutTask = nil
-        }
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private extension ErrorDialogFactoryCompletion {
+
+    func invoke(_ dialog: CheckpointErrorDialog?) {
         guard let handler = self.handler else { return }
         self.handler = nil
+        self.timeoutTask?.cancel()
+        self.timeoutTask = nil
         handler(dialog)
     }
 
-    private func invokeOnTimeout() {
-        Logger.warning("ErrorDialogFactory timed out after \(Self.defaultTimeoutInterval) seconds; " +
-                       "falling back to the default error dialog.")
-        self.invoke(nil, fromTimeout: true)
+    func invokeOnTimeout(timeoutInterval: TimeInterval) {
+        Logger.warning(Strings.error_dialog_factory_timed_out(timeoutInterval: timeoutInterval))
+        self.invoke(nil)
     }
 
 }
@@ -89,13 +82,16 @@ public final class ErrorDialogFactoryCompletion {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 func makeErrorDialogFactoryHandler(
     factory: @escaping ErrorDialogFactory,
-    preferredUILocaleProvider: @escaping DefaultErrorPresenter.PreferredUILocaleProvider
+    makePresenter: @escaping @MainActor (CheckpointErrorDialog?) -> any ErrorPresenter
 ) -> ErrorPresentationHandler {
     return { params, presentationCompletion in
         let factoryCompletion = ErrorDialogFactoryCompletion { dialog in
-            DefaultErrorPresenter
-                .makePresenter(for: dialog, preferredUILocaleProvider: preferredUILocaleProvider)
-                .present(params: params, completion: presentationCompletion)
+            // Keep the presenter alive until acknowledgement, then break the ownership cycle.
+            var presenter: (any ErrorPresenter)? = makePresenter(dialog)
+            presenter?.present(params: params, completion: .init {
+                presenter = nil
+                presentationCompletion.complete()
+            })
         }
         factory(params, factoryCompletion)
     }
