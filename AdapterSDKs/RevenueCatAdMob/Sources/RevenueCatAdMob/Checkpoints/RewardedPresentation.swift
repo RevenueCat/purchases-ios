@@ -103,13 +103,11 @@ internal final class RewardedPresentation: NSObject, GoogleMobileAds.FullScreenC
 
     enum Outcome {
 
-        /// The ad was dismissed. The verification result is `nil` when the customer closed the ad before
-        /// earning the reward, so verification never started.
-        case shown(RewardVerificationResult?)
+        case shown
         case failed(NSError)
 
-        /// A verified reward reaches the app through the checkpoint result, as whatever it granted. A reward that
-        /// failed verification is only logged: the customer watched the ad in full, so the checkpoint still passes
+        /// A verified reward reaches the app through the refreshed customer info. A reward that failed
+        /// verification is only logged: the customer watched the ad in full, so the checkpoint still passes
         /// rather than presenting an error for an ad that was shown.
         @MainActor
         var presentationResult: AdPresentationResult {
@@ -137,11 +135,10 @@ internal final class RewardedPresentation: NSObject, GoogleMobileAds.FullScreenC
     private var completion: (@MainActor (Outcome) -> Void)?
     /// AdMob does not retain a presented rewarded ad on the caller's behalf.
     private var loadedAd: (any RewardedPresentableAd)?
-    private var adUnitID: String?
 
     private var isDismissed = false
     private var isAwaitingVerification = false
-    private var verificationResult: RewardVerificationResult?
+    private var isVerificationSettled = false
 
     init(
         format: Format,
@@ -161,7 +158,6 @@ internal final class RewardedPresentation: NSObject, GoogleMobileAds.FullScreenC
         completion: @escaping @MainActor (Outcome) -> Void
     ) {
         self.completion = completion
-        self.adUnitID = adUnitID
 
         guard mediator == .adMob else {
             Logger.warn(CheckpointPresenterStrings.rewarded_unsupported_mediator(
@@ -202,8 +198,15 @@ internal final class RewardedPresentation: NSObject, GoogleMobileAds.FullScreenC
                     self?.isAwaitingVerification = true
                 },
                 rewardVerificationCompleted: { [weak self] result in
-                    self?.verificationResult = result
-                    self?.finishIfSettled()
+                    guard let self else { return }
+                    if result.verifiedReward == nil {
+                        Logger.warn(CheckpointPresenterStrings.rewarded_verification_failed(
+                            adFormat: self.format.adFormat,
+                            adUnitID: adUnitID
+                        ))
+                    }
+                    self.isVerificationSettled = true
+                    self.finishIfSettled()
                 }
             )
         }
@@ -231,20 +234,9 @@ internal final class RewardedPresentation: NSObject, GoogleMobileAds.FullScreenC
     private func finishIfSettled() {
         guard self.isDismissed else { return }
 
-        guard self.isAwaitingVerification else {
-            self.finish(.shown(nil))
-            return
-        }
+        guard !self.isAwaitingVerification || self.isVerificationSettled else { return }
 
-        guard let result = self.verificationResult else { return }
-
-        if result.verifiedReward == nil {
-            Logger.warn(CheckpointPresenterStrings.rewarded_verification_failed(
-                adFormat: self.format.adFormat,
-                adUnitID: self.adUnitID ?? ""
-            ))
-        }
-        self.finish(.shown(result))
+        self.finish(.shown)
     }
 
     private func finish(_ outcome: Outcome) {
