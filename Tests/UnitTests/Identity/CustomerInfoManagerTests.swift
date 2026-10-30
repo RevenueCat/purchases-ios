@@ -101,6 +101,7 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
         super.tearDown()
 
         self.customerInfoMonitorDisposable?()
+        CustomerInfo.dateProvider = .init()
     }
 
     func testConcurrentCacheWriteAndReadDoesNotDeadlock() throws {
@@ -713,6 +714,198 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
         expect(self.customerInfoManager.lastSentCustomerInfo) === expiredInfo
     }
 
+    // MARK: - Entitlement expiration
+
+    func testEntitlementExpirationIsTrackedOnlyForPromotionalEntitlements() throws {
+        let now = Date()
+        let expirationDate = now.addingTimeInterval(60 * 60)
+        let scheduler = EntitlementExpirationScheduler(dateProvider: MockDateProvider(stubbedNow: now))
+        let manager = self.createManager(now: now, scheduler: scheduler)
+
+        manager.cache(customerInfo: try Self.customerInfo(requestDate: now, expirationDate: expirationDate),
+                      appUserID: Self.appUserID)
+        expect(scheduler.isScheduled) == false
+
+        manager.cache(customerInfo: try Self.customerInfo(requestDate: now,
+                                                          expirationDate: expirationDate,
+                                                          store: "promotional"),
+                        appUserID: Self.appUserID)
+        expect(scheduler.isScheduled) == true
+    }
+
+    func testEntitlementExpirationIsNotTrackedForNonCurrentUser() throws {
+        let now = Date()
+        let scheduler = EntitlementExpirationScheduler(dateProvider: MockDateProvider(stubbedNow: now))
+        let manager = self.createManager(now: now, scheduler: scheduler)
+        self.mockCurrentUserProvider = MockCurrentUserProvider(mockAppUserID: "myUser")
+        manager.currentUserProvider = self.mockCurrentUserProvider
+
+        manager.cache(customerInfo: try Self.customerInfo(requestDate: now,
+                                                          expirationDate: now.addingTimeInterval(60 * 60),
+                                                          store: "promotional"),
+                      appUserID: "previousUser")
+        expect(scheduler.isScheduled) == false
+    }
+
+    func testNonPromotionalEntitlementExpirationDoesNotSendUpdate() async throws {
+        let now = Date()
+        let afterExpiration = now.addingTimeInterval(2 * 60 * 60)
+        let activeInfo = try Self.customerInfo(requestDate: now, expirationDate: now.addingTimeInterval(60 * 60))
+        expect(activeInfo.entitlements.active.keys).to(contain("pro"))
+
+        let manager = self.createManager(
+            now: afterExpiration,
+            scheduler: .init(dateProvider: MockDateProvider(stubbedNow: afterExpiration))
+        )
+        var changes: [(old: CustomerInfo?, new: CustomerInfo)] = []
+        let disposable = manager.monitorChanges { changes.append(($0, $1)) }
+        defer { disposable() }
+
+        manager.cache(customerInfo: activeInfo, appUserID: Self.appUserID)
+
+        await expect(changes).toEventually(haveCount(1))
+        await expect(changes).toNever(haveCount(2), until: .milliseconds(200))
+        expect(changes.last?.new.entitlements.active.keys).to(contain("pro"))
+    }
+
+    func testPromotionalEntitlementExpirationSendsCachedInfoWithoutFetchingOrCaching() async throws {
+        let (activeInfo, beforeExpiration, afterExpiration) = try Self.promotionalCustomerInfoThenExpire()
+
+        let manager = self.createManager(
+            now: afterExpiration,
+            scheduler: .init(sleeper: EntitlementExpirationSchedulerTests.ImmediateSleeper(),
+                             dateProvider: MockDateProvider(stubbedNow: beforeExpiration,
+                                                            subsequentNows: afterExpiration))
+        )
+        var changes: [(old: CustomerInfo?, new: CustomerInfo)] = []
+        let disposable = manager.monitorChanges { changes.append(($0, $1)) }
+        defer { disposable() }
+
+        manager.cache(customerInfo: activeInfo, appUserID: Self.appUserID)
+
+        await expect(changes).toEventually(haveCount(2))
+
+        let cachedInfo = try manager.cachedCustomerInfo(appUserID: Self.appUserID)
+        expect(changes.last?.old) === activeInfo
+        expect(changes.last?.new) == cachedInfo
+        expect(changes.last?.new.isLoadedFromCache) == true
+        expect(changes.last?.new.requestDate) == activeInfo.requestDate
+        expect(changes.last?.new.entitlements.active).to(beEmpty())
+        expect(cachedInfo?.entitlements.active).to(beEmpty())
+        expect(self.mockBackend.invokedGetSubscriberDataCount) == 0
+        expect(self.mockDeviceCache.cacheCustomerInfoCount) == 1
+
+        manager.checkEntitlementExpirations()
+
+        await expect(changes).toNever(haveCount(3), until: .milliseconds(200))
+    }
+
+    func testCheckEntitlementExpirationsSendsUpdateForPromotionalEntitlementsExpiredWhileSuspended() async throws {
+        let (activeInfo, beforeExpiration, afterExpiration) = try Self.promotionalCustomerInfoThenExpire()
+
+        // The scheduler's sleeping task does not fire on its own, as when the process is suspended.
+        let manager = self.createManager(
+            now: afterExpiration,
+            scheduler: .init(dateProvider: MockDateProvider(stubbedNow: beforeExpiration,
+                                                            subsequentNows: afterExpiration))
+        )
+        var changes: [(old: CustomerInfo?, new: CustomerInfo)] = []
+        let disposable = manager.monitorChanges { changes.append(($0, $1)) }
+        defer { disposable() }
+
+        manager.cache(customerInfo: activeInfo, appUserID: Self.appUserID)
+        await expect(changes).toEventually(haveCount(1))
+
+        manager.checkEntitlementExpirations()
+
+        await expect(changes).toEventually(haveCount(2))
+        expect(changes.last?.new.entitlements.active).to(beEmpty())
+        expect(changes.last?.new.requestDate) == activeInfo.requestDate
+        expect(self.mockBackend.invokedGetSubscriberDataCount) == 0
+        expect(self.mockDeviceCache.cacheCustomerInfoCount) == 1
+    }
+
+    func testEntitlementExpirationDoesNotSendUpdateWithoutObservers() throws {
+        let now = Date()
+        let activeInfo = try Self.customerInfo(requestDate: now,
+                                               expirationDate: now.addingTimeInterval(60 * 60),
+                                               store: "promotional")
+        let scheduler = EntitlementExpirationScheduler(dateProvider: MockDateProvider(stubbedNow: now))
+        let manager = self.createManager(now: now, scheduler: scheduler)
+
+        manager.cache(customerInfo: activeInfo, appUserID: Self.appUserID)
+        scheduler.handler?(Self.appUserID)
+
+        expect(manager.lastSentCustomerInfo).to(beNil())
+        expect(self.mockBackend.invokedGetSubscriberDataCount) == 0
+    }
+
+    func testEntitlementExpirationDoesNotPreventSubsequentStaleCacheRefetch() async throws {
+        let (activeInfo, beforeExpiration, afterExpiration) = try Self.promotionalCustomerInfoThenExpire()
+        let renewedInfo = try Self.customerInfo(requestDate: afterExpiration,
+                                                expirationDate: afterExpiration.addingTimeInterval(60 * 60),
+                                                store: "promotional")
+
+        let manager = self.createManager(
+            now: afterExpiration,
+            scheduler: .init(dateProvider: MockDateProvider(stubbedNow: beforeExpiration,
+                                                            subsequentNows: afterExpiration))
+        )
+        var changes: [(old: CustomerInfo?, new: CustomerInfo)] = []
+        let disposable = manager.monitorChanges { changes.append(($0, $1)) }
+        defer { disposable() }
+
+        manager.cache(customerInfo: activeInfo, appUserID: Self.appUserID)
+        manager.checkEntitlementExpirations()
+
+        await expect(changes).toEventually(haveCount(2))
+        expect(changes.last?.new.entitlements.active).to(beEmpty())
+        expect(self.mockBackend.invokedGetSubscriberDataCount) == 0
+        expect(self.mockDeviceCache.cacheCustomerInfoCount) == 1
+
+        self.mockDeviceCache.stubbedIsCustomerInfoCacheStale = true
+        self.mockBackend.stubbedGetCustomerInfoResult = .success(renewedInfo)
+
+        let result = try await manager.customerInfo(appUserID: Self.appUserID,
+                                                    trackDiagnostics: false,
+                                                    fetchPolicy: .notStaleCachedOrFetched)
+
+        expect(result) === renewedInfo
+        expect(self.mockBackend.invokedGetSubscriberDataCount) == 1
+        expect(self.mockDeviceCache.cacheCustomerInfoCount) == 2
+        await expect(changes).toEventually(haveCount(3))
+        expect(changes.last?.new) === renewedInfo
+        expect(changes.last?.new.entitlements.active.keys).to(contain("pro"))
+    }
+
+    func testEntitlementExpirationSkipsUpdateWhenNewerCustomerInfoWasCachedInBetween() async throws {
+        let now = Date()
+        let activeInfo = try Self.customerInfo(requestDate: now,
+                                               expirationDate: now.addingTimeInterval(60 * 60),
+                                               store: "promotional")
+        let renewedInfo = try Self.customerInfo(requestDate: now.addingTimeInterval(1),
+                                                expirationDate: now.addingTimeInterval(2 * 60 * 60),
+                                                store: "promotional")
+        let scheduler = EntitlementExpirationScheduler(dateProvider: MockDateProvider(stubbedNow: now))
+        let manager = self.createManager(now: now, scheduler: scheduler)
+        var changes: [(old: CustomerInfo?, new: CustomerInfo)] = []
+        let disposable = manager.monitorChanges { changes.append(($0, $1)) }
+        defer { disposable() }
+
+        manager.cache(customerInfo: activeInfo, appUserID: Self.appUserID)
+        let staleData = try XCTUnwrap(self.mockDeviceCache.cachedCustomerInfo[Self.appUserID])
+        manager.cache(customerInfo: renewedInfo, appUserID: Self.appUserID)
+        await expect(changes).toEventually(haveCount(2))
+
+        // `renewedInfo` landed after the handler read `activeInfo` from the cache but before it compared
+        // against `lastSentCustomerInfo`.
+        self.mockDeviceCache.cachedCustomerInfo[Self.appUserID] = staleData
+        scheduler.handler?(Self.appUserID)
+
+        await expect(changes).toNever(haveCount(3), until: .milliseconds(200))
+        expect(manager.lastSentCustomerInfo) === renewedInfo
+    }
+
     func testCacheCustomerInfoSendsToDelegateIfAppUserIDIsCurrent() {
         self.mockCurrentUserProvider = MockCurrentUserProvider(mockAppUserID: "myUser")
         self.customerInfoManager.currentUserProvider = self.mockCurrentUserProvider
@@ -833,6 +1026,86 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
 }
 
 private extension CustomerInfoManagerTests {
+
+    func createManager(now: Date, scheduler: EntitlementExpirationScheduler) -> CustomerInfoManager {
+        return self.createManager(dateProvider: MockDateProvider(stubbedNow: now), scheduler: scheduler)
+    }
+
+    func createManager(dateProvider: DateProvider, scheduler: EntitlementExpirationScheduler) -> CustomerInfoManager {
+        return CustomerInfoManager(
+            offlineEntitlementsManager: self.mockOfflineEntitlementsManager,
+            operationDispatcher: self.mockOperationDispatcher,
+            deviceCache: self.mockDeviceCache,
+            backend: self.mockBackend,
+            transactionFetcher: self.mockTransationFetcher,
+            transactionPoster: self.mockTransactionPoster,
+            systemInfo: self.mockSystemInfo,
+            dateProvider: dateProvider,
+            entitlementExpirationScheduler: scheduler
+        )
+    }
+
+    /// Returns a `CustomerInfo` decoded while its promotional entitlement is active, then moves
+    /// `CustomerInfo.dateProvider` past the expiration so any later decoding sees it expired.
+    static func promotionalCustomerInfoThenExpire() throws -> (
+        info: CustomerInfo, beforeExpiration: Date, afterExpiration: Date
+    ) {
+        let expirationDate = Date(timeIntervalSince1970: 1_800_000_000)
+        let beforeExpiration = expirationDate.addingTimeInterval(-60 * 60)
+        let afterExpiration = expirationDate.addingTimeInterval(1)
+
+        CustomerInfo.dateProvider = MockDateProvider(stubbedNow: beforeExpiration)
+        let info = try Self.customerInfo(requestDate: beforeExpiration,
+                                         expirationDate: expirationDate,
+                                         store: "promotional")
+        expect(info.entitlements.active.keys).to(contain("pro"))
+        CustomerInfo.dateProvider = MockDateProvider(stubbedNow: afterExpiration)
+
+        return (info, beforeExpiration, afterExpiration)
+    }
+
+    static func customerInfo(requestDate: Date,
+                             expirationDate: Date,
+                             store: String = "app_store") throws -> CustomerInfo {
+        let expiration = ISO8601DateFormatter.default.string(from: expirationDate)
+
+        return try CustomerInfo(data: [
+            "request_date": ISO8601DateFormatter.default.string(from: requestDate),
+            "subscriber": [
+                "original_app_user_id": Self.appUserID,
+                "first_seen": "2019-06-17T16:05:33Z",
+                "subscriptions": [
+                    "monthly": [
+                        "expires_date": expiration,
+                        "purchase_date": "2019-06-26T23:45:40Z",
+                        "store": store
+                    ] as [String: Any]
+                ],
+                "non_subscriptions": [:] as [String: Any],
+                "entitlements": [
+                    "pro": [
+                        "product_identifier": "monthly",
+                        "expires_date": expiration,
+                        "purchase_date": "2019-06-26T23:45:40Z"
+                    ] as [String: Any]
+                ]
+            ] as [String: Any]
+        ])
+    }
+
+    static func customerInfo(dimensions: [String: Any]) throws -> CustomerInfo {
+        return try CustomerInfo(data: [
+            "request_date": "2023-12-21T02:40:36Z",
+            "dimensions": dimensions,
+            "subscriber": [
+                "original_app_user_id": Self.appUserID,
+                "first_seen": "2019-06-17T16:05:33Z",
+                "subscriptions": [String: Any](),
+                "other_purchases": [String: Any](),
+                "original_application_version": NSNull()
+            ] as [String: Any]
+        ])
+    }
 
 }
 
@@ -1739,6 +2012,84 @@ private extension CustomerInfoManagerSubscriberAttributesTests {
 
     static func attribute(_ key: String, _ value: String, synced: Bool, at setTime: Date) -> SubscriberAttribute {
         return SubscriberAttribute(withKey: key, value: value, isSynced: synced, setTime: setTime)
+    }
+
+}
+
+class EntitlementExpirationSchedulerTests: TestCase {
+
+    private static let appUserID = "app_user_id"
+
+    func testSchedulesOnlyForPromotionalEntitlements() throws {
+        let now = Date()
+        let expirationDate = now.addingTimeInterval(60 * 60)
+        let scheduler = EntitlementExpirationScheduler(dateProvider: MockDateProvider(stubbedNow: now))
+
+        scheduler.track(try Self.customerInfo(expirationDate: expirationDate, store: "app_store"),
+                        appUserID: Self.appUserID)
+        expect(scheduler.isScheduled) == false
+
+        scheduler.track(try Self.customerInfo(expirationDate: expirationDate, store: "promotional"),
+                        appUserID: Self.appUserID)
+        expect(scheduler.isScheduled) == true
+    }
+
+    func testFiresAfterExactExpirationDateInsteadOfDroppingIt() throws {
+        let now = Date()
+        let expirationDate = now.addingTimeInterval(60 * 60)
+        let afterExpiration = expirationDate.addingTimeInterval(1)
+        // The clock stays at `expirationDate` for the first wake-up too, so the scheduler must check again
+        // rather than consider the key handled.
+        let scheduler = EntitlementExpirationScheduler(
+            sleeper: ImmediateSleeper(),
+            dateProvider: MockDateProvider(stubbedNow: expirationDate,
+                                           subsequentNows: expirationDate, afterExpiration)
+        )
+        let fired: Atomic<[String]> = .init([])
+        scheduler.handler = { appUserID in fired.modify { $0.append(appUserID) } }
+
+        scheduler.track(try Self.customerInfo(expirationDate: expirationDate, store: "promotional"),
+                        appUserID: Self.appUserID)
+
+        expect(fired.value).toEventually(equal([Self.appUserID]))
+        expect(scheduler.isScheduled) == false
+    }
+
+    func testSleepIsClampedForFarFutureExpiration() throws {
+        let now = Date()
+        let sleeper = RecordingSleeper()
+        let scheduler = EntitlementExpirationScheduler(sleeper: sleeper,
+                                                       dateProvider: MockDateProvider(stubbedNow: now))
+
+        scheduler.track(try Self.customerInfo(expirationDate: now.addingTimeInterval(200 * 365 * 24 * 60 * 60),
+                                              store: "promotional"),
+                        appUserID: Self.appUserID)
+
+        expect(sleeper.seconds.value).toEventually(equal([EntitlementExpirationScheduler.maxSleepInterval.seconds]))
+    }
+
+}
+
+private extension EntitlementExpirationSchedulerTests {
+
+    struct ImmediateSleeper: AsyncSleeper {
+        func sleep(seconds: TimeInterval) async throws {}
+    }
+
+    /// Records the requested interval and then waits long enough for the test to finish without checking again.
+    struct RecordingSleeper: AsyncSleeper {
+        let seconds: Atomic<[TimeInterval]> = .init([])
+
+        func sleep(seconds: TimeInterval) async throws {
+            self.seconds.modify { $0.append(seconds) }
+            try await Task.sleep(nanoseconds: DispatchTimeInterval.minutes(1).nanoseconds)
+        }
+    }
+
+    static func customerInfo(expirationDate: Date, store: String) throws -> CustomerInfo {
+        return try CustomerInfoManagerTests.customerInfo(requestDate: expirationDate.addingTimeInterval(-60 * 60),
+                                                         expirationDate: expirationDate,
+                                                         store: store)
     }
 
 }
