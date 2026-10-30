@@ -9,7 +9,7 @@ import Foundation
 #if os(iOS) && canImport(GoogleMobileAds)
 import GoogleMobileAds
 @_spi(Internal) import RevenueCat
-@_spi(InviteOnlyCheckpointsApi) import RevenueCatUI
+@_spi(InviteOnlyCheckpointsApi) @_spi(Internal) import RevenueCatUI
 import UIKit
 
 /// The subset of `GoogleMobileAds.RewardedAd` / `RewardedInterstitialAd` the presentation needs, so tests
@@ -281,8 +281,7 @@ internal final class RewardedPresentation: NSObject, GoogleMobileAds.FullScreenC
     }
 
     private static func currentViewController() -> UIViewController? {
-        let application = UIApplication.value(forKey: "sharedApplication") as? UIApplication
-        return application?.currentPresentationViewController
+        UIApplication.extensionSafeApplication?.currentPresentationViewController
     }
 
 }
