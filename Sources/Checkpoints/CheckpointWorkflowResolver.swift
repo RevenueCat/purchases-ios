@@ -353,19 +353,17 @@ final class DefaultCheckpointWorkflowResolver: CheckpointWorkflowResolver {
             return Self.unservable(rule, reason: "step '\(step.id)' has invalid gating")
         }
 
-        let singleStep = SingleStepWorkflow(workflowData: workflowData, step: initialStep)
         if initialStep.isOfferingStep {
             return await self.resolveOfferingStep(
-                rule,
-                in: singleStep,
-                checkpointIdentifier: checkpointIdentifier,
-                traceID: traceID,
-                stepEvents: &stepEvents
+                rule, step: initialStep, in: workflowData,
+                checkpointIdentifier: checkpointIdentifier, traceID: traceID, stepEvents: &stepEvents
             )
         }
 
         if initialStep.type == Self.adStepType {
-            return await self.resolveAdStep(rule, in: singleStep, traceID: traceID, stepEvents: &stepEvents)
+            return await self.resolveAdStep(
+                rule, step: initialStep, in: workflowData, traceID: traceID, stepEvents: &stepEvents
+            )
         }
 
         if workflow.steps.values.contains(where: \.isOfferingStep) {

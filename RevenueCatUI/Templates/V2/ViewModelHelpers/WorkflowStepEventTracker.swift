@@ -51,7 +51,6 @@ final class WorkflowStepEventTracker {
     }
 
     /// Emits `stepCompleted` for the step being left, then `stepStarted` for the step being entered.
-    /// Mirrors Android's `trackWorkflowStepNavigation`.
     func trackNavigation(from fromStep: WorkflowStep, to toStep: WorkflowStep, entryReason: WorkflowEvent.EntryReason) {
         self.trackStepCompleted(fromStep, toStepId: toStep.id)
         self.trackStepStarted(toStep, fromStepId: fromStep.id, entryReason: entryReason)
