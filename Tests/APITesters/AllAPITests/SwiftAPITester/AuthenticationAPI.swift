@@ -31,6 +31,7 @@ func checkAuthenticationAPI() {
 
     let _: Identity = Identity.oidc(Data())
     let _: Identity = Identity.firebase(Data())
+    let _: Identity = Identity.google(Data())
 
     let _: IdentitySource = IdentitySource.anonymous
     let _: IdentitySource = IdentitySource.signInWithApple
