@@ -62,18 +62,32 @@ final class CheckpointPresenter: CheckpointPresenterType {
         } catch CheckpointError.presentationContextUnavailable {
             throw CheckpointError.presentationContextUnavailable
         } catch {
-            await withCheckedContinuation { continuation in
-                presentation.errorPresentationHandler(
-                    .init(
-                        checkpointIdentifier: presentation.checkpointIdentifier,
-                        error: error,
-                        customVariables: presentation.customVariables,
-                        kind: .flowCouldNotBeShown
-                    ),
-                    .init { continuation.resume() }
-                )
-            }
+            await self.presentStartupError(
+                error,
+                checkpointIdentifier: presentation.checkpointIdentifier,
+                customVariables: presentation.customVariables,
+                handler: presentation.errorPresentationHandler
+            )
             return .failed
+        }
+    }
+
+    private func presentStartupError(
+        _ error: any Error,
+        checkpointIdentifier: String,
+        customVariables: [String: CustomVariableValue],
+        handler: ErrorPresentationHandler
+    ) async {
+        await withCheckedContinuation { continuation in
+            handler(
+                .init(
+                    checkpointIdentifier: checkpointIdentifier,
+                    error: error,
+                    customVariables: customVariables,
+                    kind: .flowCouldNotBeShown
+                ),
+                .init { continuation.resume() }
+            )
         }
     }
 
@@ -108,6 +122,72 @@ final class CheckpointPresenter: CheckpointPresenterType {
             params: params,
             presentationHandler: presentationHandler
         )
+    }
+
+    func presentAd(
+        _ presentation: AdPresentationRequest,
+        adPresenter: AdPresenter
+    ) async throws -> CheckpointPresentationOutcome {
+        guard let token = self.slot.claim() else {
+            throw CheckpointError.operationAlreadyInProgress
+        }
+        defer { self.slot.release(token) }
+
+        let result = await AdPresentation(slot: self.slot, token: token).present(
+            params: presentation.params,
+            presenter: adPresenter
+        )
+        guard let error = result.error else {
+            // A verified reward refreshes the cached customer before the presenter completes, so the result
+            // reads the cache like any flow that produced no customer of its own.
+            return .completed(customerInfo: nil)
+        }
+
+        await self.presentStartupError(
+            error,
+            checkpointIdentifier: presentation.params.checkpointIdentifier,
+            customVariables: presentation.customVariables,
+            handler: presentation.errorPresentationHandler
+        )
+        return .failed
+    }
+
+    /// Bridges an ad presenter's completion callback into the checkpoint lifecycle.
+    @MainActor
+    private final class AdPresentation {
+
+        private let slot: CheckpointPresentationSlot
+        private let token: CheckpointPresentationSlot.Token
+        private var pendingContinuation: CheckedContinuation<AdPresentationResult, Never>?
+
+        init(slot: CheckpointPresentationSlot, token: CheckpointPresentationSlot.Token) {
+            self.slot = slot
+            self.token = token
+        }
+
+        func present(
+            params: AdPresentationParams,
+            presenter: AdPresenter
+        ) async -> AdPresentationResult {
+            return await withCheckedContinuation { continuation in
+                self.pendingContinuation = continuation
+                presenter.present(params: params) { [weak self] result in
+                    self?.completed(result)
+                }
+            }
+        }
+
+        private func completed(_ result: AdPresentationResult) {
+            guard self.slot.contains(self.token),
+                  let continuation = self.takeContinuation() else { return }
+            continuation.resume(returning: result)
+        }
+
+        private func takeContinuation() -> CheckedContinuation<AdPresentationResult, Never>? {
+            defer { self.pendingContinuation = nil }
+            return self.pendingContinuation
+        }
+
     }
 
     /// Bridges a paywall presenter's completion callback into the checkpoint lifecycle.
@@ -196,6 +276,11 @@ protocol CheckpointPresenterType: AnyObject {
         params: PaywallPresentationParams,
         globalPaywallPresenter: PaywallPresenter?,
         localPaywallPresentationHandler: PaywallPresentationHandler?
+    ) async throws -> CheckpointPresentationOutcome
+
+    func presentAd(
+        _ presentation: AdPresentationRequest,
+        adPresenter: AdPresenter
     ) async throws -> CheckpointPresentationOutcome
 
 }

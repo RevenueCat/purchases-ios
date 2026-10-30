@@ -68,6 +68,8 @@ Use our [Swift Style Guide](./SwiftStyleGuide.swift) to ensure that the style is
 
 #### 6. Write tests for your fix/new functionality.
 
+Read [TESTING.md](TESTING.md) to select the test type and verify behavior changes.
+
 You can run the tests by selecting the All Tests Scheme in Xcode and hitting `Cmd+U`.
 The tests are written in Swift, using XCTest and [Nimble](https://github.com/quick/nimble).
 

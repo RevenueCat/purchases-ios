@@ -11,6 +11,8 @@ import Foundation
 
 protocol WorkflowsConfigProviderType {
 
+    var configGeneration: Int { get }
+
     func workflowId(forOfferingId offeringId: String) async -> String?
     func workflowIds() async -> [String]
     func getWorkflow(workflowId: String) async -> Result<WorkflowDataResult, WorkflowResolutionError>
@@ -69,6 +71,8 @@ final class WorkflowsConfigProvider: WorkflowsConfigProviderType {
         RemoteConfiguration.ConfigTopic,
         PrefetchedWorkflowCache
     >()
+
+    var configGeneration: Int { self.manager.configGeneration }
 
     init(
         manager: RemoteConfigManagerType,
