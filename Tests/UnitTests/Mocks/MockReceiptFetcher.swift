@@ -15,6 +15,7 @@ import Foundation
 
 class MockReceiptFetcher: ReceiptFetcher {
 
+    var onReceiptData: (() -> Void)?
     var receiptDataCalled = false
     var shouldReturnReceipt = true
     var shouldReturnZeroBytesReceipt = false
@@ -24,6 +25,7 @@ class MockReceiptFetcher: ReceiptFetcher {
     var mockReceiptURL: URL?
 
     override func receiptData(refreshPolicy: ReceiptRefreshPolicy, completion: @escaping ((Data?, URL?) -> Void)) {
+        self.onReceiptData?()
         self.receiptDataReceivedRefreshPolicy = refreshPolicy
         self.receiptDataCalled = true
         self.receiptDataTimesCalled += 1

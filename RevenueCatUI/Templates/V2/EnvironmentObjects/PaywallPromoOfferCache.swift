@@ -40,11 +40,23 @@ internal final class PaywallPromoOfferCache: ObservableObject {
     /// (dummy signed offers when `true`, ineligible when `false`), so paywall previews/mocks can
     /// show promo components and pricing without a real subscriber or a backend-signed offer.
     private let simulatedEligibility: Bool?
+    private let appUserID: () -> String?
+    private let promotionalOffers: ([PromotionalOfferRequest]) async -> [PromotionalOfferResult]
+    private var cachedAppUserID: String?
+    private var nextRequestID = 0
+    private var latestPublishedRequestIDsByProductID: [ProductID: Int] = [:]
 
     // MARK: - Init
 
-    init(subscriptionHistoryTracker: SubscriptionHistoryTracker?, simulatedEligibility: Bool? = nil) {
+    init(subscriptionHistoryTracker: SubscriptionHistoryTracker?,
+         simulatedEligibility: Bool? = nil,
+         appUserID: @escaping () -> String? = { Purchases.isConfigured ? Purchases.shared.appUserID : nil },
+         promotionalOffers: @escaping ([PromotionalOfferRequest]) async -> [PromotionalOfferResult] = { requests in
+             await Purchases.shared.promotionalOffers(for: requests)
+         }) {
         self.simulatedEligibility = simulatedEligibility
+        self.appUserID = appUserID
+        self.promotionalOffers = promotionalOffers
 
         // Simulate mode passes no tracker: it only ever produces `.signedEligible`/`.ineligible` entries,
         // which never consult `hasAnySubscriptionHistory`, so we skip the tracker's StoreKit work.
@@ -83,7 +95,9 @@ internal final class PaywallPromoOfferCache: ObservableObject {
     func isMostLikelyEligible(for package: Package?) -> Bool {
         guard let package else { return false }
 
-        let status = cache[package.storeProduct.id] ?? .ineligible
+        let status = self.cachedAppUserID == self.appUserID()
+            ? self.cache[package.storeProduct.id] ?? .ineligible
+            : .ineligible
         switch status {
         case .unknown, .signedEligible:
             return true
@@ -93,7 +107,8 @@ internal final class PaywallPromoOfferCache: ObservableObject {
     }
 
     func get(for package: Package?) -> PromotionalOffer? {
-        guard let package else { return nil }
+        guard let package,
+              self.cachedAppUserID == self.appUserID() else { return nil }
 
         if case .signedEligible(let promoOffer) = cache[package.storeProduct.id] {
             return promoOffer
@@ -111,16 +126,19 @@ internal final class PaywallPromoOfferCache: ObservableObject {
     // MARK: - Internal Logic
 
     private func checkSignedEligibility(packageInfos: [PackageInfo]) async {
+        let appUserID = self.appUserID()
+        let requestID = self.nextRequestID
+        self.nextRequestID += 1
         // Build up results in a local dictionary first, then assign all at once.
         // This ensures a single atomic update to the @Published property,
         // which reliably triggers objectWillChange and view updates.
         var newCacheEntries: [ProductID: Status] = [:]
+        var requests: [PromotionalOfferRequest] = []
 
         for packageInfo in packageInfos {
             let storeProduct = packageInfo.package.storeProduct
             if let productCode = packageInfo.promotionalOfferProductCode,
                let discount = storeProduct.discounts.first(where: { $0.offerIdentifier == productCode }) {
-
                 if let simulatedEligibility = self.simulatedEligibility {
                     newCacheEntries[storeProduct.id] = simulatedEligibility
                         ? .signedEligible(Self.makeSimulatedOffer(for: discount))
@@ -128,23 +146,37 @@ internal final class PaywallPromoOfferCache: ObservableObject {
                     continue
                 }
 
-                do {
-                    let promoOffer = try await Purchases.shared.promotionalOffer(
-                        forProductDiscount: discount,
-                        product: storeProduct
-                    )
-                    newCacheEntries[storeProduct.id] = .signedEligible(promoOffer)
-                } catch {
-                    newCacheEntries[storeProduct.id] = .ineligible
-                }
+                requests.append(.init(discount: discount, product: storeProduct))
             }
         }
 
+        if !requests.isEmpty {
+            // Missing results must also invalidate any previous signature for the requested product.
+            for request in requests {
+                newCacheEntries[request.product.id] = .ineligible
+            }
+            for result in await self.promotionalOffers(requests) {
+                newCacheEntries[result.request.product.id] = result.offer.map(Status.signedEligible)
+                    ?? .ineligible
+            }
+        }
+
+        // A suspended refresh must not publish another user's signatures.
+        guard appUserID == self.appUserID() else { return }
+
         // Single atomic assignment to trigger @Published and objectWillChange
-        var updatedCache = self.cache
+        var updatedCache = self.cachedAppUserID == appUserID ? self.cache : [:]
+        if self.cachedAppUserID != appUserID {
+            self.latestPublishedRequestIDsByProductID = [:]
+        }
+        // Other workflow screens may refresh disjoint products while this batch is suspended.
         for (key, value) in newCacheEntries {
+            // A pending refresh must not suppress an offer that is ready for its caller to use.
+            guard requestID > self.latestPublishedRequestIDsByProductID[key, default: -1] else { continue }
+            self.latestPublishedRequestIDsByProductID[key] = requestID
             updatedCache[key] = value
         }
+        self.cachedAppUserID = appUserID
         self.cache = updatedCache
     }
 

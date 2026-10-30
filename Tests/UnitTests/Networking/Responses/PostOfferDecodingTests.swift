@@ -26,7 +26,7 @@ class PostOfferDecodingTests: BaseHTTPResponseTest {
     }
 
     func testResponseDataIsCorrect() throws {
-        let offer = try XCTUnwrap(self.response.offers.onlyElement)
+        let offer = try XCTUnwrap(self.response.offers.onlyElement).result.get()
 
         expect(offer.keyIdentifier) == "C815358F"
         expect(offer.offerIdentifier) == "com.revenuecat.monthly_4.99.1_free_week"

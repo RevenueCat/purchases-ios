@@ -114,6 +114,20 @@ class MockOfferingsAPI: OfferingsAPI {
         completion(self.stubbedPostOfferCompletionResult ?? .failure(.missingAppUserID()))
     }
 
+    var invokedPostOffersParameters: (offers: [PostOfferForSigningOperation.PostOfferForSigningData],
+                                     receipt: EncodedAppleReceipt, appUserID: String)?
+    var invokedPostOffersCount = 0
+    var stubbedPostOffersResults: [Result<PostOfferForSigningOperation.SigningData, BackendError>] = []
+
+    override func post(offersForSigning offers: [PostOfferForSigningOperation.PostOfferForSigningData],
+                       receipt: EncodedAppleReceipt,
+                       appUserID: String,
+                       completion: @escaping OffersSigningResponseHandler) {
+        self.invokedPostOffersCount += 1
+        self.invokedPostOffersParameters = (offers, receipt, appUserID)
+        completion(self.stubbedPostOffersResults)
+    }
+
 }
 
 extension MockOfferingsAPI: @unchecked Sendable {}

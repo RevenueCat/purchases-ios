@@ -1703,6 +1703,31 @@ public extension Purchases {
         return try await promotionalOfferAsync(forProductDiscount: discount, product: product)
     }
 
+    /// Prepares promotional offers together, sharing receipt preparation and a single signing request.
+    ///
+    /// Returns one result per request, in the same order, including repeated requests. Identical requests
+    /// share a signature. Local validation errors and per-offer rejections do not discard successful offers.
+    /// Receipt and request-level failures are reported on each affected result. An empty input performs no
+    /// StoreKit or network work.
+    /// The app user ID is captured when this method is called; consume the results for that user only.
+    /// Completion is called on the main thread. StoreKit makes the final redemption eligibility decision.
+    /// - Parameters:
+    ///   - requests: Promotional discounts and their corresponding products.
+    ///   - completion: The outcome for every request, including errors for offers that could not be prepared.
+    @_spi(Internal) @objc(getPromotionalOffersForRequests:completion:)
+    func getPromotionalOffers(for requests: [PromotionalOfferRequest],
+                              completion: @escaping @Sendable ([PromotionalOfferResult]) -> Void) {
+        self.purchasesOrchestrator.promotionalOffers(for: requests, completion: completion)
+    }
+
+    /// Prepares promotional offers in a batch. See ``getPromotionalOffers(for:completion:)`` for result semantics.
+    @_spi(Internal)
+    func promotionalOffers(for requests: [PromotionalOfferRequest]) async -> [PromotionalOfferResult] {
+        return await withCheckedContinuation { continuation in
+            self.getPromotionalOffers(for: requests) { continuation.resume(returning: $0) }
+        }
+    }
+
     func eligiblePromotionalOffers(forProduct product: StoreProduct) async -> [PromotionalOffer] {
         return await eligiblePromotionalOffersAsync(forProduct: product)
     }
