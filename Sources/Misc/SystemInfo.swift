@@ -128,6 +128,8 @@ class SystemInfo {
         return "spm"
         #elseif COCOAPODS
         return "cocoapods"
+        #elseif CARTHAGE_SOURCE
+        return "carthage_source"
         #elseif RC_XCFRAMEWORK
         return "xcframework"
         #else
