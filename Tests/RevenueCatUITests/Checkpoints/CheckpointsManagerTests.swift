@@ -852,6 +852,65 @@ final class CheckpointsManagerTests: TestCase {
         XCTAssertEqual(presenter.receivedParams?.checkpointIdentifier, "onboarding")
         XCTAssertEqual(presenter.receivedParams?.adIdentifier, "test-ad-identifier")
         XCTAssertEqual(presenter.receivedParams?.mediator, MediatorName(rawValue: "admob"))
+        XCTAssertEqual(presenter.receivedParams?.adFormat, .interstitial)
+    }
+
+    func testSequentialAdCheckpointsOfDifferentFormatsEachPresentAfterThePreviousCompletes() async throws {
+        // Each checkpoint resolves to a different ad step; the presenter reports its result only after an async
+        // hop, so a stale presentation slot would surface as operationAlreadyInProgress.
+        let steps: [String: ResolvedAdStep] = [
+            "level_complete": Self.adStep(adIdentifier: "interstitial-unit", adFormat: .interstitial),
+            "extra_life": Self.adStep(adIdentifier: "rewarded-unit", adFormat: .rewarded),
+            "next_level": Self.adStep(adIdentifier: "interstitial-unit-2", adFormat: .interstitial)
+        ]
+        let presenter = FormatAwareAdPresenter()
+        let manager = CheckpointsManager(
+            resolveCheckpoint: { identifier, _ in .matchedAd(try XCTUnwrap(steps[identifier])) },
+            workflowPresenter: MockWorkflowPresenter()
+        )
+        manager.adPresenter = presenter
+
+        let first = try await manager.executeCheckpoint(identifier: "level_complete", params: .init())
+        let second = try await manager.executeCheckpoint(identifier: "extra_life", params: .init())
+        let third = try await manager.executeCheckpoint(identifier: "next_level", params: .init())
+
+        XCTAssertTrue(Self.adWasShown(first))
+        XCTAssertTrue(Self.adWasShown(second))
+        XCTAssertTrue(Self.adWasShown(third))
+        XCTAssertEqual(
+            presenter.receivedParams.map(\.checkpointIdentifier),
+            ["level_complete", "extra_life", "next_level"]
+        )
+        XCTAssertEqual(
+            presenter.receivedParams.map(\.adFormat),
+            [.interstitial, .rewarded, .interstitial]
+        )
+        XCTAssertEqual(
+            presenter.receivedParams.map(\.adIdentifier),
+            ["interstitial-unit", "rewarded-unit", "interstitial-unit-2"]
+        )
+    }
+
+    func testAdCheckpointCanFollowOneWhosePresenterFailed() async throws {
+        let presenter = FormatAwareAdPresenter()
+        presenter.failNextPresentation = NSError(domain: "gma", code: 3)
+        let manager = CheckpointsManager(
+            resolveCheckpoint: { _, _ in .matchedAd(Self.adStep()) },
+            workflowPresenter: MockWorkflowPresenter()
+        )
+        manager.adPresenter = presenter
+
+        let failed = try await manager.executeCheckpoint(
+            identifier: "level_complete",
+            params: .init(errorPresenter: { _, completion in completion.complete() })
+        )
+        let shown = try await manager.executeCheckpoint(identifier: "next_level", params: .init())
+
+        guard case .failed = failed else {
+            return XCTFail("Expected the first checkpoint to end on the failed ad")
+        }
+        XCTAssertTrue(Self.adWasShown(shown))
+        XCTAssertEqual(presenter.receivedParams.count, 2)
     }
 
     func testResolvedAdThatCouldNotBeShownPresentsTheErrorAndFails() async throws {
@@ -1504,8 +1563,17 @@ final class CheckpointsManagerTests: TestCase {
         )
     }
 
-    private static func adStep(adIdentifier: String = "test-ad-identifier") -> ResolvedAdStep {
-        return ResolvedAdStep(adIdentifier: adIdentifier, mediator: MediatorName(rawValue: "admob"))
+    private static func adStep(
+        adIdentifier: String = "test-ad-identifier",
+        adFormat: AdFormat = .interstitial
+    ) -> ResolvedAdStep {
+        return ResolvedAdStep(adIdentifier: adIdentifier, mediator: MediatorName(rawValue: "admob"), adFormat: adFormat)
+    }
+
+    /// A shown ad completes the checkpoint with no customer information of its own.
+    private static func adWasShown(_ execution: CheckpointPresentationOutcome) -> Bool {
+        guard case .completed(customerInfo: .none) = execution else { return false }
+        return true
     }
 
     private static func storeProduct(identifier: String) -> StoreProduct {
@@ -1674,6 +1742,34 @@ private final class MockAdPresenter: AdPresenter {
             onPresent(completion)
         } else {
             completion(self.result)
+        }
+    }
+
+}
+
+/// Completes asynchronously, like a real presenter would.
+@MainActor
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private final class FormatAwareAdPresenter: AdPresenter {
+
+    private(set) var receivedParams: [AdPresentationParams] = []
+    var failNextPresentation: NSError?
+
+    func present(
+        params: AdPresentationParams,
+        completion: @escaping AdPresentationCompletion
+    ) {
+        self.receivedParams.append(params)
+        let error = self.failNextPresentation
+        self.failNextPresentation = nil
+
+        Task { @MainActor in
+            await Task.yield()
+            if let error {
+                completion(.failed(error: error))
+            } else {
+                completion(.shown)
+            }
         }
     }
 
