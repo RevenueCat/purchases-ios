@@ -25,7 +25,7 @@ final class RewardedPresentationTests: AdapterTestCase {
             presentation.adDidDismissFullScreenContent(PresentingAdStub())
 
             XCTAssertEqual(recorder.outcomes.count, 1, "\(format)")
-            XCTAssertEqual(try XCTUnwrap(recorder.outcomes.first).shown, .some(nil), "\(format)")
+            XCTAssertTrue(try XCTUnwrap(recorder.outcomes.first).isShown, "\(format)")
         }
     }
 
@@ -41,7 +41,7 @@ final class RewardedPresentationTests: AdapterTestCase {
         }
     }
 
-    func testVerifiedRewardAfterDismissalCompletesWithTheVerificationResult() throws {
+    func testEarnedRewardWaitsForVerificationAfterDismissal() throws {
         for format in Self.formats {
             let fakeAd = FakeRewardedAd()
             let presentation = self.makePresentation(format: format, loadResult: .success(fakeAd))
@@ -54,11 +54,10 @@ final class RewardedPresentationTests: AdapterTestCase {
             presentation.adDidDismissFullScreenContent(PresentingAdStub())
             XCTAssertTrue(recorder.outcomes.isEmpty, "Must wait for verification before completing (\(format))")
 
-            let result = RewardVerificationResult.verified(.unsupportedReward, moreRewards: [.noReward])
-            fakeAd.completeVerification(result)
+            fakeAd.completeVerification(.verified(.unsupportedReward, moreRewards: [.noReward]))
 
             XCTAssertEqual(recorder.outcomes.count, 1, "\(format)")
-            XCTAssertEqual(try XCTUnwrap(recorder.outcomes.first).shown, result, "\(format)")
+            XCTAssertTrue(try XCTUnwrap(recorder.outcomes.first).isShown, "\(format)")
         }
     }
 
@@ -78,11 +77,11 @@ final class RewardedPresentationTests: AdapterTestCase {
             presentation.adDidDismissFullScreenContent(PresentingAdStub())
 
             XCTAssertEqual(recorder.outcomes.count, 1, "\(format)")
-            XCTAssertEqual(try XCTUnwrap(recorder.outcomes.first).shown, .verified(.unsupportedReward), "\(format)")
+            XCTAssertTrue(try XCTUnwrap(recorder.outcomes.first).isShown, "\(format)")
         }
     }
 
-    func testFailedVerificationCompletesWithShownCarryingTheFailure() throws {
+    func testFailedVerificationStillCompletesWithShown() throws {
         for format in Self.formats {
             let fakeAd = FakeRewardedAd()
             let presentation = self.makePresentation(format: format, loadResult: .success(fakeAd))
@@ -96,7 +95,7 @@ final class RewardedPresentationTests: AdapterTestCase {
             fakeAd.completeVerification(.failed)
 
             XCTAssertEqual(recorder.outcomes.count, 1, "\(format)")
-            XCTAssertEqual(try XCTUnwrap(recorder.outcomes.first).shown, .failed, "\(format)")
+            XCTAssertTrue(try XCTUnwrap(recorder.outcomes.first).isShown, "\(format)")
         }
     }
 
@@ -238,12 +237,7 @@ final class RewardedPresentationTests: AdapterTestCase {
     }
 
     func testOutcomeMapsToAdPresentationResult() {
-        XCTAssertEqual(RewardedPresentation.Outcome.shown(nil).presentationResult, AdPresentationResult.shown)
-        XCTAssertEqual(
-            RewardedPresentation.Outcome.shown(.verified(.noReward)).presentationResult,
-            AdPresentationResult.shown
-        )
-        XCTAssertEqual(RewardedPresentation.Outcome.shown(.failed).presentationResult, AdPresentationResult.shown)
+        XCTAssertEqual(RewardedPresentation.Outcome.shown.presentationResult, AdPresentationResult.shown)
 
         let error = NSError(domain: "gma", code: 1)
         XCTAssertEqual(
@@ -348,10 +342,9 @@ private final class OutcomeRecorder {
 @available(iOS 15.0, *)
 private extension RewardedPresentation.Outcome {
 
-    /// `.some(nil)` is a dismissal without verification; `nil` means the outcome was not `shown`.
-    var shown: RewardVerificationResult?? {
-        if case let .shown(result) = self { return .some(result) }
-        return nil
+    var isShown: Bool {
+        if case .shown = self { return true }
+        return false
     }
 
     var error: NSError? {
