@@ -37,6 +37,17 @@ class ImageLoaderTests: TestCase {
         expect(self.loader.result).to(beNil())
     }
 
+    func testAssetOverrideIsUsedForImageRequest() async throws {
+        let original = try XCTUnwrap(URL(string: "https://assets.pawwalls.com/image.heic"))
+        let replacement = try XCTUnwrap(URL(string: "https://paywall-assets.revenuecat-static.net/image.heic"))
+        let loader = ImageLoader(urlSession: self.urlSession, assetURLResolver: { _ in replacement })
+
+        await loader.load(url: original)
+
+        XCTAssertEqual(self.urlSession.requestedImage, replacement)
+        XCTAssertEqual(self.urlSession.cachePolicy, .returnCacheDataElseLoad)
+    }
+
     func testResponseError() async {
         let error = NSError(domain: NSURLErrorDomain, code: NSURLErrorTimedOut)
         self.urlSession.response = .failure(error)

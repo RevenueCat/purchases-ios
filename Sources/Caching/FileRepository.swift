@@ -26,6 +26,7 @@ import Foundation
     private let store = KeyedDeferredValueStore<JobKey, OutputURL>()
     private let fileManager: LargeItemCacheType
     private let cacheURL: URL?
+    private let assetURLResolver: @Sendable (URL) async -> URL
 
     /// Create a file repository
     /// - Parameters:
@@ -34,10 +35,12 @@ import Foundation
     init(
         networkService: SimpleNetworkServiceType = URLSession.shared,
         fileManager: LargeItemCacheType = FileManager.default,
-        basePath: String = FileRepository.defaultBasePath
+        basePath: String = FileRepository.defaultBasePath,
+        assetURLResolver: @escaping @Sendable (URL) async -> URL = { await Purchases.resolvedPaywallAssetURL($0) }
     ) {
         self.networkService = networkService
         self.fileManager = fileManager
+        self.assetURLResolver = assetURLResolver
 
         self.cacheURL = fileManager.createCacheDirectoryIfNeeded(
             basePath: basePath,
@@ -115,7 +118,8 @@ import Foundation
 
     private func getBytes(from url: URL) async throws -> AsyncThrowingStream<UInt8, Swift.Error> {
         do {
-            return try await networkService.bytes(from: url)
+            let downloadURL = await self.assetURLResolver(url)
+            return try await networkService.bytes(from: downloadURL)
         } catch {
             let message = Strings.fileRepository.failedToFetchFileFromRemoteSource(url, error)
             Logger.error(message)

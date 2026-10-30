@@ -6,7 +6,7 @@
 //
 
 import Foundation
-import RevenueCat
+@_spi(Internal) import RevenueCat
 
 #if canImport(UIKit)
 import UIKit
@@ -56,14 +56,19 @@ final class ImageLoader: ObservableObject {
     }
 
     private let urlSession: URLSessionType
+    private let assetURLResolver: (URL) async -> URL
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     convenience init() {
         self.init(urlSession: Purchases.paywallImageDownloadSession)
     }
 
-    init(urlSession: URLSessionType) {
+    init(
+        urlSession: URLSessionType,
+        assetURLResolver: @escaping (URL) async -> URL = Purchases.resolvedPaywallAssetURL
+    ) {
         self.urlSession = urlSession
+        self.assetURLResolver = assetURLResolver
     }
 
     @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
@@ -84,9 +89,10 @@ final class ImageLoader: ObservableObject {
     @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
     private func loadImage(_ url: URL) async -> ValueWithURL? {
         do {
+            let downloadURL = await self.assetURLResolver(url)
             let (data, response) = try await self
                 .urlSession
-                .data(for: .init(url: url, cachePolicy: .returnCacheDataElseLoad))
+                .data(for: .init(url: downloadURL, cachePolicy: .returnCacheDataElseLoad))
 
             do {
                 try Task.checkCancellation()

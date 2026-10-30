@@ -29,6 +29,26 @@ class FileRepositoryTests: TestCase {
         XCTAssertEqual(sut.networkService.invocations, [])
     }
 
+    func testAssetOverrideChangesNetworkURLWithoutChangingCacheIdentity() async throws {
+        let sut = await self.makeSystemUnderTest()
+        let original = try XCTUnwrap(URL(string: "https://assets.pawwalls.com/image.heic"))
+        let replacement = try XCTUnwrap(URL(string: "https://paywall-assets.revenuecat-static.net/image.heic"))
+        let repository = FileRepository(
+            networkService: sut.networkService,
+            fileManager: sut.cache,
+            assetURLResolver: { _ in replacement }
+        )
+        sut.cache.stubCachedContentExists(with: false)
+        sut.cache.stubSaveData(with: .success(.init(data: "SomeData".asData, url: original)))
+        sut.networkService.stubResponse(at: 0, result: .success("SomeData"))
+
+        let result = try await repository.generateOrGetCachedFileURL(for: original, withChecksum: nil)
+
+        XCTAssertEqual(sut.networkService.invocations, [replacement])
+        XCTAssertEqual(result, repository.generateLocalFilesystemURL(forRemoteURL: original, withChecksum: nil))
+        XCTAssertNotEqual(result, repository.generateLocalFilesystemURL(forRemoteURL: replacement, withChecksum: nil))
+    }
+
     func test_prefetch_invokesNetwork() async throws {
         let sut = await makeSystemUnderTest()
         let data = "SomeData".data(using: .utf8).unsafelyUnwrapped
