@@ -725,6 +725,17 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
         self.postPaymentMode(paymentMode: .freeTrial)
     }
 
+    func testPayAsYouGoIntroOfferPostsIntroDurationCorrectly() throws {
+        let response = MockHTTPClient.Response(statusCode: .success, response: Self.validCustomerResponse)
+        httpClient.mock(requestPath: .postReceiptData, response: response)
+
+        let productData: ProductRequestData = .createMockProductData(paymentMode: .payAsYouGo,
+                                                                     introDuration: "P3M",
+                                                                     introDurationType: .payAsYouGo,
+                                                                     introPrice: 2.99)
+        self.post(productData: productData)
+    }
+
     func testGetsUpdatedSubscriberInfoAfterPost() {
         var dateComponent = DateComponents()
         dateComponent.month = 1
@@ -1326,8 +1337,10 @@ private extension BaseBackendPostReceiptDataTests {
     )
 
     func postPaymentMode(paymentMode: StoreProductDiscount.PaymentMode) {
-        let productData: ProductRequestData = .createMockProductData(paymentMode: paymentMode)
+        self.post(productData: .createMockProductData(paymentMode: paymentMode))
+    }
 
+    func post(productData: ProductRequestData) {
         waitUntil { completed in
             self.backend.post(receipt: Self.receipt,
                               productData: productData,

@@ -72,6 +72,14 @@ class ProductRequestDataTests: TestCase {
         self.snapshot(productData)
     }
 
+    func testAsDictionaryConvertsIntroDurationCorrectlyForIntroPriceWithPayAsYouGo() throws {
+        let introDuration = "P3M"
+        let productData: ProductRequestData = .createMockProductData(introDuration: introDuration,
+                                                                     introDurationType: .payAsYouGo)
+
+        self.snapshot(productData)
+    }
+
     func testAsDictionaryDoesntAddIntroDurationIfDurationTypeUnknown() throws {
         let introDuration = "P3M"
         let productData: ProductRequestData = .createMockProductData(introDuration: introDuration,
