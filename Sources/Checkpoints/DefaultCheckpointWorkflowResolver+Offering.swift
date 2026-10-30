@@ -50,16 +50,8 @@ extension DefaultCheckpointWorkflowResolver {
             return .noAction(.configurationUnavailable)
         }
 
-        return Self.makeMatchedOffering(match.offering, checkpointIdentifier: checkpointIdentifier, traceID: traceID)
-    }
-
-    private static func makeMatchedOffering(
-        _ offering: Offering,
-        checkpointIdentifier: String,
-        traceID: String
-    ) -> CheckpointResolution {
         return .matchedOffering(
-            offering.withPresentedCheckpointIdentifier(checkpointIdentifier, traceID: traceID),
+            match.offering.withPresentedCheckpointIdentifier(checkpointIdentifier, traceID: traceID),
             traceID: traceID
         )
     }
