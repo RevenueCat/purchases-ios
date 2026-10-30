@@ -157,7 +157,7 @@ final class ErrorDialogFactoryTests: TestCase {
     }
 
     func testCheckpointCallParamsWithNoFactoryHasNilFactory() {
-        let params = CheckpointCallParams()
+        let params = CheckpointCallParams(errorDialogFactory: nil)
         XCTAssertNil(params.localErrorDialogFactory)
     }
 

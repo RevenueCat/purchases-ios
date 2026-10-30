@@ -41,7 +41,7 @@ final class CheckpointCallParams: @unchecked Sendable {
         presentationMode: FlowPresentationMode = .default,
         paywallPresenter: PaywallPresentationHandler? = nil,
         errorPresenter: ErrorPresentationHandler? = nil,
-        errorDialogFactory: ErrorDialogFactory? = nil
+        errorDialogFactory: ErrorDialogFactory?
     ) {
         self.customVariables = RevenueCat.CustomVariableKeyValidator.validateAndFilter(customVariables)
         self.presentationMode = presentationMode.resolved

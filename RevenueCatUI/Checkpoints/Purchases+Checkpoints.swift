@@ -88,7 +88,8 @@ public extension Purchases {
             customVariables: customVariables,
             presentationMode: presentationMode,
             paywallPresenter: paywallPresenter,
-            errorPresenter: errorPresenter
+            errorPresenter: errorPresenter,
+            errorDialogFactory: nil
         )
         self.performCheckpoint(identifier, params: params, onPassed: onPassed)
     }
