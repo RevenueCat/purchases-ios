@@ -129,7 +129,6 @@ class SystemInfo {
         #elseif COCOAPODS
         return "cocoapods"
         #elseif CARTHAGE_SOURCE
-        // The Xcode project enables this condition when Carthage passes CARTHAGE=YES.
         return "carthage_source"
         #elseif RC_XCFRAMEWORK
         return "xcframework"
