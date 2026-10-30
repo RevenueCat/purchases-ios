@@ -259,6 +259,106 @@ final class RewardVerificationStatusResponseDecodingTests: TestCase {
         expect(response.status) == .pending
     }
 
+    // MARK: - Embedded customer info
+
+    func testDecodesVerifiedWithSubscriberAsCustomerInfo() throws {
+        let response = try Self.decode(Self.verifiedWithSubscriber)
+
+        let customerInfo = try XCTUnwrap(response.customerInfo)
+        expect(customerInfo.originalAppUserId) == "user-1"
+        expect(customerInfo.entitlements["pro"]).toNot(beNil())
+        expect(customerInfo.entitlements.verification) == .notRequested
+    }
+
+    func testDecodesVerifiedWithoutSubscriberAsNilCustomerInfo() throws {
+        let response = try Self.decode([
+            "status": "verified",
+            "reward": Self.entitlementReward
+        ])
+
+        expect(response.customerInfo).to(beNil())
+    }
+
+    func testDecodesVerifiedWithMalformedSubscriberAsNilCustomerInfoAndLogsWarning() throws {
+        let response = try Self.decode([
+            "status": "verified",
+            "reward": Self.entitlementReward,
+            "request_date": "2026-05-16T12:00:00Z",
+            "subscriber": "not_an_object"
+        ])
+
+        expect(response.customerInfo).to(beNil())
+        expect(response.status) == .verified(reward: .entitlement(Self.entitlement), moreRewards: [])
+        expect(self.logger.messages.map(\.message)).to(
+            containElementSatisfying {
+                $0.contains("Received malformed customer info in reward verification response")
+            }
+        )
+    }
+
+    func testCopyWithVerificationResultStampsEmbeddedCustomerInfo() throws {
+        let response = try Self.decode(Self.verifiedWithSubscriber)
+
+        let stamped = response.copy(
+            with: .verified,
+            httpResponseOriginalSource: .init(isFallbackUrlResponse: false, isLoadShedderResponse: true)
+        )
+
+        expect(stamped.status) == response.status
+        expect(stamped.customerInfo?.entitlements.verification) == .verified
+        expect(stamped.customerInfo?.entitlements["pro"]?.verification) == .verified
+    }
+
+    func testCopyWithVerificationResultWithoutCustomerInfoIsUnchanged() throws {
+        let response = try Self.decode(["status": "verified", "reward": Self.entitlementReward])
+
+        let stamped = response.copy(
+            with: .verified,
+            httpResponseOriginalSource: .init(isFallbackUrlResponse: false, isLoadShedderResponse: false)
+        )
+
+        expect(stamped) == response
+    }
+
+    private static let entitlement = EntitlementReward(
+        identifier: "pro",
+        expiresAt: ISO8601DateFormatter().date(from: "2026-06-16T12:00:00Z")!
+    )!
+
+    private static let entitlementReward: [String: Any] = [
+        "type": "entitlement",
+        "identifier": "pro",
+        "expires_at": "2026-06-16T12:00:00Z"
+    ]
+
+    private static let verifiedWithSubscriber: [String: Any] = [
+        "status": "verified",
+        "reward": RewardVerificationStatusResponseDecodingTests.entitlementReward,
+        "more_rewards": [] as [Any],
+        "request_date": "2026-05-16T12:00:00Z",
+        "request_date_ms": 1778932800000,
+        "subscriber": [
+            "first_seen": "2026-05-16T12:00:00Z",
+            "original_app_user_id": "user-1",
+            "other_purchases": [:] as [String: Any],
+            "subscriptions": [
+                "rc_ad_pro": [
+                    "purchase_date": "2026-05-16T12:00:00Z",
+                    "expires_date": "2026-06-16T12:00:00Z",
+                    "period_type": "normal",
+                    "store": "promotional"
+                ]
+            ],
+            "entitlements": [
+                "pro": [
+                    "product_identifier": "rc_ad_pro",
+                    "purchase_date": "2026-05-16T12:00:00Z",
+                    "expires_date": "2026-06-16T12:00:00Z"
+                ]
+            ]
+        ] as [String: Any]
+    ]
+
     private static func decode(_ json: [String: Any]) throws -> RewardVerificationStatusResponse {
         let data = try JSONSerialization.data(withJSONObject: json)
         return try RewardVerificationStatusResponse.create(with: data)
