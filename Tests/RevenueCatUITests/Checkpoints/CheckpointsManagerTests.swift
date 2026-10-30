@@ -922,6 +922,38 @@ final class CheckpointsManagerTests: TestCase {
         XCTAssertEqual(presenter.callCount, 1)
     }
 
+    func testReplacedAdPresenterStaysAliveUntilItsPresentationCompletes() async throws {
+        let presentationStarted = self.expectation(description: "Ad presentation starts")
+        var adCompletion: AdPresentationCompletion?
+        var presenter: MockAdPresenter? = MockAdPresenter()
+        weak var weakPresenter = presenter
+        presenter?.onPresent = { completion in
+            adCompletion = completion
+            presentationStarted.fulfill()
+        }
+        let manager = CheckpointsManager(
+            resolveCheckpoint: { _, _ in .matchedAd(Self.adStep()) },
+            workflowPresenter: MockWorkflowPresenter()
+        )
+        manager.adPresenter = presenter
+
+        let execution = Task {
+            try await manager.executeCheckpoint(identifier: "level_complete", params: .init())
+        }
+        await self.fulfillment(of: [presentationStarted], timeout: 1)
+
+        manager.adPresenter = nil
+        presenter = nil
+        XCTAssertNotNil(weakPresenter, "The pending presentation should keep the presenter alive")
+
+        adCompletion?(.shown)
+        guard case .completed(customerInfo: .none) = try await execution.value else {
+            return XCTFail("Expected a completed execution")
+        }
+        adCompletion = nil
+        XCTAssertNil(weakPresenter, "The presenter should be released once its presentation completes")
+    }
+
     func testGlobalPaywallPresenterIsCapturedBeforeCheckpointResolution() async throws {
         let resolutionStarted = self.expectation(description: "Checkpoint resolution starts")
         var resolutionContinuation: CheckedContinuation<CheckpointResolution, Never>?
@@ -1629,6 +1661,8 @@ private final class MockAdPresenter: AdPresenter {
     private(set) var callCount = 0
     private(set) var receivedParams: AdPresentationParams?
     var result: AdPresentationResult = .shown
+    /// When set, the presentation stays pending and the completion is handed over instead of being called.
+    var onPresent: ((@escaping AdPresentationCompletion) -> Void)?
 
     func present(
         params: AdPresentationParams,
@@ -1636,7 +1670,11 @@ private final class MockAdPresenter: AdPresenter {
     ) {
         self.callCount += 1
         self.receivedParams = params
-        completion(self.result)
+        if let onPresent = self.onPresent {
+            onPresent(completion)
+        } else {
+            completion(self.result)
+        }
     }
 
 }
