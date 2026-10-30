@@ -6,14 +6,10 @@ on:
   pull_request:
     paths: ['.github/workflows/**']
 
+permissions: {}
+
 jobs:
   actionlint:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
-      - name: Enable the actionlint matcher
-        run: echo "::add-matcher::.github/actionlint-matcher.json"
-      - name: Lint GitHub Actions workflows
-        uses: docker://rhysd/actionlint:latest
-        with:
-          args: -color      
+    permissions:
+      contents: read
+    uses: revenuecat/sdk-github-workflows/.github/workflows/actionlint.yml@099dd3ed02c87b713fea5f8162e33f73377312eb # alvarobrey/shared-actionlint
