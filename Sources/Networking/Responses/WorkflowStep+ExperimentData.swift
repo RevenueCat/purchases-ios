@@ -9,7 +9,7 @@
 //
 //  WorkflowStep+ExperimentData.swift
 //
-//  Created by RevenueCat.
+//  Created by Rosie Watson on 10/30/26.
 
 import Foundation
 

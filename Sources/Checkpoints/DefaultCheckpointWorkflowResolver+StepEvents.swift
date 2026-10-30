@@ -9,7 +9,7 @@
 //
 //  DefaultCheckpointWorkflowResolver+StepEvents.swift
 //
-//  Created by RevenueCat.
+//  Created by Rosie Watson on 10/30/26.
 
 import Foundation
 
@@ -24,8 +24,7 @@ struct SingleStepWorkflow {
 extension DefaultCheckpointWorkflowResolver {
 
     /// A step with no UI is the whole workflow: it starts when it is entered and completes once what it serves has
-    /// loaded. A step that can't be served never completes. The events are appended to `stepEvents` rather than
-    /// tracked, for the caller to track once the resolution is known to be current.
+    /// loaded. A step that can't be served never completes.
     static func trackingStepEvents(
         for workflow: SingleStepWorkflow,
         traceID: String,

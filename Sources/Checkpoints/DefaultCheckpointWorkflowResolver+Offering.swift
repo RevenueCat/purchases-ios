@@ -9,7 +9,7 @@
 //
 //  DefaultCheckpointWorkflowResolver+Offering.swift
 //
-//  Created by RevenueCat.
+//  Created by Rosie Watson on 10/30/26.
 
 import Foundation
 
@@ -42,8 +42,7 @@ extension DefaultCheckpointWorkflowResolver {
 
     /// Serves a workflow whose only step is a terminal `offering` step as an offering the app owns.
     ///
-    /// Gating has already been validated. Other than that, only the offering identifier is validated,
-    /// since a step of this kind renders nothing.
+    /// Gating and the offering identifier have already been validated, since a step of this kind renders nothing.
     private func resolveOffering(
         _ rule: CheckpointRule, offeringID: String, checkpointIdentifier: String, traceID: String
     ) async -> CheckpointResolution {
