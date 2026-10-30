@@ -21,13 +21,12 @@ extension DefaultCheckpointWorkflowResolver {
         for step: WorkflowStep,
         in workflowData: WorkflowDataResult,
         traceID: String,
-        into stepEvents: inout [WorkflowEvent],
         resolving: () async -> CheckpointResolution
-    ) async -> CheckpointResolution {
-        stepEvents.append(.stepStarted(
+    ) async -> (resolution: CheckpointResolution, stepEvents: [WorkflowEvent]) {
+        var stepEvents: [WorkflowEvent] = [.stepStarted(
             .init(),
             Self.stepEventData(for: step, in: workflowData, traceID: traceID, entryReason: .start)
-        ))
+        )]
 
         let resolution = await resolving()
 
@@ -41,7 +40,7 @@ extension DefaultCheckpointWorkflowResolver {
             break
         }
 
-        return resolution
+        return (resolution, stepEvents)
     }
 
     private static func stepEventData(

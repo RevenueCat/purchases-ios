@@ -250,12 +250,10 @@ final class DefaultCheckpointWorkflowResolver: CheckpointWorkflowResolver {
         // The offering mapping is resolved per branch now, since only a UI workflow needs it.
         guard let rule else { return .init(.noAction(.noMatch)) }
 
-        var stepEvents: [WorkflowEvent] = []
-        let resolution = try await self.resolve(
+        let (resolution, stepEvents) = try await self.resolve(
             rule,
             checkpointIdentifier: identifier,
-            traceID: traceID,
-            stepEvents: &stepEvents
+            traceID: traceID
         )
         guard self.isCurrent(rulesSnapshot, audienceConfiguration) else {
             return nil
@@ -331,9 +329,8 @@ final class DefaultCheckpointWorkflowResolver: CheckpointWorkflowResolver {
     private func resolve(
         _ rule: CheckpointRule,
         checkpointIdentifier: String,
-        traceID: String,
-        stepEvents: inout [WorkflowEvent]
-    ) async throws -> CheckpointResolution {
+        traceID: String
+    ) async throws -> (resolution: CheckpointResolution, stepEvents: [WorkflowEvent]) {
         // Deliberately the non-prewarming read: an offering workflow renders nothing, and prewarming takes
         // its fonts from `uiConfig` rather than from the workflow's screens, so it isn't free here.
         let workflowData: WorkflowDataResult
@@ -342,39 +339,37 @@ final class DefaultCheckpointWorkflowResolver: CheckpointWorkflowResolver {
         } catch let error as CancellationError {
             throw error
         } catch {
-            return Self.unservable(rule, reason: error.localizedDescription)
+            return (Self.unservable(rule, reason: error.localizedDescription), [])
         }
 
         let workflow = workflowData.workflow
         guard let initialStep = workflow.steps[workflow.initialStepId] else {
-            return Self.unservable(rule, reason: "its initial step was not found")
+            return (Self.unservable(rule, reason: "its initial step was not found"), [])
         }
         if let step = workflow.steps.values.first(where: { $0.gating == .invalid }) {
-            return Self.unservable(rule, reason: "step '\(step.id)' has invalid gating")
+            return (Self.unservable(rule, reason: "step '\(step.id)' has invalid gating"), [])
         }
 
         if initialStep.isOfferingStep {
             return await self.resolveOfferingStep(
                 rule, step: initialStep, in: workflowData,
-                checkpointIdentifier: checkpointIdentifier, traceID: traceID, stepEvents: &stepEvents
+                checkpointIdentifier: checkpointIdentifier, traceID: traceID
             )
         }
 
         if initialStep.type == Self.adStepType {
-            return await self.resolveAdStep(
-                rule, step: initialStep, in: workflowData, traceID: traceID, stepEvents: &stepEvents
-            )
+            return await self.resolveAdStep(rule, step: initialStep, in: workflowData, traceID: traceID)
         }
 
         if workflow.steps.values.contains(where: \.isOfferingStep) {
-            return Self.unservable(rule, reason: "a UI workflow cannot contain offering steps")
+            return (Self.unservable(rule, reason: "a UI workflow cannot contain offering steps"), [])
         }
 
         if workflow.steps.values.contains(where: { $0.type == Self.adStepType }) {
-            return Self.unservable(rule, reason: "a UI workflow cannot contain ad steps")
+            return (Self.unservable(rule, reason: "a UI workflow cannot contain ad steps"), [])
         }
 
-        return await self.resolveWorkflow(workflowData: workflowData, traceID: traceID)
+        return (await self.resolveWorkflow(workflowData: workflowData, traceID: traceID), [])
     }
 
     private func resolveWorkflow(workflowData: WorkflowDataResult, traceID: String) async -> CheckpointResolution {

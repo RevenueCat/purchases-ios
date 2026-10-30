@@ -15,24 +15,22 @@ import Foundation
 
 extension DefaultCheckpointWorkflowResolver {
 
-    // swiftlint:disable:next function_parameter_count
     func resolveOfferingStep(
         _ rule: CheckpointRule,
         step: WorkflowStep,
         in workflowData: WorkflowDataResult,
         checkpointIdentifier: String,
-        traceID: String,
-        stepEvents: inout [WorkflowEvent]
-    ) async -> CheckpointResolution {
+        traceID: String
+    ) async -> (resolution: CheckpointResolution, stepEvents: [WorkflowEvent]) {
         guard workflowData.workflow.steps.count == 1 else {
-            return Self.unservable(rule, reason: "an offering step cannot be mixed with other steps")
+            return (Self.unservable(rule, reason: "an offering step cannot be mixed with other steps"), [])
         }
         // Validated before the step starts, so a step that was never servable emits nothing.
         guard let offeringID = step.offeringIdentifier else {
-            return Self.unservable(rule, reason: "the offering step has no valid offering identifier")
+            return (Self.unservable(rule, reason: "the offering step has no valid offering identifier"), [])
         }
 
-        return await Self.trackingStepEvents(for: step, in: workflowData, traceID: traceID, into: &stepEvents) {
+        return await Self.trackingStepEvents(for: step, in: workflowData, traceID: traceID) {
             await self.resolveOffering(
                 rule,
                 offeringID: offeringID,

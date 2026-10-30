@@ -23,14 +23,13 @@ extension DefaultCheckpointWorkflowResolver {
         _ rule: CheckpointRule,
         step: WorkflowStep,
         in workflowData: WorkflowDataResult,
-        traceID: String,
-        stepEvents: inout [WorkflowEvent]
-    ) async -> CheckpointResolution {
+        traceID: String
+    ) async -> (resolution: CheckpointResolution, stepEvents: [WorkflowEvent]) {
         guard workflowData.workflow.steps.count == 1 else {
-            return Self.unservable(rule, reason: "an ad step cannot be mixed with other steps")
+            return (Self.unservable(rule, reason: "an ad step cannot be mixed with other steps"), [])
         }
 
-        return await Self.trackingStepEvents(for: step, in: workflowData, traceID: traceID, into: &stepEvents) {
+        return await Self.trackingStepEvents(for: step, in: workflowData, traceID: traceID) {
             Self.resolveAd(rule, step: step)
         }
     }
