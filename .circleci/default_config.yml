@@ -2717,7 +2717,8 @@ workflows:
           <<: *release-tags
       - make-release:
           requires:
-            - push-revenuecatui-pod
+            # TODO: restore after Nov 7, 2026, once CocoaPods trunk is writable again.
+            # - push-revenuecatui-pod
             - deploy-to-spm
             - docs-deploy
           <<: *release-tags
