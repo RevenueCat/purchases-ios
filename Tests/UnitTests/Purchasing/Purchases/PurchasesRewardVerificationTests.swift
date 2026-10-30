@@ -121,6 +121,18 @@ final class PurchasesRewardVerificationTests: BasePurchasesTests {
         )
     }
 
+    func testFetchRewardVerificationStatusForwardsCustomerInfo() async throws {
+        let reward = try XCTUnwrap(EntitlementReward(identifier: "pro", expiresAt: Date()))
+        let customerInfo = try Self.makeCustomerInfoWithEntitlement("pro")
+        try self.mockAdsAPI.stubbedGetRewardVerificationStatusResult = .success(
+            .init(status: .verified(.entitlement(reward)), customerInfo: customerInfo)
+        )
+
+        let status = try await self.purchases.fetchRewardVerificationStatus(clientTransactionID: "tx-id", adUnitID: nil)
+
+        expect(status) == .verified(reward: .entitlement(reward), moreRewards: [], customerInfo: customerInfo)
+    }
+
     func testFetchRewardVerificationStatusForwardsBackendError() async throws {
         let backendError: BackendError = .networkError(.offlineConnection())
         try self.mockAdsAPI.stubbedGetRewardVerificationStatusResult = .failure(backendError)
@@ -209,7 +221,7 @@ extension PurchasesRewardVerificationTests {
         expect(self.mockVirtualCurrencyManager.invalidateVirtualCurrenciesCacheCallCount) == 0
     }
 
-    func testPollRewardVerificationFetchesCustomerInfoOnEntitlementReward() async throws {
+    func testPollRewardVerificationDoesNotFetchCustomerInfoOnEntitlementRewardWithoutCustomerInfo() async throws {
         let reward = try XCTUnwrap(EntitlementReward(identifier: "pro", expiresAt: Date()))
         let before = self.backend.getCustomerInfoCallCount
         let poller = self.makeStubPoller(statuses: [.verified(.entitlement(reward))])
@@ -217,37 +229,71 @@ extension PurchasesRewardVerificationTests {
         let result = await self.purchases.pollRewardVerification(clientTransactionID: "tx-1", poller: poller)
 
         expect(result.verifiedReward) == .entitlement(reward)
-        expect(self.backend.getCustomerInfoCallCount) > before
+        expect(self.backend.getCustomerInfoCallCount) == before
         expect(self.mockVirtualCurrencyManager.invalidateVirtualCurrenciesCacheCallCount) == 0
     }
 
-    func testPollRewardVerificationFailsWhenEntitlementCustomerInfoRefreshFails() async throws {
+    func testPollRewardVerificationCachesEmbeddedCustomerInfoOnEntitlementRewardWithoutFetching() async throws {
         let reward = try XCTUnwrap(EntitlementReward(identifier: "pro", expiresAt: Date()))
-        self.backend.overrideCustomerInfoResult = .failure(makeTerminalBackendError())
+        let customerInfo = try Self.makeCustomerInfoWithEntitlement("pro")
         let before = self.backend.getCustomerInfoCallCount
-        let poller = self.makeStubPoller(statuses: [.verified(.entitlement(reward))])
+        let poller = self.makeStubPoller(statuses: [
+            .verified(reward: .entitlement(reward), moreRewards: [], customerInfo: customerInfo)
+        ])
 
         let result = await self.purchases.pollRewardVerification(clientTransactionID: "tx-1", poller: poller)
 
-        expect(result) == .failed
-        expect(result.verifiedReward).to(beNil())
-        expect(self.backend.getCustomerInfoCallCount) == before + 1
-        self.logger.verifyMessageWasLogged(
-            AdsStrings.reward_verification_completed(result: .failed, transactionID: "tx-1"),
-            level: .info
-        )
-        self.logger.verifyMessageWasNotLogged(
-            AdsStrings.reward_verification_completed(
-                result: .verified(.entitlement(reward)), transactionID: "tx-1"
-            )
-        )
+        expect(result.verifiedReward) == .entitlement(reward)
+        expect(self.backend.getCustomerInfoCallCount) == before
+        expect(try self.customerInfoManager.cachedCustomerInfo(appUserID: self.identityManager.currentAppUserID))
+            == customerInfo
+        await expect(self.purchasesDelegate.customerInfo).toEventually(equal(customerInfo))
+        expect(self.purchasesDelegate.customerInfo?.entitlements["pro"]).toNot(beNil())
     }
 
-    func testTransientServerErrorsAreRetriableForEntitlementRefresh() {
-        for statusCode in [502, 503] {
-            let error = makePollingError(statusCode: statusCode, backendCode: .internalServerError)
-            expect(error.isTransient).to(beTrue(), description: "status \(statusCode) should be transient")
-        }
+    func testPollRewardVerificationMultiGrantCachesEmbeddedCustomerInfoWithoutFetching() async throws {
+        let virtualCurrency = try XCTUnwrap(VirtualCurrencyReward(code: "coins", amount: 5))
+        let entitlement = try XCTUnwrap(EntitlementReward(identifier: "pro", expiresAt: Date()))
+        let customerInfo = try Self.makeCustomerInfoWithEntitlement("pro")
+        let before = self.backend.getCustomerInfoCallCount
+        let poller = self.makeStubPoller(statuses: [
+            .verified(reward: .virtualCurrency(virtualCurrency),
+                      moreRewards: [.entitlement(entitlement)],
+                      customerInfo: customerInfo)
+        ])
+
+        let result = await self.purchases.pollRewardVerification(clientTransactionID: "tx-1", poller: poller)
+
+        expect(result.moreRewards) == [.entitlement(entitlement)]
+        expect(self.mockVirtualCurrencyManager.invalidateVirtualCurrenciesCacheCallCount) == 1
+        expect(self.backend.getCustomerInfoCallCount) == before
+        await expect(self.purchasesDelegate.customerInfo).toEventually(equal(customerInfo))
+    }
+
+    private static func makeCustomerInfoWithEntitlement(_ identifier: String) throws -> CustomerInfo {
+        return try CustomerInfo(data: [
+            "request_date": "2026-05-16T12:00:00Z",
+            "subscriber": [
+                "first_seen": "2026-05-16T12:00:00Z",
+                "original_app_user_id": BasePurchasesTests.appUserID,
+                "other_purchases": [:] as [String: Any],
+                "subscriptions": [
+                    "rc_ad_\(identifier)": [
+                        "purchase_date": "2026-05-16T12:00:00Z",
+                        "expires_date": "2026-06-16T12:00:00Z",
+                        "period_type": "normal",
+                        "store": "promotional"
+                    ]
+                ],
+                "entitlements": [
+                    identifier: [
+                        "product_identifier": "rc_ad_\(identifier)",
+                        "purchase_date": "2026-05-16T12:00:00Z",
+                        "expires_date": "2026-06-16T12:00:00Z"
+                    ]
+                ]
+            ] as [String: Any]
+        ])
     }
 
     func testPollRewardVerificationDoesNotFetchCustomerInfoOnVirtualCurrencyReward() async throws {
@@ -260,7 +306,7 @@ extension PurchasesRewardVerificationTests {
         expect(self.backend.getCustomerInfoCallCount) == before
     }
 
-    func testPollRewardVerificationMultiGrantInvalidatesVCCacheAndFetchesCustomerInfo() async throws {
+    func testPollRewardVerificationMultiGrantInvalidatesVCCacheWithoutFetchingCustomerInfo() async throws {
         let virtualCurrency = try XCTUnwrap(VirtualCurrencyReward(code: "coins", amount: 5))
         let entitlement = try XCTUnwrap(EntitlementReward(identifier: "pro", expiresAt: Date()))
         let before = self.backend.getCustomerInfoCallCount
@@ -271,23 +317,9 @@ extension PurchasesRewardVerificationTests {
         let result = await self.purchases.pollRewardVerification(clientTransactionID: "tx-1", poller: poller)
 
         expect(self.mockVirtualCurrencyManager.invalidateVirtualCurrenciesCacheCallCount) == 1
-        expect(self.backend.getCustomerInfoCallCount) > before
+        expect(self.backend.getCustomerInfoCallCount) == before
         expect(result.verifiedReward) == .virtualCurrency(virtualCurrency)
         expect(result.moreRewards) == [.entitlement(entitlement)]
-    }
-
-    func testPollRewardVerificationMultiGrantFailsWhenEntitlementRefreshFails() async throws {
-        let virtualCurrency = try XCTUnwrap(VirtualCurrencyReward(code: "coins", amount: 5))
-        let entitlement = try XCTUnwrap(EntitlementReward(identifier: "pro", expiresAt: Date()))
-        self.backend.overrideCustomerInfoResult = .failure(makeTerminalBackendError())
-        let poller = self.makeStubPoller(statuses: [
-            .verified(reward: .virtualCurrency(virtualCurrency), moreRewards: [.entitlement(entitlement)])
-        ])
-
-        let result = await self.purchases.pollRewardVerification(clientTransactionID: "tx-1", poller: poller)
-
-        expect(result) == .failed
-        expect(self.mockVirtualCurrencyManager.invalidateVirtualCurrenciesCacheCallCount) == 1
     }
 
 }

@@ -231,6 +231,34 @@ final class BackendGetRewardVerificationStatusTests: BaseBackendTests {
         )
     }
 
+    func testGetRewardVerificationStatusStampsEmbeddedCustomerInfoWithVerificationResult() throws {
+        self.httpClient.disableSnapshotTesting()
+        self.httpClient.mock(
+            requestPath: .rewardVerificationStatus(
+                appUserID: Self.userID,
+                clientTransactionID: Self.clientTransactionID,
+                adUnitID: nil
+            ),
+            response: .init(statusCode: .success,
+                            response: Self.verifiedWithSubscriberResponse,
+                            verificationResult: .verified)
+        )
+
+        let result = waitUntilValue { completed in
+            self.adsAPI.getRewardVerificationStatus(
+                appUserID: Self.userID,
+                clientTransactionID: Self.clientTransactionID,
+                adUnitID: nil,
+                completion: completed
+            )
+        }
+
+        let customerInfo = try XCTUnwrap(result?.value?.customerInfo)
+        expect(customerInfo.originalAppUserId) == Self.userID
+        expect(customerInfo.entitlements.verification) == .verified
+        expect(customerInfo.entitlements["pro"]?.verification) == .verified
+    }
+
     // MARK: - Error handling
 
     func testGetRewardVerificationStatusFailSendsError() {
@@ -446,6 +474,37 @@ private extension BackendGetRewardVerificationStatusTests {
             "code": "coins",
             "amount": 10
         ]
+    ]
+    static let verifiedWithSubscriberResponse: [String: Any] = [
+        "status": "verified",
+        "reward": [
+            "type": "entitlement",
+            "identifier": "pro",
+            "expires_at": "2026-06-16T12:00:00Z"
+        ],
+        "more_rewards": [] as [Any],
+        "request_date": "2026-05-16T12:00:00Z",
+        "request_date_ms": 1778932800000,
+        "subscriber": [
+            "first_seen": "2026-05-16T12:00:00Z",
+            "original_app_user_id": BaseBackendTests.userID,
+            "other_purchases": [:] as [String: Any],
+            "subscriptions": [
+                "rc_ad_pro": [
+                    "purchase_date": "2026-05-16T12:00:00Z",
+                    "expires_date": "2026-06-16T12:00:00Z",
+                    "period_type": "normal",
+                    "store": "promotional"
+                ]
+            ],
+            "entitlements": [
+                "pro": [
+                    "product_identifier": "rc_ad_pro",
+                    "purchase_date": "2026-05-16T12:00:00Z",
+                    "expires_date": "2026-06-16T12:00:00Z"
+                ]
+            ]
+        ] as [String: Any]
     ]
     static let pendingResponse: [String: Any] = ["status": "pending"]
     static let failedResponse: [String: Any] = ["status": "failed"]

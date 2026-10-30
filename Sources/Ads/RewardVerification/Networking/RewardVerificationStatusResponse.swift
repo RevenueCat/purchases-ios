@@ -17,6 +17,14 @@ struct RewardVerificationStatusResponse: Equatable {
 
     let status: Status
 
+    /// `customerInfo` is present only when the backend embeds subscriber info with an entitlement grant.
+    let customerInfo: CustomerInfo?
+
+    init(status: Status, customerInfo: CustomerInfo? = nil) {
+        self.status = status
+        self.customerInfo = customerInfo
+    }
+
     enum Status: Equatable {
 
         /// `moreRewards` contains additional rewards only; it does not repeat `reward`.
@@ -50,6 +58,7 @@ extension RewardVerificationStatusResponse: Decodable {
         case failureReason
         case message
         case moreRewards
+        case subscriber
     }
 
     private enum RewardCodingKeys: String, CodingKey {
@@ -69,6 +78,23 @@ extension RewardVerificationStatusResponse: Decodable {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         let rawStatus = try container.decode(String.self, forKey: .status)
         self.status = Self.decodeStatus(rawStatus, from: container)
+        self.customerInfo = Self.decodeCustomerInfo(from: decoder, container: container)
+    }
+
+    private static func decodeCustomerInfo(
+        from decoder: Decoder,
+        container: KeyedDecodingContainer<CodingKeys>
+    ) -> CustomerInfo? {
+        guard container.contains(.subscriber) else {
+            return nil
+        }
+
+        do {
+            return try CustomerInfo(from: decoder)
+        } catch {
+            Logger.warn(Strings.backendError.malformed_reward_verification_customer_info(error: error))
+            return nil
+        }
     }
 
     private static func decodeStatus(
@@ -185,5 +211,24 @@ extension RewardVerificationStatusResponse: HTTPResponseBody {
 
     static func create(with data: Data) throws -> Self {
         return try JSONDecoder.default.decode(Self.self, from: data)
+    }
+
+    func copy(with newRequestDate: Date) -> Self {
+        guard let customerInfo = self.customerInfo else { return self }
+
+        return .init(status: self.status, customerInfo: customerInfo.copy(with: newRequestDate))
+    }
+
+    func copy(
+        with entitlementVerification: VerificationResult,
+        httpResponseOriginalSource: HTTPResponseOriginalSource
+    ) -> Self {
+        guard let customerInfo = self.customerInfo else { return self }
+
+        return .init(
+            status: self.status,
+            customerInfo: customerInfo.copy(with: entitlementVerification,
+                                            httpResponseOriginalSource: httpResponseOriginalSource)
+        )
     }
 }
