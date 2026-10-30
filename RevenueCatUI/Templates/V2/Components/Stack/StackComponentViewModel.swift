@@ -60,24 +60,11 @@ class StackComponentViewModel: OfferEligibilityVisibilityDependency {
         return identifiers
     }
 
-    /// Whether the first child is a full-width image, video, or web view.
-    /// Used by ZStack rendering to push non-hero children below the safe area.
-    var firstChildIsFullWidthMedia: Bool {
-        guard case .zlayer = component.dimension else { return false }
-        guard let first = component.components.first(where: {
-            if case .fallbackHeader = $0 { return false }
-            return true
-        }) else { return false }
-        switch first {
-        case .image(let image):
-            return image.size.width.isFill
-        case .video(let video):
-            return video.size.width.isFill
-        case .webView(let webView):
-            return webView.size.width.isFill
-        default:
-            return false
-        }
+    /// Whether this stack's first child leads to the paywall's hero media, which bleeds into the top safe area.
+    /// The remaining children are then overlays that ZStack rendering pushes below the safe area.
+    func firstChildLeadsToHero(_ heroIdentifier: ObjectIdentifier?) -> Bool {
+        guard let heroIdentifier else { return false }
+        return self.viewModels.first?.firstNativeMediaIdentifier == heroIdentifier
     }
 
     /// Whether this stack renders anything a screen reader can announce, at any depth.

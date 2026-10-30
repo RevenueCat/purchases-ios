@@ -168,7 +168,8 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
     func warmUpPaywallAssetsCache(offerings: Offerings) async {
         await self.webBundleURLBatcher.publish(
             offerings: offerings,
-            workflowsByOfferingId: [:]
+            workflowsByOfferingId: [:],
+            workflowBackedOfferingIds: []
         )
 
         guard !self.hasLoadedPaywallAssets else { return }

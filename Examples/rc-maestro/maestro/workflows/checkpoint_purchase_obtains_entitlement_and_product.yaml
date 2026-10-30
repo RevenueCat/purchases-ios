@@ -1,0 +1,44 @@
+# The SDK presents the paywall of `donottouch_sdk_everyone` (monthly package preselected). A purchase closes it,
+# and the callback reports the obtained entitlement and product, and the customer with the entitlement active.
+#
+# Fixtures live in the Automated SDK Tests project (6627e5bc). Do not edit them.
+# Run locally against the test store:
+#   maestro test -e MAESTRO_STORE=test_store Examples/rc-maestro/maestro/workflows/checkpoint_purchase_obtains_entitlement_and_product.yaml
+
+appId: com.revenuecat.maestro.ios
+name: A purchase in a checkpoint flow reports the obtained entitlement and product
+env:
+  MAESTRO_STORE: ${MAESTRO_STORE || 'test_store'}
+
+---
+- clearState
+# Dismiss any leftover system alerts from previous test runs.
+- pressKey: home
+- launchApp:
+    arguments:
+        e2e_test_flow: checkpoint_resolution
+        checkpoint_identifier: donottouch_sdk_everyone
+        checkpoint_presenter: sdk
+        app_user_id: "maestro-checkpoint-${Date.now()}"
+
+- extendedWaitUntil:
+    visible: "Continue"
+    timeout: 20000
+- takeScreenshot: "checkpoint_purchase_obtains_entitlement_and_product - paywall"
+- tapOn:
+    text: "Continue"
+
+- runFlow:
+    file: ../utils/confirm_purchase.yaml
+    env:
+      SCREENSHOT_PREFIX: checkpoint_purchase_obtains_entitlement_and_product
+
+- extendedWaitUntil:
+    visible: "callback: obtained"
+    timeout: 20000
+- assertVisible: "obtained entitlements: pro"
+- assertVisible: "obtained products: pro_monthly_subscription"
+- assertVisible: "entitlement pro obtained: true"
+- assertVisible: "product pro_monthly_subscription obtained: true"
+- assertVisible: "customer active entitlements: pro"
+- takeScreenshot: "checkpoint_purchase_obtains_entitlement_and_product - passed"

@@ -12,6 +12,8 @@
 //  Created by Rick van der Linden.
 //
 
+// swiftlint:disable file_length
+
 import Foundation
 @_spi(Internal) import RevenueCat
 
@@ -33,6 +35,7 @@ final class CheckpointsManager {
     private let errorPresentationQueue = ErrorPresentationQueue()
     var paywallPresenter: PaywallPresenter?
     var errorPresenter: ErrorPresenter?
+    var adPresenter: AdPresenter?
 
     init(
         resolveCheckpoint: @escaping (String, CheckpointCallParams) async throws -> CheckpointResolution,
@@ -59,6 +62,10 @@ final class CheckpointsManager {
 
     func setErrorPresenter(_ presenter: ErrorPresenter?) {
         self.errorPresenter = presenter
+    }
+
+    func setAdPresenter(_ presenter: AdPresenter?) {
+        self.adPresenter = presenter
     }
 
     func executeCheckpoint(
@@ -128,6 +135,21 @@ final class CheckpointsManager {
                 ),
                 availableProducts: offering.availablePackages.map(\.storeProduct)
             )
+        case let .matchedAd(adStep):
+            guard let adPresenter = self.adPresenter else {
+                Logger.warning(Strings.checkpoint_ad_step_without_ad_presenter(checkpointIdentifier: identifier))
+                return .init(outcome: .nothingPresented)
+            }
+            let request = AdPresentationRequest(
+                params: .init(
+                    checkpointIdentifier: identifier,
+                    adIdentifier: adStep.adIdentifier,
+                    mediator: adStep.mediator
+                ),
+                customVariables: params.customVariables,
+                errorPresentationHandler: errorPresentationHandler
+            )
+            return .init(outcome: try await self.checkpointPresenter.presentAd(request, adPresenter: adPresenter))
         case .noAction:
             return .init(outcome: .nothingPresented)
         }
@@ -191,7 +213,7 @@ final class CheckpointsManager {
             return .failed(CheckpointError.configurationUnavailable)
         case .noAction(.unknownCheckpoint), .noAction(.noMatch):
             return .completed(CheckpointResult(flow: nil, customer: customerInfoBefore))
-        case .matchedWorkflow, .matchedOffering:
+        case .matchedWorkflow, .matchedOffering, .matchedAd:
             return await self.presentedOutcome(
                 identifier: identifier,
                 params: params,
@@ -240,6 +262,13 @@ final class CheckpointsManager {
             return .failed(error)
         }
     }
+
+}
+
+// MARK: - Customer information and results
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private extension CheckpointsManager {
 
     /// The customer's information read once the checkpoint is resolved and before anything is presented: cached
     /// when warm, fetched otherwise, so a run that goes on always has one to deliver and to compare against. It comes
