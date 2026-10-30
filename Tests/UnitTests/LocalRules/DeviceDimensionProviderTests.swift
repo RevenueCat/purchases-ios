@@ -81,7 +81,8 @@ struct DeviceDimensionProviderTests {
     func usesPreferredLocaleOverrideForEverySnapshot() async throws {
         let preferredLocalesProvider = PreferredLocalesProvider(
             preferredLocaleOverride: nil,
-            systemPreferredLocalesGetter: { ["es-ES"] }
+            systemPreferredLocalesGetter: { ["es-ES"] },
+            bundlePreferredLocaleGetter: { nil }
         )
         let systemInfo = MockSystemInfo(
             finishTransactions: true,

@@ -25,27 +25,28 @@ final class PreferredLocalesProvider {
     /// Closure to get the user's preferred locales, allowing for dependency injection in tests.
     private var systemPreferredLocalesGetter: () -> [String]
 
+    private let bundlePreferredLocaleGetter: () -> String?
+
     /// Initializes the provider with an optional override for the preferred locale.
     /// - Parameters:
     ///   - preferredLocaleOverride: The preferred locale to override the system's preferred languages, if any.
-    ///   - preferredLocalesGetter: The closure to get the preferred locales, defaults to the system's preferred
+    ///   - systemPreferredLocalesGetter: The closure to get the preferred locales, defaults to the system's preferred
     ///   languages.
+    ///   - bundlePreferredLocaleGetter: The closure to get the app's preferred localization.
     init(
         preferredLocaleOverride: String?,
-        systemPreferredLocalesGetter: @escaping () -> [String] = PreferredLocalesProvider.defaultPreferredLocalesGetter
+        systemPreferredLocalesGetter: @escaping () -> [String] = PreferredLocalesProvider.defaultPreferredLocalesGetter,
+        bundlePreferredLocaleGetter: @escaping () -> String? = { Bundle.main.preferredLocalizations.first }
     ) {
         self.preferredLocaleOverride = preferredLocaleOverride
         self.systemPreferredLocalesGetter = systemPreferredLocalesGetter
+        self.bundlePreferredLocaleGetter = bundlePreferredLocaleGetter
     }
 
-    /// Returns the list of the user's preferred languages, including the preferred locale override as the first
-    /// locale of the array.
+    /// Returns the override, app localization, and system preferred languages, in that order of priority.
     var preferredLocales: [String] {
-        if let preferredLocaleOverride = self.preferredLocaleOverride {
-            return [preferredLocaleOverride] + systemPreferredLocalesGetter()
-        } else {
-            return systemPreferredLocalesGetter()
-        }
+        return [self.preferredLocaleOverride, self.bundlePreferredLocaleGetter()].compactMap { $0 }
+            + self.systemPreferredLocalesGetter()
     }
 
     /// Sets a new preferred locale override that will take precedence over the system's preferred languages.

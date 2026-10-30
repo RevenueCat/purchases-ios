@@ -110,6 +110,25 @@ class SystemInfoTests: TestCase {
         expect(info.preferredLocales).to(equal(["fr_FR", "de_DE", "en_US"]))
     }
 
+    func testPreferredLocalesPrioritizesAppLanguageOverDeviceLanguage() {
+        let provider: PreferredLocalesProvider = .mock(bundlePreferredLocale: "en",
+                                                       locales: ["zh-Hans", "fr_FR"])
+
+        expect(provider.preferredLocales) == ["en", "zh-Hans", "fr_FR"]
+    }
+
+    func testPreferredLocalesOverrideTakesPrecedenceOverAppLanguage() {
+        let provider: PreferredLocalesProvider = .mock(preferredLocaleOverride: "es_ES",
+                                                       bundlePreferredLocale: "en",
+                                                       locales: ["zh-Hans", "fr_FR"])
+
+        expect(provider.preferredLocales) == ["es_ES", "en", "zh-Hans", "fr_FR"]
+
+        provider.overridePreferredLocale(nil)
+
+        expect(provider.preferredLocales) == ["en", "zh-Hans", "fr_FR"]
+    }
+
     // MARK: - identifierForVendor
 
     #if os(iOS) || os(tvOS) || VISION_OS
