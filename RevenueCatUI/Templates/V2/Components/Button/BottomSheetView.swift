@@ -244,6 +244,13 @@ struct BottomSheetOverlayModifier: ViewModifier {
                     .id(sheetViewModel.sheet.id)
                 }
             }
+            .frame(maxWidth: .infinity)
+            // Contain all sheet backgrounds and media horizontally, including unstyled rectangles
+            // whose backgrounds ignore the safe area. Keep vertical extension for the home indicator.
+            .mask {
+                Rectangle()
+                    .ignoresSafeArea(.container, edges: .vertical)
+            }
             // Hiding the paywall doesn't reach into its ScrollView, so VoiceOver still walked it.
             // Only checkable with Accessibility Inspector or VoiceOver: XCUITest lists hidden elements.
             .accessibilityElement(children: .contain)
