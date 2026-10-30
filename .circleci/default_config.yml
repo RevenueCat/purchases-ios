@@ -1213,25 +1213,6 @@ jobs:
           destination: scan-test-output-ios-26
       - github-notify-pr-on-fail
 
-  build-checkpoint-tester:
-    executor:
-      name: macos-executor
-      xcode_version: "27.0.0"
-    steps:
-      - checkout
-      - tuist-generate-workspace:
-          query: "CheckpointTester"
-      - run:
-          name: Build CheckpointTester
-          command: >-
-            xcodebuild
-            -workspace RevenueCat-Tuist.xcworkspace
-            -scheme CheckpointTester
-            -destination "generic/platform=iOS Simulator"
-            CODE_SIGNING_ALLOWED=NO
-            build
-          no_output_timeout: 30m
-
   check-app-extension-safe-api-usage:
     executor:
       name: macos-executor
@@ -2461,9 +2442,6 @@ workflows:
       - run-test-ios-27:
           context:
             - slack-secrets
-      - build-checkpoint-tester:
-          context:
-            - slack-secrets
       - pod-lib-lint:
           context:
             - slack-secrets
@@ -2655,7 +2633,6 @@ workflows:
             - lint
             - check-api-changes
             - run-test-ios-27
-            - build-checkpoint-tester
             - pod-lib-lint
             - run-revenuecat-ui-ios-27
             - run-revenuecat-ui-ios-26
