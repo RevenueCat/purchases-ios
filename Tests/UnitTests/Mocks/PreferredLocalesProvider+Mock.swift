@@ -16,9 +16,11 @@
 extension PreferredLocalesProvider {
 
     static func mock(preferredLocaleOverride: String? = nil,
+                     bundlePreferredLocale: String? = nil,
                      locales: [String] = ["en_EN"]) -> PreferredLocalesProvider {
         return PreferredLocalesProvider(
             preferredLocaleOverride: preferredLocaleOverride,
-            systemPreferredLocalesGetter: { return locales })
+            systemPreferredLocalesGetter: { return locales },
+            bundlePreferredLocaleGetter: { return bundlePreferredLocale })
     }
 }

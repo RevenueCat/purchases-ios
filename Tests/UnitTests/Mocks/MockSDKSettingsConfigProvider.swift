@@ -40,8 +40,16 @@ extension MockSDKSettingsConfigProvider: @unchecked Sendable {}
 
 extension SDKSettings {
 
+    static func mock(
+        externalPurchases: ExternalPurchases = SDKSettings().externalPurchases,
+        diagnostics: Diagnostics? = nil,
+        paywalls: Paywalls? = nil
+    ) -> SDKSettings {
+        return .init(externalPurchases: externalPurchases, diagnostics: diagnostics, paywalls: paywalls)
+    }
+
     static func allowingExternalPurchases(in storefronts: Set<String>) -> SDKSettings {
-        return .init(
+        return .mock(
             externalPurchases: .init(appStore: .init(storefrontsAllowedWithoutStoreEligibility: storefronts))
         )
     }

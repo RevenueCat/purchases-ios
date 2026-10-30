@@ -336,6 +336,10 @@ class SystemInfo {
     func overridePreferredLocale(_ locale: String?) {
         self.preferredLocalesProvider.overridePreferredLocale(locale)
     }
+
+    func setPreferApplicationLocale(_ enabled: Bool) {
+        self.preferredLocalesProvider.setPreferApplicationLocale(enabled)
+    }
 }
 
 #if os(iOS) || os(tvOS) || VISION_OS
