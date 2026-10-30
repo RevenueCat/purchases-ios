@@ -371,14 +371,11 @@ extension DefaultSimulatedStorePurchaseUI {
             nsAlert.addButton(withTitle: action.title)
         }
 
-        // Map the modal response to the button index (0-based).
-        let indexMap: [NSApplication.ModalResponse: Int] = [
-            .alertFirstButtonReturn: 0,
-            .alertSecondButtonReturn: 1,
-            .alertThirdButtonReturn: 2
-        ]
         let handleResponse: @MainActor (NSApplication.ModalResponse) -> Void = { response in
-            let selectedIndex = indexMap[response] ?? 0
+            guard let selectedIndex = Self.actionIndex(for: response) else {
+                alert.dismissCallback()
+                return
+            }
             let selectedAction = displayedActions[safe: selectedIndex]
             selectedAction?.callback(selectedAction?.title ?? "")
         }
@@ -395,6 +392,9 @@ extension DefaultSimulatedStorePurchaseUI {
         return self.resolvedPresentationContext(presentationContext)?.window
     }
 
+    static func actionIndex(for response: NSApplication.ModalResponse) -> Int? {
+        return [.alertFirstButtonReturn, .alertSecondButtonReturn, .alertThirdButtonReturn].firstIndex(of: response)
+    }
 }
 
 #endif

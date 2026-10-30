@@ -138,6 +138,14 @@ class SimulatedStorePurchaseHandlerTests: TestCase {
 
         XCTAssertTrue(presentationWindow === fallbackWindow)
     }
+
+    func testPurchaseUIMapsOnlyButtonResponsesToActions() {
+        XCTAssertEqual(DefaultSimulatedStorePurchaseUI.actionIndex(for: .alertFirstButtonReturn), 0)
+        XCTAssertEqual(DefaultSimulatedStorePurchaseUI.actionIndex(for: .alertSecondButtonReturn), 1)
+        XCTAssertEqual(DefaultSimulatedStorePurchaseUI.actionIndex(for: .alertThirdButtonReturn), 2)
+        XCTAssertNil(DefaultSimulatedStorePurchaseUI.actionIndex(for: .abort))
+        XCTAssertNil(DefaultSimulatedStorePurchaseUI.actionIndex(for: .stop))
+    }
     #endif
 
     func testSubsequentPurchaseProductCallsOnlyCallPurchaseUIOnce() async {
