@@ -50,6 +50,29 @@ class SDKSettingsConfigProviderTests: TestCase {
         expect(settings.diagnostics?.enabled) == true
     }
 
+    func testDecodesApplicationLocalePreference() async {
+        for enabled in [true, false] {
+            self.manager.stubbedTopics[.sdkSettings] = [
+                "default": .init(content: ["paywalls": ["prefer_application_locale": .bool(enabled)]])
+            ]
+
+            let settings = await self.provider.settings()
+
+            expect(settings.paywalls?.preferApplicationLocale) == enabled
+        }
+    }
+
+    func testMissingOrMalformedPaywallSettingsPreserveOtherSettings() throws {
+        for paywalls in ["null", "{}", #"{"prefer_application_locale":"true"}"#, #""invalid""#] {
+            let data = Data("{\"diagnostics\":{\"enabled\":true},\"paywalls\":\(paywalls)}".utf8)
+
+            let settings = try JSONDecoder.default.decode(SDKSettings.self, from: data)
+
+            expect(settings.paywalls).to(beNil())
+            expect(settings.diagnostics?.enabled) == true
+        }
+    }
+
     func testDecodesDiagnosticsDisabled() async {
         self.manager.stubbedTopics[.sdkSettings] = [
             "default": .init(content: ["diagnostics": ["enabled": false]])

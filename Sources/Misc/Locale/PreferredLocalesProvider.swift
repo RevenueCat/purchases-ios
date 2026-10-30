@@ -26,6 +26,7 @@ final class PreferredLocalesProvider {
     private var systemPreferredLocalesGetter: () -> [String]
 
     private let bundlePreferredLocaleGetter: () -> String?
+    private let preferApplicationLocale: Atomic<Bool> = false
 
     /// Initializes the provider with an optional override for the preferred locale.
     /// - Parameters:
@@ -43,10 +44,15 @@ final class PreferredLocalesProvider {
         self.bundlePreferredLocaleGetter = bundlePreferredLocaleGetter
     }
 
-    /// Returns the override, app localization, and system preferred languages, in that order of priority.
+    /// Returns the override, the app localization when enabled, and system preferred languages, in that order.
     var preferredLocales: [String] {
-        return [self.preferredLocaleOverride, self.bundlePreferredLocaleGetter()].compactMap { $0 }
+        let appLocale = self.preferApplicationLocale.value ? self.bundlePreferredLocaleGetter() : nil
+        return [self.preferredLocaleOverride, appLocale].compactMap { $0 }
             + self.systemPreferredLocalesGetter()
+    }
+
+    func setPreferApplicationLocale(_ enabled: Bool) {
+        self.preferApplicationLocale.value = enabled
     }
 
     /// Sets a new preferred locale override that will take precedence over the system's preferred languages.

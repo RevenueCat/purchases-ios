@@ -13,13 +13,16 @@ struct SDKSettings: Decodable, Equatable {
 
     let externalPurchases: ExternalPurchases
     let diagnostics: Diagnostics?
+    let paywalls: Paywalls?
 
     init(
-        externalPurchases: ExternalPurchases = Self.noExternalPurchases,
-        diagnostics: Diagnostics? = nil
+        externalPurchases: ExternalPurchases,
+        diagnostics: Diagnostics?,
+        paywalls: Paywalls?
     ) {
         self.externalPurchases = externalPurchases
         self.diagnostics = diagnostics
+        self.paywalls = paywalls
     }
 
     /// The rules for purchases taken outside the store, one entry per store.
@@ -54,7 +57,7 @@ struct SDKSettings: Decodable, Equatable {
 extension SDKSettings {
 
     init() {
-        self.init(externalPurchases: Self.noExternalPurchases)
+        self.init(externalPurchases: Self.noExternalPurchases, diagnostics: nil, paywalls: nil)
     }
 
     init(from decoder: Decoder) throws {
@@ -62,6 +65,7 @@ extension SDKSettings {
         self.externalPurchases = (try? container.decode(ExternalPurchases.self, forKey: .externalPurchases))
             ?? Self.noExternalPurchases
         self.diagnostics = try? container.decode(Diagnostics.self, forKey: .diagnostics)
+        self.paywalls = try? container.decode(Paywalls.self, forKey: .paywalls)
     }
 
     private static let noExternalPurchases = ExternalPurchases(
@@ -78,6 +82,16 @@ extension SDKSettings.ExternalPurchases {
         ///
         /// Empty when the backend sends none, so no storefront is treated as one of them.
         let storefrontsAllowedWithoutStoreEligibility: Set<String>
+
+    }
+
+}
+
+extension SDKSettings {
+
+    struct Paywalls: Decodable, Equatable {
+
+        let preferApplicationLocale: Bool
 
     }
 
@@ -100,6 +114,7 @@ private extension SDKSettings {
     enum CodingKeys: String, CodingKey {
         case externalPurchases
         case diagnostics
+        case paywalls
     }
 
 }

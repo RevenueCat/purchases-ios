@@ -74,12 +74,39 @@ class PurchasesConfiguringTests: BasePurchasesTests {
         self.purchasesOrchestrator._diagnosticsSynchronizer = synchronizer
 
         settingsProvider.delegate?.sdkSettingsConfigProviderDidUpdate(
-            .init(diagnostics: .init(enabled: true))
+            .mock(diagnostics: .init(enabled: true))
         )
 
         let tracker = try self.mockDiagnosticsTracker
         expect(tracker.collectionDecisions.value) == [.enabled]
         await expect(synchronizer.collectionDecisions.value).toEventually(equal([.enabled]))
+    }
+
+    func testSDKSettingsUpdatesPreferredLocalesAndRestoresDefaultWhenRemoved() {
+        self.systemInfo = MockSystemInfo(
+            finishTransactions: true,
+            preferredLocalesProvider: .mock(bundlePreferredLocale: "en", locales: ["zh-Hans"])
+        )
+        let settingsProvider = MockSDKSettingsConfigProvider()
+        self.initializePurchasesInstance(appUserId: Self.appUserID, sdkSettingsConfigProvider: settingsProvider)
+
+        expect(self.purchases.preferredLocales) == ["zh-Hans"]
+
+        settingsProvider.delegate?.sdkSettingsConfigProviderDidUpdate(
+            .mock(paywalls: .init(preferApplicationLocale: true))
+        )
+        expect(self.purchases.preferredLocales) == ["en", "zh-Hans"]
+
+        settingsProvider.delegate?.sdkSettingsConfigProviderDidUpdate(
+            .mock(paywalls: .init(preferApplicationLocale: false))
+        )
+        expect(self.purchases.preferredLocales) == ["zh-Hans"]
+
+        settingsProvider.delegate?.sdkSettingsConfigProviderDidUpdate(
+            .mock(paywalls: .init(preferApplicationLocale: true))
+        )
+        settingsProvider.delegate?.sdkSettingsConfigProviderDidUpdate(SDKSettings())
+        expect(self.purchases.preferredLocales) == ["zh-Hans"]
     }
 
     func testIsAbleToBeInitialized() {

@@ -655,6 +655,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                                                 uiConfigProvider: systemInfo.remoteConfigEnabled
                                                 ? uiConfigProvider
                                                 : nil,
+                                                sdkSettingsConfigProvider: sdkSettingsConfigProvider,
                                                 workflowAssetPrewarmer: systemInfo.remoteConfigEnabled
                                                 ? workflowManager
                                                 : nil)
@@ -2856,6 +2857,7 @@ public extension Purchases {
 extension Purchases: SDKSettingsConfigProviderDelegate {
 
     func sdkSettingsConfigProviderDidUpdate(_ settings: SDKSettings) {
+        self.systemInfo.setPreferApplicationLocale(settings.paywalls?.preferApplicationLocale == true)
         self.setDiagnosticsCollectionDecision(remoteDiagnosticsEnabled: settings.diagnostics?.enabled)
     }
 

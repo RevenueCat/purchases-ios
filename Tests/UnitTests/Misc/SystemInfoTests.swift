@@ -113,6 +113,7 @@ class SystemInfoTests: TestCase {
     func testPreferredLocalesPrioritizesAppLanguageOverDeviceLanguage() {
         let provider: PreferredLocalesProvider = .mock(bundlePreferredLocale: "en",
                                                        locales: ["zh-Hans", "fr_FR"])
+        provider.setPreferApplicationLocale(true)
 
         expect(provider.preferredLocales) == ["en", "zh-Hans", "fr_FR"]
     }
@@ -121,12 +122,36 @@ class SystemInfoTests: TestCase {
         let provider: PreferredLocalesProvider = .mock(preferredLocaleOverride: "es_ES",
                                                        bundlePreferredLocale: "en",
                                                        locales: ["zh-Hans", "fr_FR"])
+        provider.setPreferApplicationLocale(true)
 
         expect(provider.preferredLocales) == ["es_ES", "en", "zh-Hans", "fr_FR"]
 
         provider.overridePreferredLocale(nil)
 
         expect(provider.preferredLocales) == ["en", "zh-Hans", "fr_FR"]
+    }
+
+    func testPreferredLocalesIgnoresAppLanguageByDefault() {
+        let provider: PreferredLocalesProvider = .mock(bundlePreferredLocale: "en", locales: ["zh-Hans"])
+
+        expect(provider.preferredLocales) == ["zh-Hans"]
+    }
+
+    func testDisablingAppLanguagePreservesExplicitOverride() {
+        let provider: PreferredLocalesProvider = .mock(preferredLocaleOverride: "es_ES",
+                                                       bundlePreferredLocale: "en",
+                                                       locales: ["zh-Hans"])
+        provider.setPreferApplicationLocale(true)
+        provider.setPreferApplicationLocale(false)
+
+        expect(provider.preferredLocales) == ["es_ES", "zh-Hans"]
+    }
+
+    func testPreferringAppLanguageFallsBackWhenBundleHasNoLocalization() {
+        let provider: PreferredLocalesProvider = .mock(locales: ["zh-Hans"])
+        provider.setPreferApplicationLocale(true)
+
+        expect(provider.preferredLocales) == ["zh-Hans"]
     }
 
     // MARK: - identifierForVendor
