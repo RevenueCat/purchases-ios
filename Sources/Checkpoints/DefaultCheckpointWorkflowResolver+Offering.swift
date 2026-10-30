@@ -46,29 +46,29 @@ extension DefaultCheckpointWorkflowResolver {
     private func resolveOffering(
         _ rule: CheckpointRule, offeringID: String, checkpointIdentifier: String, traceID: String
     ) async -> CheckpointResolution {
-        guard let match = await self.offering(identifier: offeringID, for: rule) else {
+        guard let offering = await self.offering(identifier: offeringID, for: rule) else {
             return .noAction(.configurationUnavailable)
         }
 
         return .matchedOffering(
-            match.offering.withPresentedCheckpointIdentifier(checkpointIdentifier, traceID: traceID),
+            offering.withPresentedCheckpointIdentifier(checkpointIdentifier, traceID: traceID),
             traceID: traceID
         )
     }
 
     /// Loads the offerings and picks `identifier` out of them, logging why the rule can't be served when it
-    /// isn't there. Both resolution paths need the offering and the container it came from.
+    /// isn't there.
     private func offering(
         identifier: String,
         for rule: CheckpointRule
-    ) async -> (offering: Offering, offerings: Offerings)? {
+    ) async -> Offering? {
         guard let offerings = await self.loadOfferings() else { return nil }
         guard let offering = offerings.offering(identifier: identifier) else {
             Self.unservable(rule, reason: "offering '\(identifier)' is unavailable")
             return nil
         }
 
-        return (offering, offerings)
+        return offering
     }
 
 }
