@@ -1,0 +1,68 @@
+//
+//  Copyright RevenueCat Inc. All Rights Reserved.
+//
+//  Licensed under the MIT License (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//      https://opensource.org/licenses/MIT
+//
+//  DefaultCheckpointWorkflowResolver+StepEvents.swift
+//
+//  Created by RevenueCat.
+
+import Foundation
+
+extension DefaultCheckpointWorkflowResolver {
+
+    /// A step with no UI is the whole workflow: it starts when it is entered and completes once what it serves has
+    /// loaded. A step that can't be served never completes. The events are appended to `stepEvents` rather than
+    /// tracked, for the caller to track once the resolution is known to be current.
+    static func trackingStepEvents(
+        for step: WorkflowStep,
+        in workflowData: WorkflowDataResult,
+        traceID: String,
+        into stepEvents: inout [WorkflowEvent],
+        resolving: () async -> CheckpointResolution
+    ) async -> CheckpointResolution {
+        stepEvents.append(.stepStarted(
+            .init(),
+            Self.stepEventData(for: step, in: workflowData, traceID: traceID, entryReason: .start)
+        ))
+
+        let resolution = await resolving()
+
+        switch resolution {
+        case .matchedOffering, .matchedAd:
+            stepEvents.append(.stepCompleted(
+                .init(),
+                Self.stepEventData(for: step, in: workflowData, traceID: traceID, entryReason: nil)
+            ))
+        case .matchedWorkflow, .noAction:
+            break
+        }
+
+        return resolution
+    }
+
+    private static func stepEventData(
+        for step: WorkflowStep,
+        in workflowData: WorkflowDataResult,
+        traceID: String,
+        entryReason: WorkflowEvent.EntryReason?
+    ) -> WorkflowEvent.Data {
+        return .init(
+            workflowId: workflowData.workflow.id,
+            stepId: step.id,
+            traceId: traceID,
+            stepType: step.type,
+            entryReason: entryReason?.rawValue,
+            isFirstStep: true,
+            isLastStep: true,
+            workflowBlobRef: workflowData.workflowBlobRef,
+            fallbackOriginalStepId: step.fallbackOriginalStepId,
+            experiment: step.experimentData(workflowBlobRef: workflowData.workflowBlobRef)
+        )
+    }
+
+}
