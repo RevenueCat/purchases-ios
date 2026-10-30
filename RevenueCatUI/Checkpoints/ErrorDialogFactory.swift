@@ -15,7 +15,10 @@
 import Foundation
 @_spi(Internal) import RevenueCat
 
-/// Provides custom content for a checkpoint error dialog through an ``ErrorDialogFactoryCompletion``.
+/// Chooses custom dialog content, the SDK's default dialog, or no dialog for a checkpoint error.
+///
+/// Called on the main actor with the error parameters. The factory may retain the completion and respond later.
+/// The SDK waits for the outcome before presenting a dialog or continuing without one.
 @_spi(Internal)
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public typealias ErrorDialogFactory = @MainActor (
@@ -23,7 +26,22 @@ public typealias ErrorDialogFactory = @MainActor (
     ErrorDialogFactoryCompletion
 ) -> Void
 
-/// Delivers the dialog content for a checkpoint error, or `nil` for the SDK's default content.
+/// What an ``ErrorDialogFactory`` decides to do with a checkpoint error.
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@_spi(Internal) public enum ErrorDialogFactoryOutcome: Sendable, Equatable {
+
+    /// Show the SDK's error dialog with the supplied content.
+    case show(CheckpointErrorDialog)
+
+    /// Show the SDK's error dialog with its own localized copy.
+    case useDefault
+
+    /// Show no dialog. The SDK continues as if the user had acknowledged one.
+    case suppress
+
+}
+
+/// Delivers the outcome chosen by an ``ErrorDialogFactory``.
 ///
 /// Call ``complete(with:)`` exactly once. Later calls are ignored.
 @_spi(Internal)
@@ -31,32 +49,42 @@ public typealias ErrorDialogFactory = @MainActor (
 @MainActor
 public final class ErrorDialogFactoryCompletion {
 
-    private var handler: ((CheckpointErrorDialog?) -> Void)?
+    private var handler: ((ErrorDialogFactoryOutcome) -> Void)?
 
-    init(onComplete: @escaping @MainActor (CheckpointErrorDialog?) -> Void) {
+    init(onComplete: @escaping @MainActor (ErrorDialogFactoryOutcome) -> Void) {
         self.handler = onComplete
     }
 
-    /// Delivers the dialog content to the SDK.
-    public func complete(with dialog: CheckpointErrorDialog?) {
+    /// Applies the outcome. This supplies the decision; the SDK handles presentation and acknowledgement.
+    public func complete(with outcome: ErrorDialogFactoryOutcome) {
         guard let handler = self.handler else { return }
         self.handler = nil
-        handler(dialog)
+        handler(outcome)
     }
 
 }
 
 // MARK: - Presentation handler factory
 
-/// Creates an ``ErrorPresentationHandler`` that calls the given factory, waits for its dialog content,
-/// then shows the result through the SDK's default presenter.
+/// Creates an ``ErrorPresentationHandler`` that waits for the factory's outcome, then shows the dialog through
+/// the SDK's default presenter or completes immediately when suppressed.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 func makeErrorDialogFactoryHandler(
     factory: @escaping ErrorDialogFactory,
     makePresenter: @escaping @MainActor (CheckpointErrorDialog?) -> any ErrorPresenter
 ) -> ErrorPresentationHandler {
     return { params, presentationCompletion in
-        let factoryCompletion = ErrorDialogFactoryCompletion { dialog in
+        let factoryCompletion = ErrorDialogFactoryCompletion { outcome in
+            let dialog: CheckpointErrorDialog?
+            switch outcome {
+            case .show(let content):
+                dialog = content
+            case .useDefault:
+                dialog = nil
+            case .suppress:
+                presentationCompletion.complete()
+                return
+            }
             // Keep the presenter alive until acknowledgement, then break the ownership cycle.
             var presenter: (any ErrorPresenter)? = makePresenter(dialog)
             presenter?.present(params: params, completion: .init {

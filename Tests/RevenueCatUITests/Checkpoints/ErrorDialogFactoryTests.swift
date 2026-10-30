@@ -23,51 +23,102 @@ final class ErrorDialogFactoryTests: TestCase {
     // MARK: - ErrorDialogFactoryCompletion
 
     func testCompletionInvokesHandlerWithProvidedDialog() {
-        var receivedDialog: CheckpointErrorDialog?
+        var receivedOutcome: ErrorDialogFactoryOutcome?
         var callCount = 0
-        let completion = ErrorDialogFactoryCompletion { dialog in
-            receivedDialog = dialog
+        let completion = ErrorDialogFactoryCompletion { outcome in
+            receivedOutcome = outcome
             callCount += 1
         }
         let dialog = CheckpointErrorDialog(message: "Message", buttonTitle: "OK")
 
-        completion.complete(with: dialog)
+        completion.complete(with: .show(dialog))
 
         XCTAssertEqual(callCount, 1)
-        XCTAssertEqual(receivedDialog?.message, "Message")
-        XCTAssertEqual(receivedDialog?.buttonTitle, "OK")
+        XCTAssertEqual(receivedOutcome, .show(CheckpointErrorDialog(message: "Message", buttonTitle: "OK")))
     }
 
-    func testCompletionInvokesHandlerWithNilDialog() {
-        var receivedDialog: CheckpointErrorDialog?
+    func testCompletionInvokesHandlerWithUseDefault() {
+        var receivedOutcome: ErrorDialogFactoryOutcome?
         var callCount = 0
-        let completion = ErrorDialogFactoryCompletion { dialog in
-            receivedDialog = dialog
+        let completion = ErrorDialogFactoryCompletion { outcome in
+            receivedOutcome = outcome
             callCount += 1
         }
 
-        completion.complete(with: nil)
+        completion.complete(with: .useDefault)
 
         XCTAssertEqual(callCount, 1)
-        XCTAssertNil(receivedDialog)
+        XCTAssertEqual(receivedOutcome, .useDefault)
     }
 
     func testSecondCompletionCallIsIgnored() {
         var callCount = 0
         let completion = ErrorDialogFactoryCompletion { _ in callCount += 1 }
 
-        completion.complete(with: nil)
-        completion.complete(with: nil)
-        completion.complete(with: CheckpointErrorDialog(message: "Second", buttonTitle: "OK"))
+        completion.complete(with: .useDefault)
+        completion.complete(with: .useDefault)
+        completion.complete(with: .show(CheckpointErrorDialog(message: "Second", buttonTitle: "OK")))
 
         XCTAssertEqual(callCount, 1)
+    }
+
+    func testSuppressCompletesWithoutCreatingAPresenter() {
+        var factoryCompletion: ErrorDialogFactoryCompletion?
+        var completionCount = 0
+        var presenterCount = 0
+        let handler = makeErrorDialogFactoryHandler(
+            factory: { _, completion in factoryCompletion = completion },
+            makePresenter: { _ in
+                presenterCount += 1
+                return MockErrorPresenter()
+            }
+        )
+
+        handler(Self.errorPresentationParams, .init { completionCount += 1 })
+        XCTAssertEqual(completionCount, 0)
+        XCTAssertEqual(presenterCount, 0)
+
+        factoryCompletion?.complete(with: .suppress)
+        factoryCompletion?.complete(with: .useDefault)
+
+        XCTAssertEqual(completionCount, 1)
+        XCTAssertEqual(presenterCount, 0)
+    }
+
+    func testShowAndUseDefaultSelectContentAndWaitForAcknowledgement() {
+        let dialog = CheckpointErrorDialog(message: "Custom", buttonTitle: "Continue")
+        let cases: [(ErrorDialogFactoryOutcome, CheckpointErrorDialog?)] = [
+            (.show(dialog), dialog),
+            (.useDefault, nil)
+        ]
+        for (outcome, expectedDialog) in cases {
+            var selectedDialogs: [CheckpointErrorDialog?] = []
+            let presenter = DeferredErrorPresenter()
+            var completionCount = 0
+            let handler = makeErrorDialogFactoryHandler(
+                factory: { _, completion in completion.complete(with: outcome) },
+                makePresenter: { content in
+                    selectedDialogs.append(content)
+                    return presenter
+                }
+            )
+
+            handler(Self.errorPresentationParams, .init { completionCount += 1 })
+
+            XCTAssertEqual(selectedDialogs, [expectedDialog])
+            XCTAssertEqual(completionCount, 0)
+
+            presenter.completion?.complete()
+
+            XCTAssertEqual(completionCount, 1)
+        }
     }
 
     func testFactoryPresenterLivesUntilPresentationCompletes() {
         weak var weakPresenter: DeferredErrorPresenter?
         var completionCount = 0
         let handler = makeErrorDialogFactoryHandler(
-            factory: { _, completion in completion.complete(with: nil) },
+            factory: { _, completion in completion.complete(with: .useDefault) },
             makePresenter: { _ in
                 let presenter = DeferredErrorPresenter()
                 weakPresenter = presenter
@@ -95,7 +146,7 @@ final class ErrorDialogFactoryTests: TestCase {
         let params = CheckpointCallParams(
             errorDialogFactory: { _, completion in
                 factoryCalled = true
-                completion.complete(with: nil)
+                completion.complete(with: .useDefault)
             }
         )
 
@@ -120,7 +171,7 @@ final class ErrorDialogFactoryTests: TestCase {
         let handler = manager.errorPresentationHandler(
             for: .init(errorDialogFactory: { _, completion in
                 factoryCallCount += 1
-                completion.complete(with: nil)
+                completion.complete(with: .useDefault)
             }),
             defaultHandler: {
                 return { _, _ in defaultCallCount += 1 }
@@ -162,7 +213,7 @@ final class ErrorDialogFactoryTests: TestCase {
         let handler = manager.errorPresentationHandler(
             for: .init(errorDialogFactory: { _, completion in
                 factoryCallCount += 1
-                completion.complete(with: nil)
+                completion.complete(with: .useDefault)
             }),
             defaultHandler: { return { _, _ in } },
             dialogPresenterFactory: { _ in MockErrorPresenter() }
@@ -210,7 +261,7 @@ final class ErrorDialogFactoryTests: TestCase {
         let secondHandler = manager.errorPresentationHandler(
             for: .init(errorDialogFactory: { params, completion in
                 presentationOrder.append("factory-\(params.checkpointIdentifier)")
-                completion.complete(with: nil)
+                completion.complete(with: .useDefault)
                 secondStarted.fulfill()
             }),
             defaultHandler: { XCTFail("Default not expected"); return { _, _ in } },
@@ -235,7 +286,7 @@ final class ErrorDialogFactoryTests: TestCase {
 
         XCTAssertEqual(presentationOrder, ["factory-first"])
 
-        firstFactoryCompletion?.complete(with: nil)
+        firstFactoryCompletion?.complete(with: .useDefault)
         XCTAssertEqual(presentationOrder, ["factory-first"])
 
         firstPresenter?.completion?.complete()

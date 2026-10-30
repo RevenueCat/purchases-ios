@@ -115,7 +115,10 @@ private func checkErrorPresentationAPI(_ purchases: Purchases) {
 private func checkErrorDialogFactoryAPI(_ purchases: Purchases) {
     let dialog = CheckpointErrorDialog(message: "Something went wrong.", buttonTitle: "OK")
     let factory: ErrorDialogFactory = { _, completion in
-        completion.complete(with: dialog)
+        let _: ErrorDialogFactoryOutcome = .show(dialog)
+        let _: ErrorDialogFactoryOutcome = .useDefault
+        let _: ErrorDialogFactoryOutcome = .suppress
+        completion.complete(with: .show(dialog))
     }
 
     purchases.checkpoint("test_checkpoint", errorDialogFactory: factory) { _ in }
