@@ -9,6 +9,8 @@
 //
 //  WorkflowPaywallViewTests.swift
 
+import AVFoundation
+import AVKit
 import Nimble
 @_spi(Internal) @testable import RevenueCat
 @_spi(Internal) @testable import RevenueCatUI
@@ -19,6 +21,146 @@ import XCTest
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 final class WorkflowPaywallViewTests: TestCase {
+
+#if os(iOS)
+    @MainActor
+    func testVideoWithoutControlsPausesAndResumesWithWorkflowPage() async throws {
+        try await self.assertVideoPausesAndResumesWithWorkflowPage(showControls: false)
+    }
+
+    @MainActor
+    func testVideoWithControlsPausesAndResumesWithWorkflowPage() async throws {
+        try await self.assertVideoPausesAndResumesWithWorkflowPage(showControls: true)
+    }
+
+    @MainActor
+    func testLoopingVideoWithControlsStaysPausedOnInactiveWorkflowPage() async throws {
+        try await self.assertVideoPausesAndResumesWithWorkflowPage(showControls: true, loop: true)
+    }
+
+    @MainActor
+    func testLoopingVideoWithoutControlsStaysPausedOnInactiveWorkflowPage() async throws {
+        try await self.assertVideoPausesAndResumesWithWorkflowPage(showControls: false, loop: true)
+    }
+
+    @MainActor
+    private func assertVideoPausesAndResumesWithWorkflowPage(showControls: Bool, loop: Bool = false) async throws {
+        let url = FileManager.default.temporaryDirectory
+            .appendingPathComponent("workflow-video-\(UUID().uuidString).mp4")
+        try await Self.writePlaybackTestVideo(to: url)
+        defer { try? FileManager.default.removeItem(at: url) }
+        var screenJSON = try XCTUnwrap(JSONSerialization.jsonObject(
+            with: Data(Self.makeScreenJSON().utf8)
+        ) as? [String: Any])
+        var config = try XCTUnwrap(screenJSON["components_config"] as? [String: Any])
+        var base = try XCTUnwrap(config["base"] as? [String: Any])
+        var stack = try XCTUnwrap(base["stack"] as? [String: Any])
+        stack["components"] = [[
+            "type": "video", "id": "video", "auto_play": true,
+            "mute_audio": false, "loop": loop, "show_controls": showControls,
+            "source": ["light": ["url": url.absoluteString, "width": 32, "height": 32]],
+            "size": ["width": ["type": "fixed", "value": 100],
+                     "height": ["type": "fixed", "value": 100]],
+            "fit_mode": "fit", "margin": [:], "padding": [:]
+        ]] as [[String: Any]]
+        base["stack"] = stack
+        config["base"] = base
+        screenJSON["components_config"] = config
+        let context = try Self.makeContext(
+            singleStepFallbackId: nil,
+            initialScreenJSON: XCTUnwrap(String(
+                data: JSONSerialization.data(withJSONObject: screenJSON),
+                encoding: .utf8
+            ))
+        )
+        let screen = try XCTUnwrap(context.workflow.screens["screen_initial"])
+        let activation = WorkflowPageActivation(isActive: true)
+        let view = WorkflowPageActivationHost(
+            activation: activation,
+            paywallComponents: WorkflowScreenMapper.toPaywallComponents(screen: screen, uiConfig: context.uiConfig),
+            offering: context.initialOffering,
+            purchaseHandler: .mock(),
+            traceId: "video-reproduction"
+        )
+        let controller = UIHostingController(rootView: AnyView(view))
+        let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 390, height: 844))
+        window.rootViewController = controller
+        window.makeKeyAndVisible()
+        defer {
+            window.isHidden = true
+            window.rootViewController = nil
+        }
+        func player(in controller: UIViewController) -> AVPlayer? {
+            if let player = (controller as? AVPlayerViewController)?.player { return player }
+            return controller.children.compactMap { player(in: $0) }.first ?? player(in: controller.view.layer)
+        }
+        func player(in layer: CALayer) -> AVPlayer? {
+            if let player = (layer as? AVPlayerLayer)?.player { return player }
+            return layer.sublayers?.compactMap { player(in: $0) }.first
+        }
+        await expect(player(in: controller)?.rate).toEventually(equal(1), timeout: .seconds(8))
+        let videoPlayer = try XCTUnwrap(player(in: controller))
+        XCTAssertFalse(videoPlayer.isMuted)
+        await videoPlayer.seek(to: CMTime(seconds: 5, preferredTimescale: 600))
+        NotificationCenter.default.post(name: UIApplication.willResignActiveNotification, object: nil)
+        activation.isActive = false
+        await expect(videoPlayer.rate).toEventually(equal(0), timeout: .seconds(2))
+        let pausedTime = videoPlayer.currentTime().seconds
+        NotificationCenter.default.post(name: UIApplication.didBecomeActiveNotification, object: nil)
+        XCTAssertEqual(videoPlayer.rate, 0)
+        activation.isActive = true
+        await expect(videoPlayer.rate).toEventually(equal(1), timeout: .seconds(2))
+        XCTAssertTrue(player(in: controller) === videoPlayer)
+        XCTAssertGreaterThanOrEqual(videoPlayer.currentTime().seconds, pausedTime)
+        videoPlayer.pause()
+        activation.isActive = false
+        RunLoop.main.run(until: Date().addingTimeInterval(0.1))
+        activation.isActive = true
+        RunLoop.main.run(until: Date().addingTimeInterval(0.1))
+        XCTAssertEqual(videoPlayer.rate, 0)
+        activation.isActive = false
+        RunLoop.main.run(until: Date().addingTimeInterval(0.1))
+        NotificationCenter.default.post(name: AVPlayerItem.didPlayToEndTimeNotification,
+                                        object: videoPlayer.currentItem)
+        XCTAssertEqual(videoPlayer.rate, 0)
+        activation.isActive = true
+        await expect(videoPlayer.rate).toAlways(equal(0), until: .milliseconds(200))
+        videoPlayer.play()
+        await expect(videoPlayer.rate).toEventually(equal(1), timeout: .seconds(2))
+        controller.rootView = AnyView(EmptyView())
+        await expect(videoPlayer.rate).toEventually(equal(0), timeout: .seconds(2))
+    }
+
+    @MainActor
+    private static func writePlaybackTestVideo(to url: URL) async throws {
+        let writer = try AVAssetWriter(outputURL: url, fileType: .mp4)
+        let input = AVAssetWriterInput(mediaType: .video, outputSettings: [
+            AVVideoCodecKey: AVVideoCodecType.h264,
+            AVVideoWidthKey: 32,
+            AVVideoHeightKey: 32
+        ])
+        let adaptor = AVAssetWriterInputPixelBufferAdaptor(assetWriterInput: input, sourcePixelBufferAttributes: nil)
+        writer.add(input)
+        XCTAssertTrue(writer.startWriting())
+        writer.startSession(atSourceTime: .zero)
+        var buffer: CVPixelBuffer?
+        XCTAssertEqual(CVPixelBufferCreate(kCFAllocatorDefault, 32, 32, kCVPixelFormatType_32ARGB, nil, &buffer),
+                       kCVReturnSuccess)
+        let pixelBuffer = try XCTUnwrap(buffer)
+        CVPixelBufferLockBaseAddress(pixelBuffer, [])
+        memset(CVPixelBufferGetBaseAddress(pixelBuffer), 0, CVPixelBufferGetDataSize(pixelBuffer))
+        CVPixelBufferUnlockBaseAddress(pixelBuffer, [])
+        for seconds in [0, 30] {
+            await expect(input.isReadyForMoreMediaData).toEventually(beTrue())
+            let time = CMTime(seconds: Double(seconds), preferredTimescale: 1)
+            XCTAssertTrue(adaptor.append(pixelBuffer, withPresentationTime: time))
+        }
+        input.markAsFinished()
+        await writer.finishWriting()
+        XCTAssertEqual(writer.status, .completed)
+    }
+
+#endif
 
     func testDismissalActionDismissesWorkflowAfterPurchaseEvenWhenBackNavigationIsAvailable() {
         let action = WorkflowPaywallView.dismissalAction(

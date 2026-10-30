@@ -53,12 +53,15 @@ struct VideoPlayerLayerView: UIViewRepresentable {
     let loopVideo: Bool
     let muteAudio: Bool
 
+    @Environment(\.isPaywallPageActive) private var isPaywallPageActive
+
     func makeCoordinator() -> Coordinator {
         Coordinator(
             videoURL: videoURL,
             shouldAutoPlay: shouldAutoPlay,
             loopVideo: loopVideo,
-            muteAudio: muteAudio
+            muteAudio: muteAudio,
+            isPlaybackEnabled: isPaywallPageActive
         )
     }
 
@@ -79,7 +82,9 @@ struct VideoPlayerLayerView: UIViewRepresentable {
         return view
     }
 
-    func updateUIView(_ uiView: PlayerLayerBackedView, context: Context) { }
+    func updateUIView(_ uiView: PlayerLayerBackedView, context: Context) {
+        context.coordinator.autoplayHandler.setPlaybackEnabled(isPaywallPageActive)
+    }
 
     static func dismantleUIView(_ uiView: PlayerLayerBackedView, coordinator: Coordinator) {
         // Deterministically stop playback before the view/coordinator deallocates, so audio and
@@ -94,7 +99,7 @@ struct VideoPlayerLayerView: UIViewRepresentable {
 
         // Retained for the lifetime of the player so looping keeps working.
         private let looper: AVPlayerLooper?
-        private let autoplayHandler: VideoAutoplayHandler
+        let autoplayHandler: VideoAutoplayHandler
 
         private let audioSessionHandler: VideoAudioSessionHandler
 
@@ -103,7 +108,8 @@ struct VideoPlayerLayerView: UIViewRepresentable {
             videoURL: URL,
             shouldAutoPlay: Bool,
             loopVideo: Bool,
-            muteAudio: Bool
+            muteAudio: Bool,
+            isPlaybackEnabled: Bool = true
         ) {
             let playerItem = AVPlayerItem(url: videoURL)
 
@@ -129,11 +135,12 @@ struct VideoPlayerLayerView: UIViewRepresentable {
 
             self.autoplayHandler = VideoAutoplayHandler(
                 playbackController: avPlayer,
-                lifecycleObserver: SystemAppLifecycleObserver()
+                lifecycleObserver: SystemAppLifecycleObserver(),
+                isPlaybackEnabled: isPlaybackEnabled
             )
 
             if shouldAutoPlay {
-                avPlayer.play()
+                autoplayHandler.play()
             }
         }
 

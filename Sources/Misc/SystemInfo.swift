@@ -120,7 +120,7 @@ class SystemInfo {
     }
 
     static var frameworkVersion: String {
-        return "5.100.0-SNAPSHOT"
+        return "5.101.0-SNAPSHOT"
     }
 
     static var installationMethod: String {
@@ -128,6 +128,8 @@ class SystemInfo {
         return "spm"
         #elseif COCOAPODS
         return "cocoapods"
+        #elseif CARTHAGE_SOURCE
+        return "carthage_source"
         #elseif RC_XCFRAMEWORK
         return "xcframework"
         #else
