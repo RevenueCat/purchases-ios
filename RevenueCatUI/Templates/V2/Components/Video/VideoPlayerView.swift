@@ -166,6 +166,17 @@ struct VideoPlayerView: View {
 
 }
 
+private struct PaywallPageActiveKey: EnvironmentKey {
+    static let defaultValue = true
+}
+
+extension EnvironmentValues {
+    var isPaywallPageActive: Bool {
+        get { self[PaywallPageActiveKey.self] }
+        set { self[PaywallPageActiveKey.self] = newValue }
+    }
+}
+
 // Removed macOS because Emerge was having issues ignoring UIKit for some reason
 #if os(iOS) || os(watchOS)
 @available(iOS 18.0, watchOS 8.0, *)

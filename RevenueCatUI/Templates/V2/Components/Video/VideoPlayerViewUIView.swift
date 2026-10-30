@@ -23,8 +23,8 @@ import UIKit
 
 extension AVPlayer: VideoPlaybackController {
 
-    var isPlaying: Bool {
-        return timeControlStatus == .playing
+    var isPlaybackRequested: Bool {
+        return rate != 0
     }
 
 }
@@ -40,12 +40,15 @@ struct VideoPlayerUIView: UIViewControllerRepresentable {
     let loopVideo: Bool
     let muteAudio: Bool
 
+    @Environment(\.isPaywallPageActive) private var isPaywallPageActive
+
     func makeCoordinator() -> Coordinator {
         Coordinator(
             videoURL: videoURL,
             shouldAutoPlay: shouldAutoPlay,
             loopVideo: loopVideo,
-            muteAudio: muteAudio
+            muteAudio: muteAudio,
+            isPlaybackEnabled: isPaywallPageActive
         )
     }
 
@@ -78,7 +81,9 @@ struct VideoPlayerUIView: UIViewControllerRepresentable {
         return controller
     }
 
-    func updateUIViewController(_ uiViewController: AVPlayerViewController, context: Context) { }
+    func updateUIViewController(_ uiViewController: AVPlayerViewController, context: Context) {
+        context.coordinator.autoplayHandler.setPlaybackEnabled(isPaywallPageActive)
+    }
 
     static func dismantleUIViewController(_ uiViewController: AVPlayerViewController, coordinator: Coordinator) {
         // Deterministically tear the player down before the controller deallocates.
@@ -96,7 +101,7 @@ struct VideoPlayerUIView: UIViewControllerRepresentable {
 
         private let audioSessionHandler: VideoAudioSessionHandler
 
-        private let autoplayHandler: VideoAutoplayHandler
+        let autoplayHandler: VideoAutoplayHandler
         private var loopObserver: NSObjectProtocol?
         private var isTornDown = false
 
@@ -105,7 +110,8 @@ struct VideoPlayerUIView: UIViewControllerRepresentable {
             videoURL: URL,
             shouldAutoPlay: Bool,
             loopVideo: Bool,
-            muteAudio: Bool
+            muteAudio: Bool,
+            isPlaybackEnabled: Bool = true
         ) {
             let playerItem = AVPlayerItem(url: videoURL)
             let avPlayer = AVPlayer(playerItem: playerItem)
@@ -125,7 +131,8 @@ struct VideoPlayerUIView: UIViewControllerRepresentable {
 
             self.autoplayHandler = VideoAutoplayHandler(
                 playbackController: avPlayer,
-                lifecycleObserver: SystemAppLifecycleObserver()
+                lifecycleObserver: SystemAppLifecycleObserver(),
+                isPlaybackEnabled: isPlaybackEnabled
             )
 
             if loopVideo {
@@ -149,12 +156,14 @@ struct VideoPlayerUIView: UIViewControllerRepresentable {
                     // don't resurrect playback for a player that's being dismantled.
                     guard let self = self, !self.isTornDown else { return }
                     self.player.seek(to: .zero)
-                    self.player.play()
+                    if self.autoplayHandler.isPlaybackEnabled {
+                        self.autoplayHandler.play()
+                    }
                 }
             }
 
             if shouldAutoPlay {
-                avPlayer.play()
+                autoplayHandler.play()
             }
         }
 
