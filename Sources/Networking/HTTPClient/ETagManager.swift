@@ -184,7 +184,7 @@ private extension ETagManager {
                         eTag: eTag,
                         statusCode: response.httpStatusCode,
                         data: data,
-                        verificationResult: response.verificationResult,
+                        verificationResult: response.verificationResult.result,
                         isLoadShedderResponse: isLoadShedderResponse,
                         isFallbackUrlResponse: isFallbackURLRequest
                     ),
@@ -290,7 +290,7 @@ extension ETagManager.Response {
     fileprivate func asResponse(
         withRequestDate requestDate: Date?,
         headers: HTTPClient.ResponseHeaders,
-        responseVerificationResult: VerificationResult
+        responseVerificationResult: SignatureVerificationResult
     ) -> VerifiedHTTPResponse<Data> {
         return HTTPResponse(
             httpStatusCode: self.statusCode,
@@ -329,12 +329,12 @@ private extension VerifiedHTTPResponse {
 
 }
 
-private extension VerificationResult {
+private extension SignatureVerificationResult {
 
     var shouldStore: Bool {
         switch self {
         case .notRequested, .verified: return true
-        case .verifiedOnDevice, .failed: return false
+        case .failed: return false
         }
     }
 

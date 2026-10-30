@@ -20,6 +20,7 @@ func checkAdTrackerAPI() {
         let mediatorName: MediatorName = MediatorName(rawValue: "")
         let _: MediatorName = .adMob
         let _: MediatorName = .appLovin
+        let _: MediatorName = .revenueCat
         let _: String = mediatorName.rawValue
 
         let adFormat: AdFormat = AdFormat(rawValue: "")
@@ -58,6 +59,36 @@ func checkAdTrackerAPI() {
         let _: String = failedToLoad.adUnitId
         let _: Int? = failedToLoad.mediatorErrorCode
         adTracker.trackAdFailedToLoad(failedToLoad)
+
+        let rewardedAdPromptShown: AdRewardPromptShown = AdRewardPromptShown(
+            mediatorName: mediatorName,
+            placement: nil,
+            adUnitId: ""
+        )
+        let _: AdRewardPromptShown = AdRewardPromptShown(
+            mediatorName: mediatorName,
+            adUnitId: ""
+        )
+        let _: MediatorName = rewardedAdPromptShown.mediatorName
+        let _: AdFormat = rewardedAdPromptShown.adFormat
+        let _: String? = rewardedAdPromptShown.placement
+        let _: String = rewardedAdPromptShown.adUnitId
+        adTracker.trackRewardedAdPromptShown(rewardedAdPromptShown)
+
+        let rewardedAdPromptAccepted: AdRewardPromptAccepted = AdRewardPromptAccepted(
+            mediatorName: mediatorName,
+            placement: nil,
+            adUnitId: ""
+        )
+        let _: AdRewardPromptAccepted = AdRewardPromptAccepted(
+            mediatorName: mediatorName,
+            adUnitId: ""
+        )
+        let _: MediatorName = rewardedAdPromptAccepted.mediatorName
+        let _: AdFormat = rewardedAdPromptAccepted.adFormat
+        let _: String? = rewardedAdPromptAccepted.placement
+        let _: String = rewardedAdPromptAccepted.adUnitId
+        adTracker.trackRewardedAdPromptAccepted(rewardedAdPromptAccepted)
 
         let loaded: AdLoaded = AdLoaded(
             networkName: nil,
@@ -159,5 +190,29 @@ func checkAdTrackerAPI() {
         let _: String = revenue.currency
         let _: AdRevenue.Precision = revenue.precision
         adTracker.trackAdRevenue(revenue)
+
+        let rewardEarned: AdRewardEarnedUnverified = AdRewardEarnedUnverified(
+            networkName: nil,
+            mediatorName: mediatorName,
+            adFormat: adFormat,
+            placement: nil,
+            adUnitId: "",
+            impressionId: ""
+        )
+        let _: AdRewardEarnedUnverified = AdRewardEarnedUnverified(
+            networkName: "",
+            mediatorName: mediatorName,
+            adFormat: adFormat,
+            adUnitId: "",
+            impressionId: ""
+        )
+        let _: String? = rewardEarned.networkName
+        let _: MediatorName = rewardEarned.mediatorName
+        let _: AdFormat = rewardEarned.adFormat
+        let _: String? = rewardEarned.placement
+        let _: String = rewardEarned.adUnitId
+        let _: String = rewardEarned.impressionId
+        let _: Bool = rewardEarned.rewardVerificationEnabled
+        adTracker.trackAdRewardEarnedUnverified(rewardEarned)
     }
 }

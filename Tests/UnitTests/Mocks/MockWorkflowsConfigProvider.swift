@@ -16,12 +16,20 @@ import Foundation
 
 final class MockWorkflowsConfigProvider: WorkflowsConfigProviderType, @unchecked Sendable {
 
+    var configGeneration = 0
+
     var stubbedWorkflowIdForOfferingId: [String: String] = [:]
     private(set) var invokedWorkflowIdForOfferingIdParameters: [String] = []
 
     func workflowId(forOfferingId offeringId: String) async -> String? {
         self.invokedWorkflowIdForOfferingIdParameters.append(offeringId)
         return self.stubbedWorkflowIdForOfferingId[offeringId]
+    }
+
+    var stubbedWorkflowIds: [String] = []
+
+    func workflowIds() async -> [String] {
+        return self.stubbedWorkflowIds
     }
 
     var stubbedGetWorkflowResult: [String: WorkflowDataResult] = [:]

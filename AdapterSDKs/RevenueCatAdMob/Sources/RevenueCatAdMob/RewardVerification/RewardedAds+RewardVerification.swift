@@ -203,7 +203,7 @@ internal extension RewardVerification.CapableAd {
                 await Purchases.shared.pollRewardVerification(
                     clientTransactionID: clientTransactionID,
                     trackingMetadata: trackingMetadata,
-                    captureMethod: .adapter
+                    captureMethod: .iosAdMobAdapter
                 )
             }
 

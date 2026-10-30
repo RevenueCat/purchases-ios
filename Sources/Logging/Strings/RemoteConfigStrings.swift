@@ -11,6 +11,7 @@ enum RemoteConfigStrings {
 
     case audienceConfigurationDecodeFailed(Error)
     case audienceDecodeFailed(identifier: String, error: Error)
+    case branchRoutedToFallback(reason: String)
     case cacheURLNotAvailable
     case failedToClearBlobStore(Error)
     case failedToDeleteBlob(String, Error)
@@ -52,6 +53,8 @@ extension RemoteConfigStrings: LogMessage {
         case let .audienceDecodeFailed(identifier, error):
             return "Ignoring audience '\(identifier)' in the canonical audience configuration: " +
                 "\(error.localizedDescription)"
+        case let .branchRoutedToFallback(reason):
+            return "Branch routed to its fallback step: \(reason)."
         case .cacheURLNotAvailable:
             return "Remote config cache URL is not available."
         case let .failedToClearBlobStore(error):

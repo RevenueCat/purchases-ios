@@ -18,7 +18,7 @@ import Foundation
 /// when the customer has come back from it.
 @_spi(Internal) public struct HostedCheckoutSession {
 
-    @_spi(Internal) public let operationSessionID: String
+    @_spi(Internal) public let id: HostedCheckoutSessionID
 
     /// The provider-hosted page to present.
     @_spi(Internal) public let checkoutURL: URL
@@ -26,30 +26,44 @@ import Foundation
     /// Where the provider sends the customer once checkout succeeds.
     @_spi(Internal) public let successURL: URL
 
-    /// Where the provider sends the customer once checkout is abandoned.
-    @_spi(Internal) public let cancelURL: URL
-
     @_spi(Internal) public init(operationSessionID: String,
+                                appUserID: String,
                                 checkoutURL: URL,
-                                successURL: URL,
-                                cancelURL: URL) {
-        self.operationSessionID = operationSessionID
+                                successURL: URL) {
+        self.id = .init(operationSessionID: operationSessionID, appUserID: appUserID)
         self.checkoutURL = checkoutURL
         self.successURL = successURL
-        self.cancelURL = cancelURL
     }
 
 }
 
 extension HostedCheckoutSession: Equatable, Sendable {}
 
+/// What the backend needs to say how a checkout session ended, which is less than presenting it takes.
+@_spi(Internal) public struct HostedCheckoutSessionID {
+
+    @_spi(Internal) public let operationSessionID: String
+
+    /// The customer the session was handed out for, who need not be the one it was created for, nor the one logged
+    /// in by the time it is settled.
+    @_spi(Internal) public let appUserID: String
+
+    @_spi(Internal) public init(operationSessionID: String, appUserID: String) {
+        self.operationSessionID = operationSessionID
+        self.appUserID = appUserID
+    }
+
+}
+
+extension HostedCheckoutSessionID: Equatable, Sendable {}
+
 extension HostedCheckoutSession {
 
-    init(response: HostedCheckoutResponse) {
-        self.init(operationSessionID: response.operationSessionID,
-                  checkoutURL: response.checkoutURL,
-                  successURL: response.successURL,
-                  cancelURL: response.cancelURL)
+    init(operationSessionID: String, page: HostedCheckoutResponse.Page, appUserID: String) {
+        self.init(operationSessionID: operationSessionID,
+                  appUserID: appUserID,
+                  checkoutURL: page.checkoutURL,
+                  successURL: page.successURL)
     }
 
 }

@@ -24,6 +24,10 @@ final class MockExternalPurchaseCustomLink: ExternalPurchaseCustomLinkType {
     /// Runs while the notice is on screen, so tests can act with a preparation half way through.
     var whileShowingNotice: (@Sendable () async -> Void)?
 
+    /// Runs while availability is being resolved, so tests can act with a preparation that has not reached
+    /// the notice yet.
+    var whileResolvingAvailability: (@Sendable () async -> Void)?
+
     private(set) var invokedAvailabilityCount: Int = 0
     private(set) var invokedTokenTypes: [ExternalPurchaseTokenType] = []
     private(set) var invokedNoticeTypes: [ExternalPurchaseNoticeType] = []
@@ -34,6 +38,7 @@ final class MockExternalPurchaseCustomLink: ExternalPurchaseCustomLinkType {
 
     func externalPurchaseAvailability() async -> ExternalPurchaseAvailability {
         self.invokedAvailabilityCount += 1
+        await self.whileResolvingAvailability?()
         return self.stubbedAvailability
     }
 

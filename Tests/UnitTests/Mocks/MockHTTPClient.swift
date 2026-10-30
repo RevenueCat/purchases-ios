@@ -27,7 +27,7 @@ class MockHTTPClient: HTTPClient {
             statusCode: HTTPStatusCode,
             response: [String: Any] = [:],
             responseHeaders: HTTPResponse.Headers = [:],
-            verificationResult: VerificationResult = .defaultValue,
+            verificationResult: SignatureVerificationResult = .notRequested,
             delay: DispatchTimeInterval = .never,
             isLoadShedderResponse: Bool = false,
             isFallbackUrlResponse: Bool = false
@@ -53,7 +53,7 @@ class MockHTTPClient: HTTPClient {
             statusCode: HTTPStatusCode,
             body: Data,
             responseHeaders: HTTPResponse.Headers = [:],
-            verificationResult: VerificationResult = .defaultValue,
+            verificationResult: SignatureVerificationResult = .notRequested,
             delay: DispatchTimeInterval = .never,
             isLoadShedderResponse: Bool = false,
             isFallbackUrlResponse: Bool = false
@@ -80,6 +80,7 @@ class MockHTTPClient: HTTPClient {
 
     var mocks: [URL: Response] = [:]
     var calls: [Call] = []
+    private(set) var clearCachesCallCount = 0
     private var shouldAssertSnapshot: Bool = true
 
     init(systemInfo: SystemInfo,
@@ -106,6 +107,11 @@ class MockHTTPClient: HTTPClient {
     /// Disables snapshot testing for this mock HTTP client.
     func disableSnapshotTesting() {
         self.shouldAssertSnapshot = false
+    }
+
+    override func clearCaches() {
+        self.clearCachesCallCount += 1
+        super.clearCaches()
     }
 
     private let sourceTestFile: StaticString
@@ -154,23 +160,7 @@ class MockHTTPClient: HTTPClient {
     }
 
     func mock(requestPath: HTTPRequest.Path, response: Response) {
-        self.mock(path: requestPath, response: response)
-    }
-
-    func mock(requestPath: HTTPRequest.DiagnosticsPath, response: Response) {
-        self.mock(path: requestPath, response: response)
-    }
-
-    func mock(requestPath: HTTPRequest.FallbackPath, response: Response) {
-        self.mock(path: requestPath, response: response)
-    }
-
-    func mock(requestPath: HTTPRequest.WebBillingPath, response: Response) {
-        self.mock(path: requestPath, response: response)
-    }
-
-    private func mock(path: HTTPRequestPath, response: Response) {
-        self.mocks[path.url(preferIAMPath: false)!] = response
+        self.mocks[requestPath.url(preferIAMPath: false)!] = response
     }
 
     /// Override headers that depend on the environment to make them stable.

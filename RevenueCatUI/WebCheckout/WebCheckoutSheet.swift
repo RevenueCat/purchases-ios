@@ -19,16 +19,17 @@ import SwiftUI
 /// How the checkout sheet came down.
 enum WebCheckoutSheetOutcome: Equatable {
 
-    /// The page redirected to one of the return URLs it was given.
+    /// The page redirected to the return URL it was given.
     case returned(WebCheckoutReturnStatus)
 
-    /// The customer closed the sheet without the page saying anything.
+    /// The sheet came down without the page saying how the checkout ended: the customer closed it, or the
+    /// page returned with nothing we could read.
     ///
     /// Says nothing about whether a purchase happened: the payment may have gone through moments
     /// before. Resolving that is the caller's job.
     case dismissed
 
-    /// A sheet that goes without the page having reached a return URL was closed by the customer.
+    /// No status means the page never said how the checkout ended.
     init(returnedStatus: WebCheckoutReturnStatus?) {
         if let returnedStatus {
             self = .returned(returnedStatus)
@@ -94,7 +95,7 @@ private struct WebCheckoutSheetModifier: ViewModifier {
 
     @MainActor
     private func dismissIfAlreadyReturned(_ viewModel: WebCheckoutViewModel) {
-        guard viewModel.returnStatus != nil else {
+        guard viewModel.loadState == .finished else {
             return
         }
 

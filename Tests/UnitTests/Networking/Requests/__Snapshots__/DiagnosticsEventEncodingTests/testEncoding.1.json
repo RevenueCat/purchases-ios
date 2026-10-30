@@ -26,6 +26,8 @@
     "sk_error_description" : "test_skErrorDescription",
     "store_kit_version" : "store_kit_1",
     "successful" : true,
+    "verification_device_clock_offset_minutes" : -120,
+    "verification_failure_reason" : "PAYLOAD_SIGNATURE_MISMATCH",
     "verification_result" : "FAILED",
     "win_back_offer_applied" : false
   },

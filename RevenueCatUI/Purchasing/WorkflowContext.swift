@@ -18,37 +18,50 @@ import Foundation
 /// or `WorkflowPreview.makeContext` for injected data) and passed into ``PaywallView``; it has no
 /// public initializer because callers never assemble it directly.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-@_spi(Internal) public struct WorkflowContext {
+@_spi(Internal) public struct WorkflowContext: Sendable {
     let workflow: PublishedWorkflow
     let uiConfig: UIConfig
-    let allOfferings: Offerings
+    /// Every step and exit offer lookup goes through this, so the developer-supplied offering is never bypassed.
+    let offerings: WorkflowOfferings
     let initialOffering: Offering
     /// Preserved so every subsequent step's offering can carry the same placement/targeting metadata.
     let presentedOfferingContext: PresentedOfferingContext?
+    /// Set only for a checkpoint-launched workflow invocation.
+    let checkpointIdentifier: String?
     /// Package context from `singleStepFallbackId`, precomputed because it is stable for a workflow.
     let workflowPackageContext: WorkflowPackageContext?
     let workflowBlobRef: String?
+    /// Set when a checkpoint started the workflow, so its events join the checkpoint hit.
+    let traceId: String?
 
     init(
         workflow: PublishedWorkflow,
         uiConfig: UIConfig,
-        allOfferings: Offerings,
+        offerings: WorkflowOfferings,
         initialOffering: Offering,
         presentedOfferingContext: PresentedOfferingContext?,
-        workflowBlobRef: String? = nil
+        workflowBlobRef: String? = nil,
+        traceId: String? = nil,
+        checkpointIdentifier: String? = nil
     ) {
         self.workflowBlobRef = workflowBlobRef
+        self.traceId = traceId
         self.workflow = workflow
         self.uiConfig = uiConfig
-        self.allOfferings = allOfferings
-        self.initialOffering = initialOffering
+        self.offerings = offerings
+        self.initialOffering = checkpointIdentifier.map {
+            initialOffering.withPresentedCheckpointIdentifier($0, traceID: nil)
+        }
+            ?? initialOffering
         self.presentedOfferingContext = presentedOfferingContext
+        self.checkpointIdentifier = checkpointIdentifier
 
         let workflowPackageContext = Self.workflowPackageContext(
             workflow: workflow,
-            allOfferings: allOfferings,
-            initialOffering: initialOffering,
-            presentedOfferingContext: presentedOfferingContext
+            offerings: offerings,
+            initialOffering: self.initialOffering,
+            presentedOfferingContext: presentedOfferingContext,
+            checkpointIdentifier: checkpointIdentifier
         )
         if let singleWorkflowStepFallbackId = workflow.singleStepFallbackId, workflowPackageContext == nil {
             Logger.warning(Strings.workflow_package_context_unresolvable(stepId: singleWorkflowStepFallbackId))
@@ -59,9 +72,10 @@ import Foundation
     func offering(for offeringIdentifier: String?) -> Offering? {
         return Self.offering(
             for: offeringIdentifier,
-            allOfferings: self.allOfferings,
+            offerings: self.offerings,
             initialOffering: self.initialOffering,
-            presentedOfferingContext: self.presentedOfferingContext
+            presentedOfferingContext: self.presentedOfferingContext,
+            checkpointIdentifier: self.checkpointIdentifier
         )
     }
 
@@ -69,15 +83,16 @@ import Foundation
     /// Used to guard against showing the exit offer when dismissing from a different step.
     var exitOfferTriggeringStepId: String? { exitOfferEntry?.triggeringStepId }
 
-    /// The exit offer resolved synchronously from `allOfferings`.
+    /// The exit offer resolved synchronously from `offerings`.
     /// Non-nil only when an exit offer is configured and its offering is present in the loaded offerings bundle.
     var exitOfferOffering: Offering? {
         guard let entry = exitOfferEntry else { return nil }
-        return ExitOfferHelper.validExitOffer(
+        guard let offering = ExitOfferHelper.validExitOffer(
             offeringId: entry.offeringId,
             currentOfferingId: initialOffering.identifier,
-            from: allOfferings
-        )
+            from: offerings
+        ) else { return nil }
+        return self.applyingPurchaseContext(to: offering)
     }
 
     /// Returns a `WorkflowExitOfferContext` if `stepId` is the exit-offer triggering step
@@ -90,9 +105,9 @@ import Foundation
               let offering = ExitOfferHelper.validExitOffer(
                   offeringId: entry.offeringId,
                   currentOfferingId: initialOffering.identifier,
-                  from: allOfferings
+                  from: offerings
               ) else { return nil }
-        return WorkflowExitOfferContext(exitOfferOffering: offering)
+        return WorkflowExitOfferContext(exitOfferOffering: self.applyingPurchaseContext(to: offering))
     }
 
     /// Resolves the exit offer entry from `singleStepFallbackId`'s screen.
@@ -166,9 +181,10 @@ import Foundation
 
     private static func workflowPackageContext(
         workflow: PublishedWorkflow,
-        allOfferings: Offerings,
+        offerings: WorkflowOfferings,
         initialOffering: Offering,
-        presentedOfferingContext: PresentedOfferingContext?
+        presentedOfferingContext: PresentedOfferingContext?,
+        checkpointIdentifier: String?
     ) -> WorkflowPackageContext? {
         guard let singleWorkflowStepFallbackId = workflow.singleStepFallbackId,
               let step = workflow.steps[singleWorkflowStepFallbackId],
@@ -177,9 +193,10 @@ import Foundation
               let offeringIdentifier = workflow.offeringIdentifier(for: step),
               let offering = Self.offering(
                   for: offeringIdentifier,
-                  allOfferings: allOfferings,
+                  offerings: offerings,
                   initialOffering: initialOffering,
-                  presentedOfferingContext: presentedOfferingContext
+                  presentedOfferingContext: presentedOfferingContext,
+                  checkpointIdentifier: checkpointIdentifier
               ) else {
             return nil
         }
@@ -191,17 +208,20 @@ import Foundation
         for base: PaywallComponentsData.PaywallComponentsConfig,
         offering: Offering
     ) -> WorkflowPackageContext? {
-        let allComponents = base.stack.components
+        let allComponents = (base.header?.stack.components ?? [])
+            + base.stack.components
             + (base.stickyFooter?.stack.components ?? [])
         let packages = Self.collectPackages(in: allComponents, offering: offering)
+        let pagePackages = packages.filter { !$0.isInSheet }
+        let selectionCandidates = pagePackages.isEmpty ? packages : pagePackages
 
-        guard let selectedPackage = packages.first(where: { $0.isSelectedByDefault })?.package
-                ?? packages.first?.package else {
+        guard let selectedPackage = selectionCandidates.first(where: { $0.isSelectedByDefault })?.package
+                ?? selectionCandidates.first?.package else {
             return nil
         }
 
         let promoOfferCodes = packages.reduce(into: [String: String]()) { result, entry in
-            if let code = entry.promoOfferCode {
+            if let code = entry.promoOfferCode, result[entry.package.identifier] == nil {
                 result[entry.package.identifier] = code
             }
         }
@@ -211,31 +231,6 @@ import Foundation
             packages: packages.map(\.package),
             promoOfferCodesByPackageId: promoOfferCodes
         )
-    }
-
-    private static func offering(
-        for offeringIdentifier: String?,
-        allOfferings: Offerings,
-        initialOffering: Offering,
-        presentedOfferingContext: PresentedOfferingContext?
-    ) -> Offering? {
-        guard let offeringIdentifier else {
-            return nil
-        }
-
-        if initialOffering.identifier == offeringIdentifier {
-            return initialOffering
-        }
-
-        guard let offering = allOfferings.offering(identifier: offeringIdentifier) else {
-            return nil
-        }
-
-        guard let presentedOfferingContext else {
-            return offering
-        }
-
-        return offering.withPresentedOfferingContext(presentedOfferingContext)
     }
 
     func offering(for step: WorkflowStep) -> Offering? {
@@ -267,26 +262,44 @@ import Foundation
         ).withPaywallComponents(paywallComponents)
     }
 
+    private struct CollectedPackage {
+
+        let package: Package
+        let isSelectedByDefault: Bool
+        let promoOfferCode: String?
+        let isInSheet: Bool
+
+    }
+
     private static func collectPackages(
         in components: [PaywallComponent],
-        offering: Offering
-    ) -> [(package: Package, isSelectedByDefault: Bool, promoOfferCode: String?)] {
+        offering: Offering,
+        isInSheet: Bool = false
+    ) -> [CollectedPackage] {
         return components.reduce(into: []) { result, component in
             switch component {
             case .package(let pkg):
                 if let rcPackage = offering.package(identifier: pkg.packageID) {
-                    result.append((package: rcPackage,
-                                   isSelectedByDefault: pkg.isSelectedByDefault,
-                                   promoOfferCode: pkg.applePromoOfferProductCode))
+                    result.append(.init(package: rcPackage,
+                                        isSelectedByDefault: pkg.isSelectedByDefault,
+                                        promoOfferCode: pkg.applePromoOfferProductCode,
+                                        isInSheet: isInSheet))
+                }
+                result += Self.collectPackages(in: pkg.stack.components, offering: offering, isInSheet: isInSheet)
+            case .button(let button):
+                result += Self.collectPackages(in: button.stack.components, offering: offering, isInSheet: isInSheet)
+                // Sheet plans contribute to pricing without overriding the page's initial selection.
+                if case let .navigateTo(.sheet(sheet)) = button.action, let sheet {
+                    result += Self.collectPackages(in: sheet.stack.components, offering: offering, isInSheet: true)
                 }
             case .stack(let stack):
-                result += Self.collectPackages(in: stack.components, offering: offering)
+                result += Self.collectPackages(in: stack.components, offering: offering, isInSheet: isInSheet)
             case .tabs(let tabs):
                 result += Self.collectPackages(
-                    in: tabs.tabs.flatMap { $0.stack.components }, offering: offering)
+                    in: tabs.tabs.flatMap { $0.stack.components }, offering: offering, isInSheet: isInSheet)
             case .carousel(let carousel):
                 result += Self.collectPackages(
-                    in: carousel.pages.flatMap { $0.components }, offering: offering)
+                    in: carousel.pages.flatMap { $0.components }, offering: offering, isInSheet: isInSheet)
             default:
                 break
             }
@@ -295,7 +308,49 @@ import Foundation
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-struct WorkflowPackageContext {
+private extension WorkflowContext {
+
+    static func offering(
+        for offeringIdentifier: String?,
+        offerings: WorkflowOfferings,
+        initialOffering: Offering,
+        presentedOfferingContext: PresentedOfferingContext?,
+        checkpointIdentifier: String?
+    ) -> Offering? {
+        guard let offeringIdentifier else { return nil }
+        if initialOffering.identifier == offeringIdentifier { return initialOffering }
+        guard let offering = offerings.offering(identifier: offeringIdentifier) else { return nil }
+
+        return Self.applyingPurchaseContext(
+            to: offering,
+            presentedOfferingContext: presentedOfferingContext,
+            checkpointIdentifier: checkpointIdentifier
+        )
+    }
+
+    func applyingPurchaseContext(to offering: Offering) -> Offering {
+        return Self.applyingPurchaseContext(
+            to: offering,
+            presentedOfferingContext: self.presentedOfferingContext,
+            checkpointIdentifier: self.checkpointIdentifier
+        )
+    }
+
+    static func applyingPurchaseContext(
+        to offering: Offering,
+        presentedOfferingContext: PresentedOfferingContext?,
+        checkpointIdentifier: String?
+    ) -> Offering {
+        let contextualOffering = presentedOfferingContext.map(offering.withPresentedOfferingContext) ?? offering
+        return checkpointIdentifier.map {
+            contextualOffering.withPresentedCheckpointIdentifier($0, traceID: nil)
+        } ?? contextualOffering
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+struct WorkflowPackageContext: Sendable {
     let selectedPackage: Package
     let packages: [Package]
     /// Apple promo offer product code per package identifier, used to resolve `promo_offer_condition`

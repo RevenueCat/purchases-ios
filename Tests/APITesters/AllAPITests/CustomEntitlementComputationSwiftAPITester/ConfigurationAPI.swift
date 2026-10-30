@@ -6,12 +6,13 @@
 //
 
 import Foundation
-import RevenueCat_CustomEntitlementComputation
+@_spi(Experimental) import RevenueCat_CustomEntitlementComputation
 
 func checkConfigurationAPI() {
     let configuration = Configuration
         .builder(withAPIKey: "", appUserID: "")
         .with(apiKey: "")
+        .with(introEligibilityWarmupPriority: .utility)
         .build()
 
     print(configuration)

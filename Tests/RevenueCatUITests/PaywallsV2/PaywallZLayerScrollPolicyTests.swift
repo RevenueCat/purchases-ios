@@ -22,7 +22,7 @@ final class PaywallZLayerScrollPolicyTests: TestCase {
     func testScrollWhenPaywallRootStackIsZLayer() {
         expect(
             PaywallZLayerScrollPolicy.shouldApplyScroll(
-                stackScrollingEnabled: false,
+                stackScrollPreference: nil,
                 paywallRootStackIsZLayer: true,
                 ancestorScrollsVertically: false
             )
@@ -32,17 +32,27 @@ final class PaywallZLayerScrollPolicyTests: TestCase {
     func testScrollWhenStackScrollingEnabled() {
         expect(
             PaywallZLayerScrollPolicy.shouldApplyScroll(
-                stackScrollingEnabled: true,
+                stackScrollPreference: true,
                 paywallRootStackIsZLayer: false,
                 ancestorScrollsVertically: false
             )
         ) == true
     }
 
+    func testNoScrollWhenRootExplicitlyDisablesScrolling() {
+        expect(
+            PaywallZLayerScrollPolicy.shouldApplyScroll(
+                stackScrollPreference: false,
+                paywallRootStackIsZLayer: true,
+                ancestorScrollsVertically: false
+            )
+        ) == false
+    }
+
     func testNoScrollWhenAncestorScrollsVertically() {
         expect(
             PaywallZLayerScrollPolicy.shouldApplyScroll(
-                stackScrollingEnabled: true,
+                stackScrollPreference: true,
                 paywallRootStackIsZLayer: true,
                 ancestorScrollsVertically: true
             )
@@ -52,7 +62,7 @@ final class PaywallZLayerScrollPolicyTests: TestCase {
     func testNoScrollWhenNotEnabledAndRootIsNotZLayer() {
         expect(
             PaywallZLayerScrollPolicy.shouldApplyScroll(
-                stackScrollingEnabled: false,
+                stackScrollPreference: nil,
                 paywallRootStackIsZLayer: false,
                 ancestorScrollsVertically: false
             )

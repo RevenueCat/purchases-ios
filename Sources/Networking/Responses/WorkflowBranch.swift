@@ -14,6 +14,11 @@
 
 import Foundation
 
+/// Identifies a trigger action within a step.
+@_spi(Internal) public typealias WorkflowActionID = String
+/// Identifies a step within a workflow.
+@_spi(Internal) public typealias WorkflowStepID = String
+
 /// A `branch` trigger action. The first audience that matches decides the route.
 @_spi(Internal) public struct WorkflowBranch: Equatable, Sendable, Decodable {
 
@@ -30,11 +35,11 @@ import Foundation
 
     }
 
-    public let branches: [Route]
+    public let routes: [Route]
     public let fallbackStepId: String
 
-    @_spi(Internal) public init(branches: [Route], fallbackStepId: String) {
-        self.branches = branches
+    @_spi(Internal) public init(routes: [Route], fallbackStepId: String) {
+        self.routes = routes
         self.fallbackStepId = fallbackStepId
     }
 

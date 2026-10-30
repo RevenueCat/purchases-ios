@@ -14,7 +14,7 @@
 
 import Combine
 import Foundation
-@_spi(CheckpointsInternal) import RevenueCatUI
+@_spi(InviteOnlyCheckpointsApi) import RevenueCatUI
 
 final class CustomVariables: ObservableObject {
 

@@ -52,7 +52,10 @@ final class EventsManagerIntegrationTests: BaseBackendIntegrationTests {
             offlineCustomerInfoCreator: nil,
             diagnosticsTracker: nil,
             apiSourceProvider: nil,
-            timeoutManager: HTTPRequestTimeoutManager(networkTimeout: .default)
+            timeoutManager: HTTPRequestTimeoutManager(networkTimeout: .default),
+            subscriberDimensionsStore: SubscriberDimensionsStore(
+                deviceCache: DeviceCache(systemInfo: systemInfo, userDefaults: .standard)
+            )
         )
         let storeURL = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         let store = try FeatureEventStore(handler: FileHandler(storeURL))

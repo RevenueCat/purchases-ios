@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		53F702E92D75EFF100DE2198 /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = 53F702E82D75EFF100DE2198 /* RevenueCat */; };
+		53F702EB2D75EFF100DE2198 /* RevenueCatUI in Frameworks */ = {isa = PBXBuildFile; productRef = 53F702EA2D75EFF100DE2198 /* RevenueCatUI */; };
 		A73C6EF82E29944D00DBC86A /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A73C6EE22E29944D00DBC86A /* Assets.xcassets */; };
 		A73C6EF92E29944D00DBC86A /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = A73C6EF62E29944D00DBC86A /* PrivacyInfo.xcprivacy */; };
 		A73C6EFB2E29944D00DBC86A /* MagicWeatherApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A73C6EE92E29944D00DBC86A /* MagicWeatherApp.swift */; };
@@ -62,6 +63,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				53F702E92D75EFF100DE2198 /* RevenueCat in Frameworks */,
+				53F702EB2D75EFF100DE2198 /* RevenueCatUI in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -190,6 +192,7 @@
 			name = "Magic Weather SwiftUI (iOS)";
 			packageProductDependencies = (
 				53F702E82D75EFF100DE2198 /* RevenueCat */,
+				53F702EA2D75EFF100DE2198 /* RevenueCatUI */,
 			);
 			productName = "Magic Weather SwiftUI (iOS)";
 			productReference = 5597797E25ACDC3E00C33DFB /* Magic Weather SwiftUI.app */;
@@ -466,6 +469,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 53ABE17F2D75EF5100ABB87B /* XCRemoteSwiftPackageReference "purchases-ios" */;
 			productName = RevenueCat;
+		};
+		53F702EA2D75EFF100DE2198 /* RevenueCatUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 53ABE17F2D75EF5100ABB87B /* XCRemoteSwiftPackageReference "purchases-ios" */;
+			productName = RevenueCatUI;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

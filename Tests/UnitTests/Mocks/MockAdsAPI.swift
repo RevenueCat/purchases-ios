@@ -22,18 +22,23 @@ class MockAdsAPI: AdsAPI {
 
     var invokedGetRewardVerificationStatus = false
     var invokedGetRewardVerificationStatusCount = 0
-    var invokedGetRewardVerificationStatusParameters: (appUserID: String, clientTransactionID: String)?
+    var invokedGetRewardVerificationStatusParameters: (
+        appUserID: String,
+        clientTransactionID: String,
+        adUnitID: String?
+    )?
 
     var stubbedGetRewardVerificationStatusResult: Result<RewardVerificationStatusResponse, BackendError>?
 
     override func getRewardVerificationStatus(
         appUserID: String,
         clientTransactionID: String,
+        adUnitID: String?,
         completion: @escaping RewardVerificationStatusResponseHandler
     ) {
         invokedGetRewardVerificationStatus = true
         invokedGetRewardVerificationStatusCount += 1
-        invokedGetRewardVerificationStatusParameters = (appUserID, clientTransactionID)
+        invokedGetRewardVerificationStatusParameters = (appUserID, clientTransactionID, adUnitID)
 
         guard let result = stubbedGetRewardVerificationStatusResult else {
             preconditionFailure(

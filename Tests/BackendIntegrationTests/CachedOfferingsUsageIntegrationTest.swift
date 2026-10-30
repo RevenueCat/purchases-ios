@@ -45,7 +45,7 @@ class CachedOfferingsUsageIntegrationTest: BaseStoreKitIntegrationTests {
         _ = try await Purchases.shared.offerings()
 
         self.forceServerErrorStrategy = ForceServerErrorStrategy { (request: HTTPClient.Request) in
-            guard case HTTPRequest.Path.getOfferings(appUserID: _) = request.httpRequest.path else {
+            guard request.httpRequest.path.name == "get_offerings" else {
                 return .defaultServerError
             }
             return .fakeResponse(

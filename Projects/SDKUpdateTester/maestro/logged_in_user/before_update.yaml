@@ -1,0 +1,29 @@
+# Run with the app built against the latest released SDK, before updating it.
+# Requires the following environment variables:
+#   SCREENSHOTS_DIR: absolute path of the directory where the reference screenshots are stored.
+#   EXPECTED_SDK_VERSION: version of the SDK the installed app was built against.
+#   APP_USER_ID: app user ID to log in with. Must be unique per test run.
+
+appId: com.revenuecat.SDKUpdateTester
+name: Logged in user - before SDK update
+---
+- clearState
+- launchApp:
+    arguments:
+      app_user_id_to_log_in: ${APP_USER_ID}
+- runFlow: ../utils/assert_sdk_version.yaml
+- assertVisible:
+    id: app_user_id
+    text: "\\$RCAnonymousID:.+"
+- tapOn:
+    id: log_in_button
+- extendedWaitUntil:
+    visible:
+      id: app_user_id
+      text: ${APP_USER_ID}
+    timeout: 30000
+- takeScreenshot:
+    path: ${SCREENSHOTS_DIR}/app_user_id
+    cropOn:
+      id: app_user_id
+- runFlow: ../utils/purchase_subscription.yaml

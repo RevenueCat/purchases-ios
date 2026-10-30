@@ -54,7 +54,11 @@ public struct PaywallView: View {
 
     private var promoOfferCache: PaywallPromoOfferCache?
 
-    private var workflowPresentationErrorHandler: ((NSError) -> Void)?
+    private var displaysPurchaseAndRestoreErrors: Bool
+
+    private var workflowPresentationErrorHandler: WorkflowPresentationErrorHandler?
+
+    private var workflowBackNavigationBridge: WorkflowBackNavigationBridge
 
     private var initializationError: NSError?
 
@@ -192,7 +196,7 @@ public struct PaywallView: View {
         self.paywallViewOwnsPurchaseHandler = paywallViewOwnsPurchaseHandler
         if paywallViewOwnsPurchaseHandler {
             self._internalPurchaseHandler = .init(wrappedValue: configuration.purchaseHandler)
-            self.externalPurchaseHandler = PurchaseHandler.default()
+            self.externalPurchaseHandler = configuration.purchaseHandler
         } else {
             // this is unused and is only present to fulfill the need to have an object assigned
             // to a @StateObject
@@ -216,7 +220,9 @@ public struct PaywallView: View {
         self.fonts = configuration.fonts
         self.displayCloseButton = configuration.displayCloseButton
         self.promoOfferCache = configuration.promoOfferCache
+        self.displaysPurchaseAndRestoreErrors = configuration.displaysPurchaseAndRestoreErrors
         self.workflowPresentationErrorHandler = configuration.workflowPresentationErrorHandler
+        self.workflowBackNavigationBridge = configuration.workflowBackNavigationBridge
 
         self.initializationError = Self.checkForConfigurationConsistency(purchaseHandler: configuration.purchaseHandler)
     }
@@ -253,6 +259,7 @@ public struct PaywallView: View {
     // swiftlint:disable:next missing_docs
     public var body: some View {
         self.content
+            .environment(\.asyncButtonDisplaysErrors, self.displaysPurchaseAndRestoreErrors)
             .displayError(self.$error) {
                 guard let onRequestedDismissal = self.onRequestedDismissal else {
                     self.dismiss()
@@ -264,6 +271,23 @@ public struct PaywallView: View {
             // and pulling down in the paywall would execute the parent's refreshable action
             .refreshableDisabled()
             .modifier(PaywallURLEventsModifier(purchaseHandler: self.purchaseHandler))
+            // Publish outside SDK-owned navigation, which consumes preferences from its content.
+            .preference(key: PurchaseInProgressPreferenceKey.self,
+                        value: self.purchaseHandler.packageBeingPurchased)
+            .preference(key: PurchasedResultPreferenceKey.self,
+                        value: .init(
+                            data: self.purchaseHandler.sessionPurchaseResult,
+                            diffKey: self.purchaseHandler.sessionPurchaseResult == .cancelled ?
+                            self.purchaseHandler.consecutiveCancellationRequestID : nil
+                        ))
+            .preference(key: RestoredCustomerInfoPreferenceKey.self,
+                        value: self.purchaseHandler.restoredCustomerInfo)
+            .preference(key: RestoreInProgressPreferenceKey.self,
+                        value: self.purchaseHandler.restoreInProgress)
+            .preference(key: PurchaseErrorPreferenceKey.self,
+                        value: self.purchaseHandler.purchaseError as NSError?)
+            .preference(key: RestoreErrorPreferenceKey.self,
+                        value: self.purchaseHandler.restoreError as NSError?)
     }
 
     @MainActor
@@ -312,7 +336,7 @@ public struct PaywallView: View {
     }
 
     func showZeroDecimalPlacePrices(countries: [String]?) -> Bool {
-        if Purchases.isConfigured, let countries, let currentCountry = Purchases.shared.storeFrontCountryCode {
+        if let countries, let currentCountry = purchaseHandler.configuredStoreEnvironment.storeFrontCountryCode {
             return countries.contains(currentCountry)
         } else {
             return false
@@ -378,8 +402,12 @@ public struct PaywallView: View {
                         displayCloseButton: self.displayCloseButton,
                         promoOfferCache: self.promoOfferCache,
                         onDismiss: self.dismissRequested,
+                        backNavigationBridge: self.workflowBackNavigationBridge,
                         onPresentationError: self.workflowPresentationErrorHandler
                     )
+                    .modifier(NativePaywallNavigationModifier(
+                        paywallComponents: paywallComponents, workflowContext: workflowContext
+                    ))
                 } else {
                     PaywallsV2View(
                         paywallComponents: paywallComponents,
@@ -393,6 +421,9 @@ public struct PaywallView: View {
                         colorScheme: colorScheme,
                         promoOfferCache: self.promoOfferCache
                     )
+                    .modifier(NativePaywallNavigationModifier(
+                        paywallComponents: paywallComponents, workflowContext: workflowContext
+                    ))
                 }
             }
         } else {
@@ -443,9 +474,7 @@ private extension PaywallView {
     }
 
     func failedToLoadFont(_ fontConfig: UIConfig.FontsConfig) {
-        if Purchases.isConfigured {
-            Purchases.shared.failedToLoadFontWithConfig(fontConfig)
-        }
+        purchaseHandler.failedToLoadFont(fontConfig)
     }
 
 }
@@ -526,7 +555,7 @@ struct LoadedOfferingPaywallView: View {
             .preference(key: PurchasedResultPreferenceKey.self,
                         value: .init(
                             data: self.purchaseHandler.sessionPurchaseResult,
-                            diffKey: (self.purchaseHandler.sessionPurchaseResult?.userCancelled == true) ?
+                            diffKey: self.purchaseHandler.sessionPurchaseResult == .cancelled ?
                             self.purchaseHandler.consecutiveCancellationRequestID : nil
                         ))
             .preference(key: RestoredCustomerInfoPreferenceKey.self,

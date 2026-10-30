@@ -142,7 +142,10 @@ private extension BaseProductionRemoteConfigIntegrationTests {
             offlineCustomerInfoCreator: nil,
             diagnosticsTracker: nil,
             apiSourceProvider: nil,
-            timeoutManager: HTTPRequestTimeoutManager(networkTimeout: .default)
+            timeoutManager: HTTPRequestTimeoutManager(networkTimeout: .default),
+            subscriberDimensionsStore: SubscriberDimensionsStore(
+                deviceCache: DeviceCache(systemInfo: systemInfo, userDefaults: .standard)
+            )
         )
 
         return backend.remoteConfigAPI
@@ -231,7 +234,7 @@ final class EnforcedProductionRemoteConfigIntegrationTests: BaseProductionRemote
 
         let expectedRequest = HTTPRequest(
             method: .get,
-            path: HTTPRequest.FallbackPath.remoteConfig(domain: RemoteConfiguration.defaultDomain)
+            path: .remoteConfigFallback(domain: RemoteConfiguration.defaultDomain)
         )
         self.logger.verifyMessageWasLogged(
             Strings.network.api_request_completed(expectedRequest, httpCode: .notModified, metadata: nil)

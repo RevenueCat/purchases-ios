@@ -11,6 +11,8 @@
 //
 //  Created by Josh Holtz on 6/11/24.
 
+// swiftlint:disable file_length
+
 @_spi(Internal) import RevenueCat
 import SwiftUI
 
@@ -29,6 +31,7 @@ class TextComponentViewModel {
 
     private let text: String
     private let presentedOverrides: PresentedOverrides<LocalizedTextPartial>?
+    private let overridesDependOnOfferEligibility: Bool
 
     /// Whether this component renders anything a screen reader can announce. An empty base string
     /// still counts when overrides exist, since an override can supply text of its own.
@@ -58,9 +61,12 @@ class TextComponentViewModel {
             return ""
         }()
 
-        self.presentedOverrides = try self.component.overrides?.toPresentedOverrides(discardRules: discardRules) {
+        let presentedOverrides = try component.overrides?.toPresentedOverrides(discardRules: discardRules) {
             try LocalizedTextPartial.create(from: $0, using: localizationProvider.localizedStrings)
         }
+        self.presentedOverrides = presentedOverrides
+        self.overridesDependOnOfferEligibility =
+            presentedOverrides?.contains(where: \.dependsOnOfferEligibility) ?? false
 
     }
 
@@ -82,7 +88,6 @@ class TextComponentViewModel {
         isVoiceOverRunning: Bool = false,
         @ViewBuilder apply: @escaping (TextComponentStyle) -> some View
     ) -> some View {
-        let isEligibleForPromoOffer = promoOffer != nil
         let conditionContext = uiConfigProvider.conditionContext(
             selectedPackageId: selectedPackageId,
             customVariables: customVariables,
@@ -90,13 +95,12 @@ class TextComponentViewModel {
             stateDefaults: stateDefaults,
             windowSize: windowSize
         )
-        let localizedPartial = LocalizedTextPartial.buildPartial(
+        let localizedPartial = self.resolveOverrides(
             state: state,
             condition: condition,
             isEligibleForIntroOffer: isEligibleForIntroOffer,
-            isEligibleForPromoOffer: isEligibleForPromoOffer,
-            conditionContext: conditionContext,
-            with: self.presentedOverrides
+            promoOffer: promoOffer,
+            conditionContext: conditionContext
         )
         let partial = localizedPartial?.partial
         let text = localizedPartial?.text ?? self.text
@@ -138,6 +142,70 @@ class TextComponentViewModel {
         )
 
         apply(style)
+    }
+
+    func visible(
+        state: ComponentViewState,
+        condition: ScreenCondition,
+        isEligibleForIntroOffer: Bool,
+        promoOffer: PromotionalOffer?,
+        conditionContext: ConditionContext
+    ) -> Bool {
+        let partial = self.resolveOverrides(
+            state: state, condition: condition,
+            isEligibleForIntroOffer: isEligibleForIntroOffer, promoOffer: promoOffer,
+            conditionContext: conditionContext
+        )
+        return partial?.partial.visible ?? self.component.visible ?? true
+    }
+
+    /// True when intro or promo eligibility can change the string this component shows, or whether it is shown.
+    /// A visibility change redacts too, so the real string is not shown and then hidden.
+    /// Color-only overrides are ignored.
+    func redactsWhileOfferEligibilityLoads(
+        state: ComponentViewState,
+        condition: ScreenCondition,
+        offerEligibility: OfferEligibilityState,
+        conditionContext: ConditionContext
+    ) -> Bool {
+        guard offerEligibility.isLoading else {
+            return false
+        }
+
+        var possibleVisibleTexts: Set<String> = []
+        var couldBeHidden = false
+        for outcome in offerEligibility.unresolvedOutcomes(
+            variesWithEligibility: self.overridesDependOnOfferEligibility
+        ) {
+            let partial = LocalizedTextPartial.buildPartial(
+                state: state,
+                condition: condition,
+                isEligibleForIntroOffer: outcome.isEligibleForIntroOffer,
+                isEligibleForPromoOffer: outcome.isEligibleForPromoOffer,
+                conditionContext: conditionContext,
+                with: self.presentedOverrides
+            )
+            if partial?.partial.visible ?? self.component.visible ?? true {
+                possibleVisibleTexts.insert(partial?.text ?? self.text)
+            } else {
+                couldBeHidden = true
+            }
+        }
+
+        let visibilityCanChange = couldBeHidden && !possibleVisibleTexts.isEmpty
+        let textCanChange = possibleVisibleTexts.count > 1
+        if visibilityCanChange || textCanChange {
+            return true
+        }
+
+        guard let possibleVisibleText = possibleVisibleTexts.first else {
+            return false
+        }
+
+        return VariableHandlerV2.textDependsOnOfferEligibility(
+            possibleVisibleText,
+            variableCompatibilityMap: self.uiConfigProvider.variableConfig.variableCompatibilityMap
+        )
     }
 
     private struct TextProcessingConfig {
@@ -184,17 +252,15 @@ class TextComponentViewModel {
     ) -> String {
         let pkg = config.packageContext.package
 
-        let discount = pkg.flatMap { package in
-            Self.discount(
-                from: package.storeProduct.pricePerMonth?.doubleValue,
-                relativeTo: config.packageContext.variableContext.mostExpensivePricePerMonth
-            )
-        }
+        let discount = pkg?.storeProduct.pricePerMonthForDiscount?.discount(
+            relativeTo: config.packageContext.variableContext.mostExpensivePricePerMonth
+        )
 
         let handler = VariableHandlerV2(
             variableCompatibilityMap: config.variableConfig.variableCompatibilityMap,
             functionCompatibilityMap: config.variableConfig.functionCompatibilityMap,
             discountRelativeToMostExpensivePerMonth: discount,
+            mostExpensivePricePerMonth: config.packageContext.variableContext.exactMostExpensivePricePerMonth,
             showZeroDecimalPlacePrices: config.packageContext.variableContext.showZeroDecimalPlacePrices,
             customVariables: config.customVariables,
             defaultCustomVariables: config.defaultCustomVariables
@@ -221,8 +287,7 @@ class TextComponentViewModel {
             return text
         }
 
-        let discount = Self.discount(
-            from: package.storeProduct.pricePerMonth?.doubleValue,
+        let discount = package.storeProduct.pricePerMonthForDiscount?.discount(
             relativeTo: packageContext.variableContext.mostExpensivePricePerMonth
         )
 
@@ -239,11 +304,23 @@ class TextComponentViewModel {
         )
     }
 
-    private static func discount(from pricePerMonth: Double?, relativeTo mostExpensive: Double?) -> Double? {
-        guard let pricePerMonth, let mostExpensive else { return nil }
-        guard pricePerMonth < mostExpensive else { return nil }
+}
 
-        return (mostExpensive - pricePerMonth) / mostExpensive
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private extension TextComponentViewModel {
+
+    func resolveOverrides(
+        state: ComponentViewState,
+        condition: ScreenCondition,
+        isEligibleForIntroOffer: Bool,
+        promoOffer: PromotionalOffer?,
+        conditionContext: ConditionContext
+    ) -> LocalizedTextPartial? {
+        return LocalizedTextPartial.buildPartial(
+            state: state, condition: condition,
+            isEligibleForIntroOffer: isEligibleForIntroOffer, isEligibleForPromoOffer: promoOffer != nil,
+            conditionContext: conditionContext, with: self.presentedOverrides
+        )
     }
 
 }

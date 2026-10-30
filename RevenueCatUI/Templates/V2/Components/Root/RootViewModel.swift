@@ -56,6 +56,12 @@ class RootViewModel {
         }
     }
 
+    /// The full-width media the body starts with, if any.
+    var bodyHeroMediaIdentifier: ObjectIdentifier? {
+        guard self.firstItemIsFullWidthMedia else { return nil }
+        return self.stackViewModel.viewModels.first?.firstNativeMediaIdentifier
+    }
+
     var shouldOverlayHeader: Bool {
         guard let headerViewModel else {
             return false

@@ -672,6 +672,9 @@ private struct PresentingPaywallModifier: ViewModifier {
                 promoOfferCache: self.promoOfferCacheOwner.cache
             )
         )
+        #if !os(tvOS)
+        .environment(\.nativePaywallNavigationContext, .standalone)
+        #endif
         .environment(\.workflowCompletedInSessionBinding, self.$workflowCompletedInSession)
         .onAppear(perform: self.resetWorkflowCompletedInSession)
         .onPurchaseStarted {
@@ -763,9 +766,8 @@ private struct PresentingPaywallModifier: ViewModifier {
         }
 
         // Check shouldDisplay with the purchase result if available
-        if let purchaseResult = self.purchaseHandler.sessionPurchaseResult,
-           !purchaseResult.userCancelled,
-           !self.shouldDisplay(purchaseResult.customerInfo) {
+        if case let .purchased(_, customerInfo)? = self.purchaseHandler.sessionPurchaseResult,
+           !self.shouldDisplay(customerInfo) {
             self.purchaseHandler.trackPaywallClose()
             self.purchaseHandler.resetForNewSession()
             self.onDismiss?()
@@ -793,6 +795,9 @@ private struct PresentingPaywallModifier: ViewModifier {
             )
         )
         .customPaywallVariables(self.customPaywallVariables)
+        #if !os(tvOS)
+        .environment(\.nativePaywallNavigationContext, .standalone)
+        #endif
         .environment(\.workflowCompletedInSessionBinding, self.$workflowCompletedInSession)
         .onPurchaseStarted {
             self.purchaseStarted?($0)
@@ -964,6 +969,9 @@ private struct PresentingPaywallBindingModifier: ViewModifier {
                 promoOfferCache: self.promoOfferCacheOwner.cache
             )
         )
+        #if !os(tvOS)
+        .environment(\.nativePaywallNavigationContext, .standalone)
+        #endif
         .environment(\.workflowCompletedInSessionBinding, self.$workflowCompletedInSession)
         .onAppear(perform: self.resetWorkflowCompletedInSession)
         .onPurchaseStarted {
@@ -1015,6 +1023,9 @@ private struct PresentingPaywallBindingModifier: ViewModifier {
             )
         )
         .customPaywallVariables(self.customPaywallVariables)
+        #if !os(tvOS)
+        .environment(\.nativePaywallNavigationContext, .standalone)
+        #endif
         .environment(\.workflowCompletedInSessionBinding, self.$workflowCompletedInSession)
         .onPurchaseStarted {
             self.purchaseStarted?($0)

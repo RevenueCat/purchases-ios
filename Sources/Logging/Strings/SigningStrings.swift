@@ -38,6 +38,7 @@ enum SigningStrings {
     case request_date_missing_from_headers(HTTPRequest)
 
     case signature_payload_failed_creation(HTTPRequest, Error)
+    case signed_payload_missing(HTTPRequest)
 
     #if DEBUG
     case verifying_signature(signature: Data,
@@ -104,6 +105,10 @@ extension SigningStrings: LogMessage {
         case let .signature_payload_failed_creation(request, error):
             return "Request to '\(request.path)' failed to create the response payload for signature verification: " +
             "\(error.localizedDescription). This will be reported as a verification failure."
+
+        case let .signed_payload_missing(request):
+            return "Request to '\(request.path)' did not contain a response body or ETag for signature verification. " +
+            "This will be reported as a verification failure."
 
         #if DEBUG
         case let .invalid_signature_data(request, data, responseHeaders, statusCode):

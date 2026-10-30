@@ -19,18 +19,47 @@ import Foundation
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct WorkflowPresentationRequest {
 
+    let checkpointIdentifier: String
     let workflow: ResolvedCheckpointWorkflow
     let customVariables: [String: CustomVariableValue]
-    let initialActiveEntitlementIdentifiers: Set<String>?
+    let presentationMode: FlowPresentationMode
+    let initialActiveEntitlementIdentifiers: Set<String>
+    let errorPresentationHandler: ErrorPresentationHandler
 
     init(
+        checkpointIdentifier: String,
         workflow: ResolvedCheckpointWorkflow,
         customVariables: [String: CustomVariableValue],
-        initialActiveEntitlementIdentifiers: Set<String>? = nil
+        presentationMode: FlowPresentationMode,
+        initialActiveEntitlementIdentifiers: Set<String>,
+        errorPresentationHandler: @escaping ErrorPresentationHandler
     ) {
+        self.checkpointIdentifier = checkpointIdentifier
         self.workflow = workflow
         self.customVariables = customVariables
+        self.presentationMode = presentationMode
         self.initialActiveEntitlementIdentifiers = initialActiveEntitlementIdentifiers
+        self.errorPresentationHandler = errorPresentationHandler
+    }
+
+}
+
+/// Everything needed to present a checkpoint ad step.
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+struct AdPresentationRequest {
+
+    let params: AdPresentationParams
+    let customVariables: [String: CustomVariableValue]
+    let errorPresentationHandler: ErrorPresentationHandler
+
+    init(
+        params: AdPresentationParams,
+        customVariables: [String: CustomVariableValue],
+        errorPresentationHandler: @escaping ErrorPresentationHandler
+    ) {
+        self.params = params
+        self.customVariables = customVariables
+        self.errorPresentationHandler = errorPresentationHandler
     }
 
 }
@@ -41,6 +70,7 @@ enum CheckpointPresentationOutcome {
     case completed(customerInfo: CustomerInfo?)
     case backedOut
     case failed
+    case synchronizationFailed(any Error)
 
     var hasCustomerInfo: Bool {
         guard case .completed(.some) = self else { return false }

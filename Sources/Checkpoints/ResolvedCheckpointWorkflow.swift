@@ -23,17 +23,21 @@ import Foundation
     public let offerings: Offerings
     /// The `blob_ref` of the config item the workflow came from.
     public let workflowBlobRef: String?
+    /// Shared by the checkpoint hit and every event of the workflow run it starts.
+    public let traceId: String
 
     init(
         workflow: PublishedWorkflow,
         uiConfig: UIConfig,
         offerings: Offerings,
-        workflowBlobRef: String? = nil
+        workflowBlobRef: String? = nil,
+        traceId: String = UUID().uuidString
     ) {
         self.workflow = workflow
         self.uiConfig = uiConfig
         self.offerings = offerings
         self.workflowBlobRef = workflowBlobRef
+        self.traceId = traceId
     }
 
 }

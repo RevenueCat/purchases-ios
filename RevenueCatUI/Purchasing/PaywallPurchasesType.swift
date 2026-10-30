@@ -56,6 +56,25 @@ protocol PaywallPurchasesType: Sendable {
         paywallEvent: PaywallEvent?
     ) async throws -> PurchaseResultData
 
+    /// Only to be called when the customer has deliberately asked to buy: Apple's disclosure notice is shown
+    /// and an external purchase token may be minted, which Apple expects a report for.
+    @Sendable
+    func startHostedCheckout(package: Package,
+                             paywallEvent: PaywallEvent?,
+                             previousSession: HostedCheckoutSession?) async -> HostedCheckoutStartResult
+
+    /// Whether web purchase links opened in the browser go through Apple's external purchase flow first.
+    var useExternalPurchaseCustomLinks: Bool { get }
+
+    /// Only to be called when the customer has deliberately asked to buy: Apple's disclosure notice is shown
+    /// and an external purchase token may be minted, which Apple expects a report for.
+    @Sendable
+    func prepareExternalPurchaseLink() async -> ExternalPurchaseLinkResult
+
+    @Sendable
+    func pollHostedCheckout(sessionID: HostedCheckoutSessionID) async -> (result: HostedCheckoutPollResult,
+                                                                          customerInfo: CustomerInfo?)
+
     @Sendable
     func restorePurchases() async throws -> CustomerInfo
 

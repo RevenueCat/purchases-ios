@@ -78,6 +78,7 @@ class WorkflowResponseTests: TestCase {
         expect(workflow.id) == "wf_min"
         expect(workflow.contentMaxWidth).to(beNil())
         expect(workflow.singleStepFallbackId).to(beNil())
+        expect(workflow.initialTrigger).to(beNil())
     }
 
     func testDecodePublishedWorkflowWithSingleStepFallbackId() throws {
@@ -124,6 +125,38 @@ class WorkflowResponseTests: TestCase {
         let workflow = try JSONDecoder.default.decode(PublishedWorkflow.self, from: json)
 
         expect(workflow.metadata).toNot(beNil())
+    }
+
+    /// Shape from khepri's workflows topic snapshot: the initial branch is hoisted out of `steps` and
+    /// `initial_step_id` names its fallback.
+    func testDecodePublishedWorkflowWithInitialTrigger() throws {
+        let json = """
+        {
+          "id": "wf_initial",
+          "display_name": "Initial branch",
+          "initial_step_id": "screen_a",
+          "initial_trigger": {
+            "type": "branch",
+            "routes": [{ "audience_id": "audsnap0011223344", "step_id": "screen_b" }],
+            "fallback_step_id": "screen_a"
+          },
+          "steps": {},
+          "screens": {},
+          "ui_config": {
+            "app": { "colors": {}, "fonts": {} },
+            "localizations": {},
+            "variable_config": { "variable_compatibility_map": {}, "function_compatibility_map": {} }
+          }
+        }
+        """.data(using: .utf8)!
+
+        let workflow = try JSONDecoder.default.decode(PublishedWorkflow.self, from: json)
+
+        expect(workflow.initialStepId) == "screen_a"
+        expect(workflow.initialTrigger) == .branch(.init(
+            routes: [.init(audienceId: "audsnap0011223344", stepId: "screen_b")],
+            fallbackStepId: "screen_a"
+        ))
     }
 
     func testDecodeWorkflowTriggerAction() throws {
@@ -183,7 +216,7 @@ class WorkflowResponseTests: TestCase {
         let json = """
         {
           "type": "branch",
-          "branches": [
+          "routes": [
             { "audience_id": "aud_a", "step_id": "step_a" },
             { "audience_id": "aud_b", "step_id": "step_b" }
           ],
@@ -194,7 +227,7 @@ class WorkflowResponseTests: TestCase {
         let action = try JSONDecoder.default.decode(WorkflowTriggerAction.self, from: json)
 
         expect(action) == .branch(.init(
-            branches: [
+            routes: [
                 .init(audienceId: "aud_a", stepId: "step_a"),
                 .init(audienceId: "aud_b", stepId: "step_b")
             ],
@@ -204,7 +237,7 @@ class WorkflowResponseTests: TestCase {
 
     func testDecodeBranchTriggerActionMissingTheFallbackDecodesToUnknown() throws {
         let json = """
-        { "type": "branch", "branches": [{ "audience_id": "aud_a", "step_id": "step_a" }] }
+        { "type": "branch", "routes": [{ "audience_id": "aud_a", "step_id": "step_a" }] }
         """.data(using: .utf8)!
 
         let action = try JSONDecoder.default.decode(WorkflowTriggerAction.self, from: json)
@@ -212,14 +245,14 @@ class WorkflowResponseTests: TestCase {
         expect(action) == .unknown
     }
 
-    func testDecodeBranchTriggerActionWithNoBranchesStillRoutesToTheFallback() throws {
+    func testDecodeBranchTriggerActionWithNoRoutesStillRoutesToTheFallback() throws {
         let json = """
-        { "type": "branch", "branches": [], "fallback_step_id": "step_default" }
+        { "type": "branch", "routes": [], "fallback_step_id": "step_default" }
         """.data(using: .utf8)!
 
         let action = try JSONDecoder.default.decode(WorkflowTriggerAction.self, from: json)
 
-        expect(action) == .branch(.init(branches: [], fallbackStepId: "step_default"))
+        expect(action) == .branch(.init(routes: [], fallbackStepId: "step_default"))
     }
 
     func testDecodeStepTriggerActionMissingItsStepIdDecodesToUnknown() throws {
@@ -286,7 +319,7 @@ class WorkflowResponseTests: TestCase {
               "type": "screen",
               "trigger_actions": {
                 "btn_1": { "type": "step", "step_id": "step_2" },
-                "branch": { "type": "branch", "branches": [] }
+                "branch": { "type": "branch", "routes": [] }
               }
             }
           },
@@ -417,6 +450,12 @@ class WorkflowResponseTests: TestCase {
         expect(screen.zeroDecimalPlaceCountries) == ["TWN"]
     }
 
+    func testDecodeWorkflowScreenVideoLocalizations() throws {
+        let screen = try Self.decodeWorkflowScreen(videoLocalizationsJSON: Self.videoLocalizationsJSON)
+
+        expect(screen.componentsVideoLocalizations) == Self.expectedVideoLocalizations
+    }
+
     func testDecodeWorkflowScreenWithExitOffers() throws {
         let json = """
         {
@@ -522,6 +561,59 @@ class WorkflowResponseTests: TestCase {
         XCTAssertThrowsError(
             try JSONDecoder.default.decode(WorkflowStep.self, from: Data(#"{ "id": "step_1" }"#.utf8))
         )
+    }
+
+    func testWorkflowStepGatingParsesSoftAndHardGates() throws {
+        let gates: [(String, WorkflowStepGating)] = [
+            (#"{"type":"soft"}"#, .soft),
+            (#"{"type":"hard","entitlement_identifiers":["pro","premium"]}"#,
+             .hard(entitlementIdentifiers: ["pro", "premium"])),
+            (#"{"type":"soft","new_field":{"a":1}}"#, .soft),
+            (#"{"type":"hard","entitlement_identifiers":["pro"],"new_field":true}"#,
+             .hard(entitlementIdentifiers: ["pro"]))
+        ]
+
+        for (json, expected) in gates {
+            XCTAssertEqual(try Self.stepWithGating(json).gating, expected, json)
+        }
+    }
+
+    func testWorkflowStepGatingIsNilWhenAbsent() throws {
+        let step = try JSONDecoder.default.decode(
+            WorkflowStep.self,
+            from: Data(#"{"id":"step_1","type":"screen","param_values":{"other":true}}"#.utf8)
+        )
+
+        XCTAssertNil(step.gating)
+    }
+
+    func testWorkflowStepGatingFailsClosedForMalformedOrUnknownValues() throws {
+        let invalidGates = [
+            "null", "true", "42", #""hard""#, "[]", "{}",
+            #"{"type":null}"#,
+            #"{"type":42}"#,
+            #"{"type":"unknown"}"#,
+            #"{"type":"hard"}"#,
+            #"{"type":"hard","entitlement_identifiers":null}"#,
+            #"{"type":"hard","entitlement_identifiers":"pro"}"#,
+            #"{"type":"hard","entitlement_identifiers":{}}"#,
+            #"{"type":"hard","entitlement_identifiers":[]}"#,
+            #"{"type":"hard","entitlement_identifiers":[""]}"#,
+            #"{"type":"hard","entitlement_identifiers":["  "]}"#,
+            #"{"type":"hard","entitlement_identifiers":["\t\n"]}"#,
+            #"{"type":"hard","entitlement_identifiers":["pro",null]}"#,
+            #"{"type":"hard","entitlement_identifiers":["pro",42]}"#,
+            #"{"type":"hard","entitlement_identifiers":["pro",true]}"#,
+            #"{"type":"hard","entitlement_identifiers":["pro",{}]}"#,
+            #"{"type":"hard","entitlement_identifiers":["pro",[]]}"#,
+            #"{"type":"hard","entitlement_identifiers":["pro","pro"]}"#,
+            #"{"type":"soft","entitlement_identifiers":["pro"]}"#,
+            #"{"type":"soft","entitlement_identifiers":null}"#
+        ]
+
+        for json in invalidGates {
+            XCTAssertEqual(try Self.stepWithGating(json).gating, .invalid, json)
+        }
     }
 
     func testDecodeWorkflowStepOfferingIdentifier() throws {
@@ -763,6 +855,85 @@ class WorkflowResponseTests: TestCase {
         expect(step.experimentVariant).to(beNil())
     }
 
+    func testDecodeWorkflowStepExperimentParamsFromMetadata() throws {
+        let json = """
+        {
+          "id": "step_1",
+          "type": "screen",
+          "metadata": { "experiment_id": "exp_abc", "experiment_variant": "holdout" }
+        }
+        """.data(using: .utf8)!
+
+        let step = try JSONDecoder.default.decode(WorkflowStep.self, from: json)
+
+        expect(step.experimentId) == "exp_abc"
+        expect(step.experimentVariant) == "holdout"
+    }
+
+    func testDecodeWorkflowStepExperimentParamsPreferMetadataOverParamValues() throws {
+        let json = """
+        {
+          "id": "step_1",
+          "type": "screen",
+          "param_values": { "experiment_id": "exp_old", "experiment_variant": "a" },
+          "metadata": { "experiment_id": "exp_new", "experiment_variant": "b" }
+        }
+        """.data(using: .utf8)!
+
+        let step = try JSONDecoder.default.decode(WorkflowStep.self, from: json)
+
+        expect(step.experimentId) == "exp_new"
+        expect(step.experimentVariant) == "b"
+    }
+
+    func testDecodeWorkflowWithFallbackCopyStep() throws {
+        let json = """
+        {
+          "id": "wf_test",
+          "display_name": "Test",
+          "initial_step_id": "entry",
+          "steps": {
+            "entry": {
+              "id": "entry",
+              "type": "screen",
+              "triggers": [
+                {"name":"Button","type":"on_press","action_id":"btn","component_id":"btn"}
+              ],
+              "trigger_actions": { "btn": {"type":"step","step_id":"paywall_a~f"} }
+            },
+            "paywall_a": {
+              "id": "paywall_a",
+              "type": "screen",
+              "screen_id": "pw_123",
+              "param_values": { "experiment_id": "exp_abc", "experiment_variant": "b" },
+              "metadata": { "screen_type": ["paywall"] }
+            },
+            "paywall_a~f": {
+              "id": "paywall_a~f",
+              "type": "screen",
+              "screen_id": "pw_123",
+              "param_values": {},
+              "metadata": { "screen_type": ["paywall"], "fallback_original_step_id": "paywall_a" }
+            }
+          },
+          "screens": {},
+          "ui_config": { "app": { "colors": {}, "fonts": {} }, "localizations": {} }
+        }
+        """.data(using: .utf8)!
+
+        let workflow = try JSONDecoder.default.decode(PublishedWorkflow.self, from: json)
+
+        let original = try XCTUnwrap(workflow.steps["paywall_a"])
+        let copy = try XCTUnwrap(workflow.steps["paywall_a~f"])
+        expect(workflow.steps["entry"]?.triggerActions["btn"]) == .step(stepId: "paywall_a~f")
+        expect(copy.id) == "paywall_a~f"
+        expect(copy.screenId) == original.screenId
+        expect(copy.fallbackOriginalStepId) == "paywall_a"
+        expect(copy.experimentId).to(beNil())
+        expect(copy.stepScreenType) == ["paywall"]
+        expect(original.fallbackOriginalStepId).to(beNil())
+    }
+
     func testDecodeWorkflowStepScreenTypeNilWhenMetadataNull() throws {
         let json = """
         {
@@ -858,13 +1029,19 @@ class WorkflowResponseTests: TestCase {
 
 private extension WorkflowResponseTests {
 
+    static func stepWithGating(_ json: String) throws -> WorkflowStep {
+        let json = #"{"id":"step_1","type":"screen","param_values":{"gating":\#(json)}}"#
+        return try JSONDecoder.default.decode(WorkflowStep.self, from: Data(json.utf8))
+    }
+
     /// - Parameter defaultLocaleJSON: the raw JSON value for `default_locale`, or `nil` to omit the key
     /// entirely. The backend sends `null` here for template-derived screens.
     static func decodeWorkflowScreen(
         defaultLocaleJSON: String? = "\"en_US\"",
         automaticallyScaleFontSize: Bool? = nil,
         zeroDecimalPlaceCountriesJSON: String? = nil,
-        offeringIdentifier: String? = nil
+        offeringIdentifier: String? = nil,
+        videoLocalizationsJSON: String? = nil
     ) throws -> WorkflowScreen {
         var defaultLocaleFragment = ""
         if let defaultLocaleJSON {
@@ -885,6 +1062,10 @@ private extension WorkflowResponseTests {
             """
         }
         let offeringIdentifierFragment = offeringIdentifier.map { ", \"offering_identifier\": \"\($0)\"" } ?? ""
+        let videoLocalizationsFragment = videoLocalizationsJSON.map {
+            ", \"components_video_localizations\": \($0)"
+        } ?? ""
+        let trailingFragments = offeringIdentifierFragment + videoLocalizationsFragment
         let json = """
         {
           "template_name": "tmpl",
@@ -902,7 +1083,7 @@ private extension WorkflowResponseTests {
               },
               "background": { "type": "color", "value": { "light": { "type": "hex", "value": "#FFFFFF" } } }
             }
-          }\(automaticallyScaleFontSizeFragment)\(zeroDecimalFragment)\(offeringIdentifierFragment)
+          }\(automaticallyScaleFontSizeFragment)\(zeroDecimalFragment)\(trailingFragments)
         }
         """.data(using: .utf8)!
 
@@ -939,5 +1120,36 @@ private extension WorkflowResponseTests {
 
         return try JSONDecoder.default.decode(PaywallComponentsData.self, from: json)
     }
+
+    static let videoLocalizationsJSON = """
+    {
+      "es_ES": {
+        "video_lid": {
+          "light": {
+            "width": 200,
+            "height": 400,
+            "url": "https://assets.revenuecat.com/video_es.mp4",
+            "url_low_res": "https://assets.revenuecat.com/video_es_low_res.mp4"
+          }
+        }
+      }
+    }
+    """
+
+    static let expectedVideoLocalizations: [PaywallComponent.LocaleID: PaywallComponent.VideoLocalizationDictionary] = [
+        "es_ES": [
+            "video_lid": .init(
+                light: .init(
+                    width: 200,
+                    height: 400,
+                    url: URL(string: "https://assets.revenuecat.com/video_es.mp4")!,
+                    checksum: nil,
+                    urlLowRes: URL(string: "https://assets.revenuecat.com/video_es_low_res.mp4")!,
+                    checksumLowRes: nil
+                ),
+                dark: nil
+            )
+        ]
+    ]
 
 }

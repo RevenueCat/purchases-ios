@@ -2,6 +2,8 @@
 
 This file provides guidance to AI coding agents when working with code in this repository.
 
+**Before changing or reviewing Swift code, read [Contributing/SwiftStyleGuide.swift](Contributing/SwiftStyleGuide.swift).** Check new or modified code against its guidelines. During reviews, report actionable violations alongside correctness and API compatibility issues, even when builds and tests pass.
+
 ## Project Overview
 
 RevenueCat's official iOS SDK for in-app purchases and subscriptions. Supports iOS, macOS, tvOS, watchOS, and visionOS.
@@ -33,6 +35,12 @@ When implementing features or debugging, check these repos for reference and pat
 **Do NOT add new `public enum` types to the SDK's consumer-facing surface.** Adding a case to an existing `public enum` is a **source-breaking change** — any consumer with an exhaustive `switch` will fail to compile. Use structs with static constants or other patterns instead when exposing new option sets or categories. Enums marked `@_spi(Internal)` (on the same line as the declaration) are exempt because they are not part of the SDK's consumer-facing surface.
 
 This policy is enforced by the `no_new_public_enums` SwiftLint custom rule defined in `.swiftlint.yml`. Pre-existing public enums are grandfathered in `swiftlint-baseline.json`.
+
+**Do NOT add new `public init`s to the SDK's consumer-facing surface.** Public initializers are part of the binary API and cannot change without breaking consumers. Keep initializers `internal` or `private`, or mark them `@_spi(Internal)` (on the same line or the line above) when hybrid SDKs need them. Initializers required by `Decodable`, `RawRepresentable` and `NSCoding` are exempt. The rule cannot see an enclosing `@_spi(Internal)` extension, so inits inside one still need `@_spi(Internal)` on the init itself.
+
+This policy is enforced by the `no_new_public_inits` SwiftLint custom rule defined in `.swiftlint.yml`. Pre-existing public initializers are grandfathered in `swiftlint-baseline.json`.
+
+Baseline entries are matched by line text, so moving code around does not invalidate them. To accept an intentional new violation, regenerate the baseline with `swiftlint lint --write-baseline swiftlint-baseline.json` and commit it. Custom rules have fixtures in `Tests/SwiftLintCustomRules/Fixtures`; when changing a rule, extend its fixture and run `ruby Tests/SwiftLintCustomRules/swiftlint_custom_rules_test.rb`.
 
 The `Tests/APITesters/` targets run in CI to catch unintended API changes. The `api/*.swiftinterface` files track the public API surface. **If API tests fail, you've likely broken the public API.**
 
@@ -115,6 +123,8 @@ When logging to the debug console, follow the pattern with the strings in Revenu
 
 Tests use **XCTest**, **Nimble**, **swift-snapshot-testing**, and **OHHTTPStubs**. Test targets live under `Tests/` — explore subdirectories directly for the current layout.
 
+Before you add or change a test, read [Contributing/TESTING.md](Contributing/TESTING.md).
+
 ## Development Workflow
 
 For environment setup, see **`Contributing/CONTRIBUTING.md`**. For code style, see **`Contributing/SwiftStyleGuide.swift`**.
@@ -179,7 +189,7 @@ For snapshot testing, sample applications, pre-commit hooks, and release process
 - `Local.xcconfig` - Local development configuration (not committed)
 - `CI.xcconfig` - CI-specific configuration
 - `api/*.swiftinterface` - Public API surface tracking
-- `swiftlint-baseline.json` - Pre-existing SwiftLint violations grandfathered by the linter (notably for `no_new_public_enums`)
+- `swiftlint-baseline.json` - Pre-existing SwiftLint violations grandfathered by the linter (notably for `no_new_public_enums` and `no_new_public_inits`)
 
 ## Pull Requests
 
@@ -240,3 +250,7 @@ When reviewing a pull request:
 - **Check Android SDK** when unsure about cross-platform implementation details — new features should follow existing patterns across SDKs
 - **Never commit Claude-related files** — do not stage or commit `.claude/` directory, `settings.local.json`, or any AI tool configuration files
 - **Never commit API keys or secrets** — do not stage or commit API keys, tokens, credentials, or any sensitive data
+- **Remove dead code in your PR** — delete unused parameters, unreachable branches, and leftover scaffolding before requesting review
+- **Don't widen access control for tests** — don't add `internal`/`public` accessors solely for test access; inject dependencies via protocols or test at the appropriate layer
+- **Extract shared helpers** — before duplicating logic, check for existing utilities (e.g., `AvailabilityChecks` for OS-specific test skips); factor common code into helpers
+- **Prefer structs for data holders** — use structs instead of classes for value-like types unless Obj-C compatibility is required

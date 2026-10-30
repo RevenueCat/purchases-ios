@@ -61,7 +61,6 @@ import Foundation
         let uiPreviewMode: Bool
         let customEntitlementComputation: Bool
         let forceAllowTestStoreInReleaseBuilds: Bool
-        let useExternalPurchaseCustomLinks: Bool
     }
 
     internal let storage: Storage
@@ -106,18 +105,6 @@ import Foundation
      * never uploaded to the App Store), to make sure no builds using the Test Store reach the stores.
      */
     @objc public var forceAllowTestStoreInReleaseBuilds: Bool { self.storage.forceAllowTestStoreInReleaseBuilds }
-
-    /**
-     * Whether a web purchase button that opens its link in the external browser takes part in Apple's
-     * external purchase custom link programme: the customer is shown Apple's disclosure notice, and the
-     * purchase is reported to Apple.
-     *
-     * Disabled by default. Enabling it requires the app to be enrolled in the programme and to carry the
-     * corresponding entitlement.
-     */
-    @_spi(Experimental) public var useExternalPurchaseCustomLinks: Bool {
-        self.storage.useExternalPurchaseCustomLinks
-    }
 
     @objc public override convenience init() {
         self.init(autoSyncPurchases: true)
@@ -165,21 +152,6 @@ import Foundation
     }
 
     /**
-     * - Parameter autoSyncPurchases: Disable or enable subscribing to the StoreKit queue.
-     * If this is disabled, RevenueCat won't observe the StoreKit queue, and it will not sync any purchase
-     * automatically.
-     * - Parameter useExternalPurchaseCustomLinks: Whether a web purchase button that opens its link in the
-     * external browser takes part in Apple's external purchase custom link programme.
-     */
-    @_spi(Experimental) public convenience init(autoSyncPurchases: Bool,
-                                                useExternalPurchaseCustomLinks: Bool) {
-        self.init(autoSyncPurchases: autoSyncPurchases,
-                  customEntitlementComputation: false,
-                  internalSettings: Internal.default,
-                  useExternalPurchaseCustomLinks: useExternalPurchaseCustomLinks)
-    }
-
-    /**
      * Used to initialize the SDK in UI preview mode.
      *
      * - Parameter uiPreviewMode: if `true`, the SDK will return a set of mock products instead
@@ -194,14 +166,12 @@ import Foundation
                   customEntitlementComputation: Bool = false,
                   internalSettings: InternalDangerousSettingsType,
                   uiPreviewMode: Bool = false,
-                  forceAllowTestStoreInReleaseBuilds: Bool = false,
-                  useExternalPurchaseCustomLinks: Bool = false) {
+                  forceAllowTestStoreInReleaseBuilds: Bool = false) {
         self.storage = Storage(
             autoSyncPurchases: autoSyncPurchases,
             uiPreviewMode: uiPreviewMode,
             customEntitlementComputation: customEntitlementComputation,
-            forceAllowTestStoreInReleaseBuilds: forceAllowTestStoreInReleaseBuilds,
-            useExternalPurchaseCustomLinks: useExternalPurchaseCustomLinks
+            forceAllowTestStoreInReleaseBuilds: forceAllowTestStoreInReleaseBuilds
         )
         self.internalSettings = internalSettings
     }
@@ -229,8 +199,8 @@ internal protocol InternalDangerousSettingsType: Sendable {
     var usesRemoteConfigAPISources: Bool { get }
 
     #if DEBUG
-    /// The strategy for the `HTTPClient` to fake server errors. Meant for tests only.
-    /// `nil` means no server errors are forced.
+    /// The strategy for the `HTTPClient` to fake server errors, and for `SourceHealthChecker` to fake
+    /// health check outcomes. Meant for tests only. `nil` means no server errors are forced.
     ///
     /// See `ForceServerErrorStrategy.Action` for the ways a request can be intercepted.
     var forceServerErrorStrategy: ForceServerErrorStrategy? { get }
@@ -278,7 +248,39 @@ struct ForceServerErrorStrategy {
     // swiftlint:disable:next force_unwrapping
     static let defaultServerErrorURL = URL(string: "https://api.revenuecat.com/force-server-failure")!
 
+    /// What `SourceHealthChecker` does when checking a source's health.
+    ///
+    /// Faked outcomes are cached like real ones.
+    enum HealthCheckAction {
+
+        /// The source is reported healthy without performing the health check.
+        case fakeHealthy
+
+        /// The source is reported unhealthy without performing the health check.
+        /// Combined with an `action` that fails the source's requests, this simulates the source being down.
+        case fakeUnhealthy
+
+        /// The health check is performed as usual.
+        case performHealthCheck
+
+    }
+
     let action: (HTTPClient.Request) -> Action
+
+    /// Decides what `SourceHealthChecker` does for each source, given its base URL.
+    /// Health checks don't go through `HTTPClient`, so they never consult `action`.
+    let healthCheckAction: (URL) -> HealthCheckAction
+
+    /// Creates a strategy that performs every health check.
+    init(action: @escaping (HTTPClient.Request) -> Action) {
+        self.init(action: action, healthCheckAction: { _ in .performHealthCheck })
+    }
+
+    init(action: @escaping (HTTPClient.Request) -> Action,
+         healthCheckAction: @escaping (URL) -> HealthCheckAction) {
+        self.action = action
+        self.healthCheckAction = healthCheckAction
+    }
 
 }
 

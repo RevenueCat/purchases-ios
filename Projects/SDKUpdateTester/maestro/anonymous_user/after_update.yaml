@@ -1,0 +1,7 @@
+# Run with the app built against the local SDK, installed over the app used by before_update.yaml.
+# Requires the same environment variables as before_update.yaml.
+
+appId: com.revenuecat.SDKUpdateTester
+name: Anonymous user - after SDK update
+---
+- runFlow: ../utils/assert_state_preserved.yaml

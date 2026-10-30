@@ -186,15 +186,16 @@ class PurchasesSubscriberAttributesTests: TestCase {
         super.tearDown()
     }
 
-    func setupPurchases() {
-        self.mockIdentityManager.mockIsAnonymous = false
+    func setupPurchases(subscriberAttributes: Attribution? = nil, isAnonymous: Bool = false) {
+        self.mockIdentityManager.mockIsAnonymous = isAnonymous
+        let attributes = subscriberAttributes ?? self.attribution!
 
         let purchasesOrchestrator = PurchasesOrchestrator(
             productsManager: self.mockProductsManager,
             paymentQueueWrapper: self.paymentQueueWrapper,
             simulatedStorePurchaseHandler: self.mockSimulatedStorePurchaseHandler,
             systemInfo: self.systemInfo,
-            subscriberAttributes: self.attribution,
+            subscriberAttributes: attributes,
             operationDispatcher: self.mockOperationDispatcher,
             receiptFetcher: self.mockReceiptFetcher,
             receiptParser: self.mockReceiptParser,
@@ -222,7 +223,8 @@ class PurchasesSubscriberAttributesTests: TestCase {
             currentUserProvider: mockIdentityManager,
             operationDispatcher: mockOperationDispatcher,
             productsManager: mockProductsManager,
-            diagnosticsTracker: nil
+            diagnosticsTracker: nil,
+            groupEligibilityCache: .init()
         )
         let healthManager = SDKHealthManager(
             backend: self.mockBackend,
@@ -230,7 +232,7 @@ class PurchasesSubscriberAttributesTests: TestCase {
         )
         let transactionMetadataSyncHelper = TransactionMetadataSyncHelper(
             customerInfoManager: customerInfoManager,
-            attribution: attribution,
+            attribution: attributes,
             currentUserProvider: mockIdentityManager,
             operationDispatcher: mockOperationDispatcher,
             transactionPoster: self.transactionPoster
@@ -250,7 +252,7 @@ class PurchasesSubscriberAttributesTests: TestCase {
                               paywallCache: MockPaywallCacheWarming(),
                               identityManager: mockIdentityManager,
                               tokenManager: MockTokenManager(),
-                              subscriberAttributes: attribution,
+                              subscriberAttributes: attributes,
                               operationDispatcher: mockOperationDispatcher,
                               customerInfoManager: customerInfoManager,
                               eventsManager: nil,
@@ -264,11 +266,20 @@ class PurchasesSubscriberAttributesTests: TestCase {
                                 operationDispatcher: mockOperationDispatcher
                               ),
                               remoteConfigManager: NoOpRemoteConfigManager(),
+                              checkpointsConfigProvider: CheckpointsConfigProvider(
+                                manager: NoOpRemoteConfigManager()
+                              ),
+                              sdkSettingsConfigProvider: SDKSettingsConfigProvider(
+                                manager: NoOpRemoteConfigManager()
+                              ),
+                              subscriberDimensionsConfigProvider: SubscriberDimensionsConfigProvider(
+                                manager: NoOpRemoteConfigManager()
+                              ),
                               offlineEntitlementsManager: mockOfflineEntitlementsManager,
                               purchasesOrchestrator: purchasesOrchestrator,
                               purchasedProductsFetcher: mockPurchasedProductsFetcher,
-                              trialOrIntroPriceEligibilityChecker: .create(
-                                with: trialOrIntroductoryPriceEligibilityChecker
+                              trialOrIntroPriceEligibilityChecker: .init(
+                                checker: trialOrIntroductoryPriceEligibilityChecker
                               ),
                               storeMessagesHelper: self.mockStoreMessagesHelper,
                               diagnosticsTracker: nil,
@@ -290,6 +301,7 @@ class PurchasesSubscriberAttributesTests: TestCase {
     // MARK: Notifications
 
     func testSubscribesToForegroundNotifications() {
+        self.mockBackend.stubbedGetCustomerInfoResult = .success(.emptyInfo)
         setupPurchases()
 
         expect(self.mockNotificationCenter.observers).toNot(beEmpty())
@@ -299,10 +311,11 @@ class PurchasesSubscriberAttributesTests: TestCase {
         })
 
         self.mockNotificationCenter.fireNotifications()
-        expect(self.mockSubscriberAttributesManager.invokedSyncAttributesForAllUsersCount) == 2
+        expect(self.mockSubscriberAttributesManager.invokedSyncAttributesForAllUsersCount).toEventually(equal(2))
     }
 
     func testSubscribesToBackgroundNotifications() {
+        self.mockBackend.stubbedGetCustomerInfoResult = .success(.emptyInfo)
         setupPurchases()
 
         expect(self.mockNotificationCenter.observers).toNot(beEmpty())
@@ -312,7 +325,7 @@ class PurchasesSubscriberAttributesTests: TestCase {
         })
 
         self.mockNotificationCenter.fireNotifications()
-        expect(self.mockSubscriberAttributesManager.invokedSyncAttributesForAllUsersCount) == 2
+        expect(self.mockSubscriberAttributesManager.invokedSyncAttributesForAllUsersCount).toEventually(equal(2))
     }
 
     func testSubscriberAttributesSyncIsPerformedAfterCustomerInfoSync() throws {
@@ -327,9 +340,175 @@ class PurchasesSubscriberAttributesTests: TestCase {
 
         self.mockNotificationCenter.fireNotifications()
 
-        expect(self.mockSubscriberAttributesManager.invokedSyncAttributesForAllUsersCount) == 2
+        expect(self.mockSubscriberAttributesManager.invokedSyncAttributesForAllUsersCount).toEventually(equal(2))
         expect(self.mockDeviceCache.cacheCustomerInfoCount) == 1
         expect(self.mockDeviceCache.cachedCustomerInfo.count) == 1
+    }
+
+    func testForegroundSyncsSubscriberAttributesImmediatelyWithCachedCustomerInfo() {
+        self.mockBackend.stubbedGetCustomerInfoResult = .success(.emptyInfo)
+        self.setupPurchases()
+
+        expect(self.mockBackend.invokedGetSubscriberDataCount).toEventually(equal(1))
+        expect(self.mockDeviceCache.cacheCustomerInfoCount).toEventually(equal(1))
+        self.mockSubscriberAttributesManager.invokedSyncAttributesForAllUsersCount = 0
+
+        self.mockNotificationCenter.fireApplicationWillEnterForegroundNotification()
+
+        expect(self.mockSubscriberAttributesManager.invokedSyncAttributesForAllUsersCount).toEventually(equal(1))
+        expect(self.mockBackend.invokedGetSubscriberDataCount) == 1
+    }
+
+    func testForegroundSyncsSubscriberAttributesAfterRefreshingStaleCachedCustomerInfo() {
+        let customerInfoResponseGate = MockAsyncGate()
+        self.mockBackend.stubbedGetCustomerInfoResult = .success(.emptyInfo)
+        self.setupPurchases()
+
+        expect(self.mockBackend.invokedGetSubscriberDataCount).toEventually(equal(1))
+        expect(self.mockDeviceCache.cacheCustomerInfoCount).toEventually(equal(1))
+
+        self.mockDeviceCache.stubbedIsCustomerInfoCacheStale = true
+        self.mockBackend.deferredGetCustomerInfoCompletionGate.value = customerInfoResponseGate
+        self.mockSubscriberAttributesManager.invokedSyncAttributesForAllUsersCount = 0
+
+        self.mockNotificationCenter.fireApplicationWillEnterForegroundNotification()
+
+        expect(self.mockBackend.invokedGetSubscriberDataCount).toEventually(equal(2))
+        expect(self.mockSubscriberAttributesManager.invokedSyncAttributesForAllUsersCount) == 0
+
+        customerInfoResponseGate.open()
+
+        expect(self.mockBackend.completedGetCustomerInfoCount.value).toEventually(equal(2))
+        expect(self.mockSubscriberAttributesManager.invokedSyncAttributesForAllUsersCount).toEventually(equal(1))
+    }
+
+    func testResigningActiveSyncsSubscriberAttributesImmediatelyWithCachedCustomerInfo() {
+        self.mockBackend.stubbedGetCustomerInfoResult = .success(.emptyInfo)
+        self.setupPurchases()
+
+        expect(self.mockBackend.invokedGetSubscriberDataCount).toEventually(equal(1))
+        expect(self.mockDeviceCache.cacheCustomerInfoCount).toEventually(equal(1))
+        self.mockSubscriberAttributesManager.invokedSyncAttributesForAllUsersCount = 0
+
+        self.mockNotificationCenter.fireApplicationWillResignActiveNotification()
+
+        expect(self.mockSubscriberAttributesManager.invokedSyncAttributesForAllUsersCount).toEventually(equal(1))
+        expect(self.mockBackend.invokedGetSubscriberDataCount) == 1
+    }
+
+    func testInitialAppStartDoesNotSyncSubscriberAttributesWhenCustomerInfoIsUnavailable() {
+        self.setupPurchases()
+
+        expect(self.mockBackend.invokedGetSubscriberDataCount).toEventually(equal(1))
+        expect(self.mockDeviceCache.cachedCustomerInfo).to(beEmpty())
+        expect(self.mockSubscriberAttributesManager.invokedSyncAttributesForAllUsersCount) == 0
+    }
+
+    func testColdBootForegroundNotificationDoesNotSyncSubscriberAttributesWhenCustomerInfoFetchFails() {
+        let customerInfoResponseGate = MockAsyncGate()
+        self.setupPurchases()
+        expect(self.mockBackend.completedGetCustomerInfoCount.value).toEventually(equal(1))
+
+        self.mockBackend.deferredGetCustomerInfoCompletionGate.value = customerInfoResponseGate
+        self.mockSubscriberAttributesManager.invokedSyncAttributesForAllUsersCount = 0
+
+        self.mockNotificationCenter.fireApplicationWillEnterForegroundNotification()
+
+        expect(self.mockBackend.invokedGetSubscriberDataCount).toEventually(equal(2))
+        expect(self.mockSubscriberAttributesManager.invokedSyncAttributesForAllUsersCount) == 0
+
+        customerInfoResponseGate.open()
+
+        expect(self.mockBackend.completedGetCustomerInfoCount.value).toEventually(equal(2))
+        expect(self.mockSubscriberAttributesManager.invokedSyncAttributesForAllUsersCount) == 0
+    }
+
+    func testColdBootForegroundDefersSubscriberAttributesUntilInitialCustomerInfoCompletes() {
+        let customerInfoResponseGate = MockAsyncGate()
+        let subscriberAttributesManager = SubscriberAttributesManager(
+            backend: self.mockBackend,
+            deviceCache: self.mockDeviceCache,
+            operationDispatcher: self.mockOperationDispatcher,
+            attributionFetcher: self.mockAttributionFetcher,
+            attributionDataMigrator: AttributionDataMigrator()
+        )
+        let attributionPoster = AttributionPoster(
+            deviceCache: self.mockDeviceCache,
+            currentUserProvider: self.mockIdentityManager,
+            backend: self.mockBackend,
+            attributionFetcher: self.mockAttributionFetcher,
+            subscriberAttributesManager: subscriberAttributesManager,
+            systemInfo: self.systemInfo
+        )
+        let attribution = Attribution(
+            subscriberAttributesManager: subscriberAttributesManager,
+            currentUserProvider: self.mockIdentityManager,
+            attributionPoster: attributionPoster,
+            systemInfo: self.systemInfo
+        )
+        self.mockBackend.stubbedGetCustomerInfoResult = .success(.emptyInfo)
+        self.mockBackend.deferredGetCustomerInfoCompletionGate.value = customerInfoResponseGate
+        self.mockAttributionFetcher.stubbedAuthorizationStatus = .authorized
+        self.mockDeviceCache.onStoreSubscriberAttribute = { [weak self] attribute, appUserID in
+            self?.mockDeviceCache.stubbedUnsyncedAttributesForAllUsersResult = [
+                appUserID: [attribute.key: attribute]
+            ]
+        }
+
+        self.setupPurchases(subscriberAttributes: attribution, isAnonymous: true)
+        expect(self.mockBackend.invokedGetSubscriberDataCount).toEventually(equal(1))
+
+        self.mockNotificationCenter.fireApplicationWillEnterForegroundNotification()
+
+        expect(self.mockBackend.invokedGetSubscriberDataCount).toEventually(equal(2))
+        expect(self.mockBackend.completedGetCustomerInfoCount.value) == 0
+        expect(self.mockBackend.invokedPostSubscriberAttributesCount) == 0
+
+        customerInfoResponseGate.open()
+
+        expect(self.mockBackend.completedGetCustomerInfoCount.value).toEventually(equal(2))
+        expect(self.mockDeviceCache.cacheCustomerInfoCount).toEventually(equal(2))
+        expect(self.mockBackend.invokedPostSubscriberAttributesCount).toEventually(equal(1))
+        expect(self.mockBackend.invokedPostSubscriberAttributesCount).toNever(beGreaterThan(1))
+        let postedAttributes = self.mockBackend.invokedPostSubscriberAttributesParameters?.subscriberAttributes
+        expect(postedAttributes?["$attConsentStatus"]?.value) == "authorized"
+    }
+
+    func testColdBootForegroundDoesNotSyncSubscriberAttributesAfterAppUserIDChanges() {
+        let customerInfoResponseGate = MockAsyncGate()
+        self.mockBackend.stubbedGetCustomerInfoResult = .success(.emptyInfo)
+        self.mockBackend.deferredGetCustomerInfoCompletionGate.value = customerInfoResponseGate
+
+        self.setupPurchases(isAnonymous: true)
+        let originalAppUserID = self.purchases.appUserID
+        expect(self.mockBackend.invokedGetSubscriberDataCount).toEventually(equal(1))
+
+        self.mockNotificationCenter.fireApplicationWillEnterForegroundNotification()
+
+        expect(self.mockBackend.invokedGetSubscriberDataCount).toEventually(equal(2))
+        expect(self.mockBackend.invokedGetSubscriberDataParameters?.appUserID) == originalAppUserID
+        expect(self.mockSubscriberAttributesManager.invokedSyncAttributesForAllUsersCount) == 0
+
+        self.mockIdentityManager.mockIsAnonymous = false
+        self.mockIdentityManager.mockAppUserID = "new_user"
+        customerInfoResponseGate.open()
+
+        expect(self.mockBackend.completedGetCustomerInfoCount.value).toEventually(equal(2))
+        expect(self.mockDeviceCache.cacheCustomerInfoCount).toEventually(equal(2))
+        expect(self.mockSubscriberAttributesManager.invokedSyncAttributesForAllUsersCount).toNever(beGreaterThan(0))
+    }
+
+    func testResigningActiveDoesNotFetchCustomerInfoOrSyncAttributesWhenCustomerInfoIsUnavailable() {
+        self.setupPurchases()
+        expect(self.mockBackend.completedGetCustomerInfoCount.value).toEventually(equal(1))
+
+        self.mockSubscriberAttributesManager.invokedSyncAttributesForAllUsersCount = 0
+        let customerInfoRequestCount = self.mockBackend.invokedGetSubscriberDataCount
+
+        self.mockNotificationCenter.fireApplicationWillResignActiveNotification()
+
+        expect(self.mockBackend.invokedGetSubscriberDataCount) == customerInfoRequestCount
+        expect(self.mockSubscriberAttributesManager.invokedSyncAttributesForAllUsersCount) == 0
     }
 
     // MARK: Set attributes
@@ -1064,6 +1243,129 @@ class PurchasesSubscriberAttributesTests: TestCase {
 
         expect(self.mockSubscriberAttributesManager.invokedSetATTConsentStatus) == true
         expect(self.mockSubscriberAttributesManager.invokedSetATTConsentStatusParameters?.appUserID) == appUserID
+    }
+
+    // MARK: - attributesForCurrentUser
+
+    func testAttributesForCurrentUserIsEmptyWhenNothingIsStored() {
+        expect(self.attribution.attributesForCurrentUser).to(beEmpty())
+    }
+
+    func testAttributesForCurrentUserExposesKeyValueAndLastUpdatedDate() throws {
+        let setTime = Date(timeIntervalSince1970: 1_600_000_000)
+        let stored = SubscriberAttribute(withKey: "$email", value: "user@example.com", isSynced: true, setTime: setTime)
+        self.mockDeviceCache.merge(subscriberAttributes: [stored.key: stored],
+                                   appUserID: self.mockIdentityManager.currentAppUserID)
+
+        let attributes = self.attribution.attributesForCurrentUser
+
+        expect(attributes).to(haveCount(1))
+        let attribute = try XCTUnwrap(attributes.first)
+        expect(attribute.key) == "$email"
+        expect(attribute.value) == "user@example.com"
+        expect(attribute.lastUpdatedDate) == setTime
+    }
+
+    func testAttributesForCurrentUserIncludesSyncedAndUnsyncedAttributes() {
+        let synced = SubscriberAttribute(withKey: "band", value: "Rush", isSynced: true, setTime: Date())
+        let unsynced = SubscriberAttribute(withKey: "song", value: "YYZ", isSynced: false, setTime: Date())
+        self.mockDeviceCache.merge(subscriberAttributes: [synced.key: synced, unsynced.key: unsynced],
+                                   appUserID: self.mockIdentityManager.currentAppUserID)
+
+        let values = Dictionary(uniqueKeysWithValues: self.attribution.attributesForCurrentUser.map {
+            ($0.key, $0.value)
+        })
+
+        expect(values) == ["band": "Rush", "song": "YYZ"]
+    }
+
+    func testAttributesForCurrentUserExcludesOtherUsersAttributes() {
+        let mine = SubscriberAttribute(withKey: "band", value: "Rush", isSynced: true, setTime: Date())
+        let theirs = SubscriberAttribute(withKey: "song", value: "YYZ", isSynced: true, setTime: Date())
+        self.mockDeviceCache.merge(subscriberAttributes: [mine.key: mine],
+                                   appUserID: self.mockIdentityManager.currentAppUserID)
+        self.mockDeviceCache.merge(subscriberAttributes: [theirs.key: theirs], appUserID: "another_user")
+
+        expect(self.attribution.attributesForCurrentUser.map(\.key)) == ["band"]
+    }
+
+    func testAttributesForCurrentUserFollowsCurrentAppUserID() {
+        let first = SubscriberAttribute(withKey: "band", value: "Rush", isSynced: true, setTime: Date())
+        let second = SubscriberAttribute(withKey: "band", value: "Yes", isSynced: true, setTime: Date())
+        self.mockDeviceCache.merge(subscriberAttributes: [first.key: first], appUserID: "first_user")
+        self.mockDeviceCache.merge(subscriberAttributes: [second.key: second], appUserID: "second_user")
+
+        self.mockIdentityManager.mockAppUserID = "first_user"
+        expect(self.attribution.attributesForCurrentUser.map(\.value)) == ["Rush"]
+
+        self.mockIdentityManager.mockAppUserID = "second_user"
+        expect(self.attribution.attributesForCurrentUser.map(\.value)) == ["Yes"]
+    }
+
+    func testAttributesForCurrentUserExcludesSyncedAttributesWithBlankValues() {
+        let present = SubscriberAttribute(withKey: "band", value: "Rush", isSynced: true, setTime: Date())
+        let deleted = SubscriberAttribute(withKey: "$email", value: nil, isSynced: true, setTime: Date())
+        self.mockDeviceCache.merge(subscriberAttributes: [present.key: present, deleted.key: deleted],
+                                   appUserID: self.mockIdentityManager.currentAppUserID)
+
+        expect(self.attribution.attributesForCurrentUser.map(\.key)) == ["band"]
+    }
+
+    func testAttributesForCurrentUserExcludesUnsyncedAttributesWithBlankValues() {
+        let present = SubscriberAttribute(withKey: "band", value: "Rush", isSynced: false, setTime: Date())
+        let deleted = SubscriberAttribute(withKey: "$email", value: "", isSynced: false, setTime: Date())
+        self.mockDeviceCache.merge(subscriberAttributes: [present.key: present, deleted.key: deleted],
+                                   appUserID: self.mockIdentityManager.currentAppUserID)
+
+        expect(self.attribution.attributesForCurrentUser.map(\.key)) == ["band"]
+    }
+
+    func testAttributesForCurrentUserIsEmptyWhenAllValuesAreBlank() {
+        let deleted = SubscriberAttribute(withKey: "$email", value: nil, isSynced: true, setTime: Date())
+        self.mockDeviceCache.merge(subscriberAttributes: [deleted.key: deleted],
+                                   appUserID: self.mockIdentityManager.currentAppUserID)
+
+        expect(self.attribution.attributesForCurrentUser).to(beEmpty())
+    }
+
+    func testAttributesForCurrentUserExcludesAttributeDeletedLocallyAfterBeingSynced() {
+        let original = SubscriberAttribute(withKey: "$email",
+                                           value: "user@example.com",
+                                           isSynced: true,
+                                           setTime: Date(timeIntervalSince1970: 1_600_000_000))
+        let cleared = SubscriberAttribute(withKey: "$email",
+                                          value: nil,
+                                          isSynced: false,
+                                          setTime: Date(timeIntervalSince1970: 1_600_000_060))
+        let appUserID = self.mockIdentityManager.currentAppUserID
+        self.mockDeviceCache.merge(subscriberAttributes: [original.key: original], appUserID: appUserID)
+        expect(self.attribution.attributesForCurrentUser.map(\.key)) == ["$email"]
+
+        self.mockDeviceCache.merge(subscriberAttributes: [cleared.key: cleared], appUserID: appUserID)
+
+        expect(self.attribution.attributesForCurrentUser).to(beEmpty())
+    }
+
+    func testAttributesForCurrentUserExcludesNullValuesFromCustomerInfo() throws {
+        let appUserID = self.mockIdentityManager.currentAppUserID
+        let info = try CustomerInfo(data: [
+            "request_date": "2019-08-16T10:30:42Z",
+            "subscriber": [
+                "first_seen": "2019-07-17T00:05:54Z",
+                "original_app_user_id": appUserID,
+                "subscriptions": [:] as [String: Any],
+                "other_purchases": [:] as [String: Any],
+                "original_application_version": NSNull(),
+                "subscriber_attributes": [
+                    "band": ["value": "Rush", "updated_at_ms": 1_600_000_000_000] as [String: Any],
+                    "$email": ["value": NSNull(), "updated_at_ms": 1_600_000_000_000] as [String: Any]
+                ]
+            ] as [String: Any]
+        ])
+
+        self.customerInfoManager.cache(customerInfo: info, appUserID: appUserID)
+
+        expect(self.attribution.attributesForCurrentUser.map(\.key)) == ["band"]
     }
 
 }

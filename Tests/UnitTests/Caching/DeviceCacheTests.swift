@@ -49,6 +49,27 @@ class DeviceCacheTests: TestCase {
         self.deviceCache = self.create()
     }
 
+    func testSK2ObserverReceiptRetrySurvivesCacheRecreation() {
+        let retry = SK2ObserverModeReceiptRetry(transactionID: 123, retryAfter: Date(timeIntervalSince1970: 456))
+        self.deviceCache.cacheSK2ObserverModeReceiptRetry(retry)
+
+        expect(self.create().cachedSK2ObserverModeReceiptRetry()) == retry
+        expect(self.deviceCache.cachedSyncedSK2ObserverModeTransactionIDs()).to(beEmpty())
+    }
+
+    func testSK2ObserverReceiptRetryCanBeCleared() {
+        self.deviceCache.cacheSK2ObserverModeReceiptRetry(.init(transactionID: 123, retryAfter: Date()))
+        self.deviceCache.cacheSK2ObserverModeReceiptRetry(nil)
+
+        expect(self.create().cachedSK2ObserverModeReceiptRetry()).to(beNil())
+    }
+
+    func testInvalidSK2ObserverReceiptRetryDoesNotBlockDetection() {
+        self.mockUserDefaults.mockValues[DeviceCache.CacheKey.sk2ObserverModeReceiptRetry.rawValue] = Data([0])
+
+        expect(self.deviceCache.cachedSK2ObserverModeReceiptRetry()).to(beNil())
+    }
+
     func testLegacyCachedUserIDUsesRightKey() {
         self.mockUserDefaults.mockValues["com.revenuecat.userdefaults.appUserID"] = "cesar"
 
@@ -237,25 +258,27 @@ class DeviceCacheTests: TestCase {
         expect(self.deviceCache.isCustomerInfoCacheStale(appUserID: "cesar", isAppBackgrounded: false)) == false
     }
 
-    func testSubscriberDimensionsAreCachedPerAppUserID() {
+    func testSubscriberDimensionsPreserveEpochMillisecondsAndAreCachedPerAppUserID() {
         let data = Data(#"{"plan":"annual"}"#.utf8)
+        let asOf: UInt64 = 1_790_858_464_258
 
-        self.deviceCache.cache(subscriberDimensions: data, appUserID: "cesar")
+        self.deviceCache.cache(subscriberDimensions: data, asOf: asOf, appUserID: "cesar")
 
-        expect(self.deviceCache.cachedSubscriberDimensionsData(appUserID: "cesar")) == data
-        expect(self.deviceCache.cachedSubscriberDimensionsData(appUserID: "other")).to(beNil())
+        expect(self.deviceCache.cachedSubscriberDimensions(appUserID: "cesar")) == .init(data: data, asOf: asOf)
+        expect(self.deviceCache.cachedSubscriberDimensions(appUserID: "other")).to(beNil())
     }
 
     func testClearCachesRemovesSubscriberDimensionsForOldAppUserID() {
         let appUserID = "cesar"
         self.deviceCache.cache(
             subscriberDimensions: Data(#"{"plan":"annual"}"#.utf8),
+            asOf: 123_456,
             appUserID: appUserID
         )
 
         self.deviceCache.clearCaches(oldAppUserID: appUserID, andSaveWithNewUserID: "newUser")
 
-        expect(self.deviceCache.cachedSubscriberDimensionsData(appUserID: appUserID)).to(beNil())
+        expect(self.deviceCache.cachedSubscriberDimensions(appUserID: appUserID)).to(beNil())
     }
 
     func testOfferingsAreProperlyCached() throws {

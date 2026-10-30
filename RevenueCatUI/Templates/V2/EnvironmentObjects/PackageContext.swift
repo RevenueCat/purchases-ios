@@ -21,38 +21,47 @@ class PackageContext: ObservableObject {
 
     struct VariableContext {
 
-        let mostExpensivePricePerMonth: Double?
+        let mostExpensivePricePerMonth: StoreProduct.MonthlyPrice?
+        /// Used by the absolute and offer discount variables without truncating to two decimal places.
+        let exactMostExpensivePricePerMonth: Decimal?
         let showZeroDecimalPlacePrices: Bool
 
         init(packages: [Package], showZeroDecimalPlacePrices: Bool = true) {
-            let mostExpensivePricePerMonth = Self.mostExpensivePricePerMonth(in: packages)
             self.init(
-                mostExpensivePricePerMonth: mostExpensivePricePerMonth,
+                mostExpensivePricePerMonth: Self.mostExpensivePricePerMonth(in: packages),
+                exactMostExpensivePricePerMonth: Self.exactMostExpensivePricePerMonth(in: packages),
                 showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
             )
         }
 
-        init(mostExpensivePricePerMonth: Double? = nil, showZeroDecimalPlacePrices: Bool = true) {
+        init(
+            mostExpensivePricePerMonth: StoreProduct.MonthlyPrice? = nil,
+            exactMostExpensivePricePerMonth: Decimal? = nil,
+            showZeroDecimalPlacePrices: Bool = true
+        ) {
             self.mostExpensivePricePerMonth = mostExpensivePricePerMonth
+            self.exactMostExpensivePricePerMonth = exactMostExpensivePricePerMonth
             self.showZeroDecimalPlacePrices = showZeroDecimalPlacePrices
         }
 
-        private static func mostExpensivePricePerMonth(in packages: [Package]) -> Double? {
+        private static func exactMostExpensivePricePerMonth(in packages: [Package]) -> Decimal? {
             return packages
                 .lazy
                 .map(\.storeProduct)
-                .compactMap { product in
-                    product.pricePerMonth.map {
-                        return (
-                            product: product,
-                            pricePerMonth: $0
-                        )
+                .compactMap { product -> Decimal? in
+                    guard let months = product.subscriptionPeriod?.numberOfUnitsAs(unit: .month), months > 0 else {
+                        return nil
                     }
+                    return product.price / months
                 }
-                .max { productA, productB in
-                    return productA.pricePerMonth.doubleValue < productB.pricePerMonth.doubleValue
-                }
-                .map(\.pricePerMonth.doubleValue)
+                .max()
+        }
+
+        private static func mostExpensivePricePerMonth(in packages: [Package]) -> StoreProduct.MonthlyPrice? {
+            return packages
+                .lazy
+                .compactMap(\.storeProduct.pricePerMonthForDiscount)
+                .max()
         }
 
     }

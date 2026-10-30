@@ -15,13 +15,14 @@ import Foundation
 import Nimble
 import XCTest
 
-@testable import RevenueCat
+@_spi(Internal) @testable import RevenueCat
 
 class BackendPostHostedCheckoutTests: BaseBackendTests {
 
     private static let packageID = "$rc_monthly"
     private static let offeringID = "default"
     private static let tokenID = "eptoken_123"
+    private static let previousOperationSessionID = "op_session_previous"
 
     override func createClient() -> MockHTTPClient {
         super.createClient(#file)
@@ -69,6 +70,30 @@ class BackendPostHostedCheckoutTests: BaseBackendTests {
         expect(self.httpClient.calls).to(haveCount(1))
     }
 
+    func testSendsPresentedCheckpointIdentifier() throws {
+        self.httpClient.disableSnapshotTesting()
+        self.httpClient.mock(
+            requestPath: .postHostedCheckout,
+            response: .init(statusCode: .success, response: Self.response)
+        )
+        let context = PresentedOfferingContext(offeringIdentifier: Self.offeringID)
+            .withCheckpointIdentifier("checkout", traceID: nil)
+
+        _ = waitUntilValue { completed in
+            self.postHostedCheckout(
+                appUserID: Self.userID,
+                packageID: Self.packageID,
+                presentedOfferingContext: context,
+                paywall: nil,
+                tokenID: Self.tokenID,
+                completion: completed
+            )
+        }
+
+        let body = try XCTUnwrap(self.httpClient.calls.first?.request.requestBody?.asJSONDictionary())
+        expect(body["presented_checkpoint_identifier"] as? String) == "checkout"
+    }
+
     func testIsNotDelayed() {
         self.httpClient.mock(
             requestPath: .postHostedCheckout,
@@ -96,9 +121,28 @@ class BackendPostHostedCheckoutTests: BaseBackendTests {
         let response = try XCTUnwrap(result?.value)
 
         expect(response.operationSessionID) == "op_session_id"
-        expect(response.checkoutURL) == URL(string: "https://checkout.stripe.com/c/pay/cs_test_123")
-        expect(response.successURL) == URL(string: "\(Self.returnEndpoint)?status=success")
-        expect(response.cancelURL) == URL(string: "\(Self.returnEndpoint)?status=cancel")
+        expect(response.outcome) == .created(Self.page)
+    }
+
+    /// Asking to resume a session carries its ID, so that the backend can hand it back rather than create a
+    /// second one the customer could pay for as well.
+    func testSendsThePreviousSession() {
+        self.httpClient.mock(
+            requestPath: .postHostedCheckout,
+            response: .init(statusCode: .success, response: Self.response)
+        )
+
+        let result = waitUntilValue { completed in
+            self.postHostedCheckout(appUserID: Self.userID,
+                                    packageID: Self.packageID,
+                                    offeringID: Self.offeringID,
+                                    tokenID: Self.tokenID,
+                                    previousOperationSessionID: Self.previousOperationSessionID,
+                                    completion: completed)
+        }
+
+        expect(result).to(beSuccess())
+        expect(self.httpClient.calls).to(haveCount(1))
     }
 
     /// Creating a checkout session answers `201`, so that is the status the flow actually has to read.
@@ -148,6 +192,21 @@ class BackendPostHostedCheckoutTests: BaseBackendTests {
         }, from: Self.offeringID, to: "promo")
     }
 
+    func testRequestsForDifferentCheckpointsAreNotReused() {
+        self.httpClient.disableSnapshotTesting()
+        self.expectTwoCalls(varying: { checkpointIdentifier in
+            let context = PresentedOfferingContext(offeringIdentifier: Self.offeringID)
+                .withCheckpointIdentifier(checkpointIdentifier, traceID: nil)
+            self.postHostedCheckout(
+                appUserID: Self.userID,
+                packageID: Self.packageID,
+                presentedOfferingContext: context,
+                paywall: nil,
+                tokenID: Self.tokenID
+            ) { _ in }
+        }, from: "checkout_a", to: "checkout_c")
+    }
+
     func testRequestsForDifferentUsersAreNotReused() {
         self.expectTwoCalls(varying: { appUserID in
             self.postHostedCheckout(appUserID: appUserID,
@@ -165,6 +224,20 @@ class BackendPostHostedCheckoutTests: BaseBackendTests {
                                     offeringID: Self.offeringID,
                                     tokenID: tokenID) { _ in }
         }, from: Self.tokenID, to: "eptoken_456")
+    }
+
+    /// Each asks the backend about a different session, which it could hand back.
+    func testRequestsForDifferentPreviousSessionsAreNotReused() {
+        // What the request carries is covered by `testSendsThePreviousSession`.
+        self.httpClient.disableSnapshotTesting()
+
+        self.expectTwoCalls(varying: { previousOperationSessionID in
+            self.postHostedCheckout(appUserID: Self.userID,
+                                    packageID: Self.packageID,
+                                    offeringID: Self.offeringID,
+                                    tokenID: Self.tokenID,
+                                    previousOperationSessionID: previousOperationSessionID) { _ in }
+        }, from: Self.previousOperationSessionID, to: "op_session_other")
     }
 
     func testSendsNoTokenWhenThereIsNone() {
@@ -211,6 +284,52 @@ class BackendPostHostedCheckoutTests: BaseBackendTests {
         expect(self.httpClient.calls).to(beEmpty())
     }
 
+    // MARK: - Outcome
+
+    /// A backend that does not send an outcome yet only ever creates sessions.
+    func testDecodesAResponseWithoutAnOutcomeAsCreated() throws {
+        let response = try Self.decode(Self.response)
+
+        expect(response.outcome) == .created(Self.page)
+    }
+
+    func testDecodesACreatedSession() throws {
+        let response = try Self.decode(Self.response.merging(["outcome": "created"]) { $1 })
+
+        expect(response.outcome) == .created(Self.page)
+    }
+
+    func testDecodesAResumedSession() throws {
+        let response = try Self.decode(Self.response.merging(["outcome": "resumed"]) { $1 })
+
+        expect(response.operationSessionID) == "op_session_id"
+        expect(response.outcome) == .resumed(Self.page)
+    }
+
+    /// There is nothing left to present once the session succeeded, so the backend need not send its pages.
+    func testDecodesASucceededSessionWithoutItsPages() throws {
+        let response = try Self.decode([
+            "operation_session_id": "op_session_id",
+            "outcome": "succeeded"
+        ])
+
+        expect(response.outcome) == .succeeded
+    }
+
+    /// Presenting the session it sent is what the backend did before it had an outcome to tell.
+    func testDecodesAnUnrecognizedOutcomeAsCreated() throws {
+        let response = try Self.decode(Self.response.merging(["outcome": "something_new"]) { $1 })
+
+        expect(response.outcome) == .created(Self.page)
+    }
+
+    func testFailsToDecodeAResumedSessionWithoutItsPages() {
+        expect(try Self.decode([
+            "operation_session_id": "op_session_id",
+            "outcome": "resumed"
+        ])).to(throwError())
+    }
+
 }
 
 private extension BackendPostHostedCheckoutTests {
@@ -220,9 +339,17 @@ private extension BackendPostHostedCheckoutTests {
     static let response: [String: Any] = [
         "operation_session_id": "op_session_id",
         "checkout_url": "https://checkout.stripe.com/c/pay/cs_test_123",
-        "success_url": "\(returnEndpoint)?status=success",
-        "cancel_url": "\(returnEndpoint)?status=cancel"
+        "success_url": "\(returnEndpoint)?status=success"
     ]
+
+    static let page = HostedCheckoutResponse.Page(
+        checkoutURL: URL(string: "https://checkout.stripe.com/c/pay/cs_test_123")!,
+        successURL: URL(string: "\(returnEndpoint)?status=success")!
+    )
+
+    static func decode(_ response: [String: Any]) throws -> HostedCheckoutResponse {
+        return try HostedCheckoutResponse.create(with: JSONSerialization.data(withJSONObject: response))
+    }
 
     /// Fires `request` twice, changing one input, and expects both to reach the network rather than
     /// being coalesced into one.
@@ -259,9 +386,29 @@ private extension BackendPostHostedCheckoutTests {
         self.postHostedCheckout(
             appUserID: appUserID,
             packageID: packageID,
+            offeringID: offeringID,
+            tokenID: tokenID,
+            previousOperationSessionID: nil,
+            completion: completion
+        )
+    }
+
+    // swiftlint:disable:next function_parameter_count
+    func postHostedCheckout(
+        appUserID: String,
+        packageID: String,
+        offeringID: String,
+        tokenID: String?,
+        previousOperationSessionID: String?,
+        completion: @escaping WebBillingAPI.HostedCheckoutResponseHandler
+    ) {
+        self.webBilling.postHostedCheckout(
+            appUserID: appUserID,
+            packageID: packageID,
             presentedOfferingContext: .init(offeringIdentifier: offeringID),
             paywall: nil,
-            tokenID: tokenID,
+            externalPurchaseTokenID: tokenID,
+            previousOperationSessionID: previousOperationSessionID,
             completion: completion
         )
     }
@@ -281,6 +428,7 @@ private extension BackendPostHostedCheckoutTests {
             presentedOfferingContext: presentedOfferingContext,
             paywall: paywall,
             externalPurchaseTokenID: tokenID,
+            previousOperationSessionID: nil,
             completion: completion
         )
     }

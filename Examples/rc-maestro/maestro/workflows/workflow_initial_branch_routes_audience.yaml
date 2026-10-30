@@ -1,0 +1,43 @@
+# Opens a workflow whose FIRST step is a started audience experiment and asserts the SDK
+# lands on a variant paywall. khepri hoists that branch out of `steps` into
+# `initial_trigger` and points `initial_step_id` at its fallback, so the SDK has to resolve
+# the audience before it has anything to render. Landing on a variant is what proves it
+# entered on the routed step rather than on the fallback.
+#
+# The fallback renders the same screen as variant A, so it is not distinguishable from the
+# outside; only `variant_id` on the event separates them. This asserts the variant screens
+# and leaves the fallback alone.
+#
+# `app_user_id` is the audience: the experiment targets `Original app user ID is
+# maestro-branch-1`, which iOS resolves from `customerInfo.originalAppUserId`.
+#
+# Run locally against the test store:
+#   maestro test -e MAESTRO_STORE=test_store Examples/rc-maestro/maestro/workflows/workflow_initial_branch_routes_audience.yaml
+
+appId: com.revenuecat.maestro.ios
+name: An initial audience branch routes to a variant paywall
+env:
+  MAESTRO_STORE: ${MAESTRO_STORE || 'test_store'}
+
+---
+- clearState
+# Dismiss any leftover system alerts from previous test runs.
+- pressKey: home
+- launchApp:
+    arguments:
+        e2e_test_flow: open_workflow
+        workflow_id: "wf68af6a7360854a07"
+        app_user_id: "maestro-branch-1"
+- extendedWaitUntil:
+    visible: "Present Paywall"
+    timeout: 15000
+- tapOn:
+    text: "Present Paywall"
+
+# The initial branch routes a matched user to variant B; the fallback renders variant A's
+# screen, so the gardening title is reachable only when the branch actually resolved.
+- extendedWaitUntil:
+    visible: "Start your gardening journey today"
+    timeout: 15000
+- assertNotVisible: "Unlock full access"
+- takeScreenshot: "workflow_initial_branch_routes_audience - routed to variant B"

@@ -22,13 +22,13 @@ final class MockSigning: SigningType {
     }
 
     var requests: [VerificationRequest] = []
-    var stubbedVerificationResult: Bool?
+    var stubbedVerificationResult: SignatureVerificationResult?
 
-    func verify(
-        signature: String,
+    func verificationResult(
+        for signature: String,
         with parameters: Signing.SignatureParameters,
         publicKey: Signing.PublicKey
-    ) -> Bool {
+    ) -> SignatureVerificationResult {
         self.requests.append(.init(
             signature: signature,
             parameters: parameters,

@@ -51,6 +51,8 @@ import Foundation
         let observerMode: Bool
         let userDefaults: UserDefaults?
         let storeKitVersion: StoreKitVersion
+        // TaskPriority is not Hashable, so store its raw value for configuration equality and hashing.
+        let introEligibilityWarmupPriorityRawValue: UInt8
         let dangerousSettings: DangerousSettings?
         let networkTimeout: NetworkTimeout
         let storeKit1Timeout: TimeInterval
@@ -62,6 +64,8 @@ import Foundation
         let diagnosticsEnabled: Bool
         let iamEnabled: Bool
         let keychainAccessGroup: String?
+        let useExternalPurchaseCustomLinks: Bool
+        let enableExternalPurchasesInSimulator: Bool
     }
 
     internal let storage: Storage
@@ -74,6 +78,9 @@ import Foundation
     var observerMode: Bool { self.storage.observerMode }
     var userDefaults: UserDefaults? { self.storage.userDefaults }
     var storeKitVersion: StoreKitVersion { self.storage.storeKitVersion }
+    var introEligibilityWarmupPriority: TaskPriority {
+        TaskPriority(rawValue: self.storage.introEligibilityWarmupPriorityRawValue)
+    }
     var dangerousSettings: DangerousSettings? { self.storage.dangerousSettings }
     var networkTimeout: NetworkTimeout { self.storage.networkTimeout }
     var storeKit1Timeout: TimeInterval { self.storage.storeKit1Timeout }
@@ -86,6 +93,8 @@ import Foundation
     internal var diagnosticsEnabled: Bool { self.storage.diagnosticsEnabled }
     internal var iamEnabled: Bool { self.storage.iamEnabled }
     internal var keychainAccessGroup: String? { self.storage.keychainAccessGroup }
+    internal var useExternalPurchaseCustomLinks: Bool { self.storage.useExternalPurchaseCustomLinks }
+    internal var enableExternalPurchasesInSimulator: Bool { self.storage.enableExternalPurchasesInSimulator }
 
     private init(with builder: Builder) {
         self.storage = Storage(
@@ -94,6 +103,7 @@ import Foundation
             observerMode: builder.observerMode,
             userDefaults: builder.userDefaults,
             storeKitVersion: builder.storeKitVersion,
+            introEligibilityWarmupPriorityRawValue: builder.introEligibilityWarmupPriority.rawValue,
             dangerousSettings: builder.dangerousSettings,
             networkTimeout: builder.networkTimeout,
             storeKit1Timeout: builder.storeKit1Timeout,
@@ -104,7 +114,9 @@ import Foundation
             automaticDeviceIdentifierCollectionEnabled: builder.automaticDeviceIdentifierCollectionEnabled,
             diagnosticsEnabled: builder.diagnosticsEnabled,
             iamEnabled: builder.iamEnabled,
-            keychainAccessGroup: builder.keychainAccessGroup
+            keychainAccessGroup: builder.keychainAccessGroup,
+            useExternalPurchaseCustomLinks: builder.useExternalPurchaseCustomLinks,
+            enableExternalPurchasesInSimulator: builder.enableExternalPurchasesInSimulator
         )
     }
 
@@ -158,6 +170,9 @@ import Foundation
         private(set) var iamEnabled: Bool = false
         private(set) var keychainAccessGroup: String?
         private(set) var storeKitVersion: StoreKitVersion = .default
+        private(set) var introEligibilityWarmupPriority: TaskPriority = .background
+        private(set) var useExternalPurchaseCustomLinks: Bool = false
+        private(set) var enableExternalPurchasesInSimulator: Bool = true
 
         /// The preferred locale for the requests.
         ///
@@ -320,11 +335,15 @@ import Foundation
             return self
         }
 
-        /// Enabling diagnostics will send some performance and debugging information from the SDK to our servers.
-        /// Examples of this information include response times, cache hits or error codes.
-        /// This information will be anonymous so it can't be traced back to the end-user
+        /// Enabling diagnostics sends performance and debugging information from the SDK to RevenueCat,
+        /// including response times, cache hits, and error codes.
+        /// This information is anonymous and cannot be traced back to the end user.
         ///
-        /// Defaults to `false`
+        /// Diagnostics are not sent to RevenueCat by default. They can be enabled locally by calling this
+        /// method with `true`, or remotely only at the developer's request or with their explicit approval.
+        /// A remote setting takes precedence over the value configured here.
+        ///
+        /// Defaults to `false`.
         ///
         @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
         @objc public func with(diagnosticsEnabled: Bool) -> Builder {
@@ -346,6 +365,20 @@ import Foundation
         /// - ``StoreKitVersion``
         @objc public func with(storeKitVersion version: StoreKitVersion) -> Builder {
             self.storeKitVersion = version
+            return self
+        }
+
+        /// Sets the initial task priority for automatic introductory-offer eligibility warm-up.
+        ///
+        /// Defaults to `.background`. Apps that present a paywall immediately after configuration can
+        /// choose a higher initial priority for this work. This is a scheduling preference and does
+        /// not guarantee a particular response time from StoreKit.
+        ///
+        /// This setting only affects eligibility warm-up. Asset and font warm-ups remain at `.background`.
+        @discardableResult
+        @_spi(Experimental)
+        public func with(introEligibilityWarmupPriority: TaskPriority) -> Builder {
+            self.introEligibilityWarmupPriority = introEligibilityWarmupPriority
             return self
         }
 
@@ -388,6 +421,31 @@ import Foundation
                                                                     keychainAccessGroup: String) -> Builder {
             self.iamEnabled = iamEnabled
             self.keychainAccessGroup = keychainAccessGroup
+            return self
+        }
+
+        /// Set `useExternalPurchaseCustomLinks`. This is *disabled* by default.
+        ///
+        /// Enabling it makes a web purchase button that opens its link in the external browser take part in
+        /// Apple's external purchase custom link programme: the customer is shown Apple's disclosure notice,
+        /// and the purchase is reported to Apple.
+        ///
+        /// - Parameter enableExternalPurchasesInSimulator: Whether the simulator offers external purchases in any
+        /// storefront. When disabled, the simulator behaves as a device does for a customer who is not
+        /// [eligible](https://developer.apple.com/documentation/storekit/externalpurchasecustomlink/iseligible).
+        /// Defaults to `true`. Has no effect on a physical device, nor while `useExternalPurchaseCustomLinks` is
+        /// `false`.
+        ///
+        /// - Important: The app has to carry Apple's external purchase link entitlement, otherwise no
+        /// purchase can be made outside the App Store.
+        ///
+        /// - Note: `ExternalPurchaseCustomLink.isEligible` returns `false` in the simulator, so Apple's disclosure
+        /// notice cannot be shown and an external purchase token cannot be minted there.
+        @_spi(Experimental)
+        public func with(useExternalPurchaseCustomLinks: Bool,
+                         enableExternalPurchasesInSimulator: Bool = true) -> Builder {
+            self.useExternalPurchaseCustomLinks = useExternalPurchaseCustomLinks
+            self.enableExternalPurchasesInSimulator = enableExternalPurchasesInSimulator
             return self
         }
 

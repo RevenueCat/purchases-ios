@@ -103,6 +103,7 @@ fileprivate extension View {
                 // The mask clips drawing only, so a "fill" image overflowing its container would
                 // still swallow taps on the components it overlaps.
                 .allowsHitTesting(false)
+                .paywallDecorativeMedia()
             }
         case let .video(viewModel, colorOverlay):
             self.background(alignment: alignment) {

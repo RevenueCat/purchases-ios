@@ -107,6 +107,7 @@ import Foundation
 
     public var componentsConfig: ComponentsConfig
     public var componentsLocalizations: [PaywallComponent.LocaleID: PaywallComponent.LocalizationDictionary]
+    public var componentsVideoLocalizations: [PaywallComponent.LocaleID: PaywallComponent.VideoLocalizationDictionary]
     public var defaultLocale: String
 
     /// Exit offers configuration for this paywall.
@@ -130,6 +131,7 @@ import Foundation
         case templateName
         case componentsConfig
         case componentsLocalizations
+        case componentsVideoLocalizations
         case defaultLocale
         case assetBaseURL = "assetBaseUrl"
         case _revision = "revision"
@@ -149,12 +151,15 @@ import Foundation
                 zeroDecimalPlaceCountries: [String] = [],
                 exitOffers: ExitOffers? = nil,
                 automaticallyScaleFontSize: Bool = true,
-                stateDeclarations: [String: PaywallComponent.StateDeclaration]? = nil) {
+                stateDeclarations: [String: PaywallComponent.StateDeclaration]? = nil,
+                componentsVideoLocalizations: [PaywallComponent.LocaleID: PaywallComponent.VideoLocalizationDictionary]
+                    = [:]) {
         self.id = id
         self.templateName = templateName
         self.assetBaseURL = assetBaseURL
         self.componentsConfig = componentsConfig
         self.componentsLocalizations = componentsLocalizations
+        self.componentsVideoLocalizations = componentsVideoLocalizations
         self._revision = revision
         self.defaultLocale = defaultLocaleIdentifier
         self.zeroDecimalPlaceCountries = zeroDecimalPlaceCountries
@@ -211,6 +216,16 @@ import Foundation
         }
 
         do {
+            componentsVideoLocalizations = try container.decodeIfPresent(
+                [PaywallComponent.LocaleID: PaywallComponent.VideoLocalizationDictionary].self,
+                forKey: .componentsVideoLocalizations
+            ) ?? [:]
+        } catch {
+            errors["componentsVideoLocalizations"] = .init(error)
+            componentsVideoLocalizations = [:]
+        }
+
+        do {
             defaultLocale = try container.decode(String.self, forKey: .defaultLocale)
         } catch {
             errors["defaultLocale"] = .init(error)
@@ -264,6 +279,9 @@ import Foundation
         try container.encode(assetBaseURL, forKey: .assetBaseURL)
         try container.encode(componentsConfig, forKey: .componentsConfig)
         try container.encode(componentsLocalizations, forKey: .componentsLocalizations)
+        if !componentsVideoLocalizations.isEmpty {
+            try container.encode(componentsVideoLocalizations, forKey: .componentsVideoLocalizations)
+        }
         try container.encode(defaultLocale, forKey: .defaultLocale)
         try container.encode(_revision, forKey: ._revision)
         // Encode zeroDecimalPlaceCountries in the nested structure { "apple": [...] }

@@ -23,32 +23,29 @@ import Foundation
 enum WebCheckoutReturnStatus: String {
 
     case success
-    case cancel
 
 }
 
 /// Recognises the navigation that ends a checkout.
 ///
 /// The checkout page belongs to a payment provider and exposes no JavaScript bridge, so the single
-/// signal it gives is a redirect to one of the two return URLs the backend handed it. The host watches
-/// for that navigation and cancels it, so the request never leaves the device.
+/// signal it gives is a redirect to the return URL the backend handed it. The host watches for that
+/// navigation and cancels it, so the request never leaves the device.
+///
+/// There is no return URL for an abandoned checkout: the customer leaves one by closing the sheet.
 struct WebCheckoutReturnURL {
 
     private let success: Target
-    private let cancel: Target
 
     /// - Parameter successURL: Where the provider sends the customer once checkout succeeds.
-    /// - Parameter cancelURL: Where the provider sends the customer once checkout is abandoned.
     ///
-    /// Fails when either URL has no resolvable origin, since no navigation could ever match it.
-    init?(successURL: URL, cancelURL: URL) {
-        guard let success = Target(url: successURL),
-              let cancel = Target(url: cancelURL) else {
+    /// Fails when the URL has no resolvable origin, since no navigation could ever match it.
+    init?(successURL: URL) {
+        guard let success = Target(url: successURL) else {
             return nil
         }
 
         self.success = success
-        self.cancel = cancel
     }
 
     /// Whether navigating to `url` means checkout has finished.
@@ -60,29 +57,23 @@ struct WebCheckoutReturnURL {
             return false
         }
 
-        return self.cancel.matchesEndpoint(url) || self.success.matchesEndpoint(url)
+        return self.success.matchesEndpoint(url)
     }
 
-    /// The outcome `url` reports, or `nil` if it matches neither return URL closely enough to tell.
+    /// The outcome `url` reports, or `nil` if it does not match the return URL closely enough to tell.
     func status(of url: URL?) -> WebCheckoutReturnStatus? {
-        guard let url else {
+        guard let url, self.success.matches(url) else {
             return nil
         }
 
-        if self.cancel.matches(url) {
-            return .cancel
-        } else if self.success.matches(url) {
-            return .success
-        } else {
-            return nil
-        }
+        return .success
     }
 
 }
 
 private extension WebCheckoutReturnURL {
 
-    /// One of the two return URLs, prepared for comparison.
+    /// The return URL, prepared for comparison.
     struct Target {
 
         private let origin: WebViewOrigin
@@ -108,11 +99,11 @@ private extension WebCheckoutReturnURL {
             return Self.normalizedPath(of: url) == self.path
         }
 
-        /// Whether `url` is this return URL specifically, rather than merely the endpoint the two share.
+        /// Whether `url` is this return URL specifically, rather than merely its endpoint.
         ///
         /// Every parameter configured on this URL has to be present, but `url` may carry others beside
-        /// them: providers may append their own, so the two return URLs are told apart by what they
-        /// were configured with, not by an exact match.
+        /// them: providers may append their own, so the return URL is recognised by what it was
+        /// configured with, not by an exact match.
         func matches(_ url: URL) -> Bool {
             guard self.matchesEndpoint(url) else {
                 return false

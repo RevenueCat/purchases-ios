@@ -43,6 +43,20 @@ extension WorkflowScreen {
         )
     }
 
+    /// Like ``allCacheAssets``, but resolves localized videos for the locale that will be displayed only,
+    /// since they are costly to download.
+    func localizedCacheAssets(preferredLocales: [Locale]) -> CacheAssetCollection {
+        let displayedLocale = self.componentsLocalizations.displayedLocale(
+            preferredLocales: preferredLocales,
+            defaultLocale: self.defaultLocale
+        )
+        return cacheAssets(
+            from: self.componentsConfig,
+            localizations: self.componentsLocalizations,
+            localizedVideos: self.componentsVideoLocalizations.findLocale(displayedLocale) ?? [:]
+        )
+    }
+
     var allImageURLs: [URL] {
         return self.allCacheAssets.imageSourcesToDownload.map(\.url)
     }
@@ -56,9 +70,10 @@ extension WorkflowScreen {
 @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
 private func cacheAssets(
     from componentsConfig: PaywallComponentsData.ComponentsConfig,
-    localizations: [PaywallComponent.LocaleID: PaywallComponent.LocalizationDictionary]
+    localizations: [PaywallComponent.LocaleID: PaywallComponent.LocalizationDictionary],
+    localizedVideos: PaywallComponent.VideoLocalizationDictionary? = nil
 ) -> CacheAssetCollection {
-    let componentAssets = componentsConfig.base.allCacheAssets
+    let componentAssets = componentsConfig.base.cacheAssets(localizedVideos: localizedVideos)
     let localizedImages = localizations.values.flatMap { localeValues in
         localeValues.values.flatMap { value -> [CacheAssetCollection.Media] in
             switch value {
@@ -81,7 +96,13 @@ private func cacheAssets(
 extension PaywallComponentsData.PaywallComponentsConfig {
 
     var allCacheAssets: CacheAssetCollection {
-        var collector = AssetCollector()
+        return self.cacheAssets(localizedVideos: nil)
+    }
+
+    /// - Parameter localizedVideos: used to resolve localized videos referenced by `overrideVideoLid`.
+    /// If `nil`, `overrideVideoLid` is ignored and `source` is used.
+    func cacheAssets(localizedVideos: PaywallComponent.VideoLocalizationDictionary?) -> CacheAssetCollection {
+        var collector = AssetCollector(localizedVideos: localizedVideos)
 
         self.collectAssets(in: self.stack, rendersSynchronously: false, into: &collector)
         if let header = self.header {
@@ -103,7 +124,6 @@ extension PaywallComponentsData.PaywallComponentsConfig {
         return self.allCacheAssets.videoSourcesToDownload
     }
 
-    // swiftlint:disable:next cyclomatic_complexity function_body_length
     private func collectAssets(
         in stack: PaywallComponent.StackComponent,
         rendersSynchronously: Bool,
@@ -117,7 +137,9 @@ extension PaywallComponentsData.PaywallComponentsConfig {
             let rendersSynchronously = rendersSynchronously || component.isSheetButton
 
             switch component {
-            case .text, .tabControl, .tabControlToggle, .fallbackHeader:
+            case .text, .tabControl, .tabControlToggle, .fallbackHeader,
+                 .stack, .button, .package, .purchaseButton, .stickyFooter,
+                 .tabs, .tabControlButton, .carousel, .countdown:
                 break
             case .icon(let icon):
                 collector.imageURLs += icon.cacheMedia(rendersSynchronously: rendersSynchronously)
@@ -126,117 +148,32 @@ extension PaywallComponentsData.PaywallComponentsConfig {
                 collector.imageURLs += image.overrides?.flatMap {
                     $0.properties.source?.cacheMedia(rendersSynchronously: rendersSynchronously) ?? []
                 } ?? []
-            case .stack(let stack):
-                self.collectAssets(
-                    in: stack,
-                    rendersSynchronously: rendersSynchronously,
-                    into: &collector
-                )
-            case .button(let button):
-                self.collectAssets(
-                    in: button.stack,
-                    rendersSynchronously: rendersSynchronously,
-                    into: &collector
-                )
-
-                switch button.action {
-                case .navigateTo(let destination):
-                    switch destination {
-                    case .sheet(sheet: let sheet):
-                        if let sheet {
-                            self.collectAssets(
-                                in: sheet.stack,
-                                rendersSynchronously: rendersSynchronously,
-                                into: &collector
-                            )
-                        }
-                    case .customerCenter, .offerCode, .privacyPolicy, .terms, .webPaywallLink, .url, .unknown:
-                        break
-                    }
-                case .restorePurchases, .navigateBack, .workflowTrigger, .unknown:
-                    break
-                }
-            case .package(let package):
-                self.collectAssets(
-                    in: package.stack,
-                    rendersSynchronously: rendersSynchronously,
-                    into: &collector
-                )
-            case .purchaseButton(let purchaseButton):
-                self.collectAssets(
-                    in: purchaseButton.stack,
-                    rendersSynchronously: rendersSynchronously,
-                    into: &collector
-                )
-            case .stickyFooter(let stickyFooter):
-                self.collectAssets(
-                    in: stickyFooter.stack,
-                    rendersSynchronously: rendersSynchronously,
-                    into: &collector
-                )
             case .timeline(let timeline):
                 collector.imageURLs += timeline.items.flatMap {
                     $0.icon.cacheMedia(rendersSynchronously: rendersSynchronously)
                 }
-            case .tabs(let tabs):
-                self.collectAssets(
-                    in: tabs.control.stack,
-                    rendersSynchronously: rendersSynchronously,
-                    into: &collector
-                )
-                for tab in tabs.tabs {
-                    self.collectAssets(
-                        in: tab.stack,
-                        rendersSynchronously: rendersSynchronously,
-                        into: &collector
-                    )
-                }
-            case .tabControlButton(let controlButton):
-                self.collectAssets(
-                    in: controlButton.stack,
-                    rendersSynchronously: rendersSynchronously,
-                    into: &collector
-                )
-            case .carousel(let carousel):
-                for page in carousel.pages {
-                    self.collectAssets(
-                        in: page,
-                        rendersSynchronously: rendersSynchronously,
-                        into: &collector
-                    )
-                }
             case .video(let video):
-                collector.videoURLs += video.source.cacheMedia(rendersSynchronously: rendersSynchronously)
+                collector.videoURLs += collector.videoSource(
+                    video.source,
+                    overrideVideoLid: video.overrideVideoLid
+                )?.cacheMedia(rendersSynchronously: rendersSynchronously) ?? []
                 collector.videoURLs += video.overrides?.flatMap {
-                    $0.properties.source?.cacheMedia(rendersSynchronously: rendersSynchronously) ?? []
+                    collector.videoSource(
+                        $0.properties.source,
+                        overrideVideoLid: $0.properties.overrideVideoLid
+                    )?.cacheMedia(rendersSynchronously: rendersSynchronously) ?? []
                 } ?? []
                 collector.imageURLs += video.fallbackSource?.cacheMedia(
                     rendersSynchronously: rendersSynchronously
                 ) ?? []
-            case .countdown(let countdown):
-                self.collectAssets(
-                    in: countdown.countdownStack,
-                    rendersSynchronously: rendersSynchronously,
-                    into: &collector
-                )
-                if let endStack = countdown.endStack {
-                    self.collectAssets(
-                        in: endStack,
-                        rendersSynchronously: rendersSynchronously,
-                        into: &collector
-                    )
-                }
-                if let fallback = countdown.fallback {
-                    self.collectAssets(
-                        in: fallback,
-                        rendersSynchronously: rendersSynchronously,
-                        into: &collector
-                    )
-                }
             case .webView(let webView):
                 if let url = PaywallComponent.WebViewComponent.validatedHTTPSURL(from: webView.url) {
                     collector.webViewURLs.append(.init(url: url, checksum: nil))
                 }
+            }
+
+            for childStack in component.childStacks(includeSheetDestinations: true) {
+                self.collectAssets(in: childStack, rendersSynchronously: rendersSynchronously, into: &collector)
             }
         }
     }
@@ -246,6 +183,7 @@ extension PaywallComponentsData.PaywallComponentsConfig {
 @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
 private struct AssetCollector {
 
+    let localizedVideos: PaywallComponent.VideoLocalizationDictionary?
     var imageURLs: [CacheAssetCollection.Media] = []
     var videoURLs: [CacheAssetCollection.Media] = []
     var webViewURLs: [URLWithValidation] = []
@@ -256,6 +194,15 @@ private struct AssetCollector {
             videos: self.videoURLs,
             webBundles: self.webViewURLs
         )
+    }
+
+    func videoSource(
+        _ source: PaywallComponent.ThemeVideoUrls?,
+        overrideVideoLid: PaywallComponent.LocalizationKey?
+    ) -> PaywallComponent.ThemeVideoUrls? {
+        guard let overrideVideoLid, let localizedVideos = self.localizedVideos else { return source }
+        // Like rendering, a lid never falls back to `source`: without its localized video the paywall fails.
+        return localizedVideos[overrideVideoLid]
     }
 
     mutating func collect(

@@ -21,18 +21,29 @@ struct DiagnosticsEvent: Codable, Equatable {
     let name: EventName
     let properties: Properties
     let timestamp: Date
-    let appSessionId: UUID
+    /// Encoded under the `app_session_id` key for backend compatibility, but its value is
+    /// `DiagnosticsTracker.diagnosticsSessionID`, which is unrelated to `SystemInfo.appSessionID`.
+    let diagnosticsSessionId: UUID
 
     init(id: UUID = UUID(),
          name: EventName,
          properties: Properties,
          timestamp: Date,
-         appSessionId: UUID) {
+         diagnosticsSessionId: UUID) {
         self.id = id
         self.name = name
         self.properties = properties
         self.timestamp = timestamp
-        self.appSessionId = appSessionId
+        self.diagnosticsSessionId = diagnosticsSessionId
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case id
+        case version
+        case name
+        case properties
+        case timestamp
+        case diagnosticsSessionId = "appSessionId"
     }
 
     enum EventName: String, Codable, Equatable {
@@ -80,6 +91,8 @@ struct DiagnosticsEvent: Codable, Equatable {
 
     struct Properties: Codable, Equatable {
         let verificationResult: String?
+        let verificationFailureReason: String?
+        let verificationDeviceClockOffsetMinutes: Int?
         let endpointName: String?
         let host: String?
         let responseTimeMillis: Int?
@@ -120,6 +133,8 @@ struct DiagnosticsEvent: Codable, Equatable {
         let connectionErrorReason: ConnectionErrorReason?
 
         init(verificationResult: String? = nil,
+             verificationFailureReason: String? = nil,
+             verificationDeviceClockOffsetMinutes: Int? = nil,
              endpointName: String? = nil,
              host: String? = nil,
              responseTime: TimeInterval? = nil,
@@ -159,6 +174,8 @@ struct DiagnosticsEvent: Codable, Equatable {
              reason: String? = nil,
              connectionErrorReason: ConnectionErrorReason? = nil) {
             self.verificationResult = verificationResult
+            self.verificationFailureReason = verificationFailureReason
+            self.verificationDeviceClockOffsetMinutes = verificationDeviceClockOffsetMinutes
             self.endpointName = endpointName
             self.host = host
             self.responseTimeMillis = responseTime.map { Int($0 * 1000) }

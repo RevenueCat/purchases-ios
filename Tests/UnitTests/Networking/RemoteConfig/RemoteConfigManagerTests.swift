@@ -866,6 +866,90 @@ final class RemoteConfigManagerTests: TestCase {
         expect(self.blobStore.invokedReadRefs) == [ref]
     }
 
+    func testCachedBlobDataReadsLocalBlobWithoutInvokingDownloader() async {
+        let ref = RCContainerTestData.blobRef(for: #"{"id":"workflow"}"#.asData)
+        self.diskCache.stubbedRead = Self.persisted(
+            manifest: "v1.1710000100.workflows:etag1",
+            topics: .init(entries: ["workflows": ["default": .init(blobRef: ref)]])
+        )
+        self.blobStore.stubbedReadDataByRef[ref] = #"{"id":"workflow"}"#.asData
+
+        let data = await self.manager.blobData(for: .workflows, itemKey: "default", policy: .cachedOnly)
+
+        expect(data) == #"{"id":"workflow"}"#.asData
+        expect(self.blobFetcher.invokedEnsureDownloadedRefs).to(beEmpty())
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 0
+    }
+
+    func testLifecycleObserverReceivesInitialStateCommitAndRefreshCompletion() throws {
+        let observer = RemoteConfigLifecycleObserverSpy()
+        self.manager.addConfigLifecycleObserver(observer)
+        let response = """
+        { "domain": "app", "manifest": "v1.test", "active_topics": [], "topics": {} }
+        """
+
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
+        self.remoteConfigAPI.complete(with: .success(.test(container: try Self.container(config: response))))
+
+        expect(observer.observedGenerations) == [0, 1, 1]
+        expect(observer.refreshFinishedContexts) == [.appStart]
+    }
+
+    func testLifecycleObserverReceivesRefreshCompletionForNoOpRefresh() {
+        let observer = RemoteConfigLifecycleObserverSpy()
+        self.manager.addConfigLifecycleObserver(observer)
+
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
+        self.remoteConfigAPI.complete(with: .success(.test(container: nil)))
+
+        expect(observer.observedGenerations) == [0, 0]
+        expect(observer.refreshFinishedContexts) == [.appStart]
+    }
+
+    func testLifecycleObserverReceivesRefreshCompletionForTerminalFailure() {
+        let observer = RemoteConfigLifecycleObserverSpy()
+        self.manager.addConfigLifecycleObserver(observer)
+
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
+        self.remoteConfigAPI.complete(with: .failure(Self.backendError(statusCode: .forbidden)))
+
+        expect(observer.observedGenerations) == [0, 0]
+        expect(observer.refreshFinishedContexts) == [.appStart]
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigFallbackCount) == 0
+    }
+
+    func testLifecycleObserverReceivesRefreshFinishedAfterFallbackSettles() {
+        let observer = RemoteConfigLifecycleObserverSpy()
+        self.manager.addConfigLifecycleObserver(observer)
+        let configuration = RemoteConfiguration(
+            domain: "app",
+            manifest: "v1.test",
+            activeTopics: [],
+            prefetchBlobs: [],
+            topics: .init(entries: [:])
+        )
+
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
+        self.remoteConfigAPI.complete(with: .failure(Self.backendError(statusCode: .internalServerError)))
+
+        expect(observer.observedGenerations) == [0]
+
+        self.remoteConfigAPI.completeFallback(with: .success(.test(configuration: configuration)))
+
+        expect(observer.refreshFinishedContexts) == [.appStart]
+        expect(observer.observedGenerations) == [0, 1, 1]
+    }
+
+    func testDoesNotRetainLifecycleObserver() {
+        var observer: RemoteConfigLifecycleObserverSpy? = .init()
+        weak var weakObserver = observer
+
+        self.manager.addConfigLifecycleObserver(observer!)
+        observer = nil
+
+        expect(weakObserver).to(beNil())
+    }
+
     func testEnsureBlobsDownloadedDelegatesToBlobFetcher() async {
         let refs = ["ref-1", "ref-2"]
 
@@ -3014,6 +3098,23 @@ final class RemoteConfigManagerTests: TestCase {
 
 }
 
+private final class RemoteConfigLifecycleObserverSpy: RemoteConfigLifecycleObserver {
+
+    var observedGenerations: [Int] = []
+    var refreshFinishedContexts: [RemoteConfigFetchContext] = []
+
+    func remoteConfigEventReceived(_ event: RemoteConfigLifecycleEvent) {
+        switch event {
+        case let .observerRegistered(generation), let .committed(generation):
+            self.observedGenerations.append(generation)
+        case let .refreshFinished(fetchContext, generation):
+            self.observedGenerations.append(generation)
+            self.refreshFinishedContexts.append(fetchContext)
+        }
+    }
+
+}
+
 private extension RemoteConfigManagerTests {
 
     static func persisted(
@@ -3274,7 +3375,7 @@ private extension RemoteConfigFetchResult {
     /// represents a `204 No Content` response.
     static func test(
         container: RemoteConfigContainer?,
-        verificationResult: VerificationResult = .verified,
+        verificationResult: SignatureVerificationResult = .verified,
         requestDate: Date? = nil
     ) -> RemoteConfigFetchResult {
         return RemoteConfigFetchResult(response: .init(
@@ -3294,7 +3395,7 @@ private extension RemoteConfigFallbackFetchResult {
 
     static func test(
         configuration: RemoteConfiguration,
-        verificationResult: VerificationResult = .verified,
+        verificationResult: SignatureVerificationResult = .verified,
         requestDate: Date? = nil
     ) -> RemoteConfigFallbackFetchResult {
         return RemoteConfigFallbackFetchResult(response: .init(

@@ -23,6 +23,9 @@ struct RootView: View {
     @Environment(\.safeAreaInsets)
     private var safeAreaInsets
 
+    @Environment(\.paywallHeroLayout)
+    private var heroLayout
+
     @Environment(\.userInterfaceIdiom)
     private var userInterfaceIdiom
 
@@ -46,6 +49,8 @@ struct RootView: View {
     @State private var packageSelectionSheetComponentName: String?
     @State private var packageBeforeOpeningSheet: Package?
     @State private var overlaidHeaderHeight: CGFloat = 0
+    @State private var nativeHeaderCollapsed = false
+    @State private var visibleBodyHero = false
     @State private var overlaidFooterHeight: CGFloat = 0
 
     internal init(
@@ -69,6 +74,11 @@ struct RootView: View {
             return true
         }
         return false
+    }
+
+    private var restoresBodyTopInset: Bool {
+        self.nativeHeaderCollapsed && self.viewModel.shouldOverlayHeader
+            && !(self.viewModel.firstItemIsFullWidthMedia && self.visibleBodyHero)
     }
 
     /// A sheet or window reports no bottom safe area, so the footer needs a minimum of its own.
@@ -103,7 +113,15 @@ struct RootView: View {
                     onDismiss: onDismiss,
                     additionalPadding: EdgeInsets(top: 0, leading: 0, bottom: overlaidFooterHeight, trailing: 0)
                 )
+                .environment(\.paywallHeroLayout, self.heroLayout)
                 .environment(\.overlaidHeaderHeight, overlaidHeaderHeight)
+                .environment(\.nativePaywallBodyHeroIdentifier, viewModel.bodyHeroMediaIdentifier)
+                .environment(\.paywallHeroMediaIdentifier, viewModel.bodyHeroMediaIdentifier)
+                .environment(\.nativePaywallBodySafeAreaRestored, self.restoresBodyTopInset)
+                .onPreferenceChange(NativePaywallVisibleBodyHeroKey.self) { self.visibleBodyHero = $0 }
+                // An authored hero can be hidden by a rule. Once its native-only header collapses,
+                // the body must reclaim the inset that the original overlay configuration removed.
+                .padding(.top, self.restoresBodyTopInset ? self.safeAreaInsets.top : 0)
 
                 if let headerViewModel = viewModel.headerViewModel,
                    viewModel.shouldOverlayHeader {
@@ -146,6 +164,7 @@ struct RootView: View {
             }
         }
         .environment(\.paywallRootStackIsZLayer, self.paywallRootStackIsZLayer)
+        .onPreferenceChange(NativePaywallCollapsedHeaderKey.self) { self.nativeHeaderCollapsed = $0 }
         .environment(\.openSheet, { sheet in
             self.sheetViewModel = sheet
         })
@@ -189,6 +208,8 @@ struct RootView: View {
                 )
             }
         }
+        // The body owns this resolution; sheets and footers have independent layout roots.
+        .environment(\.paywallHeroLayout, nil)
     }
 
     /// Returns the package that should be selected after a selection sheet is dismissed.
@@ -223,7 +244,41 @@ private struct OverlaidHeaderHeightEnvironmentKey: EnvironmentKey {
     static let defaultValue: CGFloat = 0
 }
 
+struct NativePaywallVisibleBodyHeroKey: PreferenceKey {
+    static let defaultValue = false
+    static func reduce(value: inout Bool, nextValue: () -> Bool) { value = value || nextValue() }
+}
+
+private struct NativePaywallBodyHeroIdentifierKey: EnvironmentKey {
+    static let defaultValue: ObjectIdentifier? = nil
+}
+
+private struct PaywallHeroMediaIdentifierKey: EnvironmentKey {
+    static let defaultValue: ObjectIdentifier? = nil
+}
+
+private struct NativePaywallBodySafeAreaRestoredKey: EnvironmentKey {
+    static let defaultValue = false
+}
+
 extension EnvironmentValues {
+    /// The hero media that bleeds into the top safe area. ZStacks whose first child leads to it push their
+    /// other children, the overlays, below the safe area.
+    var paywallHeroMediaIdentifier: ObjectIdentifier? {
+        get { self[PaywallHeroMediaIdentifierKey.self] }
+        set { self[PaywallHeroMediaIdentifierKey.self] = newValue }
+    }
+
+    var nativePaywallBodySafeAreaRestored: Bool {
+        get { self[NativePaywallBodySafeAreaRestoredKey.self] }
+        set { self[NativePaywallBodySafeAreaRestoredKey.self] = newValue }
+    }
+
+    var nativePaywallBodyHeroIdentifier: ObjectIdentifier? {
+        get { self[NativePaywallBodyHeroIdentifierKey.self] }
+        set { self[NativePaywallBodyHeroIdentifierKey.self] = newValue }
+    }
+
     var overlaidHeaderHeight: CGFloat {
         get { self[OverlaidHeaderHeightEnvironmentKey.self] }
         set { self[OverlaidHeaderHeightEnvironmentKey.self] = newValue }

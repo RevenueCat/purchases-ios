@@ -137,7 +137,7 @@ extension Purchases {
                     } catch {
                         Logger.error(
                             Strings.eligibility.check_eligibility_failed(
-                                productIdentifier: product.productIdentifier,
+                                productIdentifier: product.id,
                                 error: error
                             )
                         )
@@ -177,24 +177,6 @@ extension Purchases {
     }
 
     #endif
-
-    func checkTrialOrIntroductoryDiscountEligibilityAsync(_ product: StoreProduct) async
-    -> IntroEligibilityStatus {
-        return await withUnsafeContinuation { continuation in
-            checkTrialOrIntroDiscountEligibility(product: product) { status in
-                continuation.resume(returning: status)
-            }
-        }
-    }
-
-    func checkTrialOrIntroductoryDiscountEligibilityAsync(_ productIdentifiers: [String]) async
-    -> [String: IntroEligibility] {
-        return await withUnsafeContinuation { continuation in
-            checkTrialOrIntroDiscountEligibility(productIdentifiers: productIdentifiers) { result in
-                continuation.resume(returning: result)
-            }
-        }
-    }
 
 #if os(iOS) || os(macOS) || VISION_OS
 

@@ -6,7 +6,7 @@
 //
 
 import Foundation
-@_spi(Internal) import RevenueCat
+@_spi(Experimental) @_spi(Internal) import RevenueCat
 
 func checkConfigurationAPI() {
     let builder = Configuration
@@ -21,12 +21,15 @@ func checkConfigurationAPI() {
         .with(storeKit1Timeout: 1)
         .with(platformInfo: Purchases.PlatformInfo(flavor: "", version: ""))
         .with(storeKitVersion: .default)
+        .with(introEligibilityWarmupPriority: .userInitiated)
         .with(entitlementVerificationMode: .informational)
         .with(automaticDeviceIdentifierCollectionEnabled: true)
         .with(iamEnabled: false)
         .with(iamEnabled: false, keychainAccessGroup: "access_group")
         .with(preferredUILocaleOverride: "de_DE")
         .with(preferredUILocaleOverride: nil)
+        .with(useExternalPurchaseCustomLinks: true)
+        .with(useExternalPurchaseCustomLinks: true, enableExternalPurchasesInSimulator: false)
 
 
     let _: Configuration = builder.build()

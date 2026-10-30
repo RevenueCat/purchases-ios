@@ -148,7 +148,8 @@ class EventsManagerTests: TestCase {
                   date: Date(timeIntervalSince1970: 1_699_270_688.995),
                   result: .presentUI,
                   workflowID: "wf_123",
-                  checkpointRuleID: "rule_123")
+                  checkpointRuleID: "rule_123",
+                  traceID: "trace_123")
         )
 
         let map = event.toMap()
@@ -162,6 +163,7 @@ class EventsManagerTests: TestCase {
         expect(map["result"] as? String) == "present_ui"
         expect(map["workflow_id"] as? String) == "wf_123"
         expect(map["checkpoint_rule_id"] as? String) == "rule_123"
+        expect(map["trace_id"] as? String) == "trace_123"
         expect(map["offering_id"]).to(beNil())
     }
 
@@ -629,10 +631,11 @@ class EventsManagerTests: TestCase {
                 entryReason: "start",
                 isFirstStep: true,
                 isLastStep: false,
+                workflowBlobRef: "blob-ref-1",
+                fallbackOriginalStepId: "step-1-original",
                 experiment: .init(
                     experimentId: "exp-1",
-                    experimentVariant: "variant-a",
-                    workflowBlobRef: "blob-ref-1"
+                    experimentVariant: "variant-a"
                 )
             )
         )
@@ -646,6 +649,7 @@ class EventsManagerTests: TestCase {
         expect(map["experiment_id"] as? String) == "exp-1"
         expect(map["experiment_variant"] as? String) == "variant-a"
         expect(map["blob_ref"] as? String) == "blob-ref-1"
+        expect(map["fallback_original_step_id"] as? String) == "step-1-original"
     }
 
     func testWorkflowEventToMapOmitsNilOptionalFields() {
@@ -664,6 +668,7 @@ class EventsManagerTests: TestCase {
         expect(map["experiment_id"]).to(beNil())
         expect(map["experiment_variant"]).to(beNil())
         expect(map["blob_ref"]).to(beNil())
+        expect(map["fallback_original_step_id"]).to(beNil())
     }
 
     // MARK: - flushAllEvents

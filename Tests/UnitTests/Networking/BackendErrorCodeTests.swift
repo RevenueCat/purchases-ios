@@ -18,6 +18,20 @@ import XCTest
 
 class BackendErrorCodeTests: TestCase {
 
+    // MARK: - oldReplayedReceipt
+
+    func testOldReplayedReceiptDecodesFromItsRawIntValue() {
+        expect(BackendErrorCode(code: 7934)) == .oldReplayedReceipt
+    }
+
+    func testOldReplayedReceiptDecodesFromItsRawStringValue() {
+        expect(BackendErrorCode(code: "7934")) == .oldReplayedReceipt
+    }
+
+    func testOldReplayedReceiptMapsToUnknownBackendError() {
+        expect(BackendErrorCode.oldReplayedReceipt.toPurchasesErrorCode()) == .unknownBackendError
+    }
+
     // MARK: - invalidIAMToken
 
     func testInvalidIAMTokenDecodesFromItsRawIntValue() {
@@ -86,6 +100,20 @@ class BackendErrorCodeTests: TestCase {
 
     func testInvalidIdempotencyKeyMapsToPurchaseInvalidError() {
         expect(BackendErrorCode.invalidIdempotencyKey.toPurchasesErrorCode()) == .purchaseInvalidError
+    }
+
+    // MARK: - productAlreadyPurchased
+
+    func testProductAlreadyPurchasedDecodesFromItsRawIntValue() {
+        expect(BackendErrorCode(code: 7772)) == .productAlreadyPurchased
+    }
+
+    func testProductAlreadyPurchasedDecodesFromItsRawStringValue() {
+        expect(BackendErrorCode(code: "7772")) == .productAlreadyPurchased
+    }
+
+    func testProductAlreadyPurchasedMapsToProductAlreadyPurchasedError() {
+        expect(BackendErrorCode.productAlreadyPurchased.toPurchasesErrorCode()) == .productAlreadyPurchasedError
     }
 
 }

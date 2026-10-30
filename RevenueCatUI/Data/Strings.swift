@@ -18,6 +18,7 @@ import RevenueCat
 
 enum Strings {
 
+    case customer_center_preview_action_failed(Error)
     case package_not_subscription(Package)
     case found_multiple_packages_of_same_identifier(String)
     case unrecognized_variable_name(variableName: String)
@@ -32,6 +33,7 @@ enum Strings {
 
     case attempted_to_track_event_with_missing_data
     case paywall_unknown_button_action_tracked_for_diagnostics(componentName: String?, actionValue: String?)
+    case paywall_native_navigation_action_failed(Error)
 
     case image_starting_request(URL)
     case image_result(Result<(), ImageLoader.Error>)
@@ -122,11 +124,13 @@ enum Strings {
     case web_view_context_encoding_failed(Error)
 
     // Web checkout
-    case web_checkout_unusable_return_urls(success: URL, cancel: URL)
+    case web_checkout_unusable_return_url(URL)
     case web_checkout_return_status_missing
     case web_checkout_load_failed(String)
     case web_checkout_http_error(statusCode: Int)
     case web_checkout_content_process_terminated
+    case web_checkout_external_url_not_opened(scheme: String)
+    case hosted_checkout_dismissed_without_returning
 
     // Exit Offers
     case errorFetchingOfferings(Error)
@@ -143,6 +147,7 @@ enum Strings {
     case paywall_workflow_trigger_not_handled(componentName: String?)
     case workflow_package_context_unresolvable(stepId: String)
     case offering_has_no_workflow_falling_back_to_default_paywall(offeringIdentifier: String)
+    case checkpoint_ad_step_without_ad_presenter(checkpointIdentifier: String)
     case purchases_did_configure
 
 }
@@ -151,6 +156,8 @@ extension Strings: CustomStringConvertible {
 
     var description: String {
         switch self {
+        case .customer_center_preview_action_failed(let error):
+            return "Customer Center preview action failed: \(error)"
         case let .package_not_subscription(package):
             return "Expected package '\(package.identifier)' to be a subscription. " +
             "Type: \(package.packageType.debugDescription)"
@@ -244,6 +251,9 @@ extension Strings: CustomStringConvertible {
         case .paywall_view_model_construction_failed(let error):
             return "Paywall view model construction failed: \(error)\n" +
             "Will use fallback paywall."
+
+        case .paywall_native_navigation_action_failed(let error):
+            return "Native paywall navigation action failed: \(error.localizedDescription)"
 
         case .paywall_could_not_find_localization(let string):
             return "Could not find paywall localization data for \(string)"
@@ -405,17 +415,22 @@ extension Strings: CustomStringConvertible {
         case let .web_view_data_store_removal_failed(identifier, error):
             return "Failed to remove web view website data store '\(identifier)': \(error)"
 
-        case .web_checkout_unusable_return_urls(let success, let cancel):
-            return "Web checkout return URLs '\(success.absoluteString)' and '\(cancel.absoluteString)' " +
-                "must both have a resolvable origin. The end of the checkout will not be detected."
+        case .web_checkout_unusable_return_url(let url):
+            return "Web checkout return URL '\(url.absoluteString)' must have a resolvable origin. " +
+                "The end of the checkout will not be detected."
         case .web_checkout_return_status_missing:
-            return "Web checkout returned without a recognizable status. Treating it as a cancellation."
+            return "Web checkout returned without a recognizable status. Treating it as if the customer closed it."
         case .web_checkout_load_failed(let error):
             return "Web checkout failed to load. Error: \(error)"
         case .web_checkout_http_error(let statusCode):
             return "Web checkout failed to load. The server responded with HTTP status code \(statusCode)."
         case .web_checkout_content_process_terminated:
             return "Web checkout content process terminated."
+        case .web_checkout_external_url_not_opened(let scheme):
+            return "Web checkout could not open a '\(scheme)' link. The checkout page stays as it was."
+        case .hosted_checkout_dismissed_without_returning:
+            return "The checkout was closed before the page reported an outcome. " +
+            "It is kept, so that buying again carries on with it."
 
         case .errorFetchingOfferings(let error):
             return "Error fetching offerings: \(error)"
@@ -455,6 +470,9 @@ extension Strings: CustomStringConvertible {
             "Price/period variables may not resolve on packageless screens."
         case let .offering_has_no_workflow_falling_back_to_default_paywall(offeringIdentifier):
             return "Offering '\(offeringIdentifier)' has no workflow. Falling back to the default paywall."
+        case let .checkpoint_ad_step_without_ad_presenter(checkpointIdentifier):
+            return "Checkpoint '\(checkpointIdentifier)' resolved to an ad step, but no ad presenter is set on " +
+            "Purchases.adPresenter. Nothing was presented."
         case .purchases_did_configure:
             return "Purchases notified purchases-ui of configuration"
         case .web_view_context_encoding_failed(let error):

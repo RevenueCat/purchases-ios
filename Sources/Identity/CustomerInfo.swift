@@ -201,13 +201,15 @@ public typealias ProductIdentifier = String
     convenience init(response: CustomerInfoResponse,
                      entitlementVerification: VerificationResult,
                      sandboxEnvironmentDetector: SandboxEnvironmentDetector,
-                     httpResponseOriginalSource: HTTPResponseOriginalSource?) {
+                     httpResponseOriginalSource: HTTPResponseOriginalSource?,
+                     unsyncedProductIdentifiers: Set<String>) {
         let originalSource = OriginalSource(entitlementVerification: entitlementVerification,
                                             httpResponseOriginalSource: httpResponseOriginalSource)
         self.init(data: .init(response: response,
                               entitlementVerification: entitlementVerification,
                               schemaVersion: Self.currentSchemaVersion,
-                              originalSource: originalSource ?? .main),
+                              originalSource: originalSource ?? .main,
+                              unsyncedProductIdentifiers: unsyncedProductIdentifiers),
                   sandboxEnvironmentDetector: sandboxEnvironmentDetector)
     }
 
@@ -236,7 +238,8 @@ public typealias ProductIdentifier = String
             response: response,
             entitlementVerification: entitlements.verification,
             schemaVersion: nil,
-            originalSource: .main
+            originalSource: .main,
+            unsyncedProductIdentifiers: []
         )
 
         self.init(
@@ -373,6 +376,13 @@ extension CustomerInfo {
         return self.data.schemaVersion
     }
 
+    /// Product identifiers of purchases the backend has not been told about yet.
+    /// Only non-empty for a ``CustomerInfo`` computed offline, since a backend response by definition
+    /// only contains purchases the backend knows about.
+    var unsyncedProductIdentifiers: Set<String> {
+        return self.data.unsyncedProductIdentifiers
+    }
+
     var schemaVersionIsCompatible: Bool {
         guard let version = self.schemaVersion else { return false }
 
@@ -493,15 +503,19 @@ private extension CustomerInfo {
         var schemaVersion: String?
         var originalSource: CustomerInfo.OriginalSource
         var loadedFromCache: Bool = false
+        /// In-memory only: offline `CustomerInfo` is never persisted, so this is intentionally not encoded.
+        var unsyncedProductIdentifiers: Set<String> = []
 
         init(response: CustomerInfoResponse,
              entitlementVerification: VerificationResult,
              schemaVersion: String?,
-             originalSource: CustomerInfo.OriginalSource) {
+             originalSource: CustomerInfo.OriginalSource,
+             unsyncedProductIdentifiers: Set<String>) {
             self.response = response
             self.entitlementVerification = entitlementVerification
             self.schemaVersion = schemaVersion
             self.originalSource = originalSource
+            self.unsyncedProductIdentifiers = unsyncedProductIdentifiers
         }
 
     }

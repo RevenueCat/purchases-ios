@@ -25,6 +25,7 @@ struct BadgeModifier: ViewModifier {
     private var colorScheme
 
     let badge: BadgeInfo?
+    let onDismiss: () -> Void
 
     struct BadgeInfo {
         let style: PaywallComponent.BadgeStyle
@@ -45,6 +46,7 @@ struct BadgeModifier: ViewModifier {
         if let badge = badge {
             content.apply(
                 badge: badge,
+                onDismiss: self.onDismiss,
                 shadow: badge.stack.shadow?.shadow(
                     uiConfigProvider: badge.uiConfigProvider,
                     colorScheme: self.colorScheme
@@ -60,15 +62,19 @@ struct BadgeModifier: ViewModifier {
 fileprivate extension View {
 
     @ViewBuilder
-    func apply(badge: BadgeModifier.BadgeInfo, shadow: ShadowModifier.ShadowInfo?) -> some View {
+    func apply(
+        badge: BadgeModifier.BadgeInfo,
+        onDismiss: @escaping () -> Void,
+        shadow: ShadowModifier.ShadowInfo?
+    ) -> some View {
         switch badge.style {
         case .edgeToEdge:
-            self.applyBadgeEdgeToEdge(badge: badge, shadow: shadow)
+            self.applyBadgeEdgeToEdge(badge: badge, onDismiss: onDismiss, shadow: shadow)
         case .overlaid:
             self.overlay(
                 VStack(alignment: .leading) {
                     VStack {
-                        ComponentsView(componentViewModels: badge.badgeViewModels, onDismiss: {})
+                        ComponentsView(componentViewModels: badge.badgeViewModels, onDismiss: onDismiss)
                             .padding(badge.stack.padding.edgeInsets)
                             .backgroundStyle(badge.backgroundStyle)
                             .shape(border: badge.stackBorder, shape: effectiveShape(badge: badge))
@@ -88,7 +94,7 @@ fileprivate extension View {
             self.overlay(
                 VStack(alignment: .leading) {
                     VStack {
-                        ComponentsView(componentViewModels: badge.badgeViewModels, onDismiss: {})
+                        ComponentsView(componentViewModels: badge.badgeViewModels, onDismiss: onDismiss)
                             .padding(badge.stack.padding.edgeInsets)
                             .backgroundStyle(badge.backgroundStyle)
                             .shape(border: badge.stackBorder, shape: effectiveShape(badge: badge))
@@ -109,15 +115,19 @@ fileprivate extension View {
 
     // Helper to apply the edge-to-edge badge style
     @ViewBuilder
-    private func applyBadgeEdgeToEdge(badge: BadgeModifier.BadgeInfo, shadow: ShadowModifier.ShadowInfo?) -> some View {
+    private func applyBadgeEdgeToEdge(
+        badge: BadgeModifier.BadgeInfo,
+        onDismiss: @escaping () -> Void,
+        shadow: ShadowModifier.ShadowInfo?
+    ) -> some View {
         switch badge.alignment {
         case .top, .bottom:
-            self.modifier(EdgeToEdgeTopBottomModifier(badge: badge, shadow: shadow))
+            self.modifier(EdgeToEdgeTopBottomModifier(badge: badge, shadow: shadow, onDismiss: onDismiss))
         case .bottomLeading, .bottomTrailing, .topLeading, .topTrailing:
             self.overlay(
                 VStack(alignment: .leading) {
                     VStack {
-                        ComponentsView(componentViewModels: badge.badgeViewModels, onDismiss: {})
+                        ComponentsView(componentViewModels: badge.badgeViewModels, onDismiss: onDismiss)
                             .padding(badge.stack.padding.edgeInsets)
                             .backgroundStyle(badge.backgroundStyle)
                             .shape(border: badge.stackBorder, shape: effectiveShape(badge: badge))
@@ -309,10 +319,11 @@ struct EdgeToEdgeTopBottomModifier: ViewModifier {
     @State private var stackSize: CGSize = .zero
     var badge: BadgeModifier.BadgeInfo
     var shadow: ShadowModifier.ShadowInfo?
+    let onDismiss: () -> Void
 
     var badgeView: some View {
         VStack {
-            ComponentsView(componentViewModels: badge.badgeViewModels, onDismiss: {})
+            ComponentsView(componentViewModels: badge.badgeViewModels, onDismiss: onDismiss)
                 .padding(badge.stack.padding.edgeInsets)
         }.zIndex(-1)
     }
@@ -348,8 +359,8 @@ struct EdgeToEdgeTopBottomModifier: ViewModifier {
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension View {
-    func stackBadge(_ badge: BadgeModifier.BadgeInfo?) -> some View {
-        self.modifier(BadgeModifier(badge: badge))
+    func stackBadge(_ badge: BadgeModifier.BadgeInfo?, onDismiss: @escaping () -> Void) -> some View {
+        self.modifier(BadgeModifier(badge: badge, onDismiss: onDismiss))
     }
 }
 

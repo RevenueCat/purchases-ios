@@ -85,6 +85,32 @@ import Foundation
     /// Whether this terminal step returns an offering for app-owned presentation.
     @_spi(Internal) public var isOfferingStep: Bool { self.type == "offering" }
 
+    /// The gate in `param_values.gating`, or `nil` when the key is absent.
+    public var gating: WorkflowStepGating? {
+        guard let value = self.paramValues["gating"] else { return nil }
+        guard case let .object(gate) = value,
+              case let .string(type)? = gate["type"] else { return .invalid }
+
+        switch type {
+        case "soft":
+            return gate["entitlement_identifiers"] == nil ? .soft : .invalid
+        case "hard":
+            guard case let .array(values)? = gate["entitlement_identifiers"] else { return .invalid }
+            let identifiers = values.compactMap { value -> String? in
+                guard case let .string(identifier) = value,
+                      !identifier.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return nil }
+                return identifier
+            }
+            let uniqueIdentifiers = Set(identifiers)
+            guard !identifiers.isEmpty,
+                  identifiers.count == values.count,
+                  uniqueIdentifiers.count == identifiers.count else { return .invalid }
+            return .hard(entitlementIdentifiers: uniqueIdentifiers)
+        default:
+            return .invalid
+        }
+    }
+
     /// The step's `screen_type` from the backend (`metadata.screen_type`). `nil` = untagged (older
     /// workflows), `[]` = tagged with no known type; the distinction drives paywall-event gating (see
     /// `PaywallsV2View.shouldTrackPaywallEvents`). Key is literal snake_case: `convertFromSnakeCase` skips
@@ -99,17 +125,26 @@ import Foundation
         }
     }
 
-    public var experimentId: String? { self.stringParam(Self.experimentIdParam) }
+    /// Set on khepri's `<id>~f` fallback copies: the id of the step they were copied from.
+    public var fallbackOriginalStepId: String? { Self.string(self.metadata?[Self.fallbackOriginalStepIdKey]) }
 
-    public var experimentVariant: String? { self.stringParam(Self.experimentVariantParam) }
+    /// `metadata` first, `param_values` for blobs published before khepri moves them to `metadata`.
+    public var experimentId: String? { self.experimentValueFromMetadataOrParams(Self.experimentIdParam) }
 
-    private func stringParam(_ key: String) -> String? {
-        guard case let .string(value)? = self.paramValues[key] else { return nil }
-        return value
+    public var experimentVariant: String? { self.experimentValueFromMetadataOrParams(Self.experimentVariantParam) }
+
+    private func experimentValueFromMetadataOrParams(_ key: String) -> String? {
+        return Self.string(self.metadata?[key]) ?? Self.string(self.paramValues[key])
+    }
+
+    private static func string(_ value: AnyDecodable?) -> String? {
+        guard case let .string(string)? = value else { return nil }
+        return string
     }
 
     private static let experimentIdParam = "experiment_id"
     private static let experimentVariantParam = "experiment_variant"
+    private static let fallbackOriginalStepIdKey = "fallback_original_step_id"
 
     // `paramValues`, `outputs`, and `metadata` carry backend step config that the renderer doesn't
     // read directly (`metadata` via `stepScreenType`, `paramValues` via the experiment
@@ -144,6 +179,12 @@ import Foundation
     public let assetBaseURL: URL
     public let componentsConfig: PaywallComponentsData.ComponentsConfig
     public let componentsLocalizations: [PaywallComponent.LocaleID: PaywallComponent.LocalizationDictionary]
+    @DefaultDecodable.EmptyDictionary
+    // swiftlint:disable:next identifier_name
+    var _componentsVideoLocalizations: [PaywallComponent.LocaleID: PaywallComponent.VideoLocalizationDictionary]
+    public var componentsVideoLocalizations: [PaywallComponent.LocaleID: PaywallComponent.VideoLocalizationDictionary] {
+        _componentsVideoLocalizations
+    }
     @DefaultValue<PaywallComponent.DefaultLocaleFallback>
     // swiftlint:disable:next identifier_name
     var _defaultLocale: PaywallComponent.LocaleID
@@ -183,7 +224,8 @@ import Foundation
         exitOffers: ExitOffers? = nil,
         automaticallyScaleFontSize: Bool = true,
         stateDeclarations: [String: PaywallComponent.StateDeclaration]? = nil,
-        zeroDecimalPlaceCountries: [String] = []
+        zeroDecimalPlaceCountries: [String] = [],
+        componentsVideoLocalizations: [PaywallComponent.LocaleID: PaywallComponent.VideoLocalizationDictionary] = [:]
     ) {
         self.name = name
         self.templateName = templateName
@@ -191,6 +233,7 @@ import Foundation
         self.assetBaseURL = assetBaseURL
         self.componentsConfig = componentsConfig
         self.componentsLocalizations = componentsLocalizations
+        self._componentsVideoLocalizations = componentsVideoLocalizations
         self._defaultLocale = defaultLocale
         self.config = [:]
         self.offeringIdentifier = offeringIdentifier
@@ -210,6 +253,8 @@ import Foundation
     public let id: String
     let displayName: String
     public let initialStepId: String
+    /// Set when the first screen is audience-routed. `initialStepId` names this branch's fallback.
+    public let initialTrigger: WorkflowTriggerAction?
     public let singleStepFallbackId: String?
     public let steps: [String: WorkflowStep]
     public let screens: [String: WorkflowScreen]
@@ -221,6 +266,7 @@ import Foundation
         id: String,
         displayName: String,
         initialStepId: String,
+        initialTrigger: WorkflowTriggerAction? = nil,
         singleStepFallbackId: String?,
         steps: [String: WorkflowStep],
         screens: [String: WorkflowScreen],
@@ -229,6 +275,7 @@ import Foundation
         self.id = id
         self.displayName = displayName
         self.initialStepId = initialStepId
+        self.initialTrigger = initialTrigger
         self.singleStepFallbackId = singleStepFallbackId
         self.steps = steps
         self.screens = screens
@@ -241,6 +288,7 @@ import Foundation
         id: String,
         displayName: String,
         initialStepId: String,
+        initialTrigger: WorkflowTriggerAction? = nil,
         singleStepFallbackId: String?,
         steps: [String: WorkflowStep],
         screens: [String: WorkflowScreen],
@@ -250,6 +298,7 @@ import Foundation
         self.id = id
         self.displayName = displayName
         self.initialStepId = initialStepId
+        self.initialTrigger = initialTrigger
         self.singleStepFallbackId = singleStepFallbackId
         self.steps = steps
         self.screens = screens
@@ -295,6 +344,8 @@ extension WorkflowScreen: Decodable, Equatable, Sendable {
         case componentsConfig
         case componentsLocalizations
         // swiftlint:disable:next identifier_name
+        case _componentsVideoLocalizations = "componentsVideoLocalizations"
+        // swiftlint:disable:next identifier_name
         case _defaultLocale = "defaultLocale"
         case config
         case offeringIdentifier
@@ -315,6 +366,7 @@ extension PublishedWorkflow: Decodable, Equatable, Sendable {
         case id
         case displayName
         case initialStepId
+        case initialTrigger
         case singleStepFallbackId
         case steps
         case screens
@@ -327,6 +379,7 @@ extension PublishedWorkflow: Decodable, Equatable, Sendable {
         self.id = try container.decode(String.self, forKey: .id)
         self.displayName = try container.decode(String.self, forKey: .displayName)
         self.initialStepId = try container.decode(String.self, forKey: .initialStepId)
+        self.initialTrigger = try container.decodeIfPresent(WorkflowTriggerAction.self, forKey: .initialTrigger)
         self.singleStepFallbackId = try container.decodeIfPresent(String.self, forKey: .singleStepFallbackId)
         self.steps = try container.decode([String: WorkflowStep].self, forKey: .steps)
         self.screens = try container.decode([String: WorkflowScreen].self, forKey: .screens)

@@ -683,4 +683,136 @@ class DeviceCacheSubscriberAttributesTests: TestCase {
             .mockValues["com.revenuecat.userdefaults.subscriberAttributes"] as? [String: [String: [String: NSObject]]]
         expect(valuesAfterCallingDelete) == subscriberAttributes
     }
+
+    // MARK: - merge(subscriberAttributes:appUserID:)
+
+    func testMergeIntoEmptyCacheStoresAllAttributes() {
+        let email = Self.attribute("$email", "user@example.com", synced: true, at: self.now)
+        let name = Self.attribute("$displayName", "Dave", synced: true, at: self.now)
+
+        self.deviceCache.merge(subscriberAttributes: [email.key: email, name.key: name], appUserID: "waldo")
+
+        expect(self.deviceCache.subscriberAttributes(appUserID: "waldo")) == [email.key: email, name.key: name]
+    }
+
+    func testMergeOverridesOlderSyncedLocalAttribute() {
+        let local = Self.attribute("band", "Rush", synced: true, at: self.now.addingTimeInterval(-60))
+        let remote = Self.attribute("band", "Yes", synced: true, at: self.now)
+        self.deviceCache.store(subscriberAttribute: local, appUserID: "waldo")
+
+        self.deviceCache.merge(subscriberAttributes: [remote.key: remote], appUserID: "waldo")
+
+        expect(self.deviceCache.subscriberAttributes(appUserID: "waldo")) == [remote.key: remote]
+    }
+
+    func testMergeOverridesOlderUnsyncedLocalAttribute() {
+        let local = Self.attribute("band", "Rush", synced: false, at: self.now.addingTimeInterval(-60))
+        let remote = Self.attribute("band", "Yes", synced: true, at: self.now)
+        self.deviceCache.store(subscriberAttribute: local, appUserID: "waldo")
+
+        self.deviceCache.merge(subscriberAttributes: [remote.key: remote], appUserID: "waldo")
+
+        expect(self.deviceCache.subscriberAttributes(appUserID: "waldo")) == [remote.key: remote]
+        expect(self.deviceCache.numberOfUnsyncedAttributes(appUserID: "waldo")) == 0
+    }
+
+    func testMergeKeepsNewerUnsyncedLocalAttribute() {
+        let local = Self.attribute("band", "Rush", synced: false, at: self.now)
+        let remote = Self.attribute("band", "Yes", synced: true, at: self.now.addingTimeInterval(-60))
+        self.deviceCache.store(subscriberAttribute: local, appUserID: "waldo")
+
+        self.deviceCache.merge(subscriberAttributes: [remote.key: remote], appUserID: "waldo")
+
+        expect(self.deviceCache.subscriberAttributes(appUserID: "waldo")) == [local.key: local]
+        expect(self.deviceCache.unsyncedAttributesByKey(appUserID: "waldo")) == [local.key: local]
+    }
+
+    func testMergeKeepsNewerSyncedLocalAttribute() {
+        let local = Self.attribute("band", "Rush", synced: true, at: self.now)
+        let remote = Self.attribute("band", "Yes", synced: true, at: self.now.addingTimeInterval(-60))
+        self.deviceCache.store(subscriberAttribute: local, appUserID: "waldo")
+
+        self.deviceCache.merge(subscriberAttributes: [remote.key: remote], appUserID: "waldo")
+
+        expect(self.deviceCache.subscriberAttributes(appUserID: "waldo")) == [local.key: local]
+    }
+
+    func testMergePrefersRemoteAttributeWhenSetTimesAreEqual() {
+        let local = Self.attribute("band", "Rush", synced: false, at: self.now)
+        let remote = Self.attribute("band", "Yes", synced: true, at: self.now)
+        self.deviceCache.store(subscriberAttribute: local, appUserID: "waldo")
+
+        self.deviceCache.merge(subscriberAttributes: [remote.key: remote], appUserID: "waldo")
+
+        expect(self.deviceCache.subscriberAttributes(appUserID: "waldo")) == [remote.key: remote]
+    }
+
+    func testMergePreservesUnsyncedLocalAttributeMissingFromRemote() {
+        let local = Self.attribute("song", "YYZ", synced: false, at: self.now)
+        let remote = Self.attribute("band", "Rush", synced: true, at: self.now)
+        self.deviceCache.store(subscriberAttribute: local, appUserID: "waldo")
+
+        self.deviceCache.merge(subscriberAttributes: [remote.key: remote], appUserID: "waldo")
+
+        expect(self.deviceCache.subscriberAttributes(appUserID: "waldo")) == [local.key: local, remote.key: remote]
+        expect(self.deviceCache.unsyncedAttributesByKey(appUserID: "waldo")) == [local.key: local]
+    }
+
+    func testMergeWithEmptyRemoteAttributesPreservesUnsyncedLocalAttributes() {
+        let local = Self.attribute("song", "YYZ", synced: false, at: self.now)
+        self.deviceCache.store(subscriberAttribute: local, appUserID: "waldo")
+
+        self.deviceCache.merge(subscriberAttributes: [:], appUserID: "waldo")
+
+        expect(self.deviceCache.subscriberAttributes(appUserID: "waldo")) == [local.key: local]
+    }
+
+    func testMergeRemovesSyncedLocalAttributeMissingFromRemote() {
+        let deleted = Self.attribute("song", "YYZ", synced: true, at: self.now)
+        let remote = Self.attribute("band", "Rush", synced: true, at: self.now)
+        self.deviceCache.store(subscriberAttribute: deleted, appUserID: "waldo")
+
+        self.deviceCache.merge(subscriberAttributes: [remote.key: remote], appUserID: "waldo")
+
+        expect(self.deviceCache.subscriberAttributes(appUserID: "waldo")) == [remote.key: remote]
+    }
+
+    func testMergeDoesNotAffectOtherUsers() {
+        let otherUsersAttribute = Self.attribute("band", "Rush", synced: false, at: self.now)
+        let remote = Self.attribute("band", "Yes", synced: true, at: self.now.addingTimeInterval(60))
+        self.deviceCache.store(subscriberAttribute: otherUsersAttribute, appUserID: "carmen")
+
+        self.deviceCache.merge(subscriberAttributes: [remote.key: remote], appUserID: "waldo")
+
+        expect(self.deviceCache.subscriberAttributes(appUserID: "carmen"))
+            == [otherUsersAttribute.key: otherUsersAttribute]
+        expect(self.deviceCache.subscriberAttributes(appUserID: "waldo")) == [remote.key: remote]
+    }
+
+    func testMergeDoesNotWriteWhenNothingChanged() {
+        let attribute = Self.attribute("band", "Rush", synced: true, at: self.now)
+        self.deviceCache.store(subscriberAttribute: attribute, appUserID: "waldo")
+        let writeCount = self.mockUserDefaults.setObjectForKeyCallCount
+
+        self.deviceCache.merge(subscriberAttributes: [attribute.key: attribute], appUserID: "waldo")
+
+        expect(self.mockUserDefaults.setObjectForKeyCallCount) == writeCount
+    }
+
+    func testMergeWithEmptyRemoteAttributesIntoEmptyCacheDoesNotWrite() {
+        let writeCount = self.mockUserDefaults.setObjectForKeyCallCount
+
+        self.deviceCache.merge(subscriberAttributes: [:], appUserID: "waldo")
+
+        expect(self.mockUserDefaults.setObjectForKeyCallCount) == writeCount
+        expect(self.deviceCache.subscriberAttributes(appUserID: "waldo")).to(beEmpty())
+    }
+
+    private static func attribute(_ key: String,
+                                  _ value: String,
+                                  synced: Bool,
+                                  at setTime: Date) -> SubscriberAttribute {
+        return SubscriberAttribute(withKey: key, value: value, isSynced: synced, setTime: setTime)
+    }
+
 }

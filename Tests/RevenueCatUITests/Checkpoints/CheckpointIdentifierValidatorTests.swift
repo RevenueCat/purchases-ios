@@ -13,7 +13,7 @@
 //
 
 @_spi(Internal) @testable import RevenueCat
-@_spi(CheckpointsInternal) @_spi(Internal) @testable import RevenueCatUI
+@_spi(InviteOnlyCheckpointsApi) @_spi(Internal) @testable import RevenueCatUI
 import XCTest
 
 @MainActor

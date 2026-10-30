@@ -19,6 +19,7 @@ class MockSystemInfo: SystemInfo {
     var stubbedRemoteConfigEnabled: Bool?
     var stubbedStorefront: StorefrontType?
     var stubbedApiKeyValidationResult: Configuration.APIKeyValidationResult?
+    var stubbedIsRunningInSimulator: Bool?
 
     convenience init(platformInfo: Purchases.PlatformInfo? = nil,
                      finishTransactions: Bool,
@@ -29,6 +30,8 @@ class MockSystemInfo: SystemInfo {
                      apiKeyValidationResult: Configuration.APIKeyValidationResult = .validApplePlatform,
                      responseVerificationMode: Signing.ResponseVerificationMode = .disabled,
                      dangerousSettings: DangerousSettings,
+                     useExternalPurchaseCustomLinks: Bool = false,
+                     enableExternalPurchasesInSimulator: Bool = true,
                      clock: ClockType = TestClock(),
                      preferredLocalesProvider: PreferredLocalesProvider = .mock()) {
         self.init(platformInfo: platformInfo,
@@ -39,6 +42,8 @@ class MockSystemInfo: SystemInfo {
                   apiKeyValidationResult: apiKeyValidationResult,
                   responseVerificationMode: responseVerificationMode,
                   dangerousSettings: dangerousSettings,
+                  useExternalPurchaseCustomLinks: useExternalPurchaseCustomLinks,
+                  enableExternalPurchasesInSimulator: enableExternalPurchasesInSimulator,
                   isAppBackgrounded: false,
                   clock: clock,
                   preferredLocalesProvider: preferredLocalesProvider)
@@ -53,6 +58,8 @@ class MockSystemInfo: SystemInfo {
                      apiKey: String = "mock_api_key",
                      apiKeyValidationResult: Configuration.APIKeyValidationResult = .validApplePlatform,
                      responseVerificationMode: Signing.ResponseVerificationMode = .disabled,
+                     useExternalPurchaseCustomLinks: Bool = false,
+                     enableExternalPurchasesInSimulator: Bool = true,
                      clock: ClockType = TestClock(),
                      preferredLocalesProvider: PreferredLocalesProvider = .mock()) {
         let dangerousSettings = DangerousSettings(
@@ -71,6 +78,8 @@ class MockSystemInfo: SystemInfo {
                   apiKeyValidationResult: apiKeyValidationResult,
                   responseVerificationMode: responseVerificationMode,
                   dangerousSettings: dangerousSettings,
+                  useExternalPurchaseCustomLinks: useExternalPurchaseCustomLinks,
+                  enableExternalPurchasesInSimulator: enableExternalPurchasesInSimulator,
                   clock: clock,
                   preferredLocalesProvider: preferredLocalesProvider)
     }
@@ -114,6 +123,10 @@ class MockSystemInfo: SystemInfo {
 
     override var storefront: StorefrontType? {
         return self.stubbedStorefront
+    }
+
+    override var isRunningInSimulator: Bool {
+        return self.stubbedIsRunningInSimulator ?? super.isRunningInSimulator
     }
 
     override var apiKeyValidationResult: Configuration.APIKeyValidationResult {

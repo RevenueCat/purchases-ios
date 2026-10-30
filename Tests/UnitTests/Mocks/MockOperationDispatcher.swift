@@ -29,6 +29,8 @@ class MockOperationDispatcher: OperationDispatcher {
     var invokedDispatchAsyncOnMainThread = false
     var invokedDispatchAsyncOnMainThreadCount = 0
     var pendingMainActorDispatches: Atomic<Int> = .init(0)
+    var shouldHoldDispatchOnMainActorBlocks = false
+    let heldMainActorBlocks: Atomic<[@MainActor @Sendable () -> Void]> = .init([])
 
     override func dispatchAsyncOnMainThread(_ block: @escaping @Sendable () -> Void) {
         self.invokedDispatchAsyncOnMainThread = true
@@ -47,6 +49,11 @@ class MockOperationDispatcher: OperationDispatcher {
         self.invokedDispatchOnMainThreadCount += 1
         self.pendingMainActorDispatches.modify { $0 += 1 }
 
+        if self.shouldHoldDispatchOnMainActorBlocks {
+            self.heldMainActorBlocks.modify { $0.append(invoke) }
+            return
+        }
+
         if self.forwardToOriginalDispatchOnMainThread {
             super.dispatchOnMainActor(invoke)
         } else {
@@ -54,24 +61,42 @@ class MockOperationDispatcher: OperationDispatcher {
         }
     }
 
+    @MainActor
+    func performHeldMainActorBlocks() {
+        let blocks = self.heldMainActorBlocks.modify { blocks in
+            let pending = blocks
+            blocks.removeAll()
+            return pending
+        }
+        blocks.forEach { $0() }
+    }
+
     var invokedDispatchOnWorkerThread = false
     var invokedDispatchOnWorkerThreadCount = 0
     var shouldInvokeDispatchOnWorkerThreadBlock = true
     var forwardToOriginalDispatchOnWorkerThread = false
     var invokedDispatchOnWorkerThreadDelayParam: JitterableDelay?
-    var invokedDispatchOnWorkerThreadDelayParams: [JitterableDelay?] = []
+    private let workerThreadDelayParams: Atomic<[JitterableDelay?]> = .init([])
+    var invokedDispatchOnWorkerThreadDelayParams: [JitterableDelay?] {
+        return self.workerThreadDelayParams.value
+    }
+    /// Keeps blocks in `heldWorkerThreadBlocks` instead of invoking them, like a queue waiting on a delay.
+    var shouldHoldDispatchOnWorkerThreadBlocks = false
+    private(set) var heldWorkerThreadBlocks: [@Sendable () -> Void] = []
 
     override func dispatchOnWorkerThread(jitterableDelay delay: JitterableDelay = .none,
                                          block: @escaping @Sendable () -> Void) {
         self.invokedDispatchOnWorkerThreadDelayParam = delay
-        self.invokedDispatchOnWorkerThreadDelayParams.append(delay)
+        self.workerThreadDelayParams.modify { $0.append(delay) }
         self.invokedDispatchOnWorkerThread = true
         self.invokedDispatchOnWorkerThreadCount += 1
         if self.forwardToOriginalDispatchOnWorkerThread {
             super.dispatchOnWorkerThread(jitterableDelay: delay, block: block)
             return
         }
-        if self.shouldInvokeDispatchOnWorkerThreadBlock {
+        if self.shouldHoldDispatchOnWorkerThreadBlocks {
+            self.heldWorkerThreadBlocks.append(block)
+        } else if self.shouldInvokeDispatchOnWorkerThreadBlock {
             block()
         }
     }
@@ -84,13 +109,14 @@ class MockOperationDispatcher: OperationDispatcher {
     @discardableResult
     override func dispatchOnWorkerThread(
         jitterableDelay delay: JitterableDelay = .none,
+        priority: TaskPriority = .background,
         block: @escaping @Sendable () async -> Void
     ) -> Task<Void, Never> {
         self.invokedDispatchAsyncOnWorkerThreadDelayParam = delay
         self.invokedDispatchAsyncOnWorkerThread = true
         self.invokedDispatchAsyncOnWorkerThreadCount += 1
         if self.forwardToOriginalDispatchOnWorkerThread {
-            return super.dispatchOnWorkerThread(jitterableDelay: delay, block: block)
+            return super.dispatchOnWorkerThread(jitterableDelay: delay, priority: priority, block: block)
         }
 
         self.dispatchedAsyncWorkerThreadBlocks.append(block)
@@ -103,7 +129,7 @@ class MockOperationDispatcher: OperationDispatcher {
 
             // Execute the async task on a background queue to avoid blocking
             DispatchQueue.global(qos: .userInitiated).async {
-                Task {
+                Task(priority: priority) {
                     await block()
                     dispatchGroup.leave()
                 }
@@ -125,6 +151,11 @@ class MockOperationDispatcher: OperationDispatcher {
             let block = self.dispatchedAsyncWorkerThreadBlocks.removeFirst()
             await block()
         }
+    }
+
+    func invokeDispatchedAsyncWorkerThreadBlock(at index: Int) async {
+        let block = self.dispatchedAsyncWorkerThreadBlocks.remove(at: index)
+        await block()
     }
 
     var invokedDispatchOnWorkerThreadWithTimeInterval = false

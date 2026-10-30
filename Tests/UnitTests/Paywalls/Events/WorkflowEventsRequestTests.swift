@@ -168,7 +168,7 @@ class WorkflowEventsRequestTests: TestCase {
             .init(
                 workflowId: "wfl_abc",
                 stepId: "step-1",
-                experiment: .init(experimentId: "exp-1", experimentVariant: "variant-a", workflowBlobRef: "blob-ref-1")
+                workflowBlobRef: "blob-ref-1"
             )
         )
         let stored = try XCTUnwrap(storedEvent(from: event))
@@ -177,6 +177,26 @@ class WorkflowEventsRequestTests: TestCase {
 
         expect(request.properties.workflowBlobRef) == "blob-ref-1"
         expect(json).to(contain("\"blob_ref\":\"blob-ref-1\""))
+        expect(json).toNot(contain("experiment_id"))
+    }
+
+    func testFallbackOriginalStepIdInWireFormat() throws {
+        let event = WorkflowEvent.stepStarted(
+            .init(id: id, date: date),
+            .init(
+                workflowId: "wfl_abc",
+                stepId: "paywall_a~f",
+                fallbackOriginalStepId: "paywall_a"
+            )
+        )
+        let stored = try XCTUnwrap(storedEvent(from: event))
+        let request = try XCTUnwrap(FeatureEventsRequest.WorkflowEvent(storedEvent: stored))
+        let json = try encodedJSON(from: event)
+
+        expect(request.properties.stepId) == "paywall_a~f"
+        expect(request.properties.fallbackOriginalStepId) == "paywall_a"
+        expect(json).to(contain("\"step_id\":\"paywall_a~f\""))
+        expect(json).to(contain("\"fallback_original_step_id\":\"paywall_a\""))
     }
 
     func testCloseKeepsExperimentPropertiesInWireFormat() throws {
@@ -185,10 +205,10 @@ class WorkflowEventsRequestTests: TestCase {
             .init(
                 workflowId: "wfl_abc",
                 stepId: "step-1",
+                workflowBlobRef: "blob-ref-1",
                 experiment: .init(
                     experimentId: "exp-1",
-                    experimentVariant: "variant-a",
-                    workflowBlobRef: "blob-ref-1"
+                    experimentVariant: "variant-a"
                 )
             )
         )
@@ -256,6 +276,7 @@ class WorkflowEventsRequestTests: TestCase {
         expect(json).toNot(contain("experiment_id"))
         expect(json).toNot(contain("experiment_variant"))
         expect(json).toNot(contain("blob_ref"))
+        expect(json).toNot(contain("fallback_original_step_id"))
     }
 
     func testExperimentPropertiesInWireFormat() throws {
@@ -264,10 +285,10 @@ class WorkflowEventsRequestTests: TestCase {
             .init(
                 workflowId: "wfl_abc",
                 stepId: "step-1",
+                workflowBlobRef: "blob-ref-1",
                 experiment: .init(
                     experimentId: "exp-1",
-                    experimentVariant: "variant-a",
-                    workflowBlobRef: "blob-ref-1"
+                    experimentVariant: "variant-a"
                 )
             )
         )
@@ -284,10 +305,10 @@ class WorkflowEventsRequestTests: TestCase {
             .init(
                 workflowId: "wfl_abc",
                 stepId: "step-1",
+                workflowBlobRef: "blob-ref-1",
                 experiment: .init(
                     experimentId: "exp-1",
-                    experimentVariant: "variant-a",
-                    workflowBlobRef: "blob-ref-1"
+                    experimentVariant: "variant-a"
                 )
             )
         )

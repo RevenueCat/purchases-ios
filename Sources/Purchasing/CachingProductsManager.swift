@@ -13,51 +13,24 @@
 
 import Foundation
 
-/// `ProductsManagerType` decorator that adds caching behavior on each request.
+/// Adds product caching and shares in-flight requests for the configured store.
 /// The product results are cached, and it avoids performing concurrent duplicate requests for the same products.
 final class CachingProductsManager {
 
     private let manager: ProductsManagerType
 
-    private let productCache: Atomic<[String: StoreProduct]> = .init([:])
-    private let requestCache: Atomic<[Set<String>: [Completion]]> = .init([:])
-
-    private let _sk2ProductCache: (any Sendable)?
-    private let _sk2RequestCache: (any Sendable)?
-
-    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-    private var sk2ProductCache: Atomic<[String: SK2StoreProduct]> {
-        // swiftlint:disable:next force_cast
-        return self._sk2ProductCache as! Atomic<[String: SK2StoreProduct]>
-    }
-
-    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-    private var sk2RequestCache: Atomic<[Set<String>: [SK2Completion]]> {
-        // swiftlint:disable:next force_cast
-        return self._sk2RequestCache as! Atomic<[Set<String>: [SK2Completion]]>
-    }
+    private let productCache = ProductsCache<StoreProduct>()
 
     init(manager: ProductsManagerType) {
         assert(!(manager is CachingProductsManager), "Decorating CachingProductsManager with itself")
 
         self.manager = manager
-
-        if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *) {
-            self._sk2ProductCache = Atomic<[String: SK2StoreProduct]>([:])
-            self._sk2RequestCache = Atomic<[Set<String>: [SK2Completion]]>([:])
-        } else {
-            self._sk2ProductCache = nil
-            self._sk2RequestCache = nil
-        }
     }
 
     func clearCache() {
-        self.productCache.value.removeAll(keepingCapacity: true)
-        if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *) {
-            self.sk2ProductCache.value.removeAll(keepingCapacity: true)
-        }
-
+        // Clear the underlying manager's cache first, so stale products cannot refill this cache after invalidation.
         self.manager.clearCache()
+        self.productCache.clear()
     }
 
 }
@@ -65,26 +38,13 @@ final class CachingProductsManager {
 extension CachingProductsManager: ProductsManagerType {
 
     func products(withIdentifiers identifiers: Set<String>, completion: @escaping Completion) {
-        Self.products(with: identifiers,
-                      completion: completion,
-                      productCache: self.productCache,
-                      requestCache: self.requestCache) { identifiers, completion in
+        self.productCache.products(withIdentifiers: identifiers, completion: completion) { identifiers, completion in
             self.manager.products(withIdentifiers: identifiers, completion: completion)
         }
     }
 
-    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-    func sk2Products(withIdentifiers identifiers: Set<String>, completion: @escaping SK2Completion) {
-        Self.products(with: identifiers,
-                      completion: completion,
-                      productCache: self.sk2ProductCache,
-                      requestCache: self.sk2RequestCache) { identifiers, completion in
-            self.manager.sk2Products(withIdentifiers: identifiers, completion: completion)
-        }
-    }
-
     func cache(_ product: StoreProductType) {
-        Self.cache([StoreProduct.from(product: product)], container: self.productCache)
+        self.productCache.cache([StoreProduct.from(product: product)])
     }
 
     var requestTimeout: TimeInterval { return self.manager.requestTimeout }
@@ -93,86 +53,96 @@ extension CachingProductsManager: ProductsManagerType {
 
 extension CachingProductsManager: Sendable {}
 
-// MARK: - Private
+/// Shares cached products and in-flight requests. Clearing the cache starts a new generation:
+/// existing callers still finish, but their results cannot repopulate the cleared cache.
+final class ProductsCache<Product: StoreProductType & Hashable>: Sendable {
 
-private extension CachingProductsManager {
+    typealias Completion = (Result<Set<Product>, PurchasesError>) -> Void
 
-    static func products<T: StoreProductType>(
-        with identifiers: Set<String>,
-        completion: @escaping (Result<Set<T>, PurchasesError>) -> Void,
-        productCache: Atomic<[String: T]>,
-        requestCache: Atomic<[Set<String>: [(Result<Set<T>, PurchasesError>) -> Void]]>,
-        fetcher: (Set<String>, @escaping (Result<Set<T>, PurchasesError>) -> Void) -> Void
+    private struct RequestKey: Hashable {
+
+        let identifiers: Set<String>
+        let generation: Int
+
+    }
+
+    private struct State {
+
+        var productsByIdentifier: [String: Product]
+        var completionsByRequest: [RequestKey: [Completion]]
+        var generation: Int
+
+    }
+
+    private enum RequestAction {
+
+        case complete(Set<Product>)
+        case wait
+        case fetch(RequestKey)
+
+    }
+
+    private let state: Atomic<State> = .init(.init(productsByIdentifier: [:], completionsByRequest: [:], generation: 0))
+
+    func products(
+        withIdentifiers identifiers: Set<String>,
+        completion: @escaping Completion,
+        fetcher: (Set<String>, @escaping Completion) -> Void
     ) {
-        let cachedProducts = Self.cachedProducts(with: identifiers, productCache: productCache)
-        let missingProducts = identifiers.subtracting(cachedProducts.keys)
-
-        if missingProducts.isEmpty {
-            completion(.success(Set(cachedProducts.values)))
-        } else {
-            let requestInProgress = Self.save(completion, for: missingProducts, requestCache: requestCache)
-            guard !requestInProgress else {
-                Logger.debug(Strings.offering.found_existing_product_request(identifiers: missingProducts))
-                return
+        let identifiers = Set(identifiers.map(CompoundProductIdentifier.canonicalIdentifier))
+        let (action, cachedIdentifiers) = self.state.modify { state in
+            let cached = state.productsByIdentifier.filter { identifiers.contains($0.key) }
+            let missing = identifiers.subtracting(cached.keys)
+            guard !missing.isEmpty else {
+                return (RequestAction.complete(Set(cached.values)), Set(cached.keys))
             }
 
-            Logger.debug(
-                Strings.storeKit.no_cached_products_starting_store_products_request(identifiers: missingProducts)
-            )
+            let requestKey = RequestKey(identifiers: missing, generation: state.generation)
+            let existingKey = state.completionsByRequest.keys.first {
+                $0.generation == requestKey.generation && $0.identifiers.isSuperset(of: missing)
+            }
+            let key = existingKey ?? requestKey
+            state.completionsByRequest[key, default: []].append { result in
+                completion(result.map { fetched in
+                    let requested = fetched.filter { missing.contains($0.id) }
+                    return Set(cached.values) + requested
+                })
+            }
+            return (existingKey == nil ? .fetch(key) : .wait, Set(cached.keys))
+        }
 
-            fetcher(missingProducts) { result in
-                if let products = result.value {
-                    Self.cache(products, container: productCache)
+        if !cachedIdentifiers.isEmpty {
+            Logger.debug(Strings.offering.products_already_cached(identifiers: cachedIdentifiers))
+        }
+        switch action {
+        case .complete(let products):
+            completion(.success(products))
+        case .wait:
+            Logger.debug(Strings.offering.found_existing_product_request(identifiers: identifiers))
+        case .fetch(let key):
+            Logger.debug(Strings.storeKit.no_cached_products_starting_store_products_request(
+                identifiers: key.identifiers
+            ))
+            fetcher(key.identifiers) { result in
+                let completions = self.state.modify { state in
+                    if state.generation == key.generation, let products = result.value {
+                        state.productsByIdentifier += products.dictionaryAllowingDuplicateKeys { $0.id }
+                    }
+                    return state.completionsByRequest.removeValue(forKey: key) ?? []
                 }
-
-                for completion in Self.getAndClearRequestCompletion(for: missingProducts, requestCache: requestCache) {
-                    completion(
-                        result.map { Set(cachedProducts.values) + $0 }
-                    )
-                }
+                completions.forEach { $0(result) }
             }
         }
     }
 
-    static func cachedProducts<T: StoreProductType>(
-        with identifiers: Set<String>,
-        productCache: Atomic<[String: T]>
-    ) -> [String: T] {
-        let productsAlreadyCached = productCache.value.filter { identifiers.contains($0.key) }
-
-        if !productsAlreadyCached.isEmpty {
-            Logger.debug(Strings.offering.products_already_cached(identifiers: Set(productsAlreadyCached.keys)))
-
-        }
-
-        return productsAlreadyCached
+    func cache(_ products: Set<Product>) {
+        self.state.modify { $0.productsByIdentifier += products.dictionaryAllowingDuplicateKeys { $0.id } }
     }
 
-    static func cache<T: StoreProductType>(_ products: Set<T>, container: Atomic<[String: T]>) {
-        container.modify { $0 += products.dictionaryAllowingDuplicateKeys { $0.id } }
-    }
-
-    /// - Returns: true if there is already a request in progress for these products.
-    static func save<T: StoreProductType>(
-        _ completion: @escaping (Result<Set<T>, PurchasesError>) -> Void,
-        for identifiers: Set<String>,
-        requestCache: Atomic<[Set<String>: [(Result<Set<T>, PurchasesError>) -> Void]]>
-    ) -> Bool {
-        return requestCache.modify { cache in
-            let existingRequest = cache[identifiers]?.isEmpty == false
-
-            cache[identifiers, default: []].append(completion)
-            return existingRequest
-        }
-    }
-
-    /// - Returns: completion blocks for requests for the given identifiers.
-    static func getAndClearRequestCompletion<T: StoreProductType>(
-        for identifiers: Set<String>,
-        requestCache: Atomic<[Set<String>: [(Result<Set<T>, PurchasesError>) -> Void]]>
-    ) -> [(Result<Set<T>, PurchasesError>) -> Void] {
-        return requestCache.modify {
-            return $0.removeValue(forKey: identifiers) ?? []
+    func clear() {
+        self.state.modify {
+            $0.generation += 1
+            $0.productsByIdentifier.removeAll(keepingCapacity: true)
         }
     }
 

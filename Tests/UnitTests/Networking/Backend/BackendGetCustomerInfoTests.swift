@@ -63,7 +63,7 @@ class BackendGetCustomerInfoTests: BaseBackendTests {
 
         expect(getCustomerInfoCompleted.value).toEventually(beTrue())
         expect(self.httpClient.calls).to(haveCount(1))
-        expect(self.httpClient.calls.first?.request.path as? HTTPRequest.Path) == .postReceiptData
+        expect(self.httpClient.calls.first?.request.path) == .postReceiptData
     }
 
     func testGetCustomerInfoIsNotAppendedToInFlightPostReceiptForDifferentUser() throws {
@@ -92,7 +92,7 @@ class BackendGetCustomerInfoTests: BaseBackendTests {
         expect(result).to(beSuccess())
         expect(result?.value?.originalAppUserId) == otherUserID
         expect(self.httpClient.calls).to(haveCount(2))
-        expect(self.httpClient.calls.last?.request.path as? HTTPRequest.Path)
+        expect(self.httpClient.calls.last?.request.path)
             == .getCustomerInfo(appUserID: otherUserID)
     }
 
@@ -216,7 +216,7 @@ class BackendGetCustomerInfoTests: BaseBackendTests {
         expect(firstResult.value).to(beSuccess())
         expect(secondResult.value?.value) == firstResult.value?.value
 
-        expect(self.httpClient.calls.map { $0.request.path as? HTTPRequest.Path }) == [path]
+        expect(self.httpClient.calls.map { $0.request.path }) == [path]
     }
 
     func testGetCustomerInfoWithVerifiedResponse() throws {
@@ -238,7 +238,7 @@ class BackendGetCustomerInfoTests: BaseBackendTests {
             requestPath: .getCustomerInfo(appUserID: Self.userID),
             response: .init(statusCode: .success,
                             response: Self.validCustomerResponse,
-                            verificationResult: .failed)
+                            verificationResult: .failed(.unknown))
         )
 
         let customerInfo = waitUntilValue { completed in

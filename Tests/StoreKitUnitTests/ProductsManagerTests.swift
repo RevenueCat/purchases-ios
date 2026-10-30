@@ -363,6 +363,35 @@ class SK2ProductsManagerDiagnosticsTrackingTests: ProductsManagerTests {
         self.mockDiagnosticsTracker = MockDiagnosticsTracker()
     }
 
+    func testSK2CacheHitsDoNotTrackAdditionalAppleRequests() async throws {
+        let manager = CachingProductsManager(manager: self.createManager(
+            storeKitVersion: .storeKit2,
+            diagnosticsTracker: self.mockDiagnosticsTracker
+        ))
+        let identifier = "com.revenuecat.monthly_4.99.1_week_intro"
+        _ = try await manager.products(withIdentifiers: [identifier])
+        expect(self.mockDiagnosticsTracker.trackedProductsRequestParams.value).to(haveCount(1))
+        _ = try await manager.products(withIdentifiers: [identifier])
+        _ = try await manager.products(withIdentifiers: [identifier])
+        expect(self.mockDiagnosticsTracker.trackedProductsRequestParams.value).to(haveCount(1))
+    }
+
+    func testSK2PartialCacheHitTracksOnlyFetchedIdentifiers() async throws {
+        let manager = CachingProductsManager(manager: self.createManager(
+            storeKitVersion: .storeKit2,
+            diagnosticsTracker: self.mockDiagnosticsTracker
+        ))
+        let identifier = "com.revenuecat.monthly_4.99.1_week_intro"
+        _ = try await manager.products(withIdentifiers: [identifier])
+        _ = try await manager.products(withIdentifiers: [identifier, "lifetime"])
+
+        let requests = self.mockDiagnosticsTracker.trackedProductsRequestParams.value
+        expect(requests).to(haveCount(2))
+        let lastRequest = try XCTUnwrap(requests.last)
+        expect(lastRequest.requestedProductIds) == ["lifetime"]
+        expect(lastRequest.notFoundProductIds).to(beEmpty())
+    }
+
     func testFetchProductsWithIdentifiersSK2TracksCorrectly() throws {
         let manager = self.createManager(storeKitVersion: .storeKit2,
                                          diagnosticsTracker: self.mockDiagnosticsTracker)

@@ -207,7 +207,7 @@ final class WorkflowPaywallViewTests: TestCase {
         )
 
         expect(error?.code) == ErrorCode.configurationError.rawValue
-        expect(error?.localizedDescription) == "Offering 'missing_offering' not found for step 'step_initial'."
+        expect(error?.localizedDescription) == Self.offeringNotFoundMessage(stepID: "step_initial")
     }
 
     func testPresentationErrorForReachedSecondStepWithUnavailableOffering() throws {
@@ -219,7 +219,7 @@ final class WorkflowPaywallViewTests: TestCase {
         let error = WorkflowPaywallView.presentationError(for: "step_terminal", in: context)
 
         expect(error?.code) == ErrorCode.configurationError.rawValue
-        expect(error?.localizedDescription) == "Offering 'missing_offering' not found for step 'step_terminal'."
+        expect(error?.localizedDescription) == Self.offeringNotFoundMessage(stepID: "step_terminal")
     }
 
     func testPresentationErrorForReachedStepWithoutScreen() throws {
@@ -237,6 +237,32 @@ final class WorkflowPaywallViewTests: TestCase {
         let context = try Self.makeContext(singleStepFallbackId: nil)
 
         expect(WorkflowPaywallView.presentationError(for: context.workflow.initialStepId, in: context)).to(beNil())
+    }
+
+    // Dismissing a built-in navigation error restores the active workflow state.
+    func testDismissingBuiltInNavigationErrorKeepsWorkflowActive() {
+        var state = WorkflowPresentationState.displayingError(
+            error: ErrorCode.configurationError as NSError,
+            behavior: .keepCurrentScreen
+        )
+
+        state.updateError(nil)
+
+        expect(state.error).to(beNil())
+        expect(state.hasFailed) == false
+    }
+
+    // Dismissing a built-in terminal error leaves the workflow marked as failed.
+    func testDismissingBuiltInTerminalErrorKeepsWorkflowFailed() {
+        var state = WorkflowPresentationState.displayingError(
+            error: ErrorCode.configurationError as NSError,
+            behavior: .endFlow
+        )
+
+        state.updateError(nil)
+
+        expect(state.error).to(beNil())
+        expect(state.hasFailed) == true
     }
 
     func testWorkflowPackageOverridePrefersWorkflowValueOverPageDefault() {
@@ -590,12 +616,20 @@ private extension WorkflowPaywallViewTests {
 
     typealias PackageSpec = (id: String, isDefault: Bool)
 
+    static func offeringNotFoundMessage(stepID: String) -> String {
+        return "Offering 'missing_offering' not found for step '\(stepID)' of workflow 'wf_test'. " +
+            "The offering is either missing from the offerings response, or was dropped because none of " +
+            "its packages resolved to a product fetched from the store. Check the logs for a " +
+            "\"No packages could be found for offering\" log message."
+    }
+
     static func makeContext(
         singleStepFallbackId: String?,
         workflowPackages: [PackageSpec] = [],
         initialScreenJSON: String? = nil,
         initialStepJSON: String? = nil,
         initialStepId: String = "step_initial",
+        initialRouteStepId: String? = nil,
         terminalScreenJSON: String? = nil,
         extraOfferings: [Offering] = []
     ) throws -> WorkflowContext {
@@ -606,6 +640,7 @@ private extension WorkflowPaywallViewTests {
             initialScreenJSON: initialScreenJSON,
             initialStepJSON: initialStepJSON,
             initialStepId: initialStepId,
+            initialRouteStepId: initialRouteStepId,
             terminalScreenJSON: terminalScreenJSON,
             offeringId: offeringId
         )
@@ -645,7 +680,7 @@ private extension WorkflowPaywallViewTests {
         return WorkflowContext(
             workflow: workflow,
             uiConfig: PreviewUIConfig.make(),
-            allOfferings: offerings,
+            offerings: WorkflowOfferings(offerings: offerings, developerProvidedOffering: nil),
             initialOffering: offering,
             presentedOfferingContext: nil
         )
@@ -657,6 +692,7 @@ private extension WorkflowPaywallViewTests {
         initialScreenJSON customInitialScreenJSON: String? = nil,
         initialStepJSON customInitialStepJSON: String? = nil,
         initialStepId: String = "step_initial",
+        initialRouteStepId: String? = nil,
         terminalScreenJSON customTerminalScreenJSON: String? = nil,
         offeringId: String
     ) throws -> PublishedWorkflow {
@@ -683,11 +719,20 @@ private extension WorkflowPaywallViewTests {
             terminalScreenJSON = ""
         }
 
+        let initialTriggerJSON = initialRouteStepId.map {
+            """
+            "initial_trigger": { "type": "branch",
+              "routes": [{"audience_id": "aud_a", "step_id": "\($0)"}],
+              "fallback_step_id": "\(initialStepId)" },
+            """
+        } ?? ""
+
         let json = """
         {
           "id": "wf_test",
           "display_name": "Test",
           "initial_step_id": "\(initialStepId)",
+          \(initialTriggerJSON)
           \(workflowStepIdJSON)
           "steps": {
             \(initialStepJSON)
@@ -736,6 +781,30 @@ private extension WorkflowPaywallViewTests {
                 }
             }\(extraKeys)
         }
+        """
+    }
+
+    static func workflowStepJSON(
+        id: String,
+        screenId: String,
+        componentId: String,
+        destinationStepId: String
+    ) -> String {
+        return """
+        "\(id)": {
+            "id": "\(id)",
+            "type": "screen",
+            "screen_id": "\(screenId)",
+            "triggers": [{
+                "name": "Continue",
+                "type": "on_press",
+                "action_id": "continue_action",
+                "component_id": "\(componentId)"
+            }],
+            "trigger_actions": {
+                "continue_action": { "type": "step", "step_id": "\(destinationStepId)" }
+            }
+        },
         """
     }
 
@@ -910,6 +979,79 @@ extension WorkflowPaywallViewTests {
 
     #if !os(watchOS) && !os(macOS)
     @MainActor
+    func testExternallyHandledPresentationErrorDoesNotAlsoPresentWorkflowAlert() async throws {
+        let context = try Self.makeContext(
+            singleStepFallbackId: nil,
+            initialScreenJSON: Self.makeScreenJSON(offeringId: "missing_offering")
+        )
+        var reportedError: NSError?
+        var reportedBehavior: WorkflowPresentationErrorBehavior?
+        let view = WorkflowPaywallView(
+            context: context,
+            purchaseHandler: .mock(),
+            introEligibilityChecker: .producing(eligibility: .eligible),
+            showZeroDecimalPlacePrices: false,
+            displayCloseButton: false,
+            promoOfferCache: nil,
+            onDismiss: {},
+            onPresentationError: { error, behavior in
+                reportedError = error
+                reportedBehavior = behavior
+            }
+        )
+        let controller = UIHostingController(rootView: view)
+        let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 390, height: 844))
+        window.rootViewController = controller
+        window.makeKeyAndVisible()
+        defer {
+            window.isHidden = true
+            window.rootViewController = nil
+        }
+
+        await expect(reportedError?.code).toEventually(equal(ErrorCode.configurationError.rawValue))
+        expect(reportedBehavior) == .endFlow
+        await expect(controller.presentedViewController).toEventually(beNil())
+    }
+
+    @MainActor
+    func testInvalidNavigationDestinationKeepsCurrentScreenAndReportsActionFailure() throws {
+        let componentId = "continue_button"
+        let context = try Self.makeContext(
+            singleStepFallbackId: "step_terminal",
+            initialStepJSON: Self.workflowStepJSON(
+                id: "step_initial",
+                screenId: "screen_initial",
+                componentId: componentId,
+                destinationStepId: "step_terminal"
+            ),
+            terminalScreenJSON: Self.makeScreenJSON(offeringId: "missing_offering")
+        )
+        var reportedErrors: [NSError] = []
+        var reportedBehaviors: [WorkflowPresentationErrorBehavior] = []
+        let view = WorkflowPaywallView(
+            context: context,
+            purchaseHandler: .mock(),
+            introEligibilityChecker: .producing(eligibility: .eligible),
+            showZeroDecimalPlacePrices: false,
+            displayCloseButton: false,
+            promoOfferCache: nil,
+            onDismiss: {},
+            onPresentationError: { error, behavior in
+                reportedErrors.append(error)
+                reportedBehaviors.append(behavior)
+            }
+        )
+
+        XCTAssertTrue(view.handleTriggeredNavigation(componentId: componentId))
+        expect(reportedErrors.first?.code) == ErrorCode.configurationError.rawValue
+        expect(reportedBehaviors) == [.keepCurrentScreen]
+
+        // The failed destination did not advance or invalidate the current screen.
+        XCTAssertTrue(view.handleTriggeredNavigation(componentId: componentId))
+        expect(reportedBehaviors) == [.keepCurrentScreen, .keepCurrentScreen]
+    }
+
+    @MainActor
     func testInitialPresentationErrorClearsConfiguredExitOffer() async throws {
         let exitOffering = Offering(
             identifier: "exit_offering_a",
@@ -942,7 +1084,7 @@ extension WorkflowPaywallViewTests {
             displayCloseButton: false,
             promoOfferCache: nil,
             onDismiss: {},
-            onPresentationError: { reportedError = $0 }
+            onPresentationError: { error, _ in reportedError = error }
         )
         .environment(\.workflowExitOfferOfferingBinding, exitOfferBinding)
 
@@ -955,9 +1097,70 @@ extension WorkflowPaywallViewTests {
             currentStepId: "step_initial",
             screenId: "screen_initial"
         )
-        let expectedLog = "\(expectedMessage): Offering 'missing_offering' not found for step 'step_initial'."
+        let expectedLog = "\(expectedMessage): \(Self.offeringNotFoundMessage(stepID: "step_initial"))"
         self.logger.verifyMessageWasLogged(
             expectedLog,
+            level: .error,
+            expectedCount: 1
+        )
+    }
+
+    /// The impression names the screen that actually rendered, so it is the one signal that
+    /// distinguishes "the page was built from the route" from "only the navigator routed".
+    @MainActor
+    func testTheFirstPageIsBuiltFromTheStepTheInitialTriggerPicked() async throws {
+        let context = try Self.makeContext(
+            singleStepFallbackId: "step_terminal",
+            initialRouteStepId: "step_terminal"
+        )
+        let events: Atomic<[PaywallEvent]> = .init([])
+        let view = WorkflowPaywallView(
+            context: context,
+            purchaseHandler: .mock(
+                resolveBranch: { _ in "step_terminal" },
+                trackEvent: { event in events.modify { $0.append(event) } }
+            ),
+            introEligibilityChecker: .producing(eligibility: .eligible),
+            showZeroDecimalPlacePrices: false,
+            displayCloseButton: false,
+            promoOfferCache: nil,
+            onDismiss: {}
+        )
+
+        let dispose = try view.addToHierarchy()
+        defer { dispose() }
+
+        await expect(events.value.compactMap { $0.data.paywallIdentifier })
+            .toEventually(equal(["screen_terminal"]), timeout: .seconds(3))
+    }
+
+    /// A routed step that cannot render reports against the routed step, not the fallback.
+    @MainActor
+    func testAnUnrenderableRoutedFirstStepReportsThatStep() async throws {
+        let context = try Self.makeContext(
+            singleStepFallbackId: "step_terminal",
+            initialRouteStepId: "step_terminal",
+            terminalScreenJSON: Self.makeScreenJSON(offeringId: "missing_offering")
+        )
+        let view = WorkflowPaywallView(
+            context: context,
+            purchaseHandler: .mock(resolveBranch: { _ in "step_terminal" }),
+            introEligibilityChecker: .producing(eligibility: .eligible),
+            showZeroDecimalPlacePrices: false,
+            displayCloseButton: false,
+            promoOfferCache: nil,
+            onDismiss: {}
+        )
+        let dispose = try view.addToHierarchy()
+        defer { dispose() }
+
+        await expect(self.logger.messages).toEventuallyNot(beEmpty(), timeout: .seconds(3))
+        let expectedMessage = Strings.workflow_paywall_invalid_state(
+            currentStepId: "step_terminal",
+            screenId: "screen_terminal"
+        )
+        self.logger.verifyMessageWasLogged(
+            "\(expectedMessage): \(Self.offeringNotFoundMessage(stepID: "step_terminal"))",
             level: .error,
             expectedCount: 1
         )
@@ -987,7 +1190,7 @@ extension WorkflowPaywallViewTests {
             currentStepId: "step_terminal",
             screenId: "screen_terminal"
         )
-        let expectedLog = "\(expectedMessage): Offering 'missing_offering' not found for step 'step_terminal'."
+        let expectedLog = "\(expectedMessage): \(Self.offeringNotFoundMessage(stepID: "step_terminal"))"
         self.logger.verifyMessageWasLogged(
             expectedLog,
             level: .error,
@@ -1429,6 +1632,34 @@ extension WorkflowPaywallViewTests {
         expect(paywallTraceId) == workflowTraceId
     }
 
+    /// A checkpoint-started workflow has to report the trace id its checkpoint hit carries.
+    @MainActor
+    func testEventsUseTheTraceIdTheContextCarries() async throws {
+        let paywallEvents: Atomic<[PaywallEvent]> = .init([])
+        let workflowEvents: Atomic<[WorkflowEvent]> = .init([])
+        let (purchases, purchaseHandler) = Self.makeEventRecordingPurchaseHandler(paywallEvents: paywallEvents)
+        purchases.trackWorkflowEventBlock = { event in
+            workflowEvents.modify { $0.append(event) }
+        }
+        let context = try Self.makeContextStartingAt(stepId: "step_a", traceId: "checkpoint-trace")
+
+        let dispose = try WorkflowPurchaseObserver(purchaseHandler: purchaseHandler, context: context)
+            .addToHierarchy()
+        defer { dispose() }
+
+        await expect(paywallEvents.value).toEventually(
+            containElementSatisfying { Self.isImpression($0) },
+            timeout: .seconds(3)
+        )
+        await expect(workflowEvents.value).toEventually(
+            containElementSatisfying { Self.isStepStarted($0) },
+            timeout: .seconds(3)
+        )
+
+        expect(workflowEvents.value.first { Self.isStepStarted($0) }?.data.traceId) == "checkpoint-trace"
+        expect(paywallEvents.value.first { Self.isImpression($0) }?.data.traceId) == "checkpoint-trace"
+    }
+
     @MainActor
     func testPaywallImpressionCarriesThePaywallIdFromTheScreen() async throws {
         let paywallEvents: Atomic<[PaywallEvent]> = .init([])
@@ -1617,7 +1848,7 @@ private extension WorkflowPaywallViewTests {
 
     /// Creates a two-step workflow (step_a, step_b) with initial_step_id set to stepId.
     /// Use this to exercise callbacks from a non-initial step without requiring navigation.
-    static func makeContextStartingAt(stepId: String) throws -> WorkflowContext {
+    static func makeContextStartingAt(stepId: String, traceId: String? = nil) throws -> WorkflowContext {
         let offeringId = "offering_test"
         let workflowJSON = """
         {
@@ -1674,9 +1905,10 @@ private extension WorkflowPaywallViewTests {
         return WorkflowContext(
             workflow: workflow,
             uiConfig: PreviewUIConfig.make(),
-            allOfferings: offerings,
+            offerings: WorkflowOfferings(offerings: offerings, developerProvidedOffering: nil),
             initialOffering: offering,
-            presentedOfferingContext: nil
+            presentedOfferingContext: nil,
+            traceId: traceId
         )
     }
 

@@ -49,17 +49,21 @@ class WorkflowManager: WorkflowAssetPrewarmingType {
     private let paywallCache: PaywallCacheWarmingType?
     private let operationDispatcher: OperationDispatcher
     private let webBundleURLBatcher: WebBundleURLBatcherType
+    private let workflowPrewarmingDecodeCoordinator: WorkflowPrewarmingDecodeCoordinator
+    private let webBundlePublicationTracker = WorkflowWebBundlePublicationTracker()
 
     init(
         workflowsConfigProvider: WorkflowsConfigProviderType,
         paywallCache: PaywallCacheWarmingType?,
         operationDispatcher: OperationDispatcher,
-        webBundleURLBatcher: WebBundleURLBatcherType = WebBundleURLBatcher.shared
+        webBundleURLBatcher: WebBundleURLBatcherType = WebBundleURLBatcher.shared,
+        workflowPrewarmingDecodeCoordinator: WorkflowPrewarmingDecodeCoordinator = .init()
     ) {
         self.workflowsConfigProvider = workflowsConfigProvider
         self.paywallCache = paywallCache
         self.operationDispatcher = operationDispatcher
         self.webBundleURLBatcher = webBundleURLBatcher
+        self.workflowPrewarmingDecodeCoordinator = workflowPrewarmingDecodeCoordinator
     }
 
     /// Resolves `workflowId`, or throws the error explaining why it couldn't be resolved: genuinely
@@ -89,6 +93,10 @@ class WorkflowManager: WorkflowAssetPrewarmingType {
         case .failure(.uiConfigUnavailable):
             throw WorkflowError.uiConfigUnavailable(workflowId: workflowId)
         }
+    }
+
+    func workflowIds() async -> [String] {
+        return await self.workflowsConfigProvider.workflowIds()
     }
 
     func workflowId(forOfferingId offeringId: String) async -> String? {
@@ -144,8 +152,9 @@ class WorkflowManager: WorkflowAssetPrewarmingType {
                 )
                 guard !hasStartedAssetPrewarming else { continue }
 
-                let resolution = await self.workflowsConfigProvider.decodeCachedWorkflowForAssetPrewarming(
-                    workflowId: workflowId
+                let resolution = await self.workflowPrewarmingDecodeCoordinator.decode(
+                    workflowId: workflowId,
+                    using: self.workflowsConfigProvider
                 )
                 switch resolution {
                 case let .success(result):
@@ -161,35 +170,61 @@ class WorkflowManager: WorkflowAssetPrewarmingType {
     }
 
     /// Publishes cached workflows for target offerings (current, placements, fallback) in visit order.
-    /// Cache-only: no blob fetch. An uncached target offering is published when it is presented.
+    /// Each workflow is published once per config generation; failed decodes are retried. Cache-only: no blob fetch.
     func publishWebBundleURLs(offerings: Offerings) async {
         guard #available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *) else { return }
 
+        // workflowsByOfferingId contains workflows resolved for this publication. workflowBackedOfferingIds
+        // contains every offering mapped to a workflow, including workflows skipped or still being resolved.
+        // This ensures a missing workflow means "skip it", not "publish assets from the offering's inline V2 tree".
         var workflowsByOfferingId: [String: PublishedWorkflow] = [:]
+        var workflowBackedOfferingIds: Set<String> = []
         var resolutionsByWorkflowId: [String: Result<WorkflowDataResult, WorkflowResolutionError>] = [:]
+        var claimedWorkflowIDs: Set<String> = []
+        var workflowIDsToMarkPublished: Set<String> = []
+        var shouldPublish = false
+        let configGeneration = self.workflowsConfigProvider.configGeneration
         for offeringId in WebBundleURLBatcher.targetOfferingIds(from: offerings) {
             guard let workflowId = await self.workflowsConfigProvider.workflowId(forOfferingId: offeringId) else {
+                shouldPublish = true
                 continue
             }
+            workflowBackedOfferingIds.insert(offeringId)
 
             let resolution: Result<WorkflowDataResult, WorkflowResolutionError>
             if let cachedResolution = resolutionsByWorkflowId[workflowId] {
                 resolution = cachedResolution
             } else {
-                resolution = await self.workflowsConfigProvider.decodeCachedWorkflowForAssetPrewarming(
-                    workflowId: workflowId
+                guard await self.webBundlePublicationTracker.claimIfNeeded(
+                    workflowId,
+                    configGeneration: configGeneration
+                ) else { continue }
+
+                shouldPublish = true
+                claimedWorkflowIDs.insert(workflowId)
+                resolution = await self.workflowPrewarmingDecodeCoordinator.decode(
+                    workflowId: workflowId,
+                    using: self.workflowsConfigProvider
                 )
                 resolutionsByWorkflowId[workflowId] = resolution
             }
 
             if case let .success(result) = resolution {
                 workflowsByOfferingId[offeringId] = result.workflow
+                workflowIDsToMarkPublished.insert(workflowId)
             }
         }
 
+        guard shouldPublish else { return }
         await webBundleURLBatcher.publish(
             offerings: offerings,
-            workflowsByOfferingId: workflowsByOfferingId
+            workflowsByOfferingId: workflowsByOfferingId,
+            workflowBackedOfferingIds: workflowBackedOfferingIds
+        )
+        await self.webBundlePublicationTracker.completeClaims(
+            claimedWorkflowIDs,
+            publishedWorkflowIDs: workflowIDsToMarkPublished,
+            configGeneration: configGeneration
         )
     }
 
@@ -215,6 +250,46 @@ extension WorkflowManager {
 // @unchecked because:
 // - Class is not `final` (it's mocked). This implicitly makes subclasses `Sendable` even if they're not thread-safe.
 extension WorkflowManager: @unchecked Sendable {}
+
+/// Remembers which workflows already had their web-bundle URLs published for the current config.
+private actor WorkflowWebBundlePublicationTracker {
+
+    private var configGeneration: Int?
+    private var claimedWorkflowIDs: Set<String> = []
+    private var publishedWorkflowIDs: Set<String> = []
+
+    func claimIfNeeded(_ workflowId: String, configGeneration: Int) -> Bool {
+        guard self.prepareForConfigGeneration(configGeneration),
+              !self.claimedWorkflowIDs.contains(workflowId),
+              !self.publishedWorkflowIDs.contains(workflowId) else {
+            return false
+        }
+
+        self.claimedWorkflowIDs.insert(workflowId)
+        return true
+    }
+
+    func completeClaims(
+        _ claimedWorkflowIDs: Set<String>,
+        publishedWorkflowIDs: Set<String>,
+        configGeneration: Int
+    ) {
+        guard self.configGeneration == configGeneration else { return }
+        self.claimedWorkflowIDs.subtract(claimedWorkflowIDs)
+        self.publishedWorkflowIDs.formUnion(publishedWorkflowIDs)
+    }
+
+    private func prepareForConfigGeneration(_ configGeneration: Int) -> Bool {
+        guard self.configGeneration.map({ configGeneration >= $0 }) ?? true else { return false }
+        guard self.configGeneration != configGeneration else { return true }
+
+        self.configGeneration = configGeneration
+        self.claimedWorkflowIDs.removeAll()
+        self.publishedWorkflowIDs.removeAll()
+        return true
+    }
+
+}
 
 extension WorkflowStep {
 

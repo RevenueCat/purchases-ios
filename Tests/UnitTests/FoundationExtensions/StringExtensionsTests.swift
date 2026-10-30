@@ -59,6 +59,15 @@ class StringExtensionsTests: TestCase {
         == "$RCAnonymousID%3A8252eb283bbc4453a3f81c978f1a6ee1"
     }
 
+    func testTrimmedAndEscapedForQuery() {
+        expect("".trimmedAndEscapedForQuery) == ""
+        expect(" test ".trimmedAndEscapedForQuery) == "test"
+        expect("$RCAnonymousID:8252eb283bbc4453a3f81c978f1a6ee1".trimmedAndEscapedForQuery)
+        == "$RCAnonymousID:8252eb283bbc4453a3f81c978f1a6ee1"
+        expect("user+tag@example.com".trimmedAndEscapedForQuery) == "user%2Btag@example.com"
+        expect("a&b=c?d;e#f g".trimmedAndEscapedForQuery) == "a%26b%3Dc%3Fd%3Be%23f%20g"
+    }
+
     func testAsRedactedApiKey() {
         expect("test_CtDegh822fag83yggTUVkajsJ".asRedactedAPIKey) == "test_Ct********ajsJ"
 

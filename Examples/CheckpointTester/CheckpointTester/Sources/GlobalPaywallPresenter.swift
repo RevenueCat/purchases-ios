@@ -13,7 +13,7 @@
 //
 
 import RevenueCat
-@_spi(CheckpointsInternal) import RevenueCatUI
+@_spi(InviteOnlyCheckpointsApi) import RevenueCatUI
 import SwiftUI
 import UIKit
 
@@ -116,7 +116,7 @@ private enum PaywallPresenterDemo {
                 }
             )
         )
-        controller.modalPresentationStyle = .pageSheet
+        controller.modalPresentationStyle = params.presentationMode.testerModalPresentationStyle
         session.bind(to: controller)
         presenter.present(controller, animated: true)
     }
@@ -141,8 +141,7 @@ private enum PaywallPresenterDemo {
                 }
             )
         )
-        controller.modalPresentationStyle = .overFullScreen
-        controller.view.backgroundColor = .clear
+        controller.modalPresentationStyle = params.presentationMode.testerModalPresentationStyle
         session.bind(to: controller)
         presenter.present(controller, animated: false)
     }
@@ -160,6 +159,18 @@ private enum PaywallPresenterDemo {
             viewController = presentedViewController
         }
         return viewController
+    }
+
+}
+
+private extension FlowPresentationMode {
+
+    var testerModalPresentationStyle: UIModalPresentationStyle {
+        switch self {
+        case .modalFullScreen: return .fullScreen
+        case .default, .modalSheet: return .pageSheet
+        default: return .pageSheet
+        }
     }
 
 }

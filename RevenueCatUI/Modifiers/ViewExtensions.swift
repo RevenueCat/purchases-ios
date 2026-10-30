@@ -14,6 +14,7 @@
 // swiftlint:disable file_length
 
 import Foundation
+@_spi(Internal) import RevenueCat
 import SwiftUI
 
 extension View {
@@ -137,16 +138,16 @@ extension View {
     /// Equivalent to `scrollableIfNecessary` except that it's always scrollable on iOS 15
     /// to work around issues with that iOS 15 implementation in some instances.
     ///
-    /// fillContent: true means that the view will try to fill the space available.
-    /// fillContent: false means that the view will try to fit in the space available.
+    /// FIT content keeps its natural size until it exceeds the available space.
+    /// FILL content expands with alignment; fixed and relative sizes keep their scroll viewport.
     @ViewBuilder
     func scrollableIfNecessaryWhenAvailable(
         _ axis: Axis = .vertical,
-        fillContent: Bool,
+        size: PaywallComponent.SizeConstraint,
         alignment: Alignment
     ) -> some View {
         if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
-            if fillContent {
+            if size.isFill {
                 // For FILL content: use ViewThatFits to avoid scrolling when possible
                 // and to be able to fill the space available and align the content
                 ViewThatFits(in: axis.scrollViewAxis) {
@@ -166,8 +167,20 @@ extension View {
                     }
                     .scrollBounceBehaviorBasedOnSize()
                 }
+            } else if case .fit = size {
+                // A ScrollView expands along its axis even when its content is short.
+                // Prefer the natural content size so the parent can align a FIT stack.
+                ViewThatFits(in: axis.scrollViewAxis) {
+                    self
+                    ScrollView(axis.scrollViewAxis) {
+                        self.paywallMarkingVerticalScrollContainer(axis: axis) {
+                            self
+                        }
+                    }
+                    .scrollBounceBehaviorBasedOnSize()
+                }
             } else {
-                // For FIT content: just use ScrollView (sizes naturally, scrolls if needed)
+                // Preserve the existing viewport for fixed and relative sizes.
                 ScrollView(axis.scrollViewAxis) {
                     self.paywallMarkingVerticalScrollContainer(axis: axis) {
                         self

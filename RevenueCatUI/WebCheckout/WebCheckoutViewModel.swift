@@ -55,7 +55,8 @@ final class WebCheckoutViewModel: NSObject, ObservableObject {
     /// the page returned with is `returnStatus`, which outlives the call.
     var onFinished: (() -> Void)?
 
-    /// Called for links the page opens outside the checkout, for the host to hand to the browser.
+    /// Called for links the page opens outside the checkout, for the host to hand to the browser or the app they
+    /// belong to.
     var onOpenExternalURL: ((URL) -> Void)?
 
     let webView: WKWebView
@@ -63,23 +64,32 @@ final class WebCheckoutViewModel: NSObject, ObservableObject {
     private let checkoutURL: URL
     private let returnURL: WebCheckoutReturnURL?
 
+    private var isReloadingAfterTermination = false
+
     private var hasPainted: Bool {
         self.loadState == .loaded || self.loadState == .navigating
     }
 
+    /// Whether `url` links to an app, e.g. a payment method's, which the web view can only fail to load.
+    private static func opensAnApp(_ url: URL) -> Bool {
+        guard let scheme = url.scheme else {
+            return false
+        }
+
+        return !WKWebView.handlesURLScheme(scheme.lowercased())
+    }
+
     /// - Parameter checkoutURL: The provider-hosted page to present.
     /// - Parameter successURL: Where the provider sends the customer once checkout succeeds.
-    /// - Parameter cancelURL: Where the provider sends the customer once checkout is abandoned.
     /// - Parameter dataStoreIdentifierStore: Supplies the website data store shared with RevenueCat's
     /// other web views.
     init(
         checkoutURL: URL,
         successURL: URL,
-        cancelURL: URL,
         dataStoreIdentifierStore: WebViewDataStoreIdentifierStore
     ) {
         self.checkoutURL = checkoutURL
-        self.returnURL = WebCheckoutReturnURL(successURL: successURL, cancelURL: cancelURL)
+        self.returnURL = WebCheckoutReturnURL(successURL: successURL)
         self.webView = Self.makeWebView(dataStoreID: dataStoreIdentifierStore.identifier())
 
         super.init()
@@ -88,7 +98,7 @@ final class WebCheckoutViewModel: NSObject, ObservableObject {
         self.webView.uiDelegate = self
 
         if self.returnURL == nil {
-            Logger.error(Strings.web_checkout_unusable_return_urls(success: successURL, cancel: cancelURL))
+            Logger.error(Strings.web_checkout_unusable_return_url(successURL))
         }
     }
 
@@ -120,6 +130,9 @@ final class WebCheckoutViewModel: NSObject, ObservableObject {
 
         let webView = WKWebView(frame: .zero, configuration: configuration)
         webView.allowsBackForwardNavigationGestures = false
+        // Insetting the page by the safe area makes `window.innerHeight` follow the page's own height when the
+        // page is shorter than the web view, and pages sized from it switch between two layouts on every frame.
+        webView.scrollView.contentInsetAdjustmentBehavior = .never
 
         return webView
     }
@@ -130,8 +143,20 @@ final class WebCheckoutViewModel: NSObject, ObservableObject {
             return
         }
 
+        // The navigation the page's process took down with it, which `webViewWebContentProcessDidTerminate`
+        // recovers from. It can arrive after that has started reloading.
+        guard (error as? WKError)?.code != .webContentProcessTerminated else {
+            return
+        }
+
         Logger.error(Strings.web_checkout_load_failed((error as NSError).localizedDescription))
-        self.transition(to: .failed)
+        self.fail()
+    }
+
+    /// A page that has painted stays on screen when a later step fails to load, as it would in a browser: the
+    /// customer can carry on from it, where hiding it would leave them nothing to look at.
+    private func fail() {
+        self.transition(to: self.hasPainted ? .loaded : .failed)
     }
 
     private func finish(returnedFrom url: URL?) {
@@ -141,14 +166,12 @@ final class WebCheckoutViewModel: NSObject, ObservableObject {
 
         self.loadState = .finished
 
-        if let status = self.returnURL?.status(of: url) {
-            self.returnStatus = status
-        } else {
+        // An unreadable return is left without a status, as if the customer had closed the sheet, rather than
+        // guessed optimistically: the caller confirms the outcome against the backend either way, and a wrong
+        // `success` would show the customer a purchase that never happened.
+        self.returnStatus = self.returnURL?.status(of: url)
+        if self.returnStatus == nil {
             Logger.warning(Strings.web_checkout_return_status_missing)
-            // Reported as a cancel rather than guessed optimistically: the caller confirms the outcome
-            // against the backend either way, and a wrong `success` would show the customer a purchase
-            // that never happened.
-            self.returnStatus = .cancel
         }
 
         self.onFinished?()
@@ -173,6 +196,12 @@ extension WebCheckoutViewModel: WKNavigationDelegate {
             return
         }
 
+        if isMainFrame, let url, Self.opensAnApp(url) {
+            decisionHandler(.cancel)
+            self.onOpenExternalURL?(url)
+            return
+        }
+
         decisionHandler(.allow)
     }
 
@@ -189,7 +218,7 @@ extension WebCheckoutViewModel: WKNavigationDelegate {
             isMainFrame: navigationResponse.isForMainFrame
            ) {
             Logger.error(Strings.web_checkout_http_error(statusCode: response.statusCode))
-            self.transition(to: .failed)
+            self.fail()
             decisionHandler(.cancel)
             return
         }
@@ -203,6 +232,7 @@ extension WebCheckoutViewModel: WKNavigationDelegate {
     }
 
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+        self.isReloadingAfterTermination = false
         self.transition(to: .loaded)
     }
 
@@ -218,9 +248,26 @@ extension WebCheckoutViewModel: WKNavigationDelegate {
         self.handleFailure(error)
     }
 
+    /// The system can end the page's process while the app is in the background, which leaves the web view blank.
+    /// The page is reloaded, as the provider's checkout carries on from its URL, unless it ended again before
+    /// painting since the last reload, which would only repeat.
     func webViewWebContentProcessDidTerminate(_ webView: WKWebView) {
         Logger.error(Strings.web_checkout_content_process_terminated)
-        self.transition(to: .failed)
+
+        guard self.loadState != .finished else {
+            return
+        }
+
+        guard !self.isReloadingAfterTermination else {
+            self.transition(to: .failed)
+            return
+        }
+
+        self.isReloadingAfterTermination = true
+        self.transition(to: .loading)
+        if webView.reload() == nil {
+            webView.load(URLRequest(url: self.checkoutURL))
+        }
     }
 
 }

@@ -107,4 +107,28 @@ class PurchasedProductsFetcherTests: BasePurchasedProductsFetcherTests {
         ]))
     }
 
+    func testUnfinishedPurchaseIsNotSynced() async throws {
+        let _: SK2Transaction = try await self.simulateAnyPurchase(finishTransaction: false)
+
+        let products = try await self.fetcher.fetchPurchasedProducts()
+
+        let product = try XCTUnwrap(products.onlyElement)
+        expect(product.isSynced) == false
+    }
+
+    func testFinishingTransactionMarksPurchaseAsSynced() async throws {
+        let transaction: SK2Transaction = try await self.simulateAnyPurchase(finishTransaction: false)
+
+        let productsBeforeFinishing = try await self.fetcher.fetchPurchasedProducts()
+        let unsyncedProduct = try XCTUnwrap(productsBeforeFinishing.onlyElement)
+        expect(unsyncedProduct.isSynced) == false
+
+        await transaction.finish()
+
+        // The transactions cache is still warm: only the unfinished lookup is expected to refresh.
+        let productsAfterFinishing = try await self.fetcher.fetchPurchasedProducts()
+        let syncedProduct = try XCTUnwrap(productsAfterFinishing.onlyElement)
+        expect(syncedProduct.isSynced) == true
+    }
+
 }

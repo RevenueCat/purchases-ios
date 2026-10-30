@@ -116,14 +116,21 @@ enum Localization {
         return path.flatMap(Bundle.init(path:)) ?? containerBundle
     }
 
+    static func discountPercentage(_ discount: Decimal) -> Int {
+        var percentage = discount * 100
+        var rounded = Decimal()
+        NSDecimalRound(&rounded, &percentage, 0, .plain)
+        return NSDecimalNumber(decimal: rounded).intValue
+    }
+
     /// - Returns: localized string for a discount. Example: "37% off"
     static func localized(
-        discount: Double,
+        discount: Decimal,
         locale: Locale
     ) -> String {
         assert(discount >= 0, "Invalid discount: \(discount)")
 
-        let number = Int((discount * 100).rounded(.toNearestOrAwayFromZero))
+        let number = Self.discountPercentage(discount)
         let format = self.localizedBundle(locale)
             .localizedString(forKey: "%d%% off", value: nil, table: nil)
 
@@ -314,22 +321,6 @@ extension Locale {
                 ? .rightToLeft
                 : .leftToRight
         }
-    }
-
-    /// Selects the best-matching locale from `availableLocales` given `preferredLocales`.
-    ///
-    /// Matches on language first, then exact region within language matches.
-    /// Returns `nil` if no language match exists for any preferred locale.
-    static func selectPreferredLocale(from availableLocales: [Locale],
-                                      preferredLocales: [Locale]) -> Locale? {
-        for preferred in preferredLocales {
-            guard let languageMatch = availableLocales.first(where: {
-                $0.languageCodeIdentifier == preferred.languageCodeIdentifier
-            }) else { continue }
-            // Prefer an exact locale match (language + region) over a language-only match.
-            return availableLocales.first(where: { $0 == preferred }) ?? languageMatch
-        }
-        return nil
     }
 
 }

@@ -143,7 +143,10 @@ final class RemoteConfigBlobHealthTests: TestCase {
             offlineCustomerInfoCreator: nil,
             diagnosticsTracker: nil,
             apiSourceProvider: nil,
-            timeoutManager: HTTPRequestTimeoutManager(networkTimeout: .default)
+            timeoutManager: HTTPRequestTimeoutManager(networkTimeout: .default),
+            subscriberDimensionsStore: SubscriberDimensionsStore(
+                deviceCache: DeviceCache(systemInfo: systemInfo, userDefaults: .standard)
+            )
         )
         return RemoteConfigManager(
             remoteConfigAPI: backend.remoteConfigAPI,

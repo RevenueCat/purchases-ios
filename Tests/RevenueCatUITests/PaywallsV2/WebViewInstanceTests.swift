@@ -277,6 +277,105 @@ final class WebViewInstanceHostAttachmentTests: TestCase {
         XCTAssertTrue(webView.superview === displayed)
     }
 
+    // MARK: - Hosts that are never laid out
+
+    /// `ViewThatFits` instantiates every branch, so the losing branch's host can enter the window first
+    /// without ever being laid out. The host that actually lays out must take the web view from it.
+    func testLaidOutHostTakesTheWebViewFromAnEarlierHostThatIsNeverLaidOut() {
+        let instance = Self.makeInstance()
+        let webView = instance.webView { WKWebView(frame: .zero) }
+        let phantom = self.makeWindowedHost()
+        let displayed = self.makeWindowedHost()
+
+        instance.reconcile(host: phantom)
+        instance.reconcile(host: displayed)
+        XCTAssertTrue(webView.superview === phantom)
+
+        self.layOut(displayed)
+        instance.reconcile(host: displayed)
+
+        XCTAssertTrue(webView.superview === displayed)
+        XCTAssertFalse(phantom.hasLaidOut)
+        XCTAssertTrue(displayed.hasLaidOut)
+    }
+
+    /// A redraw mounts the incoming host before the outgoing one leaves; the outgoing host has been laid
+    /// out and the incoming one has not, so ownership must not move until the outgoing host leaves.
+    func testHostThatHasNotLaidOutCannotTakeTheWebViewFromALaidOutHost() {
+        let instance = Self.makeInstance()
+        let webView = instance.webView { WKWebView(frame: .zero) }
+        let outgoing = self.makeWindowedHost()
+        let incoming = self.makeWindowedHost()
+
+        instance.reconcile(host: outgoing)
+        self.layOut(outgoing)
+        instance.reconcile(host: outgoing)
+        instance.reconcile(host: incoming)
+
+        XCTAssertTrue(webView.superview === outgoing)
+    }
+
+    func testAttachedHostKeepsTheWebViewWhenBothHostsHaveLaidOut() {
+        let instance = Self.makeInstance()
+        let webView = instance.webView { WKWebView(frame: .zero) }
+        let displayed = self.makeWindowedHost()
+        let other = self.makeWindowedHost()
+
+        instance.reconcile(host: displayed)
+        self.layOut(displayed)
+        instance.reconcile(host: displayed)
+        self.layOut(other)
+        instance.reconcile(host: other)
+
+        XCTAssertTrue(webView.superview === displayed)
+    }
+
+    /// Carousel proximity still outranks layout state: the active page wins even before it lays out.
+    func testActiveCarouselPageOutranksALaidOutOffscreenCopy() {
+        let instance = Self.makeInstance()
+        let webView = instance.webView { WKWebView(frame: .zero) }
+        let offscreenCopy = self.makeWindowedHost(carouselDistance: 2)
+        let activeCopy = self.makeWindowedHost(carouselDistance: 0)
+
+        instance.reconcile(host: offscreenCopy)
+        self.layOut(offscreenCopy)
+        instance.reconcile(host: offscreenCopy)
+        instance.reconcile(host: activeCopy)
+
+        XCTAssertTrue(webView.superview === activeCopy)
+    }
+
+    func testHostReportsItsFirstLayoutOnce() {
+        let host = self.makeWindowedHost()
+        var reports = 0
+        host.onFirstLayout = { _ in reports += 1 }
+
+        self.layOut(host)
+        self.layOut(host)
+
+        XCTAssertTrue(host.hasLaidOut)
+        XCTAssertEqual(reports, 1)
+    }
+
+    func testHostReportsItsFirstLayoutAgainAfterReenteringWindow() throws {
+        let host = self.makeWindowedHost()
+        let container = try XCTUnwrap(host.superview)
+        var reports = 0
+        host.onFirstLayout = { _ in reports += 1 }
+
+        self.layOut(host)
+        host.removeFromSuperview()
+        container.addSubview(host)
+
+        XCTAssertFalse(host.hasLaidOut)
+
+        self.layOut(host)
+        self.layOut(host)
+
+        XCTAssertTrue(host.hasLaidOut)
+        XCTAssertEqual(reports, 2)
+    }
+
     // MARK: - Carousel copies
 
     /// In a looping carousel the off-screen copy at the start of the strip enters the window first; the
@@ -495,6 +594,17 @@ final class WebViewInstanceHostAttachmentTests: TestCase {
 
         self.windows.append(window)
         return host
+    }
+
+    /// Forces a layout pass on `host`, as UIKit/AppKit would for a host that is really on screen.
+    private func layOut(_ host: WebViewHostView) {
+        #if os(macOS)
+        host.needsLayout = true
+        host.layoutSubtreeIfNeeded()
+        #else
+        host.setNeedsLayout()
+        host.layoutIfNeeded()
+        #endif
     }
 
 }

@@ -54,6 +54,7 @@ extension CheckpointEvent {
         var workflowID: String?
         var offeringID: String?
         var checkpointRuleID: String?
+        var traceID: String?
 
         init(
             id: UUID = .init(),
@@ -63,7 +64,8 @@ extension CheckpointEvent {
             result: CheckpointHitResult,
             workflowID: String? = nil,
             offeringID: String? = nil,
-            checkpointRuleID: String? = nil
+            checkpointRuleID: String? = nil,
+            traceID: String? = nil
         ) {
             self.id = id
             self.identifier = identifier
@@ -73,6 +75,7 @@ extension CheckpointEvent {
             self.workflowID = workflowID
             self.offeringID = offeringID
             self.checkpointRuleID = checkpointRuleID
+            self.traceID = traceID
         }
 
     }
@@ -112,6 +115,7 @@ extension CheckpointEvent.Data {
         case workflowID = "workflowId"
         case offeringID = "offeringId"
         case checkpointRuleID = "checkpointRuleId"
+        case traceID = "traceId"
 
     }
 
@@ -130,23 +134,37 @@ extension CheckpointEvent.Data {
                 date: date,
                 result: .presentUI,
                 workflowID: matched.workflow.id,
-                checkpointRuleID: resolved.checkpointRuleID
+                checkpointRuleID: resolved.checkpointRuleID,
+                traceID: resolved.traceID
             )
 
-        case let .matchedOffering(offering):
+        case let .matchedOffering(offering, _):
             self.init(
                 identifier: identifier,
                 date: date,
                 result: .returnData,
                 offeringID: offering.identifier,
-                checkpointRuleID: resolved.checkpointRuleID
+                checkpointRuleID: resolved.checkpointRuleID,
+                traceID: resolved.traceID
+            )
+
+        case .matchedAd:
+            // An ad step is handed to the app's registered presenter rather than presented
+            // by RevenueCat UI.
+            self.init(
+                identifier: identifier,
+                date: date,
+                result: .returnData,
+                checkpointRuleID: resolved.checkpointRuleID,
+                traceID: resolved.traceID
             )
 
         case let .noAction(reason):
             self.init(
                 identifier: identifier,
                 date: date,
-                result: .init(reason)
+                result: .init(reason),
+                traceID: resolved.traceID
             )
         }
     }

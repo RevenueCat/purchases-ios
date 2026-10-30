@@ -145,7 +145,8 @@ class CustomerInfoOfflineEntitlementsStoreKitTest: StoreKitConfigTestCase {
             id: productID,
             productPlanIdentifier: productPlanIdentifier,
             subscription: .init(purchaseDate: Date(), productPlanIdentifier: productPlanIdentifier),
-            entitlement: .init(productIdentifier: productIdentifier, rawData: [:])
+            entitlement: .init(productIdentifier: productIdentifier, rawData: [:]),
+            isSynced: true
         )
         let mapping = ProductEntitlementMapping(entitlementsByProduct: [
             productID: [entitlementID]
@@ -176,14 +177,16 @@ class CustomerInfoOfflineEntitlementsStoreKitTest: StoreKitConfigTestCase {
             id: productIdentifier,
             productPlanIdentifier: nil,
             subscription: .init(purchaseDate: Date()),
-            entitlement: .init(productIdentifier: productIdentifier, rawData: [:])
+            entitlement: .init(productIdentifier: productIdentifier, rawData: [:]),
+            isSynced: true
         )
         let monthlyProduct = PurchasedSK2Product(
             productIdentifier: productIdentifier,
             id: monthlyProductID,
             productPlanIdentifier: monthlyProductPlanIdentifier,
             subscription: .init(purchaseDate: Date(), productPlanIdentifier: monthlyProductPlanIdentifier),
-            entitlement: .init(productIdentifier: productIdentifier, rawData: [:])
+            entitlement: .init(productIdentifier: productIdentifier, rawData: [:]),
+            isSynced: true
         )
         let mapping = ProductEntitlementMapping(entitlementsByProduct: [
             productIdentifier: [baseEntitlementID],
@@ -302,7 +305,7 @@ private extension CustomerInfoOfflineEntitlementsStoreKitTest {
     ) -> CustomerInfo {
         return CustomerInfo(
             from: transactions.map {
-                PurchasedSK2Product(from: $0, sandboxEnvironmentDetector: self.sandboxDetector)
+                PurchasedSK2Product(from: $0, sandboxEnvironmentDetector: self.sandboxDetector, isSynced: true)
             },
             mapping: mapping,
             userID: Self.userID,

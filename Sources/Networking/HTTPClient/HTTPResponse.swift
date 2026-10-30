@@ -69,11 +69,11 @@ extension HTTPResponse: CustomStringConvertible {
 struct VerifiedHTTPResponse<Body: HTTPResponseBody>: HTTPResponseType {
 
     var response: HTTPResponse<Body>
-    var verificationResult: VerificationResult
+    var verificationResult: SignatureVerificationResult
     var originalSource: HTTPResponseOriginalSource
 
     init(response: HTTPResponse<Body>,
-         verificationResult: VerificationResult,
+         verificationResult: SignatureVerificationResult,
          originalSource: HTTPResponseOriginalSource
     ) {
         self.response = response
@@ -82,7 +82,7 @@ struct VerifiedHTTPResponse<Body: HTTPResponseBody>: HTTPResponseType {
     }
 
     init(response: HTTPResponse<Body>,
-         verificationResult: VerificationResult,
+         verificationResult: SignatureVerificationResult,
          isLoadShedderResponse: Bool,
          isFallbackUrlResponse: Bool
     ) {
@@ -97,7 +97,7 @@ struct VerifiedHTTPResponse<Body: HTTPResponseBody>: HTTPResponseType {
         responseHeaders: HTTPClient.ResponseHeaders,
         body: Body,
         requestDate: Date? = nil,
-        verificationResult: VerificationResult,
+        verificationResult: SignatureVerificationResult,
         isLoadShedderResponse: Bool,
         isFallbackUrlResponse: Bool
     ) {
@@ -201,7 +201,7 @@ extension HTTPResponse {
     }
 
     func verified(
-        with verificationResult: VerificationResult,
+        with verificationResult: SignatureVerificationResult,
         isLoadShedderResponse: Bool,
         isFallbackUrlResponse: Bool
     ) -> VerifiedHTTPResponse<Body> {

@@ -14,7 +14,7 @@
 
 import Foundation
 import RevenueCat
-@_spi(CheckpointsInternal) import RevenueCatUI
+@_spi(InviteOnlyCheckpointsApi) import RevenueCatUI
 import SwiftUI
 
 struct HardPaywallUseCaseView: View {
@@ -76,11 +76,12 @@ struct HardPaywallUseCaseView: View {
         Purchases.shared.checkpoint(
             "hard_paywall",
             customVariables: self.customVariablesForNextAttempt(),
-            paywallPresenter: self.model.localPaywallPresenter
+            paywallPresenter: self.model.localPaywallPresenter,
+            errorPresenter: self.model.localErrorPresenter
         ) { result in
-            let obtained = result?.obtainedEntitlements.map(\.entitlementInfo.identifier).sorted() ?? []
+            let obtained = result.flow?.obtainedEntitlements.map(\.entitlementInfo.identifier).sorted() ?? []
             guard !obtained.isEmpty else {
-                self.status = result == nil
+                self.status = result.flow == nil
                     ? "No completed flow. Content remains locked."
                     : "Checkpoint completed without an active entitlement. Content remains locked."
                 return

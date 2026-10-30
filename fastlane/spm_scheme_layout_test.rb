@@ -152,8 +152,10 @@ class SPMSchemeLayoutTest < Minitest::Test
       'test_purchases_ui_service_stripped' => 'RevenueCatUI-Stripped'
     }.each do |lane_name, scheme|
       body = lane_source(fastfile, lane_name)
-      assert_includes body, "workspace: 'RevenueCatUI-SPM.xcworkspace'", lane_name
-      assert_includes body, "scheme: '#{scheme}'", lane_name
+      # test_revenuecatui switches to the Tuist workspace for its hosted pass, so allow a
+      # ternary as long as the SwiftPM branch uses the dedicated workspace and scheme.
+      assert_match(/workspace: (?:[^\n]*: )?'RevenueCatUI-SPM\.xcworkspace'/, body, lane_name)
+      assert_match(/scheme: (?:[^\n]*: )?'#{Regexp.escape(scheme)}'/, body, lane_name)
     end
 
     stripped = lane_source(fastfile, 'test_purchases_ui_service_stripped')

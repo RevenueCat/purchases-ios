@@ -31,6 +31,10 @@ struct PurchasedSK2Product {
     let subscription: CustomerInfoResponse.Subscription
     let entitlement: CustomerInfoResponse.Entitlement
 
+    /// Whether the RevenueCat backend already knows about this purchase.
+    /// `false` when the transaction has not been finished yet, which means it was never successfully posted.
+    let isSynced: Bool
+
 }
 
 extension PurchasedSK2Product: Equatable {}
@@ -40,7 +44,8 @@ extension PurchasedSK2Product {
 
     init(
         from transaction: StoreKit.Transaction,
-        sandboxEnvironmentDetector: SandboxEnvironmentDetector = BundleSandboxEnvironmentDetector.default
+        sandboxEnvironmentDetector: SandboxEnvironmentDetector = BundleSandboxEnvironmentDetector.default,
+        isSynced: Bool
     ) {
         let expiration = transaction.expirationDate
 
@@ -57,7 +62,7 @@ extension PurchasedSK2Product {
             expiresDate: transaction.expirationDate,
             store: .appStore,
             isSandbox: sandboxEnvironmentDetector.isSandbox,
-            ownershipType: transaction.ownershipType.type,
+            ownershipType: PurchaseOwnershipType.from(storeKitOwnershipType: transaction.ownershipType),
             productPlanIdentifier: self.productPlanIdentifier
         )
         self.entitlement = .init(
@@ -66,6 +71,7 @@ extension PurchasedSK2Product {
             purchaseDate: transaction.purchaseDate,
             rawData: (try? transaction.jsonRepresentation.asJSONDictionary()) ?? [:]
         )
+        self.isSynced = isSynced
     }
 
 }
@@ -85,20 +91,6 @@ private extension StoreKit.Transaction.OfferType {
             return .trial
         default:
             return .normal
-        }
-    }
-
-}
-
-@available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-private extension StoreKit.Transaction.OwnershipType {
-
-    var type: PurchaseOwnershipType {
-        switch self {
-        case .familyShared:
-            return  .familyShared
-        default:
-            return .purchased
         }
     }
 
