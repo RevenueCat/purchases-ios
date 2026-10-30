@@ -1082,6 +1082,13 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
         }
     }
 
+    func testUIWorkflowResolutionSharesItsTraceIDWithTheHit() async throws {
+        let resolved = try await self.resolveCheckpoint()
+
+        let workflow = try XCTUnwrap(Self.resolvedWorkflow(resolved.resolution))
+        XCTAssertEqual(workflow.traceId, resolved.traceID)
+    }
+
     func testUIWorkflowResolutionTracksNoStepEvents() async throws {
         _ = try await self.resolve()
 

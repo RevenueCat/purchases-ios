@@ -113,7 +113,6 @@ final class DisabledCheckpointWorkflowResolver: CheckpointWorkflowResolver {
 /// The match is final either way. A matched rule that turns out to be unservable resolves to
 /// ``CheckpointResolutionReason/configurationUnavailable`` instead of falling through to a rule this
 /// customer wasn't the first choice for.
-// swiftlint:disable:next type_body_length
 final class DefaultCheckpointWorkflowResolver: CheckpointWorkflowResolver {
 
     private let checkpointsConfigProvider: CheckpointsConfigProviderType
@@ -320,7 +319,7 @@ final class DefaultCheckpointWorkflowResolver: CheckpointWorkflowResolver {
         }
     }
 
-    private func loadOfferings() async -> Offerings? {
+    func loadOfferings() async -> Offerings? {
         do {
             return try await self.offeringsProvider()
         } catch {
@@ -354,11 +353,11 @@ final class DefaultCheckpointWorkflowResolver: CheckpointWorkflowResolver {
             return Self.unservable(rule, reason: "step '\(step.id)' has invalid gating")
         }
 
+        let singleStep = SingleStepWorkflow(workflowData: workflowData, step: initialStep)
         if initialStep.isOfferingStep {
             return await self.resolveOfferingStep(
                 rule,
-                step: initialStep,
-                in: workflowData,
+                in: singleStep,
                 checkpointIdentifier: checkpointIdentifier,
                 traceID: traceID,
                 stepEvents: &stepEvents
@@ -366,13 +365,7 @@ final class DefaultCheckpointWorkflowResolver: CheckpointWorkflowResolver {
         }
 
         if initialStep.type == Self.adStepType {
-            return await self.resolveAdStep(
-                rule,
-                step: initialStep,
-                in: workflowData,
-                traceID: traceID,
-                stepEvents: &stepEvents
-            )
+            return await self.resolveAdStep(rule, in: singleStep, traceID: traceID, stepEvents: &stepEvents)
         }
 
         if workflow.steps.values.contains(where: \.isOfferingStep) {
@@ -384,74 +377,6 @@ final class DefaultCheckpointWorkflowResolver: CheckpointWorkflowResolver {
         }
 
         return await self.resolveWorkflow(workflowData: workflowData, traceID: traceID)
-    }
-
-    // swiftlint:disable:next function_parameter_count
-    private func resolveOfferingStep(
-        _ rule: CheckpointRule,
-        step: WorkflowStep,
-        in workflowData: WorkflowDataResult,
-        checkpointIdentifier: String,
-        traceID: String,
-        stepEvents: inout [WorkflowEvent]
-    ) async -> CheckpointResolution {
-        guard workflowData.workflow.steps.count == 1 else {
-            return Self.unservable(rule, reason: "an offering step cannot be mixed with other steps")
-        }
-        // Validated before the step starts, so a step that was never servable emits nothing.
-        guard let offeringID = step.offeringIdentifier else {
-            return Self.unservable(rule, reason: "the offering step has no valid offering identifier")
-        }
-
-        return await Self.trackingStepEvents(for: step, in: workflowData, traceID: traceID, into: &stepEvents) {
-            await self.resolveOffering(
-                rule,
-                offeringID: offeringID,
-                checkpointIdentifier: checkpointIdentifier,
-                traceID: traceID
-            )
-        }
-    }
-
-    private func resolveAdStep(
-        _ rule: CheckpointRule,
-        step: WorkflowStep,
-        in workflowData: WorkflowDataResult,
-        traceID: String,
-        stepEvents: inout [WorkflowEvent]
-    ) async -> CheckpointResolution {
-        guard workflowData.workflow.steps.count == 1 else {
-            return Self.unservable(rule, reason: "an ad step cannot be mixed with other steps")
-        }
-
-        return await Self.trackingStepEvents(for: step, in: workflowData, traceID: traceID, into: &stepEvents) {
-            Self.resolveAd(rule, step: step)
-        }
-    }
-
-    /// Serves a workflow whose only step is a terminal `offering` step as an offering the app owns.
-    ///
-    /// Gating has already been validated. Other than that, only the offering identifier is validated,
-    /// since a step of this kind renders nothing.
-    private func resolveOffering(
-        _ rule: CheckpointRule, offeringID: String, checkpointIdentifier: String, traceID: String
-    ) async -> CheckpointResolution {
-        guard let match = await self.offering(identifier: offeringID, for: rule) else {
-            return .noAction(.configurationUnavailable)
-        }
-
-        return Self.makeMatchedOffering(match.offering, checkpointIdentifier: checkpointIdentifier, traceID: traceID)
-    }
-
-    private static func makeMatchedOffering(
-        _ offering: Offering,
-        checkpointIdentifier: String,
-        traceID: String
-    ) -> CheckpointResolution {
-        return .matchedOffering(
-            offering.withPresentedCheckpointIdentifier(checkpointIdentifier, traceID: traceID),
-            traceID: traceID
-        )
     }
 
     private func resolveWorkflow(workflowData: WorkflowDataResult, traceID: String) async -> CheckpointResolution {
@@ -470,21 +395,6 @@ final class DefaultCheckpointWorkflowResolver: CheckpointWorkflowResolver {
                 traceId: traceID
             )
         )
-    }
-
-    /// Loads the offerings and picks `identifier` out of them, logging why the rule can't be served when it
-    /// isn't there. Both resolution paths need the offering and the container it came from.
-    private func offering(
-        identifier: String,
-        for rule: CheckpointRule
-    ) async -> (offering: Offering, offerings: Offerings)? {
-        guard let offerings = await self.loadOfferings() else { return nil }
-        guard let offering = offerings.offering(identifier: identifier) else {
-            Self.unservable(rule, reason: "offering '\(identifier)' is unavailable")
-            return nil
-        }
-
-        return (offering, offerings)
     }
 
     @discardableResult

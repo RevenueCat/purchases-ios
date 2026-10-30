@@ -19,6 +19,21 @@ extension DefaultCheckpointWorkflowResolver {
     static let adIdentifierParam = "ad_identifier"
     static let mediatorParam = "mediator"
 
+    func resolveAdStep(
+        _ rule: CheckpointRule,
+        in workflow: SingleStepWorkflow,
+        traceID: String,
+        stepEvents: inout [WorkflowEvent]
+    ) async -> CheckpointResolution {
+        guard workflow.workflowData.workflow.steps.count == 1 else {
+            return Self.unservable(rule, reason: "an ad step cannot be mixed with other steps")
+        }
+
+        return await Self.trackingStepEvents(for: workflow, traceID: traceID, into: &stepEvents) {
+            Self.resolveAd(rule, step: workflow.step)
+        }
+    }
+
     /// Serves a workflow whose only step is a terminal `ad` step as an ad the app owns.
     ///
     /// Only `ad_identifier` and `mediator` are validated. Anything else the step happens to carry is ignored
