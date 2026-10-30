@@ -53,6 +53,7 @@ enum PaywallFixture: String, CaseIterable {
 
     /// Root, active tabs, and a sheet each declare a different default package.
     case competingSheetDefaults = "competing_sheet_defaults"
+    case rootSelectionTabMemory = "root_selection_tab_memory"
 
     var title: String {
         switch self {
@@ -76,6 +77,8 @@ enum PaywallFixture: String, CaseIterable {
             return "Sheet over content"
         case .competingSheetDefaults:
             return "Competing sheet defaults"
+        case .rootSelectionTabMemory:
+            return "Root selection and tab memory"
         }
     }
 
@@ -100,7 +103,9 @@ enum PaywallFixture: String, CaseIterable {
         case .sheetOverContent:
             return Self.sheetOverContentComponentsData()
         case .competingSheetDefaults:
-            return Self.competingSheetDefaultsComponentsData()
+            return Self.competingSheetDefaultsComponentsData(sharedMonthlyPackage: false)
+        case .rootSelectionTabMemory:
+            return Self.competingSheetDefaultsComponentsData(sharedMonthlyPackage: true)
         }
     }
 
@@ -124,7 +129,7 @@ enum PaywallFixture: String, CaseIterable {
             ]
         case .reportedTabs:
             return Self.reportedTabsPackages(offeringIdentifier: self.rawValue)
-        case .competingSheetDefaults:
+        case .competingSheetDefaults, .rootSelectionTabMemory:
             return [
                 Self.monthlyPackage(offeringIdentifier: self.rawValue),
                 Self.annualPackage(offeringIdentifier: self.rawValue),
@@ -672,7 +677,7 @@ private extension PaywallFixture {
     static let radioGreen = "#7CB518"
 
     /// Competing root, tab, and sheet defaults, with real purchase and dismissal controls.
-    static func competingSheetDefaultsComponentsData() -> PaywallComponentsData {
+    static func competingSheetDefaultsComponentsData(sharedMonthlyPackage: Bool) -> PaywallComponentsData {
         func text(_ lid: String) -> PaywallComponent {
             .text(.init(text: lid, color: .init(light: .hex("#000000"))))
         }
@@ -703,7 +708,9 @@ private extension PaywallFixture {
                 .init(id: "annual", stack: .init(components: [
                     .tabControl(.init()),
                     Self.packageCard(packageID: "$rc_annual", label: "annual", isSelectedByDefault: true)
-                ])),
+                ] + (sharedMonthlyPackage ? [
+                    Self.packageCard(packageID: "$rc_monthly", label: "tab_monthly", isSelectedByDefault: false)
+                ] : []))),
                 .init(id: "monthly_xl", stack: .init(components: [
                     .tabControl(.init()),
                     Self.packageCard(packageID: "monthly_xl", label: "monthly_xl", isSelectedByDefault: true)
@@ -715,7 +722,10 @@ private extension PaywallFixture {
             componentsConfig: .init(base: .init(stack: .init(components: [
                 Self.packageCard(packageID: "$rc_monthly", label: "root_monthly", isSelectedByDefault: true),
                 tabs, text("root_price"), button("open", action: .navigateTo(destination: .sheet(sheet: sheet)))
-            ], spacing: 16, padding: .init(top: 60, bottom: 24, leading: 16, trailing: 16)),
+            ] + (sharedMonthlyPackage ? [
+                .purchaseButton(.init(stack: .init(components: [text("root_purchase")]),
+                                      action: .inAppCheckout, method: .inAppCheckout, name: nil))
+            ] : []), spacing: 16, padding: .init(top: 60, bottom: 24, leading: 16, trailing: 16)),
             stickyFooter: nil, background: .color(.init(light: .hex("#ffffff"))))),
             componentsLocalizations: ["en_US": [
                 "root_monthly": .string("Root monthly"), "root_monthly_selected": .string("Root monthly selected"),
@@ -725,6 +735,8 @@ private extension PaywallFixture {
                 "annual_tab": .string("Annual tab"), "monthly_xl_tab": .string("Monthly XL tab"),
                 "open": .string("Open plans"), "close": .string("Close plans"),
                 "purchase": .string("Purchase from sheet"),
+                "root_purchase": .string("Purchase root selection"),
+                "tab_monthly": .string("Tab monthly"), "tab_monthly_selected": .string("Tab monthly selected"),
                 "root_price": .string("Selected price: {{ product.price }}"),
                 "sheet_price": .string("Sheet price: {{ product.price }}")
             ]], revision: 1, defaultLocaleIdentifier: "en_US"

@@ -66,4 +66,27 @@ final class SheetAccessibilityUITests: XCTestCase {
         XCTAssertFalse(app.buttons["Monthly XL selected"].exists)
     }
 
+    func testRootSelectionReplacesEarlierTabChoiceAfterRoundTrip() throws {
+        let app = XCUIApplication()
+        app.launchEnvironment["PAYWALL_FIXTURE"] = "root_selection_tab_memory"
+        app.launch()
+        XCTAssertTrue(app.buttons["Annual"].waitForExistence(timeout: 30), app.debugDescription)
+
+        app.buttons["Annual"].tap()
+        XCTAssertTrue(app.buttons["Annual selected"].waitForExistence(timeout: 5))
+        app.buttons["Root monthly"].tap()
+        XCTAssertTrue(app.buttons["Tab monthly selected"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["Root monthly selected"].exists)
+
+        app.buttons["Monthly XL tab"].tap()
+        XCTAssertTrue(app.buttons["Monthly XL selected"].waitForExistence(timeout: 5))
+        app.buttons["Annual tab"].tap()
+        XCTAssertTrue(app.buttons["Annual tab"].exists)
+
+        app.buttons["Purchase root selection"].tap()
+        let result = app.alerts["Purchase callback"]
+        XCTAssertTrue(result.waitForExistence(timeout: 5), app.debugDescription)
+        XCTAssertTrue(result.staticTexts["$rc_monthly"].exists, result.debugDescription)
+    }
+
 }
