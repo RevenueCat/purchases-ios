@@ -168,6 +168,7 @@ import AppKit
          *
          * - Parameter confirmInScene: The scene the system uses to show the purchase confirmation UI.
          * - Note: This value anchors purchase UI that supports scene-aware presentation.
+         *   This is not supported when using StoreKit 1.
          *
          * Availability: iOS 17.0+, macCatalyst 17.0+, tvOS 17.0+, visionOS 1.0+
          */
@@ -189,6 +190,7 @@ import AppKit
          *
          * - Parameter confirmInWindow: The window to show the purchase confirmation UI in proximity to.
          * - Note: This value anchors purchase UI that supports window-aware presentation.
+         *   This is not supported when using StoreKit 1.
          *
          * Availability: macOS 15.2+
          */
