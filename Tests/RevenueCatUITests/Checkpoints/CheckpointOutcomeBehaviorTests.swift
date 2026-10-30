@@ -292,11 +292,12 @@ final class CheckpointOutcomeBehaviorTests: TestCase {
         let errorPresenter = ErrorPresentationRecorder()
         let manager = CheckpointsManager(
             resolveCheckpoint: { _, _ in
-                .matchedAd(ResolvedAdStep(
+                let step = ResolvedAdStep(
                     adIdentifier: "ad-unit",
                     mediator: MediatorName(rawValue: "admob"),
                     adFormat: .interstitial
-                ))
+                )
+                return .matchedAd(ResolvedAdWorkflow(initialStep: step, steps: ["ad_step": step]))
             }
         )
 
@@ -316,11 +317,12 @@ final class CheckpointOutcomeBehaviorTests: TestCase {
         let errorPresenter = ErrorPresentationRecorder()
         let manager = CheckpointsManager(
             resolveCheckpoint: { _, _ in
-                .matchedAd(ResolvedAdStep(
+                let step = ResolvedAdStep(
                     adIdentifier: "ad-unit",
                     mediator: MediatorName(rawValue: "admob"),
                     adFormat: .interstitial
-                ))
+                )
+                return .matchedAd(ResolvedAdWorkflow(initialStep: step, steps: ["ad_step": step]))
             }
         )
         manager.adPresenter = FailingAdPresenter(error: expectedError)
@@ -516,8 +518,8 @@ private final class FailingCheckpointPresenter: CheckpointPresenterType {
         throw self.error
     }
 
-    func presentAd(
-        _ presentation: AdPresentationRequest,
+    func presentAdWorkflow(
+        _ presentation: AdWorkflowPresentationRequest,
         adPresenter: AdPresenter
     ) async throws -> CheckpointPresentationOutcome {
         throw self.error
@@ -547,8 +549,8 @@ private final class OutcomeCheckpointPresenter: CheckpointPresenterType {
         return self.outcome
     }
 
-    func presentAd(
-        _ presentation: AdPresentationRequest,
+    func presentAdWorkflow(
+        _ presentation: AdWorkflowPresentationRequest,
         adPresenter: AdPresenter
     ) async throws -> CheckpointPresentationOutcome {
         return self.outcome
@@ -589,8 +591,8 @@ private final class TerminalErrorCheckpointPresenter: CheckpointPresenterType {
         return .failed
     }
 
-    func presentAd(
-        _ presentation: AdPresentationRequest,
+    func presentAdWorkflow(
+        _ presentation: AdWorkflowPresentationRequest,
         adPresenter: AdPresenter
     ) async throws -> CheckpointPresentationOutcome {
         return .failed
