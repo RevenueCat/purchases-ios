@@ -81,7 +81,7 @@ struct ResolvedCheckpoint {
             self.init(resolution, checkpointRuleID: rule.id, traceID: traceID)
 
         case .noAction:
-            self.init(resolution)
+            self.init(resolution, checkpointRuleID: nil, traceID: traceID)
         }
     }
 

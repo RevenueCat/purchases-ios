@@ -984,12 +984,13 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
     func testTerminalOfferingStepWhoseOfferingIsUnavailableTracksStartedButNotCompleted() async throws {
         self.stubOfferingWorkflow(offeringID: "missing")
 
-        _ = try await self.resolve()
+        let resolved = try await self.resolveCheckpoint(identifier: nil)
 
         XCTAssertEqual(self.trackedEvents.count, 1)
-        guard case .stepStarted = self.trackedEvents[0] else {
+        guard case let .stepStarted(_, started) = self.trackedEvents[0] else {
             return XCTFail("Expected stepStarted, got \(self.trackedEvents)")
         }
+        XCTAssertEqual(started.traceId, resolved.traceID)
     }
 
     func testTerminalOfferingStepEventsCarryTheBlobRefAndExperimentData() async throws {
