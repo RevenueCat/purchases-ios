@@ -869,6 +869,29 @@ final class PaywallCacheWarmingTests: TestCase {
         expect(mockRegistrar.didRegister).to(beTrue())
     }
 
+    func testFontOverridePreservesCanonicalCacheKeyAndHashValidation() async throws {
+        let original = try XCTUnwrap(URL(string: "https://fonts.pawwalls.com/font.ttf"))
+        let replacement = try XCTUnwrap(URL(string: "https://paywall-fonts.revenuecat-static.net/font.ttf"))
+        let data = "font contents".asData
+        let session = MockSession()
+        session.dataFromURL = data
+        session.urlResponse = HTTPURLResponse(url: replacement, statusCode: 200, httpVersion: nil, headerFields: nil)
+        let files = MockFileManager()
+        let registrar = MockRegistrar()
+        let manager = DefaultPaywallFontsManager(
+            fileManager: files,
+            session: session,
+            registrar: registrar,
+            assetURLResolver: { _ in replacement }
+        )
+
+        try await manager.installFont(.init(name: "test-font", fontFamily: nil, url: original, hash: data.md5String))
+
+        XCTAssertEqual(session.requestedURL, replacement)
+        XCTAssertEqual(files.didWriteDataToURL?.lastPathComponent, original.absoluteString.asData.md5String + ".ttf")
+        XCTAssertTrue(registrar.didRegister)
+    }
+
     func testDownloadFont_ThrowsHashValidationError() async {
         let mockSession = MockSession()
         mockSession.urlResponse = HTTPURLResponse(
@@ -1594,6 +1617,7 @@ private actor MockCacheWarmingFileRepository: FileRepositoryType {
 private final class MockSession: FontDownloadSession {
 
     var didCallDataFrom = false
+    var requestedURL: URL?
 
     var dataFromURL: Data?
     var dataFromURLCallCount = 0
@@ -1601,6 +1625,7 @@ private final class MockSession: FontDownloadSession {
     var urlResponse: URLResponse?
 
     func data(from url: URL) async throws -> (Data, URLResponse) {
+        self.requestedURL = url
         didCallDataFrom = true
         dataFromURLCallCount += 1
         return (dataFromURL ?? Data(), urlResponse ?? URLResponse())

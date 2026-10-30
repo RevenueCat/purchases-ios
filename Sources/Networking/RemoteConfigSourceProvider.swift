@@ -7,6 +7,42 @@
 
 import Foundation
 
+enum PaywallAssetURLResolver {
+
+    static func resolve(_ url: URL, manager: RemoteConfigManagerType) async -> URL {
+        return (try? await manager.readConsistent {
+            let sources = await manager.topic(.sources, policy: .cachedOnly)
+            return Self.resolve(url, sources: sources)
+        }) ?? url
+    }
+
+    static func resolve(_ url: URL, sources: RemoteConfiguration.ConfigTopic?) -> URL {
+        guard var original = URLComponents(url: url, resolvingAgainstBaseURL: false),
+              original.scheme?.lowercased() == "https",
+              let host = original.host?.lowercased(),
+              ["assets.pawwalls.com", "fonts.pawwalls.com"].contains(host),
+              original.user == nil, original.password == nil,
+              original.port == nil || original.port == 443,
+              case .object(let overrides)? = sources?["assets"]?.content["base_url_overrides"],
+              case .string(let replacement)? = overrides["https://\(host)"],
+              let destination = URLComponents(string: replacement),
+              destination.scheme?.lowercased() == "https",
+              destination.host?.isEmpty == false,
+              destination.user == nil, destination.password == nil,
+              destination.port == nil || destination.port == 443,
+              destination.path.isEmpty || destination.path == "/",
+              destination.query == nil, destination.fragment == nil else {
+            return url
+        }
+
+        original.scheme = destination.scheme
+        original.host = destination.host
+        original.port = destination.port
+        return original.url ?? url
+    }
+
+}
+
 /// A remote config source: a URL plus the metadata used to order sources.
 struct RemoteConfigSource: WeightedSource {
 

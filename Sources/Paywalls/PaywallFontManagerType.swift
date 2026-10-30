@@ -112,15 +112,18 @@ actor DefaultPaywallFontsManager: PaywallFontManagerType {
     private let fileManager: FontsFileManaging
     private let session: FontDownloadSession
     private let registrar: FontRegistrar
+    private let assetURLResolver: @Sendable (URL) async -> URL
 
     init(
         fileManager: FontsFileManaging = DefaultFontFileManager(),
         session: FontDownloadSession = URLSession.shared,
-        registrar: FontRegistrar = SystemFontRegistry()
+        registrar: FontRegistrar = SystemFontRegistry(),
+        assetURLResolver: @escaping @Sendable (URL) async -> URL = { await Purchases.resolvedPaywallAssetURL($0) }
     ) {
         self.fileManager = fileManager
         self.session = session
         self.registrar = registrar
+        self.assetURLResolver = assetURLResolver
         do {
             self.fontsDirectory = try DefaultPaywallFontsManager.fontsDirectory(fileManager: fileManager)
         } catch {
@@ -147,7 +150,8 @@ actor DefaultPaywallFontsManager: PaywallFontManagerType {
 
         if !fileManager.fileExists(atPath: destination.path) {
             Logger.verbose(Strings.paywalls.triggering_font_download(fontURL: remoteURL))
-            let (data, urlResponse) = try await session.data(from: remoteURL)
+            let downloadURL = await self.assetURLResolver(remoteURL)
+            let (data, urlResponse) = try await session.data(from: downloadURL)
 
             guard let httpResponse = urlResponse as? HTTPURLResponse else {
                 throw FontsManagerError.invalidResponse

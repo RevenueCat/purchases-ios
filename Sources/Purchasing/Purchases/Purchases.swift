@@ -2076,6 +2076,12 @@ public extension Purchases {
     @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
     static let paywallImageDownloadSession: URLSession = PaywallCacheWarming.downloadSession
 
+    /// Resolves managed image and font downloads using cached config, without starting a config request.
+    @_spi(Internal) static func resolvedPaywallAssetURL(_ url: URL) async -> URL {
+        guard let purchases = Self.purchases.value else { return url }
+        return await PaywallAssetURLResolver.resolve(url, manager: purchases.remoteConfigManager)
+    }
+
 }
 
 // MARK: - Reward Configuration
