@@ -600,11 +600,17 @@ final class PurchasesOrchestrator {
                           quantity: quantity,
                           completion: completionWithTracking)
         } else if let simulatedStoreProduct = product.testStoreProduct {
-            self.handlePurchase(simulatedStoreProduct: simulatedStoreProduct,
-                                presentedOfferingContext: package?.presentedOfferingContext,
-                                paywallEvent: paywallEvent,
-                                metadata: metadata,
-                                completion: completionWithTracking)
+            let context = SimulatedStorePurchaseContext(
+                presentedOfferingContext: package?.presentedOfferingContext,
+                paywallEvent: paywallEvent,
+                metadata: metadata,
+                presentationContext: presentationContext
+            )
+            self.handlePurchase(
+                simulatedStoreProduct: simulatedStoreProduct,
+                context: context,
+                completion: completionWithTracking
+            )
         } else {
             fatalError("Unrecognized product: \(product)")
         }
@@ -2269,31 +2275,43 @@ private extension PurchasesOrchestrator {
 
 // MARK: - Simulated Store Purchases
 
+private struct SimulatedStorePurchaseContext {
+
+    let presentedOfferingContext: PresentedOfferingContext?
+    let paywallEvent: PaywallEvent?
+    let metadata: [String: String]?
+    let presentationContext: PresentationContext?
+
+}
+
 private extension PurchasesOrchestrator {
 
-    func handlePurchase(simulatedStoreProduct: SimulatedStoreProduct,
-                        presentedOfferingContext: PresentedOfferingContext?,
-                        paywallEvent: PaywallEvent?,
-                        metadata: [String: String]?,
-                        completion: @escaping PurchaseCompletedBlock) {
+    func handlePurchase(
+        simulatedStoreProduct: SimulatedStoreProduct,
+        context: SimulatedStorePurchaseContext,
+        completion: @escaping PurchaseCompletedBlock
+    ) {
         if self.systemInfo.isSimulatedStoreAPIKey {
-            self.purchase(simulatedStoreProduct: simulatedStoreProduct,
-                          presentedOfferingContext: presentedOfferingContext,
-                          paywallEvent: paywallEvent,
-                          metadata: metadata,
-                          completion: completion)
+            self.purchase(
+                simulatedStoreProduct: simulatedStoreProduct,
+                context: context,
+                completion: completion
+            )
         } else {
             self.handleTestProductNotAvailableForPurchase(completion)
         }
     }
 
-    private func purchase(simulatedStoreProduct: SimulatedStoreProduct,
-                          presentedOfferingContext: PresentedOfferingContext?,
-                          paywallEvent: PaywallEvent?,
-                          metadata: [String: String]?,
-                          completion: @escaping PurchaseCompletedBlock) {
+    private func purchase(
+        simulatedStoreProduct: SimulatedStoreProduct,
+        context: SimulatedStorePurchaseContext,
+        completion: @escaping PurchaseCompletedBlock
+    ) {
         Task {
-            let result = await self.simulatedStorePurchaseHandler.purchase(product: simulatedStoreProduct)
+            let result = await self.simulatedStorePurchaseHandler.purchase(
+                product: simulatedStoreProduct,
+                presentationContext: context.presentationContext
+            )
             switch result {
             case .cancel:
                 let customerInfo = try? await self.customerInfoManager.customerInfo(appUserID: self.appUserID,
@@ -2304,9 +2322,9 @@ private extension PurchasesOrchestrator {
             case .success(let transaction):
                 do {
                     let customerInfo = try await self.handlePurchasedTransaction(
-                        transaction, .purchase, metadata,
-                        presentedOfferingContext: presentedOfferingContext,
-                        presentedPaywall: paywallEvent
+                        transaction, .purchase, context.metadata,
+                        presentedOfferingContext: context.presentedOfferingContext,
+                        presentedPaywall: context.paywallEvent
                     )
                     await completion(transaction, customerInfo, nil, false)
                 } catch {

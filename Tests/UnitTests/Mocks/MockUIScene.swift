@@ -23,4 +23,11 @@ extension UIScene {
         return sceneClass.init() as? UIScene
     }
 }
+
+extension UIWindowScene {
+    static func mockWindowScene() -> UIWindowScene? {
+        guard let sceneClass = NSClassFromString("UIWindowScene") as? NSObject.Type else { return nil }
+        return sceneClass.init() as? UIWindowScene
+    }
+}
 #endif
