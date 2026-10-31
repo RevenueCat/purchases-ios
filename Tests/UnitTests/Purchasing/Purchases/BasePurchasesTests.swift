@@ -762,11 +762,36 @@ final class MockRemoteConfigManager: RemoteConfigManagerType {
     var invokedCachedBlobDataParameters: [(topic: RemoteConfigTopic, itemKey: String)] {
         return self._invokedCachedBlobDataParameters.value
     }
+    /// A hold flag and the reads it has held, kept under one lock so a read can't decide to hold
+    /// after `release()` has drained.
+    private struct HeldReads<Read> {
+        var isHolding = false
+        private var reads: [Read] = []
+
+        /// Stores `read` and returns `true` if reads are being held.
+        mutating func holdIfNeeded(_ read: Read) -> Bool {
+            guard self.isHolding else { return false }
+            self.reads.append(read)
+            return true
+        }
+
+        /// Stops holding and returns every held read.
+        mutating func release() -> [Read] {
+            self.isHolding = false
+            let reads = self.reads
+            self.reads.removeAll()
+            return reads
+        }
+    }
+
     /// When `true`, cache-only `blobData(for:itemKey:policy:)` suspends until `completeStoredCachedBlobReads()` is
     /// called, allowing tests to advance the config generation while a prewarm is in flight.
-    var shouldStoreCachedBlobDataCompletion = false
+    var shouldStoreCachedBlobDataCompletion: Bool {
+        get { return self._heldCachedBlobReads.value.isHolding }
+        set { self._heldCachedBlobReads.modify { $0.isHolding = newValue } }
+    }
     private typealias StoredCachedBlobRead = (data: Data?, continuation: CheckedContinuation<Data?, Never>)
-    private let _storedCachedBlobReads: Atomic<[StoredCachedBlobRead]> = .init([])
+    private let _heldCachedBlobReads: Atomic<HeldReads<StoredCachedBlobRead>> = .init(.init())
     // Atomic because UiConfigProvider now fetches its parts concurrently, so this can be appended to
     // from multiple tasks at once.
     private let _invokedBlobDataParameters: Atomic<[(topic: RemoteConfigTopic, itemKey: String)]> = .init([])
@@ -783,12 +808,15 @@ final class MockRemoteConfigManager: RemoteConfigManagerType {
     var invokedTopicCount: Int { return self._invokedTopicCount.value }
     /// When `true`, `topic(_:)` suspends until `completeStoredTopic()` resumes every stored
     /// waiter (there can be several: e.g. a gated delivery plus a background refresh).
-    var shouldStoreTopicCompletion = false
+    var shouldStoreTopicCompletion: Bool {
+        get { return self._heldTopicReads.value.isHolding }
+        set { self._heldTopicReads.modify { $0.isHolding = newValue } }
+    }
     /// Restricts held topic reads when `shouldStoreTopicCompletion` is true. `nil` preserves the
     /// default behavior of holding every topic.
     var storedTopicCompletionTopics: Set<RemoteConfigTopic>?
-    private let _storedTopicContinuations: Atomic<[CheckedContinuation<RemoteConfiguration.ConfigTopic?, Never>]> =
-        .init([])
+    private let _heldTopicReads: Atomic<HeldReads<CheckedContinuation<RemoteConfiguration.ConfigTopic?, Never>>> =
+        .init(.init())
 
     func topic(_ topic: RemoteConfigTopic, policy: RemoteConfigReadPolicy) async -> RemoteConfiguration.ConfigTopic? {
         guard policy == .fetchIfNeeded else {
@@ -800,10 +828,13 @@ final class MockRemoteConfigManager: RemoteConfigManagerType {
             return self.stubbedTopics[topic]
         }
         return await withCheckedContinuation { continuation in
+            let isHeld = self._heldTopicReads.modify { $0.holdIfNeeded(continuation) }
             // Store before incrementing, so a test polling `invokedTopicCount` can never
             // observe readiness before `completeStoredTopic()` has something to resume.
-            self._storedTopicContinuations.modify { $0.append(continuation) }
             self._invokedTopicCount.modify { $0 += 1 }
+            if !isHeld {
+                continuation.resume(returning: self.stubbedTopics[topic])
+            }
         }
     }
 
@@ -815,16 +846,17 @@ final class MockRemoteConfigManager: RemoteConfigManagerType {
         }
         let data = self.stubbedBlobData[topic]?[itemKey]
         return await withCheckedContinuation { continuation in
-            self._storedCachedBlobReads.modify { $0.append((data, continuation)) }
             // Capture the data before suspension so a test can replace the config and still resume
             // this older local read.
+            if !self._heldCachedBlobReads.modify({ $0.holdIfNeeded((data, continuation)) }) {
+                continuation.resume(returning: data)
+            }
         }
     }
 
     /// Resumes every held cached-blob read with the bytes that were available when that read started.
     func completeStoredCachedBlobReads() {
-        self.shouldStoreCachedBlobDataCompletion = false
-        for read in self._storedCachedBlobReads.getAndSet([]) {
+        for read in self._heldCachedBlobReads.modify({ $0.release() }) {
             read.continuation.resume(returning: read.data)
         }
     }
@@ -841,19 +873,21 @@ final class MockRemoteConfigManager: RemoteConfigManagerType {
     /// Resumes every waiter held while `shouldStoreTopicCompletion` was `true`, and stops
     /// holding subsequent calls.
     func completeStoredTopic(with result: RemoteConfiguration.ConfigTopic? = nil) {
-        self.shouldStoreTopicCompletion = false
-        for continuation in self._storedTopicContinuations.getAndSet([]) {
+        for continuation in self._heldTopicReads.modify({ $0.release() }) {
             continuation.resume(returning: result)
         }
     }
 
     /// When `true`, `blobData(for:itemKey:)` suspends until `completeStoredBlobReads()` is
     /// called, so tests can control the timing of a caller resolving blob-backed data.
-    var shouldStoreBlobDataCompletion = false
+    var shouldStoreBlobDataCompletion: Bool {
+        get { return self._heldBlobReads.value.isHolding }
+        set { self._heldBlobReads.modify { $0.isHolding = newValue } }
+    }
     private typealias StoredBlobRead = (
         topic: RemoteConfigTopic, itemKey: String, continuation: CheckedContinuation<Data?, Never>
     )
-    private let _storedBlobReads: Atomic<[StoredBlobRead]> = .init([])
+    private let _heldBlobReads: Atomic<HeldReads<StoredBlobRead>> = .init(.init())
 
     func blobData(for topic: RemoteConfigTopic, itemKey: String) async -> Data? {
         guard self.shouldStoreBlobDataCompletion else {
@@ -862,16 +896,18 @@ final class MockRemoteConfigManager: RemoteConfigManagerType {
         }
         return await withCheckedContinuation { continuation in
             // Store before recording, so a poller can't observe readiness with nothing to resume.
-            self._storedBlobReads.modify { $0.append((topic, itemKey, continuation)) }
+            let isHeld = self._heldBlobReads.modify { $0.holdIfNeeded((topic, itemKey, continuation)) }
             self._invokedBlobDataParameters.modify { $0.append((topic, itemKey)) }
+            if !isHeld {
+                continuation.resume(returning: self.stubbedBlobData[topic]?[itemKey])
+            }
         }
     }
 
     /// Resumes every held blob read with its key's stubbed data and stops holding subsequent
     /// reads, so sequential read chains (like `mergeItemsBlobData`'s loop) run to completion.
     func completeStoredBlobReads() {
-        self.shouldStoreBlobDataCompletion = false
-        for read in self._storedBlobReads.getAndSet([]) {
+        for read in self._heldBlobReads.modify({ $0.release() }) {
             read.continuation.resume(returning: self.stubbedBlobData[read.topic]?[read.itemKey])
         }
     }
