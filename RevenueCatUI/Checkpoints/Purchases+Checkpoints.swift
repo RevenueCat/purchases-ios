@@ -16,6 +16,7 @@ import Foundation
 @_spi(Internal) import RevenueCat
 
 #if os(iOS) && !targetEnvironment(macCatalyst)
+import UIKit
 
 @_spi(InviteOnlyCheckpointsApi)
 @available(iOS 15.0, *)
@@ -89,6 +90,37 @@ public extension Purchases {
             presentationMode: presentationMode,
             paywallPresenter: paywallPresenter,
             errorPresenter: errorPresenter
+        )
+        self.performCheckpoint(identifier, params: params, onPassed: onPassed)
+    }
+
+    /// Passes a checkpoint and presents SDK-owned UI in a specific window scene.
+    ///
+    /// Use this overload in multi-window applications to keep checkpoint flows, paywalls, and errors in the scene
+    /// associated with the interaction that triggered the checkpoint. Custom presenters continue to own their UI.
+    /// - Parameters:
+    ///   - identifier: The checkpoint identifier configured in the RevenueCat dashboard.
+    ///   - windowScene: The window scene in which SDK-owned checkpoint UI is presented.
+    ///   - customVariables: Values usable in checkpoint targeting rules, feature events, and the presented flow.
+    ///   - presentationMode: How the SDK presents a matching workflow or its own paywall. Defaults to a sheet.
+    ///   - paywallPresenter: A custom presenter used if this checkpoint selects an offering.
+    ///   - errorPresenter: A custom presenter used when the SDK presents errors from this checkpoint.
+    ///   - onPassed: Called on the main actor when the checkpoint passes.
+    func checkpoint(
+        _ identifier: String,
+        in windowScene: UIWindowScene,
+        customVariables: [String: CustomVariableValue] = [:],
+        presentationMode: FlowPresentationMode = .default,
+        paywallPresenter: PaywallPresentationHandler? = nil,
+        errorPresenter: ErrorPresentationHandler? = nil,
+        _ onPassed: @escaping (CheckpointResult) -> Void
+    ) {
+        let params = CheckpointCallParams(
+            customVariables: customVariables,
+            presentationMode: presentationMode,
+            paywallPresenter: paywallPresenter,
+            errorPresenter: errorPresenter,
+            presentationContext: .init(scene: windowScene)
         )
         self.performCheckpoint(identifier, params: params, onPassed: onPassed)
     }

@@ -310,50 +310,6 @@ final class DefaultPaywallPresenter: NSObject, PaywallPresenter, PaywallViewCont
         self.presentationContextProvider = presentationContextProvider
     }
 
-    func present(
-        params: PaywallPresentationParams,
-        completion: @escaping PaywallPresentationCompletion
-    ) {
-        guard self.session == nil else {
-            Self.presentStartupError(
-                .operationAlreadyInProgress,
-                params: params,
-                completion: completion
-            )
-            return
-        }
-        guard let presentationContext = self.presentationContextProvider() else {
-            Self.presentStartupError(
-                .noPresentationContext,
-                params: params,
-                completion: completion
-            )
-            return
-        }
-
-        let controller = makeDefaultCheckpointPaywallViewController(
-            params: params,
-            workflowPresentationErrorHandler: { [weak self] error, behavior in
-                self?.handleWorkflowPresentationError(error, behavior: behavior)
-            }
-        )
-        self.prepareForPresentation(
-            params: params,
-            completion: completion,
-            presentedViewController: controller
-        )
-        controller.delegate = self
-        controller.modalPresentationStyle = params.presentationMode.modalPresentationStyle
-        presentationContext.present(controller, animated: true)
-        if controller.presentingViewController == nil, let session = self.takeSession() {
-            Self.presentStartupError(
-                .presentationFailed,
-                params: session.params,
-                completion: session.completion
-            )
-        }
-    }
-
     private func finish(_ controller: PaywallViewController) {
         guard let session = self.takeSession() else { return }
         session.completion(Self.presentationResult(
@@ -565,6 +521,62 @@ final class DefaultPaywallPresenter: NSObject, PaywallPresenter, PaywallViewCont
         )
     }
     #endif
+
+}
+
+@MainActor
+@available(iOS 15.0, macOS 12.0, *)
+extension DefaultPaywallPresenter {
+
+    func present(
+        params: PaywallPresentationParams,
+        completion: @escaping PaywallPresentationCompletion
+    ) {
+        guard self.session == nil else {
+            Self.presentStartupError(
+                .operationAlreadyInProgress,
+                params: params,
+                completion: completion
+            )
+            return
+        }
+        let presentationContext: UIViewController?
+        if let context = params.presentationContext {
+            presentationContext = context.presentationViewController
+        } else {
+            presentationContext = self.presentationContextProvider()
+        }
+        guard let presentationContext else {
+            Self.presentStartupError(
+                .noPresentationContext,
+                params: params,
+                completion: completion
+            )
+            return
+        }
+
+        let controller = makeDefaultCheckpointPaywallViewController(
+            params: params,
+            workflowPresentationErrorHandler: { [weak self] error, behavior in
+                self?.handleWorkflowPresentationError(error, behavior: behavior)
+            }
+        )
+        self.prepareForPresentation(
+            params: params,
+            completion: completion,
+            presentedViewController: controller
+        )
+        controller.delegate = self
+        controller.modalPresentationStyle = params.presentationMode.modalPresentationStyle
+        presentationContext.present(controller, animated: true)
+        if controller.presentingViewController == nil, let session = self.takeSession() {
+            Self.presentStartupError(
+                .presentationFailed,
+                params: session.params,
+                completion: session.completion
+            )
+        }
+    }
 
 }
 

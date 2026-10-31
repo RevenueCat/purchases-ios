@@ -52,6 +52,7 @@ final class DefaultErrorPresenter: ErrorPresenter {
     private var pendingPresentation: Presentation?
 
     init(
+        presentationContext: PresentationContext? = nil,
         presentationContextProvider: @escaping PresentationContextProvider = {
             UIApplication.extensionSafeApplication?.currentPresentationViewController
         },
@@ -66,7 +67,12 @@ final class DefaultErrorPresenter: ErrorPresenter {
             )
         }
     ) {
-        self.presentationContextProvider = presentationContextProvider
+        self.presentationContextProvider = {
+            if let presentationContext {
+                return presentationContext.presentationViewController
+            }
+            return presentationContextProvider()
+        }
         self.preferredUILocaleProvider = preferredUILocaleProvider
         self.alertFactory = alertFactory
     }
@@ -212,7 +218,10 @@ final class DefaultErrorPresenter: ErrorPresenter {
 
     typealias PreferredUILocaleProvider = @MainActor () -> String?
 
-    init(preferredUILocaleProvider: @escaping PreferredUILocaleProvider = { nil }) {}
+    init(
+        presentationContext _: PresentationContext? = nil,
+        preferredUILocaleProvider: @escaping PreferredUILocaleProvider = { nil }
+    ) {}
 
     func present(params: ErrorPresentationParams, completion: ErrorPresentationCompletion) {
         completion.complete()
