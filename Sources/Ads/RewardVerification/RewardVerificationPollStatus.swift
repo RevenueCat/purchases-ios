@@ -17,7 +17,8 @@ import Foundation
 enum RewardVerificationPollStatus: Sendable, Equatable {
 
     /// `moreRewards` contains additional rewards only; it does not repeat `reward`.
-    case verified(reward: AdReward, moreRewards: [AdReward])
+    /// `customerInfo` is the subscriber info the backend embedded with the grant, when present.
+    case verified(reward: AdReward, moreRewards: [AdReward], customerInfo: CustomerInfo? = nil)
 
     /// Verification has not yet completed; the caller should keep polling.
     case pending

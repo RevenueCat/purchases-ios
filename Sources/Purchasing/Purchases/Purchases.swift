@@ -2227,7 +2227,7 @@ extension Purchases {
               #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) else { return }
 
         switch outcome {
-        case let .verified(reward, moreRewards):
+        case let .verified(reward, moreRewards, _):
             let verified = AdRewardVerified(
                 networkName: trackingMetadata.networkName,
                 mediatorName: trackingMetadata.mediatorName,
@@ -2270,7 +2270,7 @@ extension Purchases {
         clientTransactionID: String
     ) async -> RewardVerificationResult {
         #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
-        if case let .verified(reward, moreRewards) = outcome {
+        if case let .verified(reward, moreRewards, customerInfo) = outcome {
             let rewards = [reward] + moreRewards
             if rewards.contains(where: { $0.virtualCurrency != nil }) {
                 Logger.debug(AdsStrings.reward_verification_virtual_currency_invalidating_cache(
@@ -2278,37 +2278,23 @@ extension Purchases {
                 ))
                 self.invalidateVirtualCurrenciesCache()
             }
-            if rewards.contains(where: { $0.entitlement != nil }),
-               await self.refreshCustomerInfoAfterEntitlementGrant(clientTransactionID: clientTransactionID)
-                == false {
-                // Do not surface entitlement rewards that could not be reflected locally yet.
-                return .failed
+            if rewards.contains(where: { $0.entitlement != nil }) {
+                if let customerInfo {
+                    Logger.debug(AdsStrings.reward_verification_entitlement_caching_customer_info(
+                        transactionID: clientTransactionID
+                    ))
+                    self.customerInfoManager.cache(customerInfo: customerInfo, appUserID: self.appUserID)
+                }
             }
         }
         #endif
         switch outcome {
-        case let .verified(reward, moreRewards):
+        case let .verified(reward, moreRewards, _):
             return .verified(reward, moreRewards: moreRewards)
         case .failed:
             return .failed
         }
     }
-
-    #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
-    /// Refreshes `CustomerInfo` after entitlement grants, retrying transient failures.
-    private func refreshCustomerInfoAfterEntitlementGrant(clientTransactionID: String) async -> Bool {
-        Logger.debug(AdsStrings.reward_verification_entitlement_fetching_customer_info(
-            transactionID: clientTransactionID
-        ))
-        let refreshed = await self.fetchCustomerInfoRetryingTransientErrors(appUserID: self.appUserID)
-        if refreshed == nil {
-            Logger.warn(AdsStrings.reward_verification_entitlement_customer_info_refresh_failed(
-                transactionID: clientTransactionID
-            ))
-        }
-        return refreshed != nil
-    }
-    #endif
 
 }
 
@@ -2337,7 +2323,7 @@ extension Purchases {
 
         switch response.status {
         case let .verified(reward, moreRewards):
-            return .verified(reward: reward, moreRewards: moreRewards)
+            return .verified(reward: reward, moreRewards: moreRewards, customerInfo: response.customerInfo)
         case .pending:
             return .pending
         case let .failed(failure):
