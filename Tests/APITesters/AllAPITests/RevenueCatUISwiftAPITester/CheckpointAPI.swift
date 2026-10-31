@@ -13,7 +13,7 @@
 //
 
 import RevenueCat
-@_spi(InviteOnlyCheckpointsApi) import RevenueCatUI
+@_spi(InviteOnlyCheckpointsApi) @_spi(Internal) import RevenueCatUI
 
 func checkCheckpointAPI(_ purchases: Purchases) {
     let literalCustomVariables: [String: CustomVariableValue] = [
@@ -109,6 +109,20 @@ private func checkErrorPresentationAPI(_ purchases: Purchases) {
     let _: CheckpointFailureKind = .flowResultSyncFailed
     let _: ErrorPresentationHandler = presenter
     purchases.checkpoint("test_checkpoint", errorPresenter: presenter) { _ in }
+}
+
+@MainActor
+private func checkErrorDialogFactoryAPI(_ purchases: Purchases) {
+    let dialog = CheckpointErrorDialog(message: "Something went wrong.", buttonTitle: "OK")
+    let factory: ErrorDialogFactory = { _, completion in
+        let _: ErrorDialogFactoryOutcome = .show(dialog)
+        let _: ErrorDialogFactoryOutcome = .useDefault
+        let _: ErrorDialogFactoryOutcome = .suppress
+        completion.complete(with: .show(dialog))
+    }
+
+    purchases.checkpoint("test_checkpoint", errorDialogFactory: factory) { _ in }
+    purchases.checkpoint("test_checkpoint", errorDialogFactory: nil) { _ in }
 }
 
 @MainActor
