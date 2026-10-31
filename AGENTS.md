@@ -87,6 +87,11 @@ This is a multi-target Swift project supporting iOS, macOS, tvOS, watchOS, and v
 
 Key top-level directories: `Sources/`, `RevenueCatUI/`, `Tests/`, `Examples/`, `Projects/`, `api/`, `fastlane/`, `Tuist/`, `Contributing/`, `scripts/`. Explore the filesystem directly for current subdirectory layout.
 
+### Example apps
+
+- `Examples/SampleCat/` is the reference for app integration code (offerings, paywalls, checkpoints, Customer Center). The dashboard download writes over its `Constants.swift`, so keep other values out of that file.
+- PaywallsTester, rc-maestro, and `Tests/` are test tools with debug seams. Do not copy them into app code.
+
 ### Key Architectural Patterns
 
 #### Core Purchases Module
