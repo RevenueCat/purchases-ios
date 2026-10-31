@@ -22,11 +22,17 @@ final class MockPurchases: PaywallPurchasesType, @unchecked Sendable {
 
     typealias CustomerInfoBlock = @Sendable () async throws -> CustomerInfo
     typealias PurchaseBlock = @Sendable (Package, PromotionalOffer?, PaywallEvent?) async throws -> PurchaseResultData
+    typealias ContextAwarePurchaseBlock = @Sendable (
+        Package,
+        PromotionalOffer?,
+        PaywallEvent?,
+        PresentationContext?
+    ) async throws -> PurchaseResultData
     typealias RestoreBlock = @Sendable () async throws -> CustomerInfo
     typealias TrackEventBlock = @Sendable (PaywallEvent) async -> Void
 
     private let customerInfoBlock: CustomerInfoBlock
-    private let purchaseBlock: PurchaseBlock
+    private let purchaseBlock: ContextAwarePurchaseBlock
     private let restoreBlock: RestoreBlock
     private let trackEventBlock: TrackEventBlock
     private let _purchasesAreCompletedBy: PurchasesAreCompletedBy
@@ -70,7 +76,7 @@ final class MockPurchases: PaywallPurchasesType, @unchecked Sendable {
 
     let subscriptionHistoryTracker = SubscriptionHistoryTracker()
 
-    init(
+    convenience init(
         purchasesAreCompletedBy: PurchasesAreCompletedBy = .revenueCat,
         preferredLocales: [String] = ["en_US"],
         preferredLocaleOverride: String? = nil,
@@ -79,7 +85,29 @@ final class MockPurchases: PaywallPurchasesType, @unchecked Sendable {
         trackEvent: @escaping TrackEventBlock,
         customerInfo: @escaping CustomerInfoBlock
     ) {
-        self.purchaseBlock = purchase
+        self.init(
+            purchasesAreCompletedBy: purchasesAreCompletedBy,
+            preferredLocales: preferredLocales,
+            preferredLocaleOverride: preferredLocaleOverride,
+            purchaseWithContext: { package, promotionalOffer, paywallEvent, _ in
+                try await purchase(package, promotionalOffer, paywallEvent)
+            },
+            restorePurchases: restorePurchases,
+            trackEvent: trackEvent,
+            customerInfo: customerInfo
+        )
+    }
+
+    fileprivate init(
+        purchasesAreCompletedBy: PurchasesAreCompletedBy,
+        preferredLocales: [String],
+        preferredLocaleOverride: String?,
+        purchaseWithContext: @escaping ContextAwarePurchaseBlock,
+        restorePurchases: @escaping RestoreBlock,
+        trackEvent: @escaping TrackEventBlock,
+        customerInfo: @escaping CustomerInfoBlock
+    ) {
+        self.purchaseBlock = purchaseWithContext
         self.restoreBlock = restorePurchases
         self.trackEventBlock = trackEvent
         self.customerInfoBlock = customerInfo
@@ -93,14 +121,17 @@ final class MockPurchases: PaywallPurchasesType, @unchecked Sendable {
     }
 
     private(set) var lastPurchasePaywallEvent: PaywallEvent?
+    private(set) var lastPresentationContext: PresentationContext?
 
     func purchase(
         package: Package,
         promotionalOffer: PromotionalOffer?,
-        paywallEvent: PaywallEvent?
+        paywallEvent: PaywallEvent?,
+        presentationContext: PresentationContext?
     ) async throws -> PurchaseResultData {
         self.lastPurchasePaywallEvent = paywallEvent
-        return try await self.purchaseBlock(package, promotionalOffer, paywallEvent)
+        self.lastPresentationContext = presentationContext
+        return try await self.purchaseBlock(package, promotionalOffer, paywallEvent, presentationContext)
     }
 
     var hostedCheckoutBlock: (
@@ -209,18 +240,21 @@ extension PaywallPurchasesType {
         let mapped = MockPurchases(
             purchasesAreCompletedBy: self.purchasesAreCompletedBy,
             preferredLocales: self.preferredLocales,
-            preferredLocaleOverride: self.preferredLocaleOverride
-        ) { package, promotionalOffer, paywallEvent in
-            try await purchase({ pkg, offer, event in
-                try await self.purchase(package: pkg, promotionalOffer: offer, paywallEvent: event)
-            })(package, promotionalOffer, paywallEvent)
-        } restorePurchases: {
-            try await restore(self.restorePurchases)()
-        } trackEvent: { event in
-            await self.track(paywallEvent: event)
-        } customerInfo: {
-            try await self.customerInfo()
-        }
+            preferredLocaleOverride: self.preferredLocaleOverride,
+            purchaseWithContext: { package, promotionalOffer, paywallEvent, presentationContext in
+                try await purchase({ pkg, offer, event in
+                    try await self.purchase(
+                        package: pkg,
+                        promotionalOffer: offer,
+                        paywallEvent: event,
+                        presentationContext: presentationContext
+                    )
+                })(package, promotionalOffer, paywallEvent)
+            },
+            restorePurchases: { try await restore(self.restorePurchases)() },
+            trackEvent: { event in await self.track(paywallEvent: event) },
+            customerInfo: { try await self.customerInfo() }
+        )
 
         mapped.cachedOfferings = self.cachedOfferings
         mapped.offeringsBlock = { try await self.offerings() }
@@ -248,16 +282,19 @@ extension PaywallPurchasesType {
         let mapped = MockPurchases(
             purchasesAreCompletedBy: self.purchasesAreCompletedBy,
             preferredLocales: self.preferredLocales,
-            preferredLocaleOverride: self.preferredLocaleOverride
-        ) { package, promotionalOffer, paywallEvent in
-            try await self.purchase(package: package, promotionalOffer: promotionalOffer, paywallEvent: paywallEvent)
-        } restorePurchases: {
-            try await self.restorePurchases()
-        } trackEvent: { event in
-            await trackEvent(self.track(paywallEvent:))(event)
-        } customerInfo: {
-            try await self.customerInfo()
-        }
+            preferredLocaleOverride: self.preferredLocaleOverride,
+            purchaseWithContext: { package, promotionalOffer, paywallEvent, presentationContext in
+                try await self.purchase(
+                    package: package,
+                    promotionalOffer: promotionalOffer,
+                    paywallEvent: paywallEvent,
+                    presentationContext: presentationContext
+                )
+            },
+            restorePurchases: { try await self.restorePurchases() },
+            trackEvent: { event in await trackEvent(self.track(paywallEvent:))(event) },
+            customerInfo: { try await self.customerInfo() }
+        )
 
         mapped.cachedOfferings = self.cachedOfferings
         mapped.offeringsBlock = { try await self.offerings() }

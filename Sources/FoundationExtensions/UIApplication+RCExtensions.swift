@@ -72,7 +72,17 @@ extension UIWindowScene {
             window = self.windows.first { $0.isKeyWindow }
         }
 
-        return window?.rootViewController?.topMostViewController
+        return window?.currentPresentationViewController
+    }
+
+}
+
+extension UIWindow {
+
+    /// The topmost view controller in this window.
+    @MainActor
+    var currentPresentationViewController: UIViewController? {
+        return self.rootViewController?.topMostViewController
     }
 
 }
