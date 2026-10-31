@@ -140,7 +140,8 @@ private extension Purchases {
             customerInfoSynchronizer: { [weak self] in
                 guard let self else { throw CancellationError() }
                 return try await self.syncPurchases()
-            }
+            },
+            productEntitlementMappingProvider: { [weak self] in self?.cachedProductEntitlementMapping }
         )
     }
 

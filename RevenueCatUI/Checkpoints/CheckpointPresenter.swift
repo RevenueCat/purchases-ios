@@ -30,11 +30,13 @@ final class CheckpointPresenter: CheckpointPresenterType {
     init(
         workflowPresenter: WorkflowPresenterType,
         cachedCustomerInfoProvider: @escaping CheckpointsManager.CachedCustomerInfoProvider = { nil },
-        customerInfoSynchronizer: @escaping CheckpointsManager.CustomerInfoSynchronizer = { throw CancellationError() }
+        customerInfoSynchronizer: @escaping CheckpointsManager.CustomerInfoSynchronizer = { throw CancellationError() },
+        productEntitlementMappingProvider: @escaping CheckpointsManager.ProductEntitlementMappingProvider = { nil }
     ) {
         self.workflowPresenter = workflowPresenter
         self.defaultPaywallPresenter = DefaultPaywallPresenter(
-            cachedCustomerInfoProvider: cachedCustomerInfoProvider
+            cachedCustomerInfoProvider: cachedCustomerInfoProvider,
+            productEntitlementMappingProvider: productEntitlementMappingProvider
         )
         self.customerInfoSynchronizer = customerInfoSynchronizer
     }
@@ -297,17 +299,20 @@ import UIKit
 final class DefaultPaywallPresenter: NSObject, PaywallPresenter, PaywallViewControllerDelegate {
 
     private let cachedCustomerInfoProvider: CheckpointsManager.CachedCustomerInfoProvider
+    private let mappingProvider: CheckpointsManager.ProductEntitlementMappingProvider
     private let presentationContextProvider: @MainActor () -> UIViewController?
     private var session: PresentationSession?
 
     init(
         cachedCustomerInfoProvider: @escaping CheckpointsManager.CachedCustomerInfoProvider = { nil },
+        productEntitlementMappingProvider: @escaping CheckpointsManager.ProductEntitlementMappingProvider = { nil },
         presentationContextProvider: @escaping @MainActor () -> UIViewController? = {
             UIApplication.extensionSafeApplication?.currentPresentationViewController
         }
     ) {
         self.cachedCustomerInfoProvider = cachedCustomerInfoProvider
         self.presentationContextProvider = presentationContextProvider
+        self.mappingProvider = productEntitlementMappingProvider
     }
 
     func present(
@@ -426,8 +431,10 @@ final class DefaultPaywallPresenter: NSObject, PaywallPresenter, PaywallViewCont
         customerInfo: CustomerInfo
     ) {
         guard let session = self.session else { return }
-        guard customerInfo.grantsNewEntitlements(
-            comparedTo: session.initialActiveEntitlementIdentifiers
+        // Read the mapping when restoring so a late cache fill is picked up. Missing mapping leaves the paywall open.
+        guard customerInfo.grantsPresentedEntitlement(
+            comparedTo: session.initialActiveEntitlementIdentifiers,
+            presentedEntitlements: [session.params.offering].entitlementsGrantedBy(self.mappingProvider())
         ) else { return }
 
         session.activeErrorPresentationID = nil
@@ -613,7 +620,8 @@ func makeDefaultCheckpointPaywallViewController(
 private final class DefaultPaywallPresenter: PaywallPresenter {
 
     init(
-        cachedCustomerInfoProvider _: @escaping CheckpointsManager.CachedCustomerInfoProvider = { nil }
+        cachedCustomerInfoProvider _: @escaping CheckpointsManager.CachedCustomerInfoProvider = { nil },
+        productEntitlementMappingProvider _: @escaping CheckpointsManager.ProductEntitlementMappingProvider = { nil }
     ) {}
 
     func present(
