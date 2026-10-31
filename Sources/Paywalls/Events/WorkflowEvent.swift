@@ -148,3 +148,14 @@ extension WorkflowEvent.CreationData: Equatable, Codable, Sendable {}
 extension WorkflowEvent.ExperimentData: Equatable, Codable, Sendable {}
 extension WorkflowEvent.Data: Equatable, Codable, Sendable {}
 extension WorkflowEvent: Equatable, Codable, Sendable {}
+
+extension WorkflowEvent {
+
+    /// Why a workflow step was entered, as reported in ``WorkflowEvent/Data/entryReason``.
+    @_spi(Internal) public enum EntryReason: String {
+        case start
+        case forward
+        case back
+    }
+
+}

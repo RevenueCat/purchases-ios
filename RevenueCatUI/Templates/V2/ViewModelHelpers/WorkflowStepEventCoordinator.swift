@@ -67,7 +67,7 @@ final class WorkflowStepEventCoordinator {
         from fromStep: WorkflowStep?,
         to toStep: WorkflowStep,
         renderedPageIsNil: Bool,
-        entryReason: WorkflowStepEventTracker.EntryReason
+        entryReason: WorkflowEvent.EntryReason
     ) {
         guard let fromStep else {
             return
