@@ -13,7 +13,7 @@
 //
 
 import Nimble
-import RevenueCat
+@_spi(Internal) import RevenueCat
 @testable import RevenueCatUI
 import XCTest
 
@@ -575,6 +575,7 @@ final class TabsPackageInheritanceTests: TestCase {
             parentOwnedVariableContext: parentOwnedVariableContext,
             parentCurrentVariableContext: parentOwnedVariableContext,
             tabPackages: [],
+            rememberedPackage: nil,
             tabDefaultPackage: nil
         )
 
@@ -604,6 +605,7 @@ final class TabsPackageInheritanceTests: TestCase {
             parentOwnedVariableContext: parentOwnedVariableContext,
             parentCurrentVariableContext: parentOwnedVariableContext,
             tabPackages: tab2Packages,
+            rememberedPackage: nil,
             tabDefaultPackage: self.parentPackageA
         )
 
@@ -632,6 +634,7 @@ final class TabsPackageInheritanceTests: TestCase {
             parentOwnedVariableContext: parentOwnedVariableContext,
             parentCurrentVariableContext: parentOwnedVariableContext,
             tabPackages: tabPackages,
+            rememberedPackage: nil,
             tabDefaultPackage: self.parentPackageB
         )
 
@@ -658,6 +661,7 @@ final class TabsPackageInheritanceTests: TestCase {
             parentOwnedVariableContext: .init(packages: [self.parentPackageA, self.parentPackageB]),
             parentCurrentVariableContext: .init(packages: [self.parentPackageA, self.parentPackageB]),
             tabPackages: tab1Packages,
+            rememberedPackage: nil,
             tabDefaultPackage: self.tabPackageC
         )
 
@@ -907,6 +911,7 @@ final class TabsPackageInheritanceTests: TestCase {
             parentOwnedVariableContext: .init(packages: tab1Packages),
             parentCurrentVariableContext: .init(packages: tab1Packages),
             tabPackages: tab2Packages,
+            rememberedPackage: nil,
             tabDefaultPackage: tab2Default
         )
 
@@ -921,6 +926,7 @@ final class TabsPackageInheritanceTests: TestCase {
             parentOwnedVariableContext: .init(packages: tab2Packages),
             parentCurrentVariableContext: .init(packages: tab2Packages),
             tabPackages: tab1Packages,
+            rememberedPackage: nil,
             tabDefaultPackage: tab1Default
         )
 
@@ -961,6 +967,7 @@ final class TabsPackageInheritanceTests: TestCase {
             parentOwnedVariableContext: .init(packages: tab1Packages),
             parentCurrentVariableContext: .init(packages: tab1Packages),
             tabPackages: tab2Packages,
+            rememberedPackage: nil,
             tabDefaultPackage: tab2Default
         )
 
@@ -975,6 +982,7 @@ final class TabsPackageInheritanceTests: TestCase {
             parentOwnedVariableContext: .init(packages: tab2Packages),
             parentCurrentVariableContext: .init(packages: tab2Packages),
             tabPackages: tab1Packages,
+            rememberedPackage: nil,
             tabDefaultPackage: tab1Default
         )
 
@@ -1065,6 +1073,7 @@ final class TabsPackageInheritanceTests: TestCase {
             parentOwnedVariableContext: parentOwnedVariableContext,
             parentCurrentVariableContext: parentOwnedVariableContext,
             tabPackages: tab2Packages,
+            rememberedPackage: nil,
             tabDefaultPackage: nil
         )
 
@@ -1228,6 +1237,7 @@ extension TabsPackageInheritanceTests {
             parentOwnedVariableContext: variableContext,
             parentCurrentVariableContext: variableContext,
             tabPackages: tab2Packages,
+            rememberedPackage: nil,
             tabDefaultPackage: LoadedTabsComponentView.effectiveTabDefaultPackage(
                 workflowDefaultPackage: self.parentPackageB,
                 tabPackages: tab2Packages,
@@ -1262,6 +1272,7 @@ extension TabsPackageInheritanceTests {
             parentOwnedVariableContext: variableContext,
             parentCurrentVariableContext: variableContext,
             tabPackages: tab2Packages,
+            rememberedPackage: nil,
             tabDefaultPackage: self.parentPackageB
         )
 
@@ -1278,6 +1289,66 @@ private struct TestTabData {
     let tabId: String
     let packages: [Package]
     let defaultSelectedPackage: Package?
+}
+
+#endif
+
+#if !os(tvOS)
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension TabsPackageInheritanceTests {
+
+    func testRememberedChoiceIsRevalidatedForIndependentEligibilityAndViewport() throws {
+        let uiConfig = UIConfigProvider(uiConfig: PreviewUIConfig.make())
+        let validator = PackageValidator()
+        let component = PaywallComponent.PackageComponent(
+            packageID: self.parentPackageA.identifier,
+            isSelectedByDefault: false,
+            applePromoOfferProductCode: nil,
+            stack: .init(components: []),
+            overrides: [
+                .init(extendedConditions: [.introOfferCondition(operator: .equals, value: true)],
+                      properties: .init(visible: false)),
+                .init(extendedConditions: [.promoOfferCondition(operator: .equals, value: true)],
+                      properties: .init(visible: false)),
+                .init(extendedConditions: [.windowWidth(operator: .greaterThanOrEqual, value: 700)],
+                      properties: .init(visible: false))
+            ]
+        )
+        validator.add((self.parentPackageA, false, .init(
+            component: component, uiConfigProvider: uiConfig, discardRules: false
+        ), nil))
+        let stack = try StackComponentViewModel(
+            component: .init(components: []),
+            localizationProvider: .init(locale: .current, localizedStrings: [:]),
+            colorScheme: .light
+        )
+        let tab = TabViewModel(tab: .init(id: "tab", stack: .init(components: [])), stackViewModel: stack,
+                               packageValidator: validator, uiConfigProvider: uiConfig)
+        for (intro, promo, width, valid) in [
+            (false, false, 400.0, true), (true, false, 400.0, false),
+            (false, true, 400.0, false), (false, false, 800.0, false)
+        ] {
+            let context = PackageSelectionContext(
+                condition: .compact, customVariables: [:], windowSize: CGSize(width: width, height: 800),
+                isEligibleForIntroOffer: { _ in intro }, isEligibleForPromoOffer: { _ in promo }
+            )
+            let validated = tab.validatedSelection(
+                self.parentPackageA, in: context, offerEligibilityLoading: [], offerEligibilityAvailability: .unknown
+            )
+            XCTAssertEqual(validated != nil, valid)
+        }
+        let unresolved = PackageSelectionContext(
+            condition: .compact, customVariables: [:],
+            isEligibleForIntroOffer: { _ in true }, isEligibleForPromoOffer: { _ in true }
+        )
+        let pending = tab.validatedSelection(
+            self.parentPackageA, in: unresolved,
+            offerEligibilityLoading: [.intro, .promo], offerEligibilityAvailability: .unknown
+        )
+        XCTAssertNotNil(pending, "Unresolved eligibility must not discard a remembered choice prematurely")
+    }
+
 }
 
 #endif

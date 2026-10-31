@@ -133,30 +133,13 @@ struct LoadedTabsComponentView: View {
     @ObservedObject
     private var tabControlContext: TabControlContext
 
-    @State
-    private var tierPackageContexts: [String: PackageContext]
+    private let selectionState: PackageContext.TabsState
 
-    // MARK: - Parent's Own Selection Tracking
-    //
-    // These track the parent's "own" package selection (before any tab propagation).
-    // When switching to a tab WITHOUT packages, we restore this selection.
-    //
-    // Example:
-    //   1. Parent has Package A selected
-    //   2. User switches to Tab 1 (has Package C) → C is propagated to parent
-    //   3. User switches to Tab 2 (no packages) → restore parent to A (not C)
-    //
-    @State
-    private var parentOwnedPackage: Package?
-
-    @State
-    private var parentOwnedVariableContext: PackageContext.VariableContext
-
-    // Tracks whether the user made an explicit package selection (vs. using initial defaults).
-    // When false, tabs with packages should show their own defaults.
-    // When true, the user's selection should be preserved across tabs if the package exists in the tab.
-    @State
-    private var didUserSelectPackage: Bool = false
+    private var tierPackageContexts: [String: PackageContext] {
+        self.viewModel.tabViewModels.mapValues { tab in
+            self.selectionState.contextsByTabId[tab.tab.id] ?? self.packageContext
+        }
+    }
 
     var activeTabViewModel: TabViewModel? {
         return self.viewModel.tabViewModels[self.tabControlContext.selectedTabId] ??
@@ -169,8 +152,8 @@ struct LoadedTabsComponentView: View {
     /// - Tabs with packages + user made selection: preserve user's selection
     /// - Tabs with packages + no user selection: return nil to use tab's default
     private func effectiveParentOwnedPackage(for tabViewModel: TabViewModel) -> Package? {
-        if tabViewModel.packages.isEmpty || self.didUserSelectPackage {
-            return self.parentOwnedPackage
+        if tabViewModel.packages.isEmpty || self.selectionState.didUserSelectPackage {
+            return self.selectionState.parentOwnedPackage
         } else {
             return nil
         }
@@ -190,9 +173,8 @@ struct LoadedTabsComponentView: View {
 
         self.tabControlContext = tabControlContext ?? viewModel.tabControlContext
 
-        // Store the parent's initial selection for restoration when switching to package-less tabs
-        self._parentOwnedPackage = .init(initialValue: parentPackageContext.package)
-        self._parentOwnedVariableContext = .init(initialValue: parentPackageContext.variableContext)
+        self.selectionState = parentPackageContext.tabsState(for: viewModel)
+        guard self.selectionState.contextsByTabId.isEmpty else { return }
 
         // MARK: - Package Context Inheritance for Tabs
         //
@@ -211,8 +193,8 @@ struct LoadedTabsComponentView: View {
         //   This ensures they always reflect the current parent selection and stay in sync
         //   automatically when the parent context changes.
         //
-        self._tierPackageContexts = .init(initialValue: Dictionary(
-            uniqueKeysWithValues: viewModel.tabViewModels.map { key, tabViewModel -> (String, PackageContext) in
+        self.selectionState.contextsByTabId = Dictionary(
+            uniqueKeysWithValues: viewModel.tabViewModels.compactMap { key, tabViewModel -> (String, PackageContext)? in
                 if !tabViewModel.packages.isEmpty {
                     // Tab has its own packages - create context with tab's packages.
                     let packageContext = PackageContext(
@@ -234,10 +216,10 @@ struct LoadedTabsComponentView: View {
                 } else {
                     // Tab has no packages - use parent context directly.
                     // This ensures the tab always shows the current parent selection.
-                    return (key, parentPackageContext)
+                    return nil
                 }
             }
-        ))
+        )
     }
 
     private var packageSelectionContext: PackageSelectionContext {
@@ -260,7 +242,20 @@ struct LoadedTabsComponentView: View {
     /// eligibility, and eligibility lands after first render, so the seeded package may turn out to be
     /// hidden.
     private func reconcileSelection(_ context: PackageContext, tabViewModel: TabViewModel) {
-        guard let resolved = tabViewModel.reconciledSelection(
+        // A root row can intentionally clear the tab's highlight. Resuming after a sheet
+        // must preserve that manual root choice instead of initializing the tab again.
+        if self.selectionState.didUserSelectPackage,
+           self.packageContext.package?.identifier == self.selectionState.parentOwnedPackage?.identifier,
+           TabPackageParentPropagation.shouldSuppressNotifyingParent(
+            tabPackage: context.package,
+            tabPackageIdentifiers: Set(tabViewModel.packages.map(\.identifier)),
+            parentPackage: self.packageContext.package
+           ) {
+            return
+        }
+
+        guard !self.packageContext.isPresentingSheet,
+              let resolved = tabViewModel.reconciledSelection(
             current: context.package,
             in: self.packageSelectionContext,
             offerEligibilityLoading: self.offerEligibilityLoading,
@@ -269,7 +264,15 @@ struct LoadedTabsComponentView: View {
             return
         }
 
-        context.update(package: resolved, variableContext: context.variableContext)
+        if tabViewModel.validatedSelection(
+            context.manuallySelectedPackage,
+            in: self.packageSelectionContext,
+            offerEligibilityLoading: self.offerEligibilityLoading,
+            offerEligibilityAvailability: self.offerEligibilityAvailability
+        ) == nil {
+            context.clearManualSelection()
+        }
+        context.update(package: resolved, variableContext: context.variableContext, isReconcile: true)
     }
 
     /// Determines the initial package selection for a tab that has its own packages.
@@ -340,11 +343,14 @@ struct LoadedTabsComponentView: View {
                 tabPackageIdentifiers: Set(activeTabViewModel.packages.map(\.identifier)),
                 onChange: { context in
                     // A package-less tab shares the parent's context, so this would only clear it.
-                    guard context !== self.packageContext else { return }
+                    guard context !== self.packageContext, !self.packageContext.isPresentingSheet else { return }
 
+                    // The manual choice belongs to the tab context. Mirroring it must not
+                    // create a manual choice in another Tabs instance sharing this parent.
                     self.packageContext.update(
                         package: context.package,
-                        variableContext: context.variableContext
+                        variableContext: context.variableContext,
+                        isReconcile: true
                     )
                 },
                 onDismiss: self.onDismiss
@@ -370,11 +376,22 @@ struct LoadedTabsComponentView: View {
             .onChangeOf(self.paywallWindowSize) { _ in
                 self.reconcileSelection(tierPackageContext, tabViewModel: activeTabViewModel)
             }
+            .onChangeOf(self.customVariables) { _ in
+                self.reconcileSelection(tierPackageContext, tabViewModel: activeTabViewModel)
+            }
+            .onChangeOf(self.screenCondition) { _ in
+                self.reconcileSelection(tierPackageContext, tabViewModel: activeTabViewModel)
+            }
+            .onChangeOf(self.packageContext.isPresentingSheet) { isPresenting in
+                if !isPresenting {
+                    self.reconcileSelection(tierPackageContext, tabViewModel: activeTabViewModel)
+                }
+            }
             .onAppear {
                 // The provisional selection made in `init` couldn't evaluate variable/eligibility rules.
                 self.reconcileSelection(tierPackageContext, tabViewModel: activeTabViewModel)
-                if !self.viewModel.didSeedInitialState {
-                    self.viewModel.didSeedInitialState = true
+                if !self.packageContext.isPresentingSheet, !self.selectionState.didSeedInitialState {
+                    self.selectionState.didSeedInitialState = true
                     // Seed the store with the initial selection so components that react to the tab
                     // render their correct state on first appearance. A no-op when the declared
                     // default already matches the initial tab.
@@ -385,7 +402,8 @@ struct LoadedTabsComponentView: View {
                     if let package = tierPackageContext.package, tierPackageContext !== self.packageContext {
                         self.packageContext.update(
                             package: package,
-                            variableContext: tierPackageContext.variableContext
+                            variableContext: tierPackageContext.variableContext,
+                            isReconcile: true
                         )
                     }
                 }
@@ -413,16 +431,28 @@ struct LoadedTabsComponentView: View {
                 // components re-resolve their `state` conditions even for tabs without packages.
                 self.publishSelectedTabState(newTabId)
 
-                guard let newTabViewModel = self.viewModel.tabViewModels[newTabId],
+                guard !self.packageContext.isPresentingSheet,
+                      let newTabViewModel = self.viewModel.tabViewModels[newTabId],
                       let newTierPackageContext = self.tierPackageContexts[newTabId] else {
                     return
                 }
 
+                let rememberedPackage = newTabViewModel.validatedSelection(
+                    newTierPackageContext.manuallySelectedPackage,
+                    in: self.packageSelectionContext,
+                    offerEligibilityLoading: self.offerEligibilityLoading,
+                    offerEligibilityAvailability: self.offerEligibilityAvailability
+                )
+                if rememberedPackage == nil, !newTabViewModel.packages.isEmpty {
+                    newTierPackageContext.clearManualSelection()
+                }
+
                 let updatePlan = TabsPackageSelectionResolver.resolveTabSwitch(
                     parentOwnedPackage: effectiveParentOwnedPackage(for: newTabViewModel),
-                    parentOwnedVariableContext: self.parentOwnedVariableContext,
+                    parentOwnedVariableContext: self.selectionState.parentOwnedVariableContext,
                     parentCurrentVariableContext: self.packageContext.variableContext,
                     tabPackages: newTabViewModel.packages,
+                    rememberedPackage: rememberedPackage,
                     tabDefaultPackage: Self.effectiveTabDefaultPackage(
                         workflowDefaultPackage: self.workflowDefaultPackage,
                         tabPackages: newTabViewModel.packages,
@@ -434,7 +464,8 @@ struct LoadedTabsComponentView: View {
                 if let tabUpdate = updatePlan.tabUpdate {
                     newTierPackageContext.update(
                         package: tabUpdate.package,
-                        variableContext: tabUpdate.variableContext
+                        variableContext: tabUpdate.variableContext,
+                        isReconcile: true
                     )
                 }
                 if let parentUpdate = updatePlan.parentUpdate {
@@ -457,10 +488,11 @@ struct LoadedTabsComponentView: View {
             // - User selection: newPackage != tab's current package → track it
             //
             .onChangeOf(self.packageContext.package) { newPackage in
+                guard !self.packageContext.isPresentingSheet else { return }
                 guard let newPackage = newPackage else {
                     // Parent selection cleared; track it so package-less tabs restore nil.
-                    self.parentOwnedPackage = nil
-                    self.parentOwnedVariableContext = self.packageContext.variableContext
+                    self.selectionState.parentOwnedPackage = nil
+                    self.selectionState.parentOwnedVariableContext = self.packageContext.variableContext
                     return
                 }
 
@@ -479,23 +511,25 @@ struct LoadedTabsComponentView: View {
 
                 // A user selection, unless a reconcile made it. Set-only: it can't clear an earlier one.
                 if !self.packageContext.lastUpdateWasReconcile {
-                    self.didUserSelectPackage = true
+                    self.selectionState.didUserSelectPackage = true
                 }
-                self.parentOwnedPackage = newPackage
-                self.parentOwnedVariableContext = self.packageContext.variableContext
+                self.selectionState.parentOwnedPackage = newPackage
+                self.selectionState.parentOwnedVariableContext = self.packageContext.variableContext
 
                 // If the package is in the current tab's packages, also update the tab
                 if packageIsInTab {
                     tierPackageContext.update(
                         package: newPackage,
-                        variableContext: self.packageContext.variableContext
+                        variableContext: self.packageContext.variableContext,
+                        isReconcile: true
                     )
                 } else if !tabHasNoPackages {
                     // Root-only selection: clear tab highlight. Parent is not updated here;
                     // `LoadedTabComponentView` suppresses propagating this nil to the parent.
                     tierPackageContext.update(
                         package: nil,
-                        variableContext: tierPackageContext.variableContext
+                        variableContext: tierPackageContext.variableContext,
+                        isReconcile: true
                     )
                 }
             }

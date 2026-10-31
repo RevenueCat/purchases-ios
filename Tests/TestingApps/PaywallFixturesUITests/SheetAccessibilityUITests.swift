@@ -39,4 +39,31 @@ final class SheetAccessibilityUITests: XCTestCase {
         )
     }
 
+    func testSheetDefaultOwnsPurchaseAndClosingRestoresRootSelection() throws {
+        let app = XCUIApplication()
+        app.launchEnvironment["PAYWALL_FIXTURE"] = "competing_sheet_defaults"
+        app.launch()
+        XCTAssertTrue(app.buttons["Annual selected"].waitForExistence(timeout: 30), app.debugDescription)
+        app.buttons["Monthly XL tab"].tap()
+        XCTAssertTrue(app.buttons["Monthly XL selected"].waitForExistence(timeout: 5))
+        app.buttons["Root monthly"].tap()
+        XCTAssertTrue(app.buttons["Root monthly selected"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["Selected price: $4.99"].exists)
+
+        app.buttons["Open plans"].tap()
+        XCTAssertTrue(app.buttons["Annual XL selected"].waitForExistence(timeout: 5), app.debugDescription)
+        XCTAssertTrue(app.staticTexts["Sheet price: $199.99"].exists)
+        app.buttons["Purchase from sheet"].tap()
+        let result = app.alerts["Purchase callback"]
+        XCTAssertTrue(result.waitForExistence(timeout: 5), app.debugDescription)
+        XCTAssertTrue(result.staticTexts["annual_xl"].exists, result.debugDescription)
+        result.buttons["OK"].tap()
+
+        app.buttons["Close plans"].tap()
+        XCTAssertTrue(app.buttons["Annual XL selected"].waitForNonExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["Root monthly selected"].exists)
+        XCTAssertTrue(app.staticTexts["Selected price: $4.99"].exists)
+        XCTAssertFalse(app.buttons["Monthly XL selected"].exists)
+    }
+
 }

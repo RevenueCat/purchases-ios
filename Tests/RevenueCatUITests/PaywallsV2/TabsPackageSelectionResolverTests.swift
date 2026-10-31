@@ -62,6 +62,7 @@ final class TabsPackageSelectionResolverTests: TestCase {
             parentOwnedVariableContext: parentOwnedVariableContext,
             parentCurrentVariableContext: parentOwnedVariableContext,
             tabPackages: [],
+            rememberedPackage: nil,
             tabDefaultPackage: nil
         )
 
@@ -83,6 +84,7 @@ final class TabsPackageSelectionResolverTests: TestCase {
             parentOwnedVariableContext: parentOwnedVariableContext,
             parentCurrentVariableContext: parentOwnedVariableContext,
             tabPackages: tabPackages,
+            rememberedPackage: nil,
             tabDefaultPackage: self.parentPackageB
         )
 
@@ -104,6 +106,7 @@ final class TabsPackageSelectionResolverTests: TestCase {
             parentOwnedVariableContext: parentOwnedVariableContext,
             parentCurrentVariableContext: parentOwnedVariableContext,
             tabPackages: tabPackages,
+            rememberedPackage: nil,
             tabDefaultPackage: self.tabPackageC
         )
 
@@ -124,11 +127,52 @@ final class TabsPackageSelectionResolverTests: TestCase {
             parentOwnedVariableContext: parentOwnedVariableContext,
             parentCurrentVariableContext: parentOwnedVariableContext,
             tabPackages: tabPackages,
+            rememberedPackage: nil,
             tabDefaultPackage: nil
         )
 
         expect(plan.tabUpdate).to(beNil())
         expect(plan.parentUpdate).to(beNil())
+    }
+
+}
+
+#endif
+
+#if !os(tvOS)
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension TabsPackageSelectionResolverTests {
+
+    func testRememberedSelectionWinsOverParentAndAuthoredDefault() {
+        let packages = [self.parentPackageA, self.parentPackageB]
+        let variables = PackageContext.VariableContext(packages: packages, showZeroDecimalPlacePrices: false)
+        let plan = TabsPackageSelectionResolver.resolveTabSwitch(
+            parentOwnedPackage: self.parentPackageA,
+            parentOwnedVariableContext: variables,
+            parentCurrentVariableContext: variables,
+            tabPackages: packages,
+            rememberedPackage: self.parentPackageB,
+            tabDefaultPackage: self.parentPackageA
+        )
+        expect(plan.parentUpdate?.package?.identifier) == self.parentPackageB.identifier
+        expect(plan.tabUpdate?.package?.identifier) == self.parentPackageB.identifier
+        expect(plan.parentUpdate?.variableContext.exactMostExpensivePricePerMonth)
+            == variables.exactMostExpensivePricePerMonth
+        expect(plan.parentUpdate?.variableContext.showZeroDecimalPlacePrices) == false
+    }
+
+    func testRememberedSelectionOutsideMembershipFallsBackToDefault() {
+        let variables = PackageContext.VariableContext(packages: [self.parentPackageA])
+        let plan = TabsPackageSelectionResolver.resolveTabSwitch(
+            parentOwnedPackage: nil,
+            parentOwnedVariableContext: variables,
+            parentCurrentVariableContext: variables,
+            tabPackages: [self.parentPackageA],
+            rememberedPackage: self.parentPackageB,
+            tabDefaultPackage: self.parentPackageA
+        )
+        expect(plan.parentUpdate?.package?.identifier) == self.parentPackageA.identifier
     }
 
 }

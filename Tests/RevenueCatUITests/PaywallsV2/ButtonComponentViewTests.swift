@@ -35,7 +35,7 @@ final class ButtonComponentViewTests: TestCase {
             component: .init(action: .navigateBack, stack: sheet.stack)
         ).stackViewModel
         let view = NativeInlineSheetRegistrationTestView(
-            state: state, sheet: .init(sheet: sheet, sheetStackViewModel: sheetStack)
+            state: state, sheet: .init(sheet: sheet, sheetStackViewModel: sheetStack, packageValidator: nil)
         )
         .environment(\.nativePaywallCloseCoordinator, coordinator)
         .environmentObject(PackageContext(package: nil, variableContext: .init(packages: [])))

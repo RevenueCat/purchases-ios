@@ -291,7 +291,8 @@ struct ButtonComponentView: View {
             if let sheet, let sheetStackViewModel = self.viewModel.sheetStackViewModel {
                 let sheetViewModel = SheetViewModel(
                     sheet: sheet,
-                    sheetStackViewModel: sheetStackViewModel
+                    sheetStackViewModel: sheetStackViewModel,
+                    packageValidator: self.viewModel.sheetPackageValidator
                 )
                 openSheet(sheetViewModel)
             }

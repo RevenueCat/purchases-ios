@@ -19,65 +19,84 @@ import XCTest
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 final class RootViewSheetDismissalTests: TestCase {
 
-    // MARK: - restoredPackageAfterSheetDismissal
-
-    /// In a workflow context, dismissing the sheet without selecting a new package must restore
-    /// the snapshot taken when the sheet opened — not fall back to the global workflow default.
-    func testWorkflowContextRestoresSnapshotOnDismissal() {
+    func testRestoresSnapshotBeforeDefaultOnDismissal() {
         let snapshot = TestData.monthlyPackage
-        let defaultPackage = TestData.annualPackage
-        let workflowCtx = WorkflowPackageContext(selectedPackage: defaultPackage, packages: [defaultPackage, snapshot])
-
         let result = RootView.restoredPackageAfterSheetDismissal(
-            workflowPackageContext: workflowCtx,
             packageBeforeOpeningSheet: snapshot,
-            defaultPackage: defaultPackage
+            defaultPackage: TestData.annualPackage
         )
-
         expect(result?.identifier) == snapshot.identifier
     }
 
-    /// In a workflow context with no snapshot (sheet opened before any selection was cached),
-    /// dismissal falls back to the step default.
-    func testWorkflowContextFallsBackToDefaultWhenNoSnapshot() {
+    func testFallsBackToDefaultWithoutSnapshot() {
         let defaultPackage = TestData.annualPackage
-        let workflowCtx = WorkflowPackageContext(selectedPackage: defaultPackage, packages: [defaultPackage])
-
         let result = RootView.restoredPackageAfterSheetDismissal(
-            workflowPackageContext: workflowCtx,
             packageBeforeOpeningSheet: nil,
             defaultPackage: defaultPackage
         )
-
         expect(result?.identifier) == defaultPackage.identifier
     }
 
-    /// Outside a workflow context the sheet always resets to the step default,
-    /// even when a non-nil snapshot exists (it should be ignored).
-    func testNonWorkflowContextAlwaysRestoresDefault() {
-        let snapshot = TestData.monthlyPackage
-        let defaultPackage = TestData.annualPackage
-
+    func testReturnsNilWhenSnapshotAndDefaultAreNil() {
         let result = RootView.restoredPackageAfterSheetDismissal(
-            workflowPackageContext: nil,
-            packageBeforeOpeningSheet: snapshot,
-            defaultPackage: defaultPackage
-        )
-
-        expect(result?.identifier) == defaultPackage.identifier
-    }
-
-    /// A nil default package (no packages in the offering) is a valid state; the result should be nil.
-    func testWorkflowContextReturnsNilWhenBothSnapshotAndDefaultAreNil() {
-        let workflowCtx = WorkflowPackageContext(selectedPackage: TestData.monthlyPackage, packages: [])
-
-        let result = RootView.restoredPackageAfterSheetDismissal(
-            workflowPackageContext: workflowCtx,
             packageBeforeOpeningSheet: nil,
             defaultPackage: nil
         )
-
         expect(result).to(beNil())
+    }
+
+}
+
+#endif
+
+#if os(iOS)
+
+@available(iOS 15.0, *)
+extension RootViewSheetDismissalTests {
+
+    @MainActor
+    func testPW11DismissalRestoresRootChoiceAheadOfTabDefault() async throws {
+        let fixture = try PackageResolutionTestFixture(competingDefaults: true)
+        let dispose = try fixture.view().addToHierarchy()
+        defer { dispose() }
+        try await PackageResolutionTestFixture.settlePresentation()
+        fixture.tabs.tabControlContext.selectedTabId = "tab-2"
+        try await PackageResolutionTestFixture.settlePresentation()
+        XCTAssertEqual(fixture.context.package?.identifier, "monthly_xl")
+
+        let rootPackage = try XCTUnwrap(fixture.offering.package(identifier: "$rc_monthly"))
+        fixture.context.update(package: rootPackage, variableContext: fixture.context.variableContext)
+        try await PackageResolutionTestFixture.settlePresentation()
+        let snapshot = fixture.context.package
+        let variables = fixture.context.variableContext
+        let tabContext = try XCTUnwrap(fixture.context.tabsState(for: fixture.tabs).contextsByTabId["tab-2"])
+        XCTAssertNil(tabContext.package)
+
+        let sheetValidator = try XCTUnwrap(fixture.state.rootViewModel.stackViewModel.viewModels.compactMap {
+            if case .button(let button) = $0 { return button.sheetPackageValidator }
+            return nil
+        }.first)
+        let sheetContext = fixture.context.activateSheet(validator: sheetValidator, selectionContext: .provisional)
+        try await PackageResolutionTestFixture.settlePresentation()
+        XCTAssertEqual(sheetContext.package?.identifier, "annual_xl")
+        XCTAssertEqual(fixture.context.package?.identifier, "annual_xl")
+
+        fixture.context.update(
+            package: RootView.restoredPackageAfterSheetDismissal(
+                packageBeforeOpeningSheet: snapshot,
+                defaultPackage: fixture.state.viewModelFactory.packageValidator
+                    .defaultSelectedPackage(in: .provisional)
+            ),
+            variableContext: variables,
+            isReconcile: true
+        )
+        fixture.context.presentedSheetContext = nil
+        try await PackageResolutionTestFixture.settlePresentation()
+
+        XCTAssertEqual(fixture.context.package?.identifier, "$rc_monthly")
+        XCTAssertNil(tabContext.package, "The tab default must not replace the restored root choice")
+        XCTAssertEqual(fixture.context.variableContext.exactMostExpensivePricePerMonth,
+                       variables.exactMostExpensivePricePerMonth)
     }
 
 }
