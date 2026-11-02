@@ -18,6 +18,7 @@ extension DefaultCheckpointWorkflowResolver {
     static let adStepType = "ad"
     static let adIdentifierParam = "ad_identifier"
     static let mediatorParam = "mediator"
+    static let adFormatParam = "ad_format"
 
     func resolveAdStep(
         _ rule: CheckpointRule,
@@ -36,8 +37,8 @@ extension DefaultCheckpointWorkflowResolver {
 
     /// Serves a workflow whose only step is a terminal `ad` step as an ad the app owns.
     ///
-    /// Only `ad_identifier` and `mediator` are validated. Anything else the step happens to carry is ignored
-    /// rather than treated as unservable, since a step of this kind renders nothing.
+    /// Only `ad_identifier`, `mediator` and `ad_format` are validated. Anything else the step happens to carry
+    /// is ignored rather than treated as unservable, since a step of this kind renders nothing.
     static func resolveAd(_ rule: CheckpointRule, step: WorkflowStep) -> CheckpointResolution {
         guard let adIdentifier = Self.stringParam(Self.adIdentifierParam, in: step), !adIdentifier.isEmpty else {
             return Self.unservable(rule, reason: "the ad step has no valid ad identifier")
@@ -45,8 +46,15 @@ extension DefaultCheckpointWorkflowResolver {
         guard let mediator = Self.stringParam(Self.mediatorParam, in: step), !mediator.isEmpty else {
             return Self.unservable(rule, reason: "the ad step has no valid mediator")
         }
+        guard let adFormat = Self.stringParam(Self.adFormatParam, in: step), !adFormat.isEmpty else {
+            return Self.unservable(rule, reason: "the ad step has no valid ad format")
+        }
 
-        return .matchedAd(ResolvedAdStep(adIdentifier: adIdentifier, mediator: Self.normalizedMediator(mediator)))
+        return .matchedAd(ResolvedAdStep(
+            adIdentifier: adIdentifier,
+            mediator: Self.normalizedMediator(mediator),
+            adFormat: AdFormat(rawValue: adFormat)
+        ))
     }
 
     static func stringParam(_ key: String, in step: WorkflowStep) -> String? {
