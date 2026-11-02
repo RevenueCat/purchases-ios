@@ -122,7 +122,9 @@ custom_rules:
       - doccomment
       - doccomment.field
       - string
-    regex: '\bInt\((?:[^()\n]|\([^()\n]*\)|\()*timeIntervalSince(?:1970|ReferenceDate|Now)\b(?:[^()\n]|\([^()\n]*\))*\*\s*1_?000\b'
+    # Matches, within a single line: Int(<...since...> * 1000), Int(1000 * <...since...>),
+    # Int(<...since...>) * 1000 and 1000 * Int(<...since...>). One level of nested parentheses is supported.
+    regex: '\bInt\((?:[^()\n]|\([^()\n]*\)|\()*timeIntervalSince(?:1970|ReferenceDate|Now)\b(?:[^()\n]|\([^()\n]*\))*\*\s*1_?000\b|\bInt\((?:[^()\n]|\([^()\n]*\)|\()*\b1_?000\s*\*\s*(?:[^()\n]|\([^()\n]*\))*timeIntervalSince(?:1970|ReferenceDate|Now)\b|\bInt\((?:[^()\n]|\([^()\n]*\))*timeIntervalSince(?:1970|ReferenceDate|Now)\b(?:[^()\n]|\([^()\n]*\))*\)\s*\*\s*1_?000\b|\b1_?000\s*\*\s*Int\((?:[^()\n]|\([^()\n]*\))*timeIntervalSince(?:1970|ReferenceDate|Now)\b'
 
   no_new_public_enums:
     name: "No new public enums in consumer-facing APIs"

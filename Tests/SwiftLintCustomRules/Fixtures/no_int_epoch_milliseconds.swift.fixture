@@ -15,3 +15,10 @@ let trailingComment = Int(1) // timeIntervalSince1970 * 1000
 let otherCall = Int(1) + foo(date.timeIntervalSince1970 * 1000)
 let separateInt = Int(5); let millis = Double(date.timeIntervalSince1970 * 1000)
 let wrapped = Int(max(0, date.timeIntervalSince1970 * 1000)) // violation
+let convertedFirst = Int(date.timeIntervalSince1970) * 1000 // violation
+let reversed = Int(1000 * date.timeIntervalSince1970) // violation
+let leadingMultiplier = 1000 * Int(date.timeIntervalSince1970) // violation
+let reversedNested = Int((1_000 * date.timeIntervalSinceReferenceDate).rounded()) // violation
+let safeConvertedFirst = Int64(date.timeIntervalSince1970) * 1000
+let safeReversed = Int64(1000 * date.timeIntervalSince1970)
+let unrelatedReversed = Int(1000 * duration)
