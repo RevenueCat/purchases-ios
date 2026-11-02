@@ -166,6 +166,7 @@ struct VideoComponentView: View {
                     .padding(style.padding.extend(by: style.border?.width ?? 0))
                     .shape(border: style.border, shape: style.shape)
                     .clipped()
+                    .contentShape(Rectangle())
                     .shadow(shadow: style.shadow, shape: style.shape?.toInsettableShape(size: size))
                     .padding(style.margin)
                 }
