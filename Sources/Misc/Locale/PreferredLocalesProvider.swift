@@ -46,9 +46,26 @@ final class PreferredLocalesProvider {
 
     /// Returns the override, the app localization when enabled, and system preferred languages, in that order.
     var preferredLocales: [String] {
-        let appLocale = self.preferApplicationLocale.value ? self.bundlePreferredLocaleGetter() : nil
-        return [self.preferredLocaleOverride, appLocale].compactMap { $0 }
-            + self.systemPreferredLocalesGetter()
+        let systemLocales = self.systemPreferredLocalesGetter()
+        let localeOverride = self.preferredLocaleOverride.map { [$0] } ?? []
+        guard self.preferApplicationLocale.value,
+              let appLocaleIdentifier = self.bundlePreferredLocaleGetter() else {
+            return localeOverride + systemLocales
+        }
+
+        let appLocale = Locale(identifier: appLocaleIdentifier)
+        let matchingSystemLocale: String?
+        // Refine language-only localizations without overriding an app's explicit region or script.
+        if appLocale.identifier == appLocale.rc_languageCode {
+            matchingSystemLocale = systemLocales.first {
+                Locale(identifier: $0).rc_languageCode == appLocale.rc_languageCode
+            }
+        } else {
+            matchingSystemLocale = nil
+        }
+
+        return (localeOverride + [matchingSystemLocale, appLocaleIdentifier].compactMap { $0 } + systemLocales)
+            .deduplicated()
     }
 
     func setPreferApplicationLocale(_ enabled: Bool) {
