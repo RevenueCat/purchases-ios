@@ -175,7 +175,8 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
         guard !self.hasLoadedPaywallAssets else { return }
         self.hasLoadedPaywallAssets = true
 
-        let cacheAssets = offerings.allPaywallV2CacheAssets
+        let preferredLocales = self.preferredLocalesProvider().map(Locale.init(identifier:))
+        let cacheAssets = offerings.paywallV2CacheAssets(preferredLocales: preferredLocales)
 
         let imageSources: Set<URLWithValidation>
         #if !os(tvOS)
@@ -444,8 +445,10 @@ private extension Offerings {
     }
 
     @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
-    var allPaywallV2CacheAssets: CacheAssetCollection {
-        let assets = self.all.values.compactMap(\.internalPaywallComponents).map(\.data.allCacheAssets)
+    func paywallV2CacheAssets(preferredLocales: [Locale]) -> CacheAssetCollection {
+        let assets = self.all.values.compactMap(\.internalPaywallComponents).map {
+            $0.data.localizedCacheAssets(preferredLocales: preferredLocales)
+        }
         return .init(
             images: assets.flatMap(\.images),
             videos: assets.flatMap(\.videos),
