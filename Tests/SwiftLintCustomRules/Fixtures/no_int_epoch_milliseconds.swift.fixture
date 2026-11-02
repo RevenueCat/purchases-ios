@@ -1,0 +1,17 @@
+import Foundation
+
+let date = Date()
+let purchaseDate = date.map { Int($0.timeIntervalSince1970 * 1000) } // violation
+let expirationDate = Int(date.timeIntervalSince1970 * 1000) // violation
+let underscored = Int(date.timeIntervalSince1970 * 1_000) // violation
+let nested = Int((date.timeIntervalSince1970 * 1000).rounded()) // violation
+let fromNow = Int(Date().timeIntervalSince1970 * 1000) // violation
+let safePurchaseDate = date.map { Int64($0.timeIntervalSince1970 * 1000) }
+let safeRounded = Int64((date.timeIntervalSince1970 * 1000).rounded())
+let seconds = Int(date.timeIntervalSince1970)
+let smallDuration = Int(duration * 1000)
+// let commented = Int(date.timeIntervalSince1970 * 1000)
+let trailingComment = Int(1) // timeIntervalSince1970 * 1000
+let otherCall = Int(1) + foo(date.timeIntervalSince1970 * 1000)
+let separateInt = Int(5); let millis = Double(date.timeIntervalSince1970 * 1000)
+let wrapped = Int(max(0, date.timeIntervalSince1970 * 1000)) // violation
