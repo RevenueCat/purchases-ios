@@ -17,32 +17,44 @@ import Foundation
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, visionOS 1.0, watchOS 8.0, *)
 protocol SimpleNetworkServiceType {
 
-    /// Fetch data from the network
+    /// Downloads a file from the network to a temporary location.
     /// - Parameter url: The URL to fetch data from
-    /// - Returns: Bytes upon success
-    func bytes(from url: URL) async throws -> AsyncThrowingStream<UInt8, Error>
+    /// - Returns: A temporary local file URL that the caller is responsible for consuming or removing.
+    /// - Throws: `URLError.badServerResponse` when an HTTP response is outside the 2xx range.
+    func downloadFile(from url: URL) async throws -> URL
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, visionOS 1.0, watchOS 8.0, *)
 extension URLSession: SimpleNetworkServiceType {
 
-    func bytes(from url: URL) async throws -> AsyncThrowingStream<UInt8, Error> {
-        let (bytes, res) = try await bytes(for: .init(url: url), delegate: nil)
-        if let httpURLResponse = res as? HTTPURLResponse, !(200..<300).contains(httpURLResponse.statusCode) {
-            throw URLError(.badServerResponse)
-        }
-
-        return AsyncThrowingStream { continuation in
-            Task {
-                do {
-                    for try await byte in bytes {
-                        continuation.yield(byte)
-                    }
-                    continuation.finish()
-                } catch {
-                    continuation.finish(throwing: error)
-                }
-            }
-        }
+    /// Downloads a file to a temporary location without loading the complete response into memory.
+    func downloadFile(from url: URL) async throws -> URL {
+        let (temporaryURL, response) = try await self.download(from: url)
+        return try validatedDownloadedFileURL(temporaryURL, response: response)
     }
+}
+
+/// Validates the response associated with a downloaded temporary file.
+///
+/// Non-HTTP responses pass through unchanged. For an unsuccessful HTTP response, this function
+/// removes the temporary file before throwing `URLError.badServerResponse`.
+///
+/// - Parameters:
+///   - temporaryURL: The location of the downloaded temporary file.
+///   - response: The response associated with the download.
+///   - fileManager: The file manager used to remove rejected downloads.
+/// - Returns: `temporaryURL` when the response is valid.
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, visionOS 1.0, watchOS 8.0, *)
+func validatedDownloadedFileURL(
+    _ temporaryURL: URL,
+    response: URLResponse,
+    fileManager: FileManager = .default
+) throws -> URL {
+    if let httpURLResponse = response as? HTTPURLResponse,
+       !(200..<300).contains(httpURLResponse.statusCode) {
+        try? fileManager.removeItem(at: temporaryURL)
+        throw URLError(.badServerResponse)
+    }
+
+    return temporaryURL
 }
