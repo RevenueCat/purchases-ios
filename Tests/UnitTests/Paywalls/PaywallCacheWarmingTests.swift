@@ -703,21 +703,41 @@ final class PaywallCacheWarmingTests: TestCase {
     func testWorkflowAssetPrewarmingDownloadsImagesForDisplayedLocaleOnly() async throws {
         for (preferredLocales, expectedImage) in Self.imagePrewarmingLocales {
             let requests = try await self.localizedImagePrewarmingRequests(
-                preferredLocales: preferredLocales,
+                preferredLocales: [preferredLocales],
                 workflow: true
             )
-            XCTAssertEqual(requests, Self.localizedImageRequests(expectedImage), "\(preferredLocales)")
+            XCTAssertEqual(Set(requests), Self.localizedImageRequests(expectedImage), "\(preferredLocales)")
         }
     }
 
     func testOfferingsAssetPrewarmingDownloadsImagesForDisplayedLocaleOnly() async throws {
         for (preferredLocales, expectedImage) in Self.imagePrewarmingLocales {
             let requests = try await self.localizedImagePrewarmingRequests(
-                preferredLocales: preferredLocales,
+                preferredLocales: [preferredLocales],
                 workflow: false
             )
-            XCTAssertEqual(requests, Self.localizedImageRequests(expectedImage), "\(preferredLocales)")
+            XCTAssertEqual(Set(requests), Self.localizedImageRequests(expectedImage), "\(preferredLocales)")
         }
+    }
+
+    func testWorkflowImagePrewarmingWarmsEachPreferredLocaleOnlyOnce() async throws {
+        let requests = try await self.localizedImagePrewarmingRequests(
+            preferredLocales: [["en_US"], ["en_US"], ["es_ES"], ["es_ES"], ["en_US"]],
+            workflow: true
+        )
+        XCTAssertEqual(requests.count, 10)
+        XCTAssertEqual(Set(requests), Self.localizedImageRequests("localized-en")
+            .union(Self.localizedImageRequests("localized-es")))
+    }
+
+    func testOfferingsImagePrewarmingWarmsEachPreferredLocaleOnlyOnce() async throws {
+        let requests = try await self.localizedImagePrewarmingRequests(
+            preferredLocales: [["en_US"], ["en_US"], ["es_ES"], ["es_ES"], ["en_US"]],
+            workflow: false
+        )
+        XCTAssertEqual(requests.count, 10)
+        XCTAssertEqual(Set(requests), Self.localizedImageRequests("localized-en")
+            .union(Self.localizedImageRequests("localized-es")))
     }
 
     func testWorkflowAssetPrewarmingDownloadsLocalizedVideosForPreferredLocaleOnly() async {
@@ -1412,15 +1432,16 @@ private extension PaywallCacheWarmingTests {
     }
 
     func localizedImagePrewarmingRequests(
-        preferredLocales: [String],
+        preferredLocales: [[String]],
         workflow: Bool
-    ) async throws -> Set<URLWithValidation> {
+    ) async throws -> [URLWithValidation] {
+        let locales: Atomic<[String]> = .init([])
         let fileRepository = MockCacheWarmingFileRepository()
         let cache = PaywallCacheWarming(
             introEligibiltyChecker: self.eligibilityChecker,
             fileRepository: fileRepository,
             webBundleURLBatcher: self.mockWebBundleURLBatcher,
-            preferredLocalesProvider: { preferredLocales }
+            preferredLocalesProvider: { locales.value }
         )
         let components: [PaywallComponent] = [.image(.init(
             source: Self.image("base", dark: true),
@@ -1432,16 +1453,18 @@ private extension PaywallCacheWarmingTests {
             "es-ES": ["hero": .image(Self.image("localized-es", dark: true)), "title": .string("Hola")],
             "fr_FR": ["hero": .image(Self.image("localized-fr", dark: true))]
         ]
+        let warmUp: () async -> Void
         if workflow {
             let screen = Self.workflowScreen(components: components, localizations: localizations)
-            await cache.prewarmWorkflowAssets(workflow: .init(
+            let workflow = PublishedWorkflow(
                 id: "workflow",
                 displayName: "Test",
                 initialStepId: "step",
                 singleStepFallbackId: nil,
                 steps: [:],
                 screens: ["screen": screen]
-            ), uiConfig: Self.emptyUIConfig)
+            )
+            warmUp = { await cache.prewarmWorkflowAssets(workflow: workflow, uiConfig: Self.emptyUIConfig) }
         } else {
             let data = Self.paywallComponentsData(components: components, localizations: localizations)
             let offering = Offering(
@@ -1451,9 +1474,14 @@ private extension PaywallCacheWarmingTests {
                 availablePackages: [],
                 webCheckoutUrl: nil
             )
-            await cache.warmUpPaywallAssetsCache(offerings: try Self.createOfferings([offering]))
+            let offerings = try Self.createOfferings([offering])
+            warmUp = { await cache.warmUpPaywallAssetsCache(offerings: offerings) }
         }
-        return Set(await fileRepository.requests)
+        for preferredLocale in preferredLocales {
+            locales.value = preferredLocale
+            await warmUp()
+        }
+        return await fileRepository.requests
     }
 
     /// Prewarms a workflow whose video and video override both use localized videos, for `en_US` (default) and `es_ES`.
