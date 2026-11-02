@@ -768,14 +768,12 @@ final class MockRemoteConfigManager: RemoteConfigManagerType {
         var isHolding = false
         private var reads: [Read] = []
 
-        /// Stores `read` and returns `true` if reads are being held.
         mutating func holdIfNeeded(_ read: Read) -> Bool {
             guard self.isHolding else { return false }
             self.reads.append(read)
             return true
         }
 
-        /// Stops holding and returns every held read.
         mutating func release() -> [Read] {
             self.isHolding = false
             let reads = self.reads
