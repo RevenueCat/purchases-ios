@@ -109,6 +109,23 @@ custom_rules:
     message: "Use Bundle.revenueCatUI instead of Bundle.module for Compose Resources compatibility"
     severity: error
 
+  no_int_epoch_milliseconds:
+    name: "No Int for epoch milliseconds"
+    message: "Epoch milliseconds (~1.7e12) overflow `Int` on 32-bit platforms (e.g. arm64_32 Apple Watches), crashing at runtime. Use `Int64` instead."
+    severity: error
+    included:
+      - "Sources/.*\\.swift"
+      - "RevenueCatUI/.*\\.swift"
+      - "AdapterSDKs/RevenueCatAdMob/Sources/.*\\.swift"
+    excluded_match_kinds:
+      - comment
+      - doccomment
+      - doccomment.field
+      - string
+    # Matches, within a single line: Int(<...since...> * 1000), Int(1000 * <...since...>),
+    # Int(<...since...>) * 1000 and 1000 * Int(<...since...>). One level of nested parentheses is supported.
+    regex: '\bInt\((?:[^()\n]|\([^()\n]*\)|\()*timeIntervalSince(?:1970|ReferenceDate|Now)\b(?:[^()\n]|\([^()\n]*\))*\*\s*1_?000\b|\bInt\((?:[^()\n]|\([^()\n]*\)|\()*\b1_?000\s*\*\s*(?:[^()\n]|\([^()\n]*\))*timeIntervalSince(?:1970|ReferenceDate|Now)\b|\bInt\((?:[^()\n]|\([^()\n]*\))*timeIntervalSince(?:1970|ReferenceDate|Now)\b(?:[^()\n]|\([^()\n]*\))*\)\s*\*\s*1_?000\b|\b1_?000\s*\*\s*Int\((?:[^()\n]|\([^()\n]*\))*timeIntervalSince(?:1970|ReferenceDate|Now)\b'
+
   no_new_public_enums:
     name: "No new public enums in consumer-facing APIs"
     message: "Adding a new `public enum` to the SDK's consumer-facing surface (including `@_spi(Experimental)`) is not allowed. Adding a case to an existing `public enum` is a source-breaking change for any consumer with an exhaustive `switch`. Use a struct with static constants instead."
