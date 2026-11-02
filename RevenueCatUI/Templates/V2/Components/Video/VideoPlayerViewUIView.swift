@@ -55,6 +55,7 @@ struct VideoPlayerUIView: UIViewControllerRepresentable {
     func makeUIViewController(context: Context) -> AVPlayerViewController {
         let controller = AVPlayerViewController()
         controller.player = context.coordinator.player
+        controller.view.addSubview(context.coordinator.windowObserver)
         controller.view.backgroundColor = .clear
         controller.showsPlaybackControls = true
         // User interaction stays enabled so users can tap to play/pause, seek, etc. Carousel swipes
@@ -82,7 +83,7 @@ struct VideoPlayerUIView: UIViewControllerRepresentable {
     }
 
     func updateUIViewController(_ uiViewController: AVPlayerViewController, context: Context) {
-        context.coordinator.autoplayHandler.setPlaybackEnabled(isPaywallPageActive)
+        context.coordinator.windowObserver.isPaywallPageActive = isPaywallPageActive
     }
 
     static func dismantleUIViewController(_ uiViewController: AVPlayerViewController, coordinator: Coordinator) {
@@ -102,6 +103,7 @@ struct VideoPlayerUIView: UIViewControllerRepresentable {
         private let audioSessionHandler: VideoAudioSessionHandler
 
         let autoplayHandler: VideoAutoplayHandler
+        let windowObserver: VideoPlaybackWindowObserver
         private var loopObserver: NSObjectProtocol?
         private var isTornDown = false
 
@@ -132,7 +134,11 @@ struct VideoPlayerUIView: UIViewControllerRepresentable {
             self.autoplayHandler = VideoAutoplayHandler(
                 playbackController: avPlayer,
                 lifecycleObserver: SystemAppLifecycleObserver(),
-                isPlaybackEnabled: isPlaybackEnabled
+                isPlaybackEnabled: false
+            )
+            self.windowObserver = VideoPlaybackWindowObserver(
+                autoplayHandler: self.autoplayHandler,
+                isPaywallPageActive: isPlaybackEnabled
             )
 
             if loopVideo {
@@ -170,6 +176,7 @@ struct VideoPlayerUIView: UIViewControllerRepresentable {
         @MainActor
         func tearDown() {
             isTornDown = true
+            windowObserver.invalidate()
             autoplayHandler.invalidate()
             player.pause()
             if let loopObserver = self.loopObserver {
