@@ -46,6 +46,26 @@ class TabControlContext: ObservableObject {
         self._selectedTabId = .init(initialValue: calculatedDefaultTabId)
     }
 
+    private(set) var textPackageContextsByTabId: [String: PackageContext] = [:]
+
+    func configureTextPackageContexts(_ contexts: [String: PackageContext], parent: PackageContext) {
+        guard self.textPackageContextsByTabId.isEmpty else { return }
+        self.textPackageContextsByTabId = contexts.mapValues { context in
+            context === parent ? parent : PackageContext(
+                package: context.package,
+                variableContext: context.variableContext
+            )
+        }
+    }
+
+    @MainActor
+    func updateTextPackageContext(for tabId: String, from source: PackageContext) {
+        guard let package = source.package,
+              let context = self.textPackageContextsByTabId[tabId],
+              context !== source else { return }
+        context.update(package: package, variableContext: context.variableContext)
+    }
+
     var defaultTabIndex: Int? {
         return self.index(for: self.initialTabId)
     }
@@ -211,7 +231,7 @@ struct LoadedTabsComponentView: View {
         //   This ensures they always reflect the current parent selection and stay in sync
         //   automatically when the parent context changes.
         //
-        self._tierPackageContexts = .init(initialValue: Dictionary(
+        let tierPackageContexts = Dictionary(
             uniqueKeysWithValues: viewModel.tabViewModels.map { key, tabViewModel -> (String, PackageContext) in
                 if !tabViewModel.packages.isEmpty {
                     // Tab has its own packages - create context with tab's packages.
@@ -237,7 +257,9 @@ struct LoadedTabsComponentView: View {
                     return (key, parentPackageContext)
                 }
             }
-        ))
+        )
+        self._tierPackageContexts = .init(initialValue: tierPackageContexts)
+        self.tabControlContext.configureTextPackageContexts(tierPackageContexts, parent: parentPackageContext)
     }
 
     private var packageSelectionContext: PackageSelectionContext {
@@ -339,6 +361,10 @@ struct LoadedTabsComponentView: View {
                 parentPackageContext: self.packageContext,
                 tabPackageIdentifiers: Set(activeTabViewModel.packages.map(\.identifier)),
                 onChange: { context in
+                    self.tabControlContext.updateTextPackageContext(
+                        for: self.tabControlContext.selectedTabId,
+                        from: context
+                    )
                     // A package-less tab shares the parent's context, so this would only clear it.
                     guard context !== self.packageContext else { return }
 
@@ -375,6 +401,10 @@ struct LoadedTabsComponentView: View {
                 self.reconcileSelection(tierPackageContext, tabViewModel: activeTabViewModel)
                 if !self.viewModel.didSeedInitialState {
                     self.viewModel.didSeedInitialState = true
+                    self.tabControlContext.updateTextPackageContext(
+                        for: self.tabControlContext.selectedTabId,
+                        from: tierPackageContext
+                    )
                     // Seed the store with the initial selection so components that react to the tab
                     // render their correct state on first appearance. A no-op when the declared
                     // default already matches the initial tab.
@@ -437,6 +467,7 @@ struct LoadedTabsComponentView: View {
                         variableContext: tabUpdate.variableContext
                     )
                 }
+                self.tabControlContext.updateTextPackageContext(for: newTabId, from: newTierPackageContext)
                 if let parentUpdate = updatePlan.parentUpdate {
                     // Switching tabs restores a selection rather than making one, so it isn't a tap.
                     self.packageContext.update(
