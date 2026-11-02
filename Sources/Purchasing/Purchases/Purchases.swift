@@ -740,6 +740,11 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                             completion: { result in continuation.resume(with: result) }
                         )
                     }
+                },
+                trackWorkflowEvent: { event in
+                    if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
+                        await eventsManager?.track(featureEvent: event)
+                    }
                 }
             )
             branchResolver = DefaultBranchResolver(

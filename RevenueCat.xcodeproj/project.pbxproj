@@ -503,6 +503,9 @@
 		C0DE00000000000000000103 /* ResolvedCheckpointWorkflow.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0DE00000000000000000203 /* ResolvedCheckpointWorkflow.swift */; };
 		C0DE00000000000000000104 /* ResolvedAdStep.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0DE00000000000000000204 /* ResolvedAdStep.swift */; };
 		C0DE0000000000000000010B /* DefaultCheckpointWorkflowResolver+Ad.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0DE0000000000000000020B /* DefaultCheckpointWorkflowResolver+Ad.swift */; };
+		C0DE0000000000000000010C /* DefaultCheckpointWorkflowResolver+Offering.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0DE0000000000000000020C /* DefaultCheckpointWorkflowResolver+Offering.swift */; };
+		C0DE0000000000000000010D /* DefaultCheckpointWorkflowResolver+StepEvents.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0DE0000000000000000020D /* DefaultCheckpointWorkflowResolver+StepEvents.swift */; };
+		C0DE0000000000000000010E /* WorkflowStep+ExperimentData.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0DE0000000000000000020E /* WorkflowStep+ExperimentData.swift */; };
 		C0DE00000000000000000106 /* CheckpointEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0DE00000000000000000206 /* CheckpointEvent.swift */; };
 		C0DE00000000000000000105 /* CheckpointWorkflowResolverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0DE00000000000000000205 /* CheckpointWorkflowResolverTests.swift */; };
 		C0DE00000000000000000108 /* CheckpointEventsRequestTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0DE00000000000000000208 /* CheckpointEventsRequestTests.swift */; };
@@ -3011,6 +3014,9 @@
 		C0DE00000000000000000203 /* ResolvedCheckpointWorkflow.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ResolvedCheckpointWorkflow.swift; sourceTree = "<group>"; };
 		C0DE00000000000000000204 /* ResolvedAdStep.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ResolvedAdStep.swift; sourceTree = "<group>"; };
 		C0DE0000000000000000020B /* DefaultCheckpointWorkflowResolver+Ad.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "DefaultCheckpointWorkflowResolver+Ad.swift"; sourceTree = "<group>"; };
+		C0DE0000000000000000020C /* DefaultCheckpointWorkflowResolver+Offering.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "DefaultCheckpointWorkflowResolver+Offering.swift"; sourceTree = "<group>"; };
+		C0DE0000000000000000020D /* DefaultCheckpointWorkflowResolver+StepEvents.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "DefaultCheckpointWorkflowResolver+StepEvents.swift"; sourceTree = "<group>"; };
+		C0DE0000000000000000020E /* WorkflowStep+ExperimentData.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "WorkflowStep+ExperimentData.swift"; sourceTree = "<group>"; };
 		C0DE00000000000000000206 /* CheckpointEvent.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CheckpointEvent.swift; sourceTree = "<group>"; };
 		C0DE00000000000000000205 /* CheckpointWorkflowResolverTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CheckpointWorkflowResolverTests.swift; sourceTree = "<group>"; };
 		C0DE00000000000000000208 /* CheckpointEventsRequestTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CheckpointEventsRequestTests.swift; sourceTree = "<group>"; };
@@ -4018,6 +4024,8 @@
 				C0DE00000000000000000203 /* ResolvedCheckpointWorkflow.swift */,
 				C0DE00000000000000000204 /* ResolvedAdStep.swift */,
 				C0DE0000000000000000020B /* DefaultCheckpointWorkflowResolver+Ad.swift */,
+				C0DE0000000000000000020C /* DefaultCheckpointWorkflowResolver+Offering.swift */,
+				C0DE0000000000000000020D /* DefaultCheckpointWorkflowResolver+StepEvents.swift */,
 				C0DE00000000000000000206 /* CheckpointEvent.swift */,
 			);
 			name = Checkpoints;
@@ -6274,6 +6282,7 @@
 				FDE57A9F2DF8785000101CE2 /* VirtualCurrenciesResponse.swift */,
 				DB3395D42F840A570079250C /* WorkflowsResponse.swift */,
 				A18C47900B744E1891DD1082 /* WorkflowStepGating.swift */,
+				C0DE0000000000000000020E /* WorkflowStep+ExperimentData.swift */,
 				A7D300000000000000000001 /* WorkflowBranch.swift */,
 				A7D300000000000000000003 /* WorkflowTriggerAction.swift */,
 				755C26A32E310B19006DD0AE /* WebBillingProductsResponse.swift */,
@@ -8514,6 +8523,7 @@
 				35F82BAB26A84E130051DF03 /* Dictionary+Extensions.swift in Sources */,
 				4D2C7D0B2CC40A35002562BC /* PurchaseParams.swift in Sources */,
 				DB3395D52F840A570079250C /* WorkflowsResponse.swift in Sources */,
+				C0DE0000000000000000010E /* WorkflowStep+ExperimentData.swift in Sources */,
 				A18C47900B744E1891DD1081 /* WorkflowStepGating.swift in Sources */,
 				9A65E0A02591A23200DE00B0 /* OfferingStrings.swift in Sources */,
 				5774F9B62805E6CC00997128 /* CustomerInfoResponse.swift in Sources */,
@@ -8738,6 +8748,8 @@
 				C0DE00000000000000000103 /* ResolvedCheckpointWorkflow.swift in Sources */,
 				C0DE00000000000000000104 /* ResolvedAdStep.swift in Sources */,
 				C0DE0000000000000000010B /* DefaultCheckpointWorkflowResolver+Ad.swift in Sources */,
+				C0DE0000000000000000010C /* DefaultCheckpointWorkflowResolver+Offering.swift in Sources */,
+				C0DE0000000000000000010D /* DefaultCheckpointWorkflowResolver+StepEvents.swift in Sources */,
 				C0DE00000000000000000106 /* CheckpointEvent.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
