@@ -12,6 +12,7 @@ import Foundation
 // swiftlint:disable identifier_name
 enum CheckpointPresenterStrings {
 
+    case unsupported_format(adFormat: String)
     case interstitial_unsupported_mediator(mediator: String)
     case interstitial_load_failed(adUnitID: String, error: Error)
     case interstitial_no_presentation_context
@@ -27,9 +28,12 @@ extension CheckpointPresenterStrings: LogMessage {
 
     var description: String {
         switch self {
+        case let .unsupported_format(adFormat):
+            return "Checkpoint ad step is configured for ad format '\(adFormat)', which AdMobPresenter cannot " +
+                "present. Republish the workflow with an interstitial, rewarded or rewarded_interstitial ad unit."
         case let .interstitial_unsupported_mediator(mediator):
             return "Checkpoint ad step is configured for mediator '\(mediator)'; " +
-                "AdMobInterstitialPresenter only presents AdMob ad units."
+                "AdMob checkpoint presenters only present AdMob ad units."
         case let .interstitial_load_failed(adUnitID, error):
             return "Checkpoint interstitial failed to load for ad unit '\(adUnitID)': \(error.localizedDescription)"
         case .interstitial_no_presentation_context:
@@ -38,7 +42,7 @@ extension CheckpointPresenterStrings: LogMessage {
             return "Checkpoint interstitial failed to present: \(error.localizedDescription)"
         case let .rewarded_unsupported_mediator(adFormat, mediator):
             return "Checkpoint \(adFormat.rawValue) ad step is configured for mediator '\(mediator)'; " +
-                "only AdMob ad units can be presented."
+                "AdMob checkpoint presenters only present AdMob ad units."
         case let .rewarded_load_failed(adFormat, adUnitID, error):
             return "Checkpoint \(adFormat.rawValue) ad failed to load for ad unit '\(adUnitID)': " +
                 "\(error.localizedDescription)"
