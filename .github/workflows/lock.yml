@@ -6,6 +6,9 @@ on:
   schedule:
     - cron: "0 0 * * *" # runs at 00:00 UTC every day
 
+permissions:
+  issues: write
+
 jobs:
   lock:
     runs-on: ubuntu-latest
