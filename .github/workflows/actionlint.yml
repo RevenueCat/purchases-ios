@@ -12,4 +12,4 @@ jobs:
   actionlint:
     permissions:
       contents: read
-    uses: revenuecat/sdk-github-workflows/.github/workflows/actionlint.yml@8a6e807d0a037db19f518f64100d42c70ce11aff # alvarobrey/shared-actionlint
+    uses: revenuecat/sdk-github-workflows/.github/workflows/actionlint.yml@9bb6a6db67a9a941e10e690b61d0dc6f0020f470 # v10
