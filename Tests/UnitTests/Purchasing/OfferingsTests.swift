@@ -688,7 +688,7 @@ class OfferingsTests: TestCase {
             offeringIdentifier: "offering_a",
             placementIdentifier: "onboarding",
             targetingContext: .init(revision: 3, ruleId: "rule_abc")
-        )
+        ).withWorkflowContext(workflowId: "wrapper", stepId: "offering_step", blobRef: "blob-ref")
         let package = Package(
             identifier: "$rc_monthly",
             packageType: .monthly,
@@ -712,6 +712,23 @@ class OfferingsTests: TestCase {
         expect(presentedContext.targetingContext?.ruleId) == "rule_abc"
         expect(presentedContext.checkpointIdentifier) == "checkout"
         expect(offering.presentedOfferingContext?.checkpointIdentifier).to(beNil())
+        expect(presentedContext.workflowId) == "wrapper"
+        expect(presentedContext.stepId) == "offering_step"
+        expect(presentedContext.blobRef) == "blob-ref"
+
+        let offerings = Offerings(
+            offerings: [presentedOffering.identifier: presentedOffering],
+            currentOfferingID: presentedOffering.identifier,
+            placements: nil,
+            targeting: .init(revision: 7, ruleId: "updated_rule"),
+            contents: .mockContents,
+            loadedFromDiskCache: false
+        )
+        let targetedContext = try XCTUnwrap(offerings.current?.presentedOfferingContext)
+        expect(targetedContext.targetingContext?.ruleId) == "updated_rule"
+        expect(targetedContext.workflowId) == "wrapper"
+        expect(targetedContext.stepId) == "offering_step"
+        expect(targetedContext.blobRef) == "blob-ref"
     }
 
     func testLifetimePackage() throws {

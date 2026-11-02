@@ -332,20 +332,9 @@ public extension Offering {
 
     /// Copies the offering and attributes its packages to the checkpoint that presented it.
     func withPresentedCheckpointIdentifier(_ checkpointIdentifier: String, traceID: String?) -> Self {
-        return Self(
-            identifier: identifier,
-            serverDescription: serverDescription,
-            metadata: metadata,
-            paywall: paywall,
-            paywallComponents: internalPaywallComponents,
-            hasPaywallComponents: hasPaywallComponents,
-            availablePackages: availablePackages.map {
-                $0.withPresentedOfferingContext(
-                    $0.presentedOfferingContext.withCheckpointIdentifier(checkpointIdentifier, traceID: traceID)
-                )
-            },
-            webCheckoutUrl: webCheckoutUrl
-        )
+        return self.mapPresentedOfferingContext {
+            $0.withCheckpointIdentifier(checkpointIdentifier, traceID: traceID)
+        }
     }
 
     /// Copies the Offering, replacing `paywallComponents` with the provided value.
@@ -361,6 +350,33 @@ public extension Offering {
             webCheckoutUrl: webCheckoutUrl
         )
     }
+}
+
+extension Offering {
+
+    func withPresentedWorkflowContext(workflowId: String, stepId: String, blobRef: String?) -> Self {
+        return self.mapPresentedOfferingContext {
+            $0.withWorkflowContext(workflowId: workflowId, stepId: stepId, blobRef: blobRef)
+        }
+    }
+
+    private func mapPresentedOfferingContext(
+        _ transform: (PresentedOfferingContext) -> PresentedOfferingContext
+    ) -> Self {
+        return Self(
+            identifier: self.identifier,
+            serverDescription: self.serverDescription,
+            metadata: self.metadata,
+            paywall: self.paywall,
+            paywallComponents: self.internalPaywallComponents,
+            hasPaywallComponents: self.hasPaywallComponents,
+            availablePackages: self.availablePackages.map {
+                $0.withPresentedOfferingContext(transform($0.presentedOfferingContext))
+            },
+            webCheckoutUrl: self.webCheckoutUrl
+        )
+    }
+
 }
 
 fileprivate extension Package {

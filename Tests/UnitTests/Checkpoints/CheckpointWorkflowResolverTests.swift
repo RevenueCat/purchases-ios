@@ -1026,6 +1026,32 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
         }
     }
 
+    func testTerminalOfferingPreservesFlowContextForCustomPaywallImpressions() async throws {
+        let embeddedStepID = "wf_offering~exp~b~offering"
+        self.stubOfferingWorkflow(
+            offeringID: self.offeringID,
+            stepID: embeddedStepID,
+            workflowBlobRef: "blob-ref-1"
+        )
+
+        let resolution = try await self.resolve()
+        let offering = try XCTUnwrap(Self.resolvedOffering(resolution))
+        let params = CustomPaywallImpressionParams(paywallId: "custom", offering: offering)
+        let data = CustomPaywallEvent.Data(
+            paywallId: params.paywallId,
+            offeringId: params.offeringId,
+            presentedOfferingContext: params.presentedOfferingContext
+        )
+        let encoded = try JSONEncoder.default.encode(data)
+        let json = try XCTUnwrap(JSONSerialization.jsonObject(with: encoded) as? [String: Any])
+
+        XCTAssertEqual(json["workflow_id"] as? String, self.workflowID)
+        XCTAssertEqual(json["step_id"] as? String, embeddedStepID)
+        XCTAssertEqual(json["blob_ref"] as? String, "blob-ref-1")
+        XCTAssertNil(self.offering.presentedOfferingContext?.checkpointIdentifier)
+        XCTAssertNil(self.offering.presentedOfferingContext?.workflowId)
+    }
+
     func testStaleAttemptDiscardsItsStepEventsSoOnlyTheRetriedAnswerIsTracked() async throws {
         self.stubOfferingWorkflow(offeringID: self.offeringID)
         let fetchCount = Atomic<Int>(0)
@@ -1229,6 +1255,7 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
 
     private func stubOfferingWorkflow(
         offeringID: String?,
+        stepID: String = "step_1",
         initialStepID: String? = nil,
         extraSteps: [String: WorkflowStep] = [:],
         screenID: String? = nil,
@@ -1238,7 +1265,6 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
         workflowBlobRef: String? = nil,
         experimentParams: [String: AnyDecodable] = [:]
     ) {
-        let stepID = "step_1"
         var step = WorkflowStep(
             id: stepID,
             type: "offering",
