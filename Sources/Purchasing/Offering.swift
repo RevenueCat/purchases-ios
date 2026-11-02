@@ -318,16 +318,7 @@ public extension Offering {
 
     /// Copies the Offering and sets the given `presentedOfferingContext` on all `availablePackages`
     func withPresentedOfferingContext(_ presentedOfferingContext: PresentedOfferingContext) -> Self {
-        return Self(
-            identifier: identifier,
-            serverDescription: serverDescription,
-            metadata: metadata,
-            paywall: paywall,
-            paywallComponents: internalPaywallComponents,
-            hasPaywallComponents: hasPaywallComponents,
-            availablePackages: availablePackages.map { $0.withPresentedOfferingContext(presentedOfferingContext) },
-            webCheckoutUrl: webCheckoutUrl
-        )
+        return self.mapPresentedOfferingContext { _ in presentedOfferingContext }
     }
 
     /// Copies the offering and attributes its packages to the checkpoint that presented it.

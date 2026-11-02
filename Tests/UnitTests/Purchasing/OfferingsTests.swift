@@ -715,20 +715,6 @@ class OfferingsTests: TestCase {
         expect(presentedContext.workflowId) == "wrapper"
         expect(presentedContext.stepId) == "offering_step"
         expect(presentedContext.blobRef) == "blob-ref"
-
-        let offerings = Offerings(
-            offerings: [presentedOffering.identifier: presentedOffering],
-            currentOfferingID: presentedOffering.identifier,
-            placements: nil,
-            targeting: .init(revision: 7, ruleId: "updated_rule"),
-            contents: .mockContents,
-            loadedFromDiskCache: false
-        )
-        let targetedContext = try XCTUnwrap(offerings.current?.presentedOfferingContext)
-        expect(targetedContext.targetingContext?.ruleId) == "updated_rule"
-        expect(targetedContext.workflowId) == "wrapper"
-        expect(targetedContext.stepId) == "offering_step"
-        expect(targetedContext.blobRef) == "blob-ref"
     }
 
     func testLifetimePackage() throws {

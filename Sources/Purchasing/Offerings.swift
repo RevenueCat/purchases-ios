@@ -164,11 +164,6 @@ private extension Offering {
                 targetingContext: targeting.flatMap { .init(revision: $0.revision,
                                                             ruleId: $0.ruleId) } ?? oldContext.targetingContext
             ).withCheckpointIdentifier(oldContext.checkpointIdentifier, traceID: oldContext.traceID)
-                .withWorkflowContext(
-                    workflowId: oldContext.workflowId,
-                    stepId: oldContext.stepId,
-                    blobRef: oldContext.blobRef
-                )
 
             return Package(identifier: pkg.identifier,
                            packageType: pkg.packageType,
