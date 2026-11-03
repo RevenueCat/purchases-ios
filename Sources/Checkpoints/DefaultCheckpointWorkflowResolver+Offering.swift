@@ -31,29 +31,20 @@ extension DefaultCheckpointWorkflowResolver {
         }
 
         return await Self.trackingStepEvents(for: step, in: workflowData, traceID: traceID) {
-            await self.resolveOffering(
-                rule,
-                offeringID: offeringID,
-                checkpointIdentifier: checkpointIdentifier,
+            guard let offering = await self.offering(identifier: offeringID, for: rule) else {
+                return .noAction(.configurationUnavailable)
+            }
+
+            return .matchedOffering(
+                offering.withPresentedCheckpointIdentifier(checkpointIdentifier, traceID: traceID)
+                    .withPresentedWorkflowContext(
+                        workflowId: workflowData.workflow.id,
+                        stepId: step.id,
+                        blobRef: workflowData.workflowBlobRef
+                    ),
                 traceID: traceID
             )
         }
-    }
-
-    /// Serves a workflow whose only step is a terminal `offering` step as an offering the app owns.
-    ///
-    /// Gating and the offering identifier have already been validated, since a step of this kind renders nothing.
-    private func resolveOffering(
-        _ rule: CheckpointRule, offeringID: String, checkpointIdentifier: String, traceID: String
-    ) async -> CheckpointResolution {
-        guard let offering = await self.offering(identifier: offeringID, for: rule) else {
-            return .noAction(.configurationUnavailable)
-        }
-
-        return .matchedOffering(
-            offering.withPresentedCheckpointIdentifier(checkpointIdentifier, traceID: traceID),
-            traceID: traceID
-        )
     }
 
     /// Loads the offerings and picks `identifier` out of them, logging why the rule can't be served when it
