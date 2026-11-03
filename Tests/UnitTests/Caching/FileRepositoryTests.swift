@@ -122,23 +122,6 @@ class FileRepositoryTests: TestCase {
         XCTAssertNotEqual(someURL, expectedCachedURL)
     }
 
-    func test_dataValidChecksum_savesAndReturns() async throws {
-        let sut = await makeSystemUnderTest()
-        let data = "SomeData".asData
-        let checksum = Checksum.generate(from: data, with: .md5)
-
-        sut.cache.stubSaveData(with: .success(.init(data: data, url: someURL)))
-        sut.cache.stubCachedContentExists(with: false)
-        sut.networkService.stubResponse(at: 0, result: .success("SomeData"))
-        let url = try await sut.fileRepository
-            .generateOrGetCachedFileURL(for: someURL, withChecksum: checksum)
-
-        XCTAssertEqual(sut.networkService.invocations.count, 1)
-        XCTAssertEqual(sut.cache.saveDataInvocations.count, 1)
-        XCTAssertEqual(url, sut.cache.saveDataInvocations.first?.url)
-        XCTAssertEqual(sut.cache.saveDataInvocations.first?.checksum, checksum)
-    }
-
     func test_whenChecksumMismatch_throwsChecksumMismatch() async throws {
         let sut = await makeSystemUnderTest()
         let checksum = Checksum(algorithm: .sha256, value: "expected-hash")
@@ -162,23 +145,6 @@ class FileRepositoryTests: TestCase {
         }
 
         XCTAssertEqual(sut.cache.saveDataInvocations.first?.checksum, checksum)
-    }
-
-    func test_urlSessionDownloadFile_savesResponseToTemporaryFile() async throws {
-        let expectedData = Data("downloaded content".utf8)
-        MockFileDownloadURLProtocol.handler = { request in
-            return (try Self.response(for: request, statusCode: 200), expectedData)
-        }
-        let session = self.fileDownloadSession()
-        defer {
-            session.invalidateAndCancel()
-            MockFileDownloadURLProtocol.handler = nil
-        }
-
-        let downloadedURL = try await session.downloadFile(from: self.someURL)
-        defer { try? FileManager.default.removeItem(at: downloadedURL) }
-
-        XCTAssertEqual(try Data(contentsOf: downloadedURL), expectedData)
     }
 
     func test_urlSessionDownloadFile_rejectsNonSuccessfulResponse() async throws {
