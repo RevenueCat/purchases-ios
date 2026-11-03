@@ -3,7 +3,7 @@
 #
 # Fixtures live in the Automated SDK Tests project (6627e5bc). Do not edit them.
 # Run locally against the test store:
-#   maestro test -e MAESTRO_STORE=test_store Examples/rc-maestro/maestro/workflows/checkpoint_priority.yaml
+#   maestro test -e MAESTRO_STORE=test_store Projects/rc-maestro/maestro/workflows/checkpoint_priority.yaml
 
 appId: com.revenuecat.maestro.ios
 name: The first matching checkpoint rule wins

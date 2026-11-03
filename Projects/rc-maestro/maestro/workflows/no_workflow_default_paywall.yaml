@@ -3,7 +3,7 @@
 # not surface an error.
 #
 # Run locally against the test store:
-#   maestro test -e MAESTRO_STORE=test_store Examples/rc-maestro/maestro/workflows/no_workflow_default_paywall.yaml
+#   maestro test -e MAESTRO_STORE=test_store Projects/rc-maestro/maestro/workflows/no_workflow_default_paywall.yaml
 
 appId: com.revenuecat.maestro.ios
 name: Offering with no paywall or workflow renders the default paywall

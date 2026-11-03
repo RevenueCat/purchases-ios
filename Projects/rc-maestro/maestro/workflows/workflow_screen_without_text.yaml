@@ -3,7 +3,7 @@
 # and its icon-only button in the middle advances to screen 2.
 #
 # Run locally against the test store:
-#   maestro test -e MAESTRO_STORE=test_store Examples/rc-maestro/maestro/workflows/workflow_screen_without_text.yaml
+#   maestro test -e MAESTRO_STORE=test_store Projects/rc-maestro/maestro/workflows/workflow_screen_without_text.yaml
 
 appId: com.revenuecat.maestro.ios
 name: Workflow screen without text renders and navigates

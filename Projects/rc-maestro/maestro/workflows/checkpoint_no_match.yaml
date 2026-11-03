@@ -3,7 +3,7 @@
 #
 # Fixtures live in the Automated SDK Tests project (6627e5bc). Do not edit them.
 # Run locally against the test store:
-#   maestro test -e MAESTRO_STORE=test_store Examples/rc-maestro/maestro/workflows/checkpoint_no_match.yaml
+#   maestro test -e MAESTRO_STORE=test_store Projects/rc-maestro/maestro/workflows/checkpoint_no_match.yaml
 
 appId: com.revenuecat.maestro.ios
 name: A checkpoint without a matching rule presents nothing

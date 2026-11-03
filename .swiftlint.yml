@@ -1,6 +1,7 @@
 excluded:
   - Carthage
   - Examples
+  - Projects/rc-maestro
   - Tests/InstallationTests
   - Tests/TestingApps
   - Tests/APITesters

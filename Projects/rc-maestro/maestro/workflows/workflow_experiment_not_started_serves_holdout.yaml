@@ -3,7 +3,7 @@
 # experiment step to its fallback and everyone follows variant A.
 #
 # Run locally against the test store:
-#   maestro test -e MAESTRO_STORE=test_store Examples/rc-maestro/maestro/workflows/workflow_experiment_not_started_serves_holdout.yaml
+#   maestro test -e MAESTRO_STORE=test_store Projects/rc-maestro/maestro/workflows/workflow_experiment_not_started_serves_holdout.yaml
 
 appId: com.revenuecat.maestro.ios
 name: An experiment that was never started serves the holdout

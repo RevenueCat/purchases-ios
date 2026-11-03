@@ -13,7 +13,7 @@
 #
 # Run locally against the test store:
 #   maestro test -e MAESTRO_STORE=test_store \
-#     Examples/rc-maestro/maestro/workflows/developer_provided_offering_filters_packages.yaml
+#     Projects/rc-maestro/maestro/workflows/developer_provided_offering_filters_packages.yaml
 
 appId: com.revenuecat.maestro.ios
 name: Developer-provided offering renders only its own packages

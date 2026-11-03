@@ -1301,7 +1301,7 @@ platform :ios do
     backend_environment = options[:backend_environment] || "production"
     store = options[:store] || "app_store"
     output_dir = options[:output_dir] || "test_output/maestro"
-    # Which subdirectory of Examples/rc-maestro/maestro to run flows from (e.g. "e2e_tests", "workflows").
+    # Which subdirectory of Projects/rc-maestro/maestro to run flows from (e.g. "e2e_tests", "workflows").
     flow_subdir = options[:flow_subdir] || "e2e_tests"
     skip_slack_notification = options.fetch(:skip_slack_notification, true)
     base_path = "#{Dir.pwd}/.."
@@ -1380,7 +1380,7 @@ platform :ios do
 
     if store == "app_store"
       bundle_id = "com.revenuecat.maestro.ios"
-      storekit_config_path = "#{base_path}/Examples/rc-maestro/rc-maestro/Resources/StoreKit/app787ddb07e6.storekit"
+      storekit_config_path = "#{base_path}/Projects/rc-maestro/rc-maestro/Resources/StoreKit/app787ddb07e6.storekit"
 
       # Start file watcher in background
       UI.message("Starting StoreKit config file watcher...")
@@ -1397,7 +1397,7 @@ platform :ios do
 
     success = false
     begin
-      flow_dir = "#{base_path}/Examples/rc-maestro/maestro/#{flow_subdir}"
+      flow_dir = "#{base_path}/Projects/rc-maestro/maestro/#{flow_subdir}"
 
       previous_test_environment = {}
       if store == "app_store"

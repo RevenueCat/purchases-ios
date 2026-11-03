@@ -12,7 +12,7 @@
 # never reaches the app, which then silently opens the default workflow.
 #
 # Run locally against the test store:
-#   maestro test -e MAESTRO_STORE=test_store Examples/rc-maestro/maestro/workflows/workflow_experiment_assigns_variant.yaml
+#   maestro test -e MAESTRO_STORE=test_store Projects/rc-maestro/maestro/workflows/workflow_experiment_assigns_variant.yaml
 
 appId: com.revenuecat.maestro.ios
 name: A started experiment assigns each user their variant paywall

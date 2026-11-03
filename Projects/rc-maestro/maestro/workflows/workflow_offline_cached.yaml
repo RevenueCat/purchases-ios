@@ -8,7 +8,7 @@
 # survives and the workflow renders from it.
 #
 # Run locally against the test store:
-#   maestro test -e MAESTRO_STORE=test_store Examples/rc-maestro/maestro/workflows/workflow_offline_cached.yaml
+#   maestro test -e MAESTRO_STORE=test_store Projects/rc-maestro/maestro/workflows/workflow_offline_cached.yaml
 
 appId: com.revenuecat.maestro.ios
 name: Workflow offering renders from cache when reopened offline after a prior load
