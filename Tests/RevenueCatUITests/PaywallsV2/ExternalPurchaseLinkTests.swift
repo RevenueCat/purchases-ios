@@ -75,38 +75,54 @@ final class ExternalPurchaseLinkTests: TestCase {
     func testAsksTheHandlerToPrepareAnExternalBrowserLink() async throws {
         let url = try XCTUnwrap(URL(string: "https://pay.rev.cat/abc/user_1"))
         let purchases = Self.makePurchases(usingExternalPurchaseCustomLinks: true)
-        purchases.externalPurchaseLinkBlock = { .notEligible }
+        purchases.externalPurchaseLinkBlock = { _ in .notEligible }
 
         let action = await ExternalPurchaseLink.action(for: url,
                                                        method: .externalBrowser,
                                                        purchaseHandler: Self.makeHandler(purchases: purchases))
 
         expect(action) == .tellCustomerThePurchaseIsUnavailable
+        expect(purchases.lastExternalPurchaseLinkURL) == url
+    }
+
+    func testPreparesTheOriginalDestinationBeforeAppendingTheTokenID() async throws {
+        let url = try XCTUnwrap(URL(string: "https://pay.rev.cat/abc/user_1?rc_source=paywall#step"))
+        let purchases = Self.makePurchases(usingExternalPurchaseCustomLinks: true)
+        purchases.externalPurchaseLinkBlock = { _ in .proceed(externalPurchaseTokenID: "token_id") }
+
+        let action = await ExternalPurchaseLink.action(for: url,
+                                                       method: .externalBrowser,
+                                                       purchaseHandler: Self.makeHandler(purchases: purchases))
+
+        expect(purchases.lastExternalPurchaseLinkURL) == url
+        expect(action) == .open(url.appendingExternalPurchaseTokenID("token_id"))
     }
 
     /// Only leaving the app is covered by Apple's programme.
     func testOpensALinkThatStaysInTheAppWithoutPreparingIt() async throws {
         let url = try XCTUnwrap(URL(string: "https://pay.rev.cat/abc/user_1"))
         let purchases = Self.makePurchases(usingExternalPurchaseCustomLinks: true)
-        purchases.externalPurchaseLinkBlock = { .notEligible }
+        purchases.externalPurchaseLinkBlock = { _ in .notEligible }
 
         let action = await ExternalPurchaseLink.action(for: url,
                                                        method: .inAppBrowser,
                                                        purchaseHandler: Self.makeHandler(purchases: purchases))
 
         expect(action) == .open(url)
+        expect(purchases.lastExternalPurchaseLinkURL).to(beNil())
     }
 
     func testOpensTheLinkWithoutPreparingItWhileCustomLinksAreDisabled() async throws {
         let url = try XCTUnwrap(URL(string: "https://pay.rev.cat/abc/user_1"))
         let purchases = Self.makePurchases(usingExternalPurchaseCustomLinks: false)
-        purchases.externalPurchaseLinkBlock = { .notEligible }
+        purchases.externalPurchaseLinkBlock = { _ in .notEligible }
 
         let action = await ExternalPurchaseLink.action(for: url,
                                                        method: .externalBrowser,
                                                        purchaseHandler: Self.makeHandler(purchases: purchases))
 
         expect(action) == .open(url)
+        expect(purchases.lastExternalPurchaseLinkURL).to(beNil())
     }
 
 }
