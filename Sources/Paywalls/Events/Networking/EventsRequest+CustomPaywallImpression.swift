@@ -41,21 +41,33 @@ extension FeatureEventsRequest.CustomPaywallEvent {
         var placementIdentifier: String?
         var targetingRevision: Int?
         var targetingRuleId: String?
+        var workflowId: String?
+        var stepId: String?
+        var blobRef: String?
 
         /// Returns `nil` if all fields are `nil`.
         init?(
             placementIdentifier: String?,
             targetingRevision: Int?,
-            targetingRuleId: String?
+            targetingRuleId: String?,
+            workflowId: String?,
+            stepId: String?,
+            blobRef: String?
         ) {
             guard placementIdentifier != nil ||
                     targetingRevision != nil ||
-                    targetingRuleId != nil else {
+                    targetingRuleId != nil ||
+                    workflowId != nil ||
+                    stepId != nil ||
+                    blobRef != nil else {
                 return nil
             }
             self.placementIdentifier = placementIdentifier
             self.targetingRevision = targetingRevision
             self.targetingRuleId = targetingRuleId
+            self.workflowId = workflowId
+            self.stepId = stepId
+            self.blobRef = blobRef
         }
 
     }
@@ -82,7 +94,10 @@ extension FeatureEventsRequest.CustomPaywallEvent {
                 presentedOfferingContext: PresentedOfferingContextData(
                     placementIdentifier: event.data.placementIdentifier,
                     targetingRevision: event.data.targetingRevision,
-                    targetingRuleId: event.data.targetingRuleId
+                    targetingRuleId: event.data.targetingRuleId,
+                    workflowId: event.data.workflowId,
+                    stepId: event.data.stepId,
+                    blobRef: event.data.blobRef
                 )
             )
         } catch {
