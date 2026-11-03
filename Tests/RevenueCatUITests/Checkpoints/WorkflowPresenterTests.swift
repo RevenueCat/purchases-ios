@@ -499,16 +499,14 @@ final class WorkflowPresenterTests: TestCase {
         }
     }
 
-    func testGateContextCarriesTheCheckpointIdentityAndEntitlements() throws {
+    func testGateContextCarriesTheCheckpointEntitlements() throws {
         let presenter = WorkflowPresenter { _ in true }
         let presentation = Self.presentation(
-            initialAppUserID: "customer-b",
             initialActiveEntitlementIdentifiers: ["pro"]
         )
 
         let context = presenter.makeCheckpointGateContext(for: presentation)
 
-        XCTAssertEqual(context.initialAppUserID, "customer-b")
         XCTAssertEqual(context.initialActiveEntitlementIdentifiers, ["pro"])
     }
 
@@ -742,7 +740,6 @@ final class WorkflowPresenterTests: TestCase {
 
     private static func presentation(
         customVariables: [String: CustomVariableValue] = [:],
-        initialAppUserID: String = "customer-a",
         initialActiveEntitlementIdentifiers: Set<String> = [],
         errorPresentationHandler: @escaping ErrorPresentationHandler = { _, completion in
             completion.complete()
@@ -753,7 +750,6 @@ final class WorkflowPresenterTests: TestCase {
             workflow: self.workflow(),
             customVariables: customVariables,
             presentationMode: .modalSheet,
-            initialAppUserID: initialAppUserID,
             initialActiveEntitlementIdentifiers: initialActiveEntitlementIdentifiers,
             errorPresentationHandler: errorPresentationHandler
         )
@@ -792,7 +788,6 @@ final class WorkflowPresenterTests: TestCase {
             ),
             customVariables: customVariables,
             presentationMode: .modalSheet,
-            initialAppUserID: "customer-a",
             initialActiveEntitlementIdentifiers: [],
             errorPresentationHandler: errorPresentationHandler
         )

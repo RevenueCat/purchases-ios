@@ -331,7 +331,6 @@ extension WorkflowPresenter {
     func makeCheckpointGateContext(for presentation: WorkflowPresentationRequest) -> CheckpointGateContext {
         let presentationID = self.presentationState?.id
         return CheckpointGateContext(
-            initialAppUserID: presentation.initialAppUserID,
             initialActiveEntitlementIdentifiers: presentation.initialActiveEntitlementIdentifiers,
             onOutcomeChanged: { [weak self] outcome in
                 guard let self, self.presentationState?.id == presentationID else { return }

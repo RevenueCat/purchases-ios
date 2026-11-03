@@ -23,7 +23,6 @@ enum CheckpointGateOutcome: Equatable {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct CheckpointGateContext {
 
-    let initialAppUserID: String
     let initialActiveEntitlementIdentifiers: Set<String>
     let onOutcomeChanged: @MainActor (CheckpointGateOutcome) -> Void
 
