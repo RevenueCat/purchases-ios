@@ -38,7 +38,7 @@ final class TabControlDiscountTests: TestCase {
         XCTAssertTrue(Self.containsText("Yearly: 43%", in: view))
     }
 
-    func testTabDiscountKeepsItsSelectionWhenASheetPlanIsSelected() throws {
+    func testTabDiscountKeepsItsSelectionWhenAnOutsidePlanIsSelected() throws {
         let fixture = try self.makeFixture()
         let (window, view) = Self.host(fixture.view)
         defer {
@@ -70,6 +70,10 @@ final class TabControlDiscountTests: TestCase {
         )
         Self.settle(window)
         XCTAssertTrue(Self.containsText("Yearly: 58%", in: view))
+
+        fixture.parent.update(package: fixture.otherAnnual, variableContext: .init(packages: [fixture.otherAnnual]))
+        Self.settle(window)
+        XCTAssertTrue(Self.containsText("Yearly:", in: view))
 
         fixture.model.tabControlContext.selectedTabId = "monthly"
         Self.settle(window)
