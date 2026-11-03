@@ -1,6 +1,6 @@
 orbs:
   macos: circleci/macos@2.5.1
-  revenuecat: revenuecat/sdks-common-config@4.7.0
+  revenuecat: revenuecat/sdks-common-config@4.7.1
   # Disabled until compatible with M1: codecov: codecov/codecov@3.3.0
   # codecov: codecov/codecov@3.3.0
 
@@ -2717,7 +2717,8 @@ workflows:
           <<: *release-tags
       - make-release:
           requires:
-            - push-revenuecatui-pod
+            # TODO: restore after Nov 7, 2026, once CocoaPods trunk is writable again.
+            # - push-revenuecatui-pod
             - deploy-to-spm
             - docs-deploy
           <<: *release-tags

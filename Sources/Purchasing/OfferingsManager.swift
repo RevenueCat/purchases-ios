@@ -29,6 +29,7 @@ class OfferingsManager {
     // Nil when remote config is unavailable, in which case offerings delivery is unchanged.
     private let remoteConfigManager: RemoteConfigManagerType?
     private let uiConfigProvider: UiConfigProvider?
+    private let sdkSettingsConfigProvider: SDKSettingsConfigProviderType?
     private let workflowAssetPrewarmer: WorkflowAssetPrewarmingType?
 
     init(deviceCache: DeviceCache,
@@ -41,6 +42,7 @@ class OfferingsManager {
          dateProvider: DateProvider = DateProvider(),
          remoteConfigManager: RemoteConfigManagerType? = nil,
          uiConfigProvider: UiConfigProvider? = nil,
+         sdkSettingsConfigProvider: SDKSettingsConfigProviderType? = nil,
          workflowAssetPrewarmer: WorkflowAssetPrewarmingType? = nil) {
         self.deviceCache = deviceCache
         self.operationDispatcher = operationDispatcher
@@ -52,6 +54,7 @@ class OfferingsManager {
         self.dateProvider = dateProvider
         self.remoteConfigManager = remoteConfigManager
         self.uiConfigProvider = uiConfigProvider
+        self.sdkSettingsConfigProvider = sdkSettingsConfigProvider
         self.workflowAssetPrewarmer = workflowAssetPrewarmer
     }
 
@@ -406,8 +409,8 @@ private extension OfferingsManager {
     }
 
     /// Invokes `deliver` once the paywall config data `getOfferings` depends on is ready:
-    /// the `workflows` topic (with its prefetch-flagged blobs) and the `ui_config` body,
-    /// resolved concurrently. Both are best-effort (nil on failure, never throwing), so
+    /// SDK settings first, then the `workflows` topic (with its prefetch-flagged blobs) and `ui_config` body,
+    /// resolved concurrently. These are best-effort (nil on failure, never throwing), so
     /// delivery can never be stranded; when no manager is wired, `deliver` runs immediately.
     private func deliverWhenConfigReady(
         offerings: Offerings,
@@ -418,6 +421,10 @@ private extension OfferingsManager {
             return
         }
         Task {
+            if let sdkSettingsConfigProvider = self.sdkSettingsConfigProvider {
+                let settings = await sdkSettingsConfigProvider.settings()
+                self.systemInfo.setPreferApplicationLocale(settings.paywalls?.preferApplicationLocale == true)
+            }
             let uiConfigProvider = self.uiConfigProvider ?? UiConfigProvider(manager: remoteConfigManager)
             async let workflowBodyDataReady: Void = self.cacheWorkflowBodyDataAndScheduleAssetPrewarmingIfNeeded(
                 remoteConfigManager: remoteConfigManager,

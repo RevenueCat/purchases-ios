@@ -125,8 +125,8 @@ struct DiagnosticsEvent: Codable, Equatable {
         let transactionId: UInt64?
         let environment: String?
         let storefront: String?
-        let purchaseDate: Int?
-        let expirationDate: Int?
+        let purchaseDate: Int64?
+        let expirationDate: Int64?
         let price: Float?
         let currency: String?
         let reason: String?
@@ -208,8 +208,8 @@ struct DiagnosticsEvent: Codable, Equatable {
             self.transactionId = transactionId
             self.environment = environment
             self.storefront = storefront
-            self.purchaseDate = purchaseDate.map { Int($0.timeIntervalSince1970 * 1000) }
-            self.expirationDate = expirationDate.map { Int($0.timeIntervalSince1970 * 1000) }
+            self.purchaseDate = purchaseDate.map { Int64($0.timeIntervalSince1970 * 1000) }
+            self.expirationDate = expirationDate.map { Int64($0.timeIntervalSince1970 * 1000) }
             self.price = price
             self.currency = currency
             self.reason = reason

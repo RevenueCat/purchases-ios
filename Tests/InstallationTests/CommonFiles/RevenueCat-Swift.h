@@ -1728,6 +1728,8 @@ SWIFT_CLASS_NAMED("Identity")
 + (RCIdentity * _Nonnull)identityWithOIDCToken:(NSData * _Nonnull)identityToken SWIFT_WARN_UNUSED_RESULT;
 /// A Firebase identity
 + (RCIdentity * _Nonnull)identityWithFirebaseToken:(NSData * _Nonnull)identityToken SWIFT_WARN_UNUSED_RESULT;
+/// A Google identity
++ (RCIdentity * _Nonnull)identityWithGoogleToken:(NSData * _Nonnull)identityToken SWIFT_WARN_UNUSED_RESULT;
 /// Retrieve the source service of this identity
 @property (nonatomic, readonly, strong) RCIdentitySource * _Nonnull identitySource;
 - (nonnull instancetype)init SWIFT_UNAVAILABLE;

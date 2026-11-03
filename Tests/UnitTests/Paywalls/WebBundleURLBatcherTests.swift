@@ -551,7 +551,11 @@ final class WebBundleURLBatcherTests: TestCase {
             .sink { received.append($0) }
             .store(in: &self.cancellables)
 
-        await self.batcher.publish(offerings: offerings, workflowsByOfferingId: ["default": workflow])
+        await self.batcher.publish(
+            offerings: offerings,
+            workflowsByOfferingId: ["default": workflow],
+            workflowBackedOfferingIds: ["default"]
+        )
 
         expect(received) == [
             .receivedAssetURLs([
@@ -580,7 +584,11 @@ final class WebBundleURLBatcherTests: TestCase {
             .sink { received.append($0) }
             .store(in: &self.cancellables)
 
-        await self.batcher.publish(offerings: offerings, workflowsByOfferingId: [:])
+        await self.batcher.publish(
+            offerings: offerings,
+            workflowsByOfferingId: [:],
+            workflowBackedOfferingIds: []
+        )
 
         expect(received) == [
             .receivedAssetURLs([
@@ -602,7 +610,11 @@ final class WebBundleURLBatcherTests: TestCase {
             .sink { received.append($0) }
             .store(in: &self.cancellables)
 
-        await self.batcher.publish(offerings: offerings, workflowsByOfferingId: ["default": current])
+        await self.batcher.publish(
+            offerings: offerings,
+            workflowsByOfferingId: ["default": current],
+            workflowBackedOfferingIds: ["default"]
+        )
         await self.batcher.publishPresentedWorkflow(presented)
         await self.batcher.publishPresentedWorkflow(presented)
 
@@ -624,7 +636,11 @@ final class WebBundleURLBatcherTests: TestCase {
             .sink { received.append($0) }
             .store(in: &self.cancellables)
 
-        await self.batcher.publish(offerings: offerings, workflowsByOfferingId: ["default": initial])
+        await self.batcher.publish(
+            offerings: offerings,
+            workflowsByOfferingId: ["default": initial],
+            workflowBackedOfferingIds: ["default"]
+        )
         await self.batcher.publishPresentedWorkflow(refreshed)
 
         expect(received) == [

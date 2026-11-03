@@ -52,6 +52,7 @@ enum BackendErrorCode: Int, Error {
     case purchaseBelongsToOtherUser = 7852
     case expiredWebRedemptionToken = 7853
     case unknownVirtualCurrencyCode = 7870
+    case oldReplayedReceipt = 7934
 
     case invalidIAMToken = 7981
     case cannotAliasToAuthenticatedUser = 8077
@@ -139,6 +140,7 @@ extension BackendErrorCode {
              .subscriberAttributesAreBeingUpdated:
             return .operationAlreadyInProgressForProductError
         case .unknownBackendError,
+             .oldReplayedReceipt,
              .playStoreInvalidPackageName,
              .playStoreQuotaExceeded,
              .playStoreGenericError,

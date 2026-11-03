@@ -11,6 +11,7 @@
 //
 //  Created by RevenueCat.
 
+@preconcurrency import Combine
 import Foundation
 import Nimble
 import XCTest
@@ -379,6 +380,148 @@ class WorkflowManagerTests: TestCase {
         ]
     }
 
+    func testPublishWebBundleURLsDoesNotDecodePublishedWorkflowAgainForSameConfigGeneration() async throws {
+        guard #available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *) else {
+            throw XCTSkip("publishWebBundleURLs requires iOS 15+")
+        }
+        let expected = try Self.workflowDataResult(id: "wf_1")
+        self.mockProvider.stubbedWorkflowIdForOfferingId = ["default": "wf_1"]
+        self.mockProvider.stubbedGetWorkflowResult = ["wf_1": expected]
+        let offerings = Self.offerings()
+
+        await self.manager.publishWebBundleURLs(offerings: offerings)
+        await self.manager.publishWebBundleURLs(offerings: offerings)
+
+        expect(self.mockProvider.invokedDecodeCachedWorkflowForAssetPrewarmingParameters) == ["wf_1"]
+        expect(self.mockWebBundleURLBatcher.invokedPublishCount) == 1
+    }
+
+    func testPublishWebBundleURLsDoesNotPublishFallbackAssetsForPublishedWorkflowOffering() async throws {
+        guard #available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *) else {
+            throw XCTSkip("publishWebBundleURLs requires iOS 15+")
+        }
+        let eventBus = WebBundleEventBus()
+        let manager = WorkflowManager(
+            workflowsConfigProvider: self.mockProvider,
+            paywallCache: self.mockPaywallCache,
+            operationDispatcher: self.mockOperationDispatcher,
+            webBundleURLBatcher: WebBundleURLBatcher(eventBus: eventBus)
+        )
+        self.mockProvider.stubbedWorkflowIdForOfferingId = ["workflow": "wf_1"]
+        self.mockProvider.stubbedGetWorkflowResult = ["wf_1": try Self.workflowDataResult(id: "wf_1")]
+        let offerings = try Self.workflowAndInlineOfferings()
+        var receivedEvents: [WebBundleEvent] = []
+        var cancellables: Set<AnyCancellable> = []
+        eventBus.publisher
+            .dropFirst()
+            .sink { receivedEvents.append($0) }
+            .store(in: &cancellables)
+
+        await manager.publishWebBundleURLs(offerings: offerings)
+        receivedEvents.removeAll()
+        await manager.publishWebBundleURLs(offerings: offerings)
+
+        expect(Self.webBundleURLStrings(in: receivedEvents)) == ["https://example.com/inline"]
+    }
+
+    func testPublishWebBundleURLsDoesNotPublishFallbackAssetsForClaimedWorkflowOffering() async throws {
+        guard #available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *) else {
+            throw XCTSkip("publishWebBundleURLs requires iOS 15+")
+        }
+        let provider = BlockingWorkflowPrewarmingDecodeProvider(
+            result: try Self.workflowDataResult(id: "wf_1"),
+            workflowIdByOfferingId: ["workflow": "wf_1"]
+        )
+        let eventBus = WebBundleEventBus()
+        let manager = WorkflowManager(
+            workflowsConfigProvider: provider,
+            paywallCache: self.mockPaywallCache,
+            operationDispatcher: self.mockOperationDispatcher,
+            webBundleURLBatcher: WebBundleURLBatcher(eventBus: eventBus)
+        )
+        let offerings = try Self.workflowAndInlineOfferings()
+        var receivedEvents: [WebBundleEvent] = []
+        var cancellables: Set<AnyCancellable> = []
+        eventBus.publisher
+            .dropFirst()
+            .sink { receivedEvents.append($0) }
+            .store(in: &cancellables)
+        let firstPublication = Task {
+            await manager.publishWebBundleURLs(offerings: offerings)
+        }
+
+        await expect(provider.decodeCount).toEventually(equal(1))
+        await manager.publishWebBundleURLs(offerings: offerings)
+
+        expect(Self.webBundleURLStrings(in: receivedEvents)) == ["https://example.com/inline"]
+        await provider.releaseDecodes()
+        await firstPublication.value
+    }
+
+    func testPublishWebBundleURLsPublishesConcurrentWorkflowOnlyOncePerConfigGeneration() async throws {
+        guard #available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *) else {
+            throw XCTSkip("publishWebBundleURLs requires iOS 15+")
+        }
+        let provider = BlockingWorkflowPrewarmingDecodeProvider(result: try Self.workflowDataResult(id: "wf_1"))
+        let coordinator = WorkflowPrewarmingDecodeCoordinator()
+        let manager = WorkflowManager(
+            workflowsConfigProvider: provider,
+            paywallCache: self.mockPaywallCache,
+            operationDispatcher: self.mockOperationDispatcher,
+            webBundleURLBatcher: self.mockWebBundleURLBatcher,
+            workflowPrewarmingDecodeCoordinator: coordinator
+        )
+        let offerings = Self.offerings()
+        let tasks = (0..<20).map { _ in
+            Task { await manager.publishWebBundleURLs(offerings: offerings) }
+        }
+
+        await expect { await coordinator.activeRequestCount }.toEventually(equal(1))
+        await expect(provider.decodeCount).toEventually(equal(1))
+        await provider.releaseDecodes()
+        for task in tasks {
+            await task.value
+        }
+
+        expect(self.mockWebBundleURLBatcher.invokedPublishCount) == 1
+    }
+
+    func testPublishWebBundleURLsPublishesWorkflowAgainForNewConfigGeneration() async throws {
+        guard #available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *) else {
+            throw XCTSkip("publishWebBundleURLs requires iOS 15+")
+        }
+        let expected = try Self.workflowDataResult(id: "wf_1")
+        self.mockProvider.stubbedWorkflowIdForOfferingId = ["default": "wf_1"]
+        self.mockProvider.stubbedGetWorkflowResult = ["wf_1": expected]
+        let offerings = Self.offerings()
+
+        await self.manager.publishWebBundleURLs(offerings: offerings)
+        self.mockProvider.configGeneration = 1
+        await self.manager.publishWebBundleURLs(offerings: offerings)
+
+        expect(self.mockProvider.invokedDecodeCachedWorkflowForAssetPrewarmingParameters) == ["wf_1", "wf_1"]
+        expect(self.mockWebBundleURLBatcher.invokedPublishCount) == 2
+    }
+
+    func testPublishWebBundleURLsRetriesWorkflowThatFailedToDecode() async throws {
+        guard #available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *) else {
+            throw XCTSkip("publishWebBundleURLs requires iOS 15+")
+        }
+        let expected = try Self.workflowDataResult(id: "wf_1")
+        self.mockProvider.stubbedWorkflowIdForOfferingId = ["default": "wf_1"]
+        self.mockProvider.stubbedGetWorkflowError = ["wf_1": .notFound]
+        let offerings = Self.offerings()
+
+        await self.manager.publishWebBundleURLs(offerings: offerings)
+        self.mockProvider.stubbedGetWorkflowError = [:]
+        self.mockProvider.stubbedGetWorkflowResult = ["wf_1": expected]
+        await self.manager.publishWebBundleURLs(offerings: offerings)
+
+        expect(self.mockProvider.invokedDecodeCachedWorkflowForAssetPrewarmingParameters) == ["wf_1", "wf_1"]
+        expect(self.mockWebBundleURLBatcher.invokedPublishCount) == 2
+        expect(self.mockWebBundleURLBatcher.invokedPublishWorkflowsByOfferingId["default"]?.id) == "wf_1"
+    }
+
     func testPublishWebBundleURLsSkipsUncachedWorkflowsWithoutFetching() async throws {
         guard #available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *) else {
             throw XCTSkip("publishWebBundleURLs requires iOS 15+")
@@ -409,6 +552,102 @@ class WorkflowManagerTests: TestCase {
         expect(self.mockWebBundleURLBatcher.invokedPublishWorkflowsByOfferingId).to(beEmpty())
     }
 
+    // MARK: - WorkflowPrewarmingDecodeCoordinator
+
+    func testPrewarmingAndWebBundlePublishingShareTransientDecode() async throws {
+        guard #available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *) else {
+            throw XCTSkip("Workflow asset prewarming requires iOS 15+")
+        }
+        let provider = BlockingWorkflowPrewarmingDecodeProvider(result: try Self.workflowDataResult(id: "wf_1"))
+        let coordinator = WorkflowPrewarmingDecodeCoordinator()
+        let manager = WorkflowManager(
+            workflowsConfigProvider: provider,
+            paywallCache: self.mockPaywallCache,
+            operationDispatcher: self.mockOperationDispatcher,
+            webBundleURLBatcher: self.mockWebBundleURLBatcher,
+            workflowPrewarmingDecodeCoordinator: coordinator
+        )
+
+        await manager.scheduleAssetPrewarmingForPrefetchedWorkflows(includingOfferingId: "default")
+        let prewarming = Task {
+            await self.mockOperationDispatcher.invokeAllDispatchedAsyncWorkerThreadBlocks()
+        }
+        let publishing = Task {
+            await manager.publishWebBundleURLs(offerings: Self.offerings())
+        }
+
+        await expect { await coordinator.activeRequestCount }.toEventually(equal(2))
+        await expect(provider.decodeCount).toEventually(equal(1))
+
+        await provider.releaseDecodes()
+        _ = await (prewarming.value, publishing.value)
+
+        expect(provider.decodeCount) == 1
+        expect(self.mockPaywallCache.invokedPrewarmWorkflowAssetsCount) == 1
+        expect(self.mockWebBundleURLBatcher.invokedPublishWorkflowsByOfferingId["default"]?.id) == "wf_1"
+    }
+
+    func testWorkflowPrewarmingDecodeCoordinatorCoalescesConcurrentRequestsForSameWorkflow() async throws {
+        let provider = BlockingWorkflowPrewarmingDecodeProvider(result: try Self.workflowDataResult(id: "wf_1"))
+        let coordinator = WorkflowPrewarmingDecodeCoordinator()
+        let tasks = (0..<20).map { _ in
+            Task {
+                await coordinator.decode(workflowId: "wf_1", using: provider)
+            }
+        }
+
+        await expect { await coordinator.activeRequestCount }.toEventually(equal(20))
+        await expect(provider.decodeCount).toEventually(equal(1))
+        await provider.releaseDecodes()
+        for task in tasks {
+            let result = try await task.value.get()
+            expect(result.workflow.id) == "wf_1"
+        }
+
+        expect(provider.decodeCount) == 1
+    }
+
+    func testWorkflowPrewarmingDecodeCoordinatorDoesNotShareAcrossConfigGenerations() async throws {
+        let provider = BlockingWorkflowPrewarmingDecodeProvider(result: try Self.workflowDataResult(id: "wf_1"))
+        let coordinator = WorkflowPrewarmingDecodeCoordinator()
+        let first = Task {
+            await coordinator.decode(workflowId: "wf_1", using: provider)
+        }
+        await expect(provider.decodeCount).toEventually(equal(1))
+
+        provider.configGeneration = 1
+        let second = Task {
+            await coordinator.decode(workflowId: "wf_1", using: provider)
+        }
+
+        await expect(provider.decodeCount).toEventually(equal(2))
+        await provider.releaseDecodes()
+        _ = await (first.value, second.value)
+
+        expect(provider.decodeCount) == 2
+    }
+
+    func testWorkflowPrewarmingDecodeCoordinatorLimitsConcurrentDecodes() async throws {
+        let provider = BlockingWorkflowPrewarmingDecodeProvider(result: try Self.workflowDataResult(id: "resolved"))
+        let coordinator = WorkflowPrewarmingDecodeCoordinator(maxConcurrentDecodes: 4)
+        let tasks = (0..<10).map { index in
+            Task {
+                await coordinator.decode(workflowId: "wf_\(index)", using: provider)
+            }
+        }
+
+        await expect { await coordinator.activeRequestCount }.toEventually(equal(10))
+        await expect(provider.decodeCount).toEventually(equal(4))
+
+        await provider.releaseDecodes()
+        for task in tasks {
+            _ = await task.value
+        }
+
+        expect(provider.decodeCount) == 10
+        expect(provider.maxConcurrentDecodeCount) == 4
+    }
+
     // MARK: - Helpers
 
     private static func offerings(placements: Offerings.Placements? = nil) -> Offerings {
@@ -433,6 +672,73 @@ class WorkflowManagerTests: TestCase {
             contents: .init(response: response, httpResponseOriginalSource: .mainServer),
             loadedFromDiskCache: false
         )
+    }
+
+    private static func workflowAndInlineOfferings() throws -> Offerings {
+        let workflowOffering = try self.offering(
+            id: "workflow",
+            webViewURL: "https://example.com/workflow-fallback"
+        )
+        let inlineOffering = try self.offering(
+            id: "inline",
+            webViewURL: "https://example.com/inline"
+        )
+        let response = OfferingsResponse(
+            currentOfferingId: workflowOffering.identifier,
+            offerings: [],
+            placements: nil,
+            targeting: nil,
+            uiConfig: nil
+        )
+        return Offerings(
+            offerings: [
+                workflowOffering.identifier: workflowOffering,
+                inlineOffering.identifier: inlineOffering
+            ],
+            currentOfferingID: workflowOffering.identifier,
+            placements: .init(
+                fallbackOfferingId: nil,
+                offeringIdsByPlacement: ["inline": inlineOffering.identifier]
+            ),
+            targeting: nil,
+            contents: .init(response: response, httpResponseOriginalSource: .mainServer),
+            loadedFromDiskCache: false
+        )
+    }
+
+    private static func offering(id: String, webViewURL: String) throws -> Offering {
+        let components: [PaywallComponent] = [
+            .webView(.init(id: "web", protocolVersion: 1, url: webViewURL))
+        ]
+        let paywallComponents = Offering.PaywallComponents(
+            uiConfig: .empty,
+            data: .init(
+                templateName: "test",
+                assetBaseURL: try XCTUnwrap(URL(string: "https://assets.example.com")),
+                componentsConfig: .init(base: .init(
+                    stack: .init(components: components),
+                    stickyFooter: nil,
+                    background: .color(.init(light: .hex("#ffffff")))
+                )),
+                componentsLocalizations: [:],
+                revision: 1,
+                defaultLocaleIdentifier: "en_US"
+            )
+        )
+        return Offering(
+            identifier: id,
+            serverDescription: id,
+            paywallComponents: paywallComponents,
+            availablePackages: [],
+            webCheckoutUrl: nil
+        )
+    }
+
+    private static func webBundleURLStrings(in events: [WebBundleEvent]) -> [String] {
+        return events.flatMap { event -> [String] in
+            guard case let .receivedAssetURLs(urls) = event else { return [] }
+            return urls.map(\.url.absoluteString)
+        }
     }
 
     private static func workflowDataResult(id: String) throws -> WorkflowDataResult {
@@ -481,6 +787,85 @@ class WorkflowManagerTests: TestCase {
         """
         let data = try XCTUnwrap(json.data(using: .utf8))
         return try JSONDecoder.default.decode(PublishedWorkflow.self, from: data)
+    }
+
+}
+
+private final class BlockingWorkflowPrewarmingDecodeProvider: WorkflowsConfigProviderType, @unchecked Sendable {
+
+    private let result: WorkflowDataResult
+    private let gate = WorkflowDecodeGate()
+    private let decodeCounter: Atomic<Int> = .init(0)
+    private let activeDecodeCounter: Atomic<Int> = .init(0)
+    private let maximumActiveDecodeCounter: Atomic<Int> = .init(0)
+    private let generation: Atomic<Int> = .init(0)
+    private let workflowIdByOfferingId: [String: String]?
+
+    var decodeCount: Int { self.decodeCounter.value }
+    var maxConcurrentDecodeCount: Int { self.maximumActiveDecodeCounter.value }
+    var configGeneration: Int {
+        get { self.generation.value }
+        set { self.generation.value = newValue }
+    }
+
+    init(result: WorkflowDataResult, workflowIdByOfferingId: [String: String]? = nil) {
+        self.result = result
+        self.workflowIdByOfferingId = workflowIdByOfferingId
+    }
+
+    func workflowId(forOfferingId offeringId: String) async -> String? {
+        if let workflowIdByOfferingId {
+            return workflowIdByOfferingId[offeringId]
+        }
+        return self.result.workflow.id
+    }
+    func workflowIds() async -> [String] { [] }
+
+    func getWorkflow(workflowId: String) async -> Result<WorkflowDataResult, WorkflowResolutionError> {
+        return .failure(.notFound)
+    }
+
+    func decodeCachedWorkflowForAssetPrewarming(
+        workflowId: String
+    ) async -> Result<WorkflowDataResult, WorkflowResolutionError> {
+        self.decodeCounter.modify { $0 += 1 }
+        let activeDecodeCount = self.activeDecodeCounter.modify {
+            $0 += 1
+            return $0
+        }
+        self.maximumActiveDecodeCounter.modify { $0 = max($0, activeDecodeCount) }
+        await self.gate.wait()
+        self.activeDecodeCounter.modify { $0 -= 1 }
+        return .success(self.result)
+    }
+
+    func cachePrefetchedWorkflowBodyData(includingOfferingId: String?) async -> [String] {
+        return [self.result.workflow.id]
+    }
+    func cachedWorkflow(forOfferingId offeringId: String) -> WorkflowDataResult? { nil }
+
+    func releaseDecodes() async {
+        await self.gate.open()
+    }
+
+}
+
+private actor WorkflowDecodeGate {
+
+    private var isOpen = false
+    private var continuations: [CheckedContinuation<Void, Never>] = []
+
+    func wait() async {
+        guard !self.isOpen else { return }
+        await withCheckedContinuation { continuation in
+            self.continuations.append(continuation)
+        }
+    }
+
+    func open() {
+        self.isOpen = true
+        self.continuations.forEach { $0.resume() }
+        self.continuations.removeAll()
     }
 
 }

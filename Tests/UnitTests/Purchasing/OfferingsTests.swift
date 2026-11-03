@@ -688,7 +688,7 @@ class OfferingsTests: TestCase {
             offeringIdentifier: "offering_a",
             placementIdentifier: "onboarding",
             targetingContext: .init(revision: 3, ruleId: "rule_abc")
-        )
+        ).withWorkflowContext(workflowId: "wrapper", stepId: "offering_step", blobRef: "blob-ref")
         let package = Package(
             identifier: "$rc_monthly",
             packageType: .monthly,
@@ -712,6 +712,9 @@ class OfferingsTests: TestCase {
         expect(presentedContext.targetingContext?.ruleId) == "rule_abc"
         expect(presentedContext.checkpointIdentifier) == "checkout"
         expect(offering.presentedOfferingContext?.checkpointIdentifier).to(beNil())
+        expect(presentedContext.workflowId) == "wrapper"
+        expect(presentedContext.stepId) == "offering_step"
+        expect(presentedContext.blobRef) == "blob-ref"
     }
 
     func testLifetimePackage() throws {

@@ -1,0 +1,62 @@
+# The SDK presents the paywall of `donottouch_sdk_everyone`, and the purchase fails. The SDK shows its error
+# dialog and the paywall stays on screen. Its close button then passes the checkpoint
+# with nothing obtained and no active entitlement.
+#
+# Fixtures live in the Automated SDK Tests project (6627e5bc). Do not edit them.
+# Run locally against the test store:
+#   maestro test -e MAESTRO_STORE=test_store Examples/rc-maestro/maestro/workflows/checkpoint_purchase_error_during_flow.yaml
+
+appId: com.revenuecat.maestro.ios
+name: A failed purchase in a checkpoint flow shows the SDK error and keeps the flow
+env:
+  MAESTRO_STORE: ${MAESTRO_STORE || 'test_store'}
+
+---
+- assertTrue:
+    condition: ${MAESTRO_STORE == 'test_store'}
+    label: "Only the test store can simulate a failed purchase"
+- clearState
+# Dismiss any leftover system alerts from previous test runs.
+- pressKey: home
+- launchApp:
+    arguments:
+        e2e_test_flow: checkpoint_resolution
+        checkpoint_identifier: donottouch_sdk_everyone
+        checkpoint_presenter: sdk
+        app_user_id: "maestro-checkpoint-${Date.now()}"
+
+- extendedWaitUntil:
+    visible: "Continue"
+    timeout: 20000
+- tapOn:
+    text: "Continue"
+
+- extendedWaitUntil:
+    visible: "Test failed purchase"
+    timeout: 15000
+- tapOn:
+    text: "Test failed purchase"
+
+- extendedWaitUntil:
+    visible: "Purchase failure simulated successfully in Test Store."
+    timeout: 15000
+- takeScreenshot: "checkpoint_purchase_error_during_flow - error dialog"
+- tapOn:
+    text: "OK"
+- assertNotVisible: "Purchase failure simulated successfully in Test Store."
+
+# The paywall is still up.
+- assertVisible: "Continue"
+
+# Closing the paywall ends the flow, and the checkpoint passes with nothing obtained.
+- tapOn:
+    id: "RevenueCat.NativePaywallClose"
+- extendedWaitUntil:
+    visible: "callback: obtained"
+    timeout: 15000
+- assertVisible: "obtained entitlements: none"
+- assertVisible: "obtained products: none"
+- assertVisible: "entitlement pro obtained: false"
+- assertVisible: "product pro_monthly_subscription obtained: false"
+- assertVisible: "customer active entitlements: none"
+- takeScreenshot: "checkpoint_purchase_error_during_flow - passed empty"

@@ -16,6 +16,8 @@ import Foundation
 
 final class MockWorkflowsConfigProvider: WorkflowsConfigProviderType, @unchecked Sendable {
 
+    var configGeneration = 0
+
     var stubbedWorkflowIdForOfferingId: [String: String] = [:]
     private(set) var invokedWorkflowIdForOfferingIdParameters: [String] = []
 

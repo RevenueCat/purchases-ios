@@ -1142,6 +1142,35 @@ extension OfferingsManagerTests {
         expect(delivered.value).toEventually(beTrue())
     }
 
+    func testGetOfferingsAppliesLocaleSettingsBeforeDelivery() {
+        let mockRemoteConfigManager = MockRemoteConfigManager()
+        mockRemoteConfigManager.shouldStoreTopicCompletion = true
+        mockRemoteConfigManager.storedTopicCompletionTopics = [.sdkSettings]
+        let settingsProvider = SDKSettingsConfigProvider(manager: mockRemoteConfigManager)
+        self.mockSystemInfo = MockSystemInfo(
+            finishTransactions: true,
+            preferredLocalesProvider: .mock(bundlePreferredLocale: "en", locales: ["zh-Hans"])
+        )
+        let manager = self.makeOfferingsManager(remoteConfigManager: mockRemoteConfigManager,
+                                                sdkSettingsConfigProvider: settingsProvider)
+        self.mockOfferings.stubbedGetOfferingsCompletionResult = .success(MockData.anyBackendOfferingsContents)
+
+        let deliveredLocales: Atomic<[String]?> = nil
+        let systemInfo = self.mockSystemInfo!
+        manager.offerings(appUserID: MockData.anyAppUserID) { _ in
+            deliveredLocales.value = systemInfo.preferredLocales
+        }
+
+        expect(mockRemoteConfigManager.invokedTopicCount).toEventually(beGreaterThan(0))
+        expect(deliveredLocales.value).to(beNil())
+
+        mockRemoteConfigManager.completeStoredTopic(with: [
+            "default": .init(content: ["paywalls": ["prefer_application_locale": true]])
+        ])
+
+        expect(deliveredLocales.value).toEventually(equal(["en", "zh-Hans"]))
+    }
+
     func testGetOfferingsDeliversWhenUiConfigResolutionFails() {
         // No ui_config blobs stubbed: resolution fails (nil). Readiness is best-effort, so
         // delivery must proceed anyway with the real offerings.
@@ -1399,6 +1428,7 @@ extension OfferingsManagerTests {
     private func makeOfferingsManager(
         remoteConfigManager: RemoteConfigManagerType?,
         offeringsFactory: OfferingsFactory? = nil,
+        sdkSettingsConfigProvider: SDKSettingsConfigProviderType? = nil,
         workflowAssetPrewarmer: WorkflowAssetPrewarmingType? = nil
     ) -> OfferingsManager {
         return OfferingsManager(deviceCache: self.mockDeviceCache,
@@ -1409,6 +1439,7 @@ extension OfferingsManagerTests {
                                 productsManager: self.mockProductsManager,
                                 diagnosticsTracker: self.mockDiagnosticsTracker,
                                 remoteConfigManager: remoteConfigManager,
+                                sdkSettingsConfigProvider: sdkSettingsConfigProvider,
                                 workflowAssetPrewarmer: workflowAssetPrewarmer)
     }
 

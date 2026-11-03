@@ -1,12 +1,17 @@
 ## RevenueCat SDK
 ### ✨ New Features
-* (Experimental) Allow configuring intro eligibility warm-up task priority (#8117) via Antonio Pallares (@ajpallares)
+* feat(ads): AdMob interstitial checkpoint presenter (#7784) via Peter Porfy (@peterporfy)
 ### 🐞 Bugfixes
-* Share StoreKit 2 intro eligibility checks by subscription group (#8109) via Antonio Pallares (@ajpallares)
+* Fix diagnostics timestamp overflow on 32-bit watchOS (#8170) via Josh Holtz (@joshdholtz)
+### 📦 Dependency Updates
+* [RENOVATE] Update dependency revenuecat to v4.7.1 (#8168) via RevenueCat Git Bot (@RCGitBot)
 
 ## RevenueCatUI SDK
-### 🐞 Bugfixes
-* Fix(paywalls) Native delayed back button (#8114) via Jacob Rakidzich (@JZDesign)
+### Paywallsv2
+#### ✨ New Features
+* feat(paywalls): Resume each carousel on its last page when returning to its tab (#8077) via Vinh P. Dinh (@vpdn)
+#### 🐞 Bugfixes
+* Fix video playback on inactive workflow pages (#8131) via Facundo Menzella (@facumenzella)
 
 ### 🔄 Other Changes
-* Simplify HTTP path types (#7987) via Dave DeLong (@davedelong)
+* Support Google IAM identities (#8136) via Dave DeLong (@davedelong)

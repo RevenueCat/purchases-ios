@@ -250,7 +250,7 @@ class PurchasesCustomPaywallEventsTests: BasePurchasesTests {
             offeringIdentifier: "passed_offering",
             placementIdentifier: "passed_placement",
             targetingContext: .init(revision: 7, ruleId: "passed_rule")
-        )
+        ).withWorkflowContext(workflowId: "wrapper", stepId: "offering_step", blobRef: "blob-ref")
         let passedOffering = Self.makeOffering(
             identifier: "passed_offering",
             presentedOfferingContext: passedContext
@@ -266,6 +266,9 @@ class PurchasesCustomPaywallEventsTests: BasePurchasesTests {
         expect(data.placementIdentifier) == "passed_placement"
         expect(data.targetingRevision) == 7
         expect(data.targetingRuleId) == "passed_rule"
+        expect(data.workflowId) == "wrapper"
+        expect(data.stepId) == "offering_step"
+        expect(data.blobRef) == "blob-ref"
     }
 
     func testTrackCustomPaywallImpressionLeavesContextNilWhenCachedOfferingHasNoContext() async throws {

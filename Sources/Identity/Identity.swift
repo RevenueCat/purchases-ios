@@ -37,6 +37,12 @@ public final class Identity: NSObject {
         Identity(token: .firebase(identityToken))
     }
 
+    /// A Google identity
+    @objc(identityWithGoogleToken:)
+    public static func google(_ identityToken: Data) -> Identity {
+        Identity(token: .google(identityToken))
+    }
+
     internal let authToken: IdentityAuthToken
 
     /// Retrieve the source service of this identity
