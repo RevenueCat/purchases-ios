@@ -41,11 +41,11 @@ let project = Project(
             deploymentTargets: deploymentTargets,
             infoPlist: "../../Tests/TestingApps/PurchaseTesterSwiftUI/PurchaseTester-Info.plist",
             sources: [
-                "../../Tests/TestingApps/PurchaseTesterSwiftUI/Shared/**/*.swift",
+                "../../Tests/TestingApps/PurchaseTesterSwiftUI/Shared/**/*.swift"
             ],
             resources: [
                 "../../Tests/TestingApps/PurchaseTesterSwiftUI/AppIcon.xcassets",
-                "../../Tests/TestingApps/PurchaseTesterSwiftUI/Shared/Assets.xcassets",
+                "../../Tests/TestingApps/PurchaseTesterSwiftUI/Shared/Assets.xcassets"
             ],
             dependencies: [
                 .target(name: "Core")
@@ -54,7 +54,7 @@ let project = Project(
             additionalFiles: [
                 "../../Tests/TestingApps/PurchaseTesterSwiftUI/PurchaseTester.entitlements",
                 "../../Tests/TestingApps/PurchaseTesterSwiftUI/PurchaseTesterStoreKitConfiguration.storekit"
-            ],
+            ]
         ),
 
         .target(
@@ -69,7 +69,7 @@ let project = Project(
             ],
             resources: [
                 "../../Tests/TestingApps/PurchaseTesterSwiftUI/AppIcon.xcassets",
-                "../../Tests/TestingApps/PurchaseTesterSwiftUI/Shared/Assets.xcassets",
+                "../../Tests/TestingApps/PurchaseTesterSwiftUI/Shared/Assets.xcassets"
             ],
             dependencies: [
                 .target(name: "Core")
@@ -83,15 +83,15 @@ let project = Project(
             bundleId: "com.revenuecat.Core",
             deploymentTargets: allDeploymentTargets,
             sources: [
-                "../../Tests/TestingApps/PurchaseTesterSwiftUI/Core/**/*.swift",
+                "../../Tests/TestingApps/PurchaseTesterSwiftUI/Core/**/*.swift"
             ],
             dependencies: [
                 .revenueCat,
                 .revenueCatUI,
-                .receiptParser,
+                .receiptParser
             ],
             settings: .framework
-        ),
+        )
     ].addingXcodeDeploymentTargetOverrides(),
     schemes: [
         .scheme(
@@ -102,7 +102,8 @@ let project = Project(
                 configuration: "Debug",
                 executable: "PurchaseTester",
                 options: .options(
-                    storeKitConfigurationPath: "../../Tests/TestingApps/PurchaseTesterSwiftUI/PurchaseTesterStoreKitConfiguration.storekit"
+                    storeKitConfigurationPath:
+                        "../../Tests/TestingApps/PurchaseTesterSwiftUI/PurchaseTesterStoreKitConfiguration.storekit"
                 )
             )
         ),

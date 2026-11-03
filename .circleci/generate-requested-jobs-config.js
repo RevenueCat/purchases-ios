@@ -19,6 +19,7 @@ const JOBS = {
   "backend-integration-tests-other": ["slack-secrets"],
   "check-app-extension-safe-api-usage": ["slack-secrets"],
   "build-samplecat": ["slack-secrets"],
+  "build-purchase-tester": ["slack-secrets"],
   "build-tv-watch-mac-and-visionos": ["slack-secrets"],
   "check-api-changes": ["slack-secrets-ios", "slack-secrets"],
   "docs-build": ["slack-secrets"],
