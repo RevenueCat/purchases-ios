@@ -43,7 +43,8 @@ struct HardPaywallView: View {
         Purchases.shared.checkpoint(CheckpointIdentifiers.hardPaywall,
                                     customVariables: ["gate": .string("hard")]) { result in
             // Decide on the customer in the result. It also covers a customer who already had access.
-            hasAccess = result.customer.hasPremiumAccess
+            hasAccess = Constants.entitlementIdentifier.map(result.hasEntitlement)
+                ?? result.customer.hasPremiumAccess
             if hasAccess {
                 status = "The customer has access. The content is unlocked."
             } else {

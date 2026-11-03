@@ -41,7 +41,8 @@ struct SoftPaywallView: View {
 
     private func runCheckpoint() {
         Purchases.shared.checkpoint(CheckpointIdentifiers.softPaywall) { result in
-            hasAccess = result.customer.hasPremiumAccess
+            hasAccess = Constants.entitlementIdentifier.map(result.hasEntitlement)
+                ?? result.customer.hasPremiumAccess
             status = result.flow == nil
                 ? "No flow was presented. The content stays available."
                 : "The flow ended. The content stays available."
