@@ -380,6 +380,134 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
         expect(second.requests.value) == 0
     }
 
+    // MARK: - Simulated host failures
+
+    func testSimulatedUnreachableSourceFailsOverToTheNextSource() {
+        let firstHost = "first-api.rc-test.com"
+        let secondHost = "second-api.rc-test.com"
+        let client = self.createClientSimulating(
+            .init(serverErrorHosts: [], unreachableHosts: [firstHost]),
+            apiSourceHosts: [firstHost, secondHost]
+        )
+
+        let serverErrors = self.stubForcedServerErrors()
+        let first = self.stubHost(firstHost) { .emptySuccessResponse() }
+        let second = self.stubHost(secondHost) { .emptySuccessResponse() }
+
+        let result: EmptyResponse? = waitUntilValue { completion in
+            client.perform(.init(method: .get, path: .mockPath)) { completion($0) }
+        }
+
+        expect(result).to(beSuccess())
+        expect(serverErrors.value) == 1
+        expect(first.requests.value) == 0
+        expect(first.healthChecks.value) == 0
+        expect(second.requests.value) == 1
+    }
+
+    func testSimulatedServerErrorDoesNotFailOverWhileTheSourceIsHealthy() {
+        let firstHost = "first-api.rc-test.com"
+        let secondHost = "second-api.rc-test.com"
+        let client = self.createClientSimulating(
+            .init(serverErrorHosts: [firstHost], unreachableHosts: []),
+            apiSourceHosts: [firstHost, secondHost]
+        )
+
+        let serverErrors = self.stubForcedServerErrors()
+        let first = self.stubHost(firstHost, healthStatusCode: 200) { .emptySuccessResponse() }
+        let second = self.stubHost(secondHost) { .emptySuccessResponse() }
+
+        let result: EmptyResponse? = waitUntilValue { completion in
+            client.perform(.init(method: .get, path: .mockPath)) { completion($0) }
+        }
+
+        expect(result).to(beFailure())
+        expect(serverErrors.value) == 1
+        expect(first.requests.value) == 0
+        expect(first.healthChecks.value) == 1
+        expect(second.requests.value) == 0
+    }
+
+    func testSimulatedFailuresApplyFromTheNextRequestWhenChanged() {
+        let host = "first-api.rc-test.com"
+        let failures: Atomic<SimulatedHostFailures> = .init(.init(serverErrorHosts: [host], unreachableHosts: []))
+        let client = self.createClientSimulating({ failures.value }, apiSourceHosts: [host])
+
+        let serverErrors = self.stubForcedServerErrors()
+        let source = self.stubHost(host) { .emptySuccessResponse() }
+
+        let failedResult: EmptyResponse? = waitUntilValue { completion in
+            client.perform(.init(method: .get, path: .mockPath)) { completion($0) }
+        }
+
+        failures.value = SimulatedHostFailures.none
+
+        let succeededResult: EmptyResponse? = waitUntilValue { completion in
+            client.perform(.init(method: .get, path: .mockPath)) { completion($0) }
+        }
+
+        expect(failedResult).to(beFailure())
+        expect(succeededResult).to(beSuccess())
+        expect(serverErrors.value) == 1
+        expect(source.requests.value) == 1
+    }
+
+    func testSimulatedFailuresDoNotAffectProxiedRequests() throws {
+        let proxyURL = try XCTUnwrap(URL(string: "https://proxy.rc-test.com"))
+        SystemInfo.proxyURL = proxyURL
+        defer { SystemInfo.proxyURL = nil }
+
+        let primaryHost = try XCTUnwrap(SystemInfo.apiBaseURL.host)
+        let client = self.createClientSimulating(
+            .init(serverErrorHosts: [], unreachableHosts: [primaryHost]),
+            apiSourceHosts: [primaryHost]
+        )
+
+        let serverErrors = self.stubForcedServerErrors()
+        let proxy = self.stubHost("proxy.rc-test.com") { .emptySuccessResponse() }
+
+        let result: EmptyResponse? = waitUntilValue { completion in
+            client.perform(.init(method: .get, path: .mockPath)) { completion($0) }
+        }
+
+        expect(result).to(beSuccess())
+        expect(serverErrors.value) == 0
+        expect(proxy.requests.value) == 1
+    }
+
+    private func createClientSimulating(
+        _ failures: SimulatedHostFailures,
+        apiSourceHosts: [String]
+    ) -> HTTPClient {
+        return self.createClientSimulating({ failures }, apiSourceHosts: apiSourceHosts)
+    }
+
+    private func createClientSimulating(
+        _ failures: @escaping @Sendable () -> SimulatedHostFailures,
+        apiSourceHosts: [String]
+    ) -> HTTPClient {
+        let internalSettings = DangerousSettings.Internal(forceServerErrorStrategy: .simulating(failures))
+        let systemInfo = MockSystemInfo(
+            finishTransactions: true,
+            dangerousSettings: DangerousSettings(autoSyncPurchases: true, internalSettings: internalSettings)
+        )
+        return self.createClient(
+            systemInfo,
+            apiSourceProvider: Self.apiSourceProvider(hosts: apiSourceHosts),
+            sourceHealthChecker: SourceHealthChecker(internalSettings: internalSettings)
+        )
+    }
+
+    /// Counts the requests a `ForceServerErrorStrategy` redirected to its server error URL, answering them with a 502.
+    private func stubForcedServerErrors() -> Atomic<Int> {
+        let requests: Atomic<Int> = .init(0)
+        stub(condition: isAbsoluteURLString(ForceServerErrorStrategy.defaultServerErrorURL.absoluteString)) { _ in
+            requests.modify { $0 += 1 }
+            return HTTPStubsResponse(data: Data(), statusCode: 502, headers: nil)
+        }
+        return requests
+    }
+
     func testDoesNotHealthCheckOrFailOverOnDeviceConnectivityError() {
         // Unlike Android, iOS can tell a device-connectivity failure apart from a host outage using
         // the original request's URLError code. Switching hosts can't fix a device without

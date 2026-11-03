@@ -8,7 +8,11 @@
 import SwiftUI
 
 import Core
+#if DEBUG
+@testable import RevenueCat
+#else
 import RevenueCat
+#endif
 
 struct ConfigurationView: View {
 
@@ -62,6 +66,13 @@ struct ConfigurationView: View {
                     Text("Observer mode")
                 }
             }
+
+            #if DEBUG
+            Section(header: Text("API source failover"),
+                    footer: Text(SimulatedFailuresPicker.footer)) {
+                SimulatedFailuresPicker()
+            }
+            #endif
 
             Section(header: Text("About")) {
                 HStack {
@@ -134,6 +145,27 @@ struct ConfigurationView: View {
 }
 
 extension Configuration.EntitlementVerificationMode: Codable {}
+
+#if DEBUG
+/// Picks the API source outage the SDK simulates. The choice is persisted and applies from the next request.
+struct SimulatedFailuresPicker: View {
+
+    static let footer = "Applies from the next request. Ignored when a proxy URL is set."
+
+    @AppStorage(ConfiguredPurchases.simulatedFailuresModeKey)
+    private var mode: SimulatedHostFailures.Mode = .none
+
+    var body: some View {
+        Picker("Simulated API failures", selection: self.$mode) {
+            ForEach(SimulatedHostFailures.Mode.allCases) { mode in
+                Text(mode.label).tag(mode)
+            }
+        }
+        .pickerStyle(.inline)
+    }
+
+}
+#endif
 
 // MARK: -
 

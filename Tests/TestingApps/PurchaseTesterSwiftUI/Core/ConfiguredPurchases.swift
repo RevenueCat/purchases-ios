@@ -45,12 +45,14 @@ public final class ConfiguredPurchases {
 
         let purchasesAreCompletedBy: PurchasesAreCompletedBy = observerMode ? .myApp : .revenueCat
         let storeKitVersion: StoreKitVersion = useStoreKit2 ? .storeKit2 : .storeKit1
-        let purchases = Purchases.configure(
-            with: .init(withAPIKey: apiKey)
-                .with(diagnosticsEnabled: true)
-                .with(purchasesAreCompletedBy: purchasesAreCompletedBy, storeKitVersion: storeKitVersion)
-                .with(entitlementVerificationMode: entitlementVerificationMode)
-        )
+        var builder = Configuration.Builder(withAPIKey: apiKey)
+            .with(diagnosticsEnabled: true)
+            .with(purchasesAreCompletedBy: purchasesAreCompletedBy, storeKitVersion: storeKitVersion)
+            .with(entitlementVerificationMode: entitlementVerificationMode)
+        #if DEBUG
+        builder = builder.with(dangerousSettings: Self.simulatingAPIFailuresDangerousSettings)
+        #endif
+        let purchases = Purchases.configure(with: builder)
 
         self.init(purchases: purchases, proxyURL: Purchases.proxyURL)
     }
@@ -58,6 +60,22 @@ public final class ConfiguredPurchases {
     // MARK: -
 
     public static let logger: Logger = .init()
+
+    #if DEBUG
+    /// The `UserDefaults` key of the `SimulatedHostFailures.Mode` the SDK simulates.
+    public static let simulatedFailuresModeKey = "com.revenuecat.sampleapp.simulated_failures_mode"
+
+    /// Reads the stored mode on every request, so picking another one applies without reconfiguring.
+    private static var simulatingAPIFailuresDangerousSettings: DangerousSettings {
+        let strategy = ForceServerErrorStrategy.simulating {
+            let mode = UserDefaults.standard.string(forKey: Self.simulatedFailuresModeKey)
+                .flatMap(SimulatedHostFailures.Mode.init(rawValue:))
+            return (mode ?? SimulatedHostFailures.Mode.none).hostFailures
+        }
+        return DangerousSettings(autoSyncPurchases: true,
+                                 internalSettings: DangerousSettings.Internal(forceServerErrorStrategy: strategy))
+    }
+    #endif
 
 }
 
