@@ -120,7 +120,7 @@ class SystemInfo {
     }
 
     static var frameworkVersion: String {
-        return "5.100.0-SNAPSHOT"
+        return "5.103.0-SNAPSHOT"
     }
 
     static var installationMethod: String {
@@ -128,6 +128,8 @@ class SystemInfo {
         return "spm"
         #elseif COCOAPODS
         return "cocoapods"
+        #elseif CARTHAGE_SOURCE
+        return "carthage_source"
         #elseif RC_XCFRAMEWORK
         return "xcframework"
         #else
@@ -333,6 +335,10 @@ class SystemInfo {
 
     func overridePreferredLocale(_ locale: String?) {
         self.preferredLocalesProvider.overridePreferredLocale(locale)
+    }
+
+    func setPreferApplicationLocale(_ enabled: Bool) {
+        self.preferredLocalesProvider.setPreferApplicationLocale(enabled)
     }
 }
 

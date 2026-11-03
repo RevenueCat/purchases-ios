@@ -159,6 +159,8 @@ final class CheckpointPresenter: CheckpointPresenterType {
         private let slot: CheckpointPresentationSlot
         private let token: CheckpointPresentationSlot.Token
         private var pendingContinuation: CheckedContinuation<AdPresentationResult, Never>?
+        /// Keeps the presenter alive if `Purchases.adPresenter` is replaced mid-presentation.
+        private var presenter: AdPresenter?
 
         init(slot: CheckpointPresentationSlot, token: CheckpointPresentationSlot.Token) {
             self.slot = slot
@@ -171,13 +173,15 @@ final class CheckpointPresenter: CheckpointPresenterType {
         ) async -> AdPresentationResult {
             return await withCheckedContinuation { continuation in
                 self.pendingContinuation = continuation
-                presenter.present(params: params) { [weak self] result in
-                    self?.completed(result)
+                self.presenter = presenter
+                presenter.present(params: params) { result in
+                    self.completed(result)
                 }
             }
         }
 
         private func completed(_ result: AdPresentationResult) {
+            self.presenter = nil
             guard self.slot.contains(self.token),
                   let continuation = self.takeContinuation() else { return }
             continuation.resume(returning: result)

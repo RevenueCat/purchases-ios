@@ -52,6 +52,10 @@ import Foundation
     /// The trace id of the checkpoint hit that presented this ``Package``.
     @_spi(Internal) public let traceID: String?
 
+    let workflowId: String?
+    let stepId: String?
+    let blobRef: String?
+
     /// Initialize a ``PresentedOfferingContext``.
     @objc
     public init(
@@ -64,6 +68,9 @@ import Foundation
         self.targetingContext = targetingContext
         self.checkpointIdentifier = nil
         self.traceID = nil
+        self.workflowId = nil
+        self.stepId = nil
+        self.blobRef = nil
         super.init()
     }
 
@@ -72,13 +79,19 @@ import Foundation
         placementIdentifier: String?,
         targetingContext: TargetingContext?,
         checkpointIdentifier: String?,
-        traceID: String?
+        traceID: String?,
+        workflowId: String?,
+        stepId: String?,
+        blobRef: String?
     ) {
         self.offeringIdentifier = offeringIdentifier
         self.placementIdentifier = placementIdentifier
         self.targetingContext = targetingContext
         self.checkpointIdentifier = checkpointIdentifier
         self.traceID = traceID
+        self.workflowId = workflowId
+        self.stepId = stepId
+        self.blobRef = blobRef
         super.init()
     }
 
@@ -88,7 +101,23 @@ import Foundation
             placementIdentifier: self.placementIdentifier,
             targetingContext: self.targetingContext,
             checkpointIdentifier: checkpointIdentifier,
-            traceID: traceID
+            traceID: traceID,
+            workflowId: self.workflowId,
+            stepId: self.stepId,
+            blobRef: self.blobRef
+        )
+    }
+
+    func withWorkflowContext(workflowId: String?, stepId: String?, blobRef: String?) -> PresentedOfferingContext {
+        return PresentedOfferingContext(
+            offeringIdentifier: self.offeringIdentifier,
+            placementIdentifier: self.placementIdentifier,
+            targetingContext: self.targetingContext,
+            checkpointIdentifier: self.checkpointIdentifier,
+            traceID: self.traceID,
+            workflowId: workflowId,
+            stepId: stepId,
+            blobRef: blobRef
         )
     }
 

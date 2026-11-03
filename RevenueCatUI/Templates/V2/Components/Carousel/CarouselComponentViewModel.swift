@@ -59,6 +59,19 @@ class CarouselComponentViewModel: OfferEligibilityVisibilityDependency {
         return self.pageContextNames[index]
     }
 
+    /// Index into `pageStackViewModels`. Outlives the carousel view, so
+    /// a carousel recreated after a tab switch resumes on this page.
+    var lastVisiblePageIndex: Int?
+
+    /// The page to start on when the carousel view is (re)created.
+    func startPageIndex(initialPageIndex: Int) -> Int {
+        guard let lastVisiblePageIndex, self.pageStackViewModels.indices.contains(lastVisiblePageIndex) else {
+            return initialPageIndex
+        }
+
+        return lastVisiblePageIndex
+    }
+
     /// Invoked each time the carousel's `onAppear` fires. Set in tests to detect that the
     /// carousel view was recreated (and its `@State` reset) after a tab switch.
     #if DEBUG

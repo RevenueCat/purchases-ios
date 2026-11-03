@@ -370,9 +370,41 @@ class CustomPaywallEventTests: TestCase {
         expect(data.placementIdentifier).to(beNil())
         expect(data.targetingRevision).to(beNil())
         expect(data.targetingRuleId).to(beNil())
+        expect(data.workflowId).to(beNil())
+        expect(data.stepId).to(beNil())
+        expect(data.blobRef).to(beNil())
     }
 
     // MARK: - Wire encoding: presented_offering_context
+
+    func testStoredImpressionPreservesWorkflowOnlyContextInRequest() throws {
+        let context = PresentedOfferingContext(offeringIdentifier: "off")
+            .withWorkflowContext(workflowId: "wrapper", stepId: "embedded_step", blobRef: "blob-ref")
+            .withCheckpointIdentifier("checkout", traceID: "not-forwarded")
+        let event = CustomPaywallEvent.impression(
+            Self.creationData,
+            .init(paywallId: "custom", offeringId: "off", presentedOfferingContext: context)
+        )
+        let storedEvent = try XCTUnwrap(StoredFeatureEvent(
+            event: event,
+            userID: Self.userID,
+            feature: .customPaywalls,
+            appSessionID: nil,
+            eventDiscriminator: nil
+        ))
+        let serialized = try StoredFeatureEventSerializer.encode(storedEvent)
+        let deserialized = try StoredFeatureEventSerializer.decode(serialized)
+        let requestEvent = try XCTUnwrap(FeatureEventsRequest.CustomPaywallEvent(storedEvent: deserialized))
+        let encoded = try JSONEncoder.default.encode(requestEvent)
+        let json = try XCTUnwrap(JSONSerialization.jsonObject(with: encoded) as? [String: Any])
+        let encodedContext = try XCTUnwrap(json["presented_offering_context"] as? [String: String])
+
+        XCTAssertEqual(encodedContext, [
+            "workflow_id": "wrapper",
+            "step_id": "embedded_step",
+            "blob_ref": "blob-ref"
+        ])
+    }
 
     func testRequestEncodingIncludesPresentedOfferingContextWhenAllFieldsSet() throws {
         let event = CustomPaywallEvent.impression(

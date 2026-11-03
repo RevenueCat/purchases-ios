@@ -31,7 +31,8 @@ extension UIApplication {
         Bundle.main.bundlePath.hasSuffix(".appex")
     }
 
-    static var extensionSafeApplication: UIApplication? {
+    /// The shared application, or `nil` when running in an app extension.
+    @_spi(Internal) public static var extensionSafeApplication: UIApplication? {
         return UIApplication.value(forKey: "sharedApplication") as? UIApplication
     }
 

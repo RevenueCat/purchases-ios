@@ -120,21 +120,21 @@ import Foundation
         for (index, downloadURL) in urls.enumerated() {
             do {
                 try Task.checkCancellation()
-                let bytes = try await self.getBytes(from: downloadURL)
-                try await self.saveCachedFile(url: cachedURL, fromBytes: bytes, withChecksum: checksum)
+                let downloadedFileURL = try await self.downloadFile(from: downloadURL)
+                try self.saveCachedFile(downloadedFileURL, to: cachedURL, withChecksum: checksum)
                 return
             } catch {
                 if PaywallAssetURLResolver.isCancellation(error) { throw error }
-                // A local write failure won't be repaired by downloading from another CDN.
+                // A local write failure will not be repaired by downloading from another CDN.
                 if case Error.failedToSaveCachedFile = error { throw error }
                 if index == urls.count - 1 { throw error }
             }
         }
     }
 
-    private func getBytes(from url: URL) async throws -> AsyncThrowingStream<UInt8, Swift.Error> {
+    private func downloadFile(from url: URL) async throws -> URL {
         do {
-            return try await self.networkService.bytes(from: url)
+            return try await self.networkService.downloadFile(from: url)
         } catch {
             if PaywallAssetURLResolver.isCancellation(error) { throw error }
             let message = Strings.fileRepository.failedToFetchFileFromRemoteSource(url, error)
@@ -144,20 +144,22 @@ import Foundation
     }
 
     private func saveCachedFile(
-        url: URL,
-        fromBytes bytes: AsyncThrowingStream<UInt8, Swift.Error>,
+        _ downloadedFileURL: URL,
+        to cachedURL: URL,
         withChecksum checksum: Checksum?
-    ) async throws {
+    ) throws {
         do {
-            try await fileManager.saveData(bytes, to: url, checksum: checksum)
+            // This transfers ownership of the downloaded temporary file to the cache.
+            try fileManager.saveDownloadedFile(
+                fromTemporaryURL: downloadedFileURL,
+                to: cachedURL,
+                checksum: checksum
+            )
         } catch is Checksum.ChecksumValidationFailure {
             throw Error.checksumMismatch
         } catch {
             if PaywallAssetURLResolver.isCancellation(error) { throw error }
-            if error is URLError {
-                throw Error.failedToFetchFileFromRemoteSource(error.localizedDescription)
-            }
-            let message = Strings.fileRepository.failedToSaveCachedFile(url, error)
+            let message = Strings.fileRepository.failedToSaveCachedFile(cachedURL, error)
             Logger.error(message)
             throw Error.failedToSaveCachedFile(message.description)
         }

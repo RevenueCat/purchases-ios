@@ -655,6 +655,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                                                 uiConfigProvider: systemInfo.remoteConfigEnabled
                                                 ? uiConfigProvider
                                                 : nil,
+                                                sdkSettingsConfigProvider: sdkSettingsConfigProvider,
                                                 workflowAssetPrewarmer: systemInfo.remoteConfigEnabled
                                                 ? workflowManager
                                                 : nil)
@@ -739,6 +740,11 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                             trackDiagnostics: false,
                             completion: { result in continuation.resume(with: result) }
                         )
+                    }
+                },
+                trackWorkflowEvent: { event in
+                    if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
+                        await eventsManager?.track(featureEvent: event)
                     }
                 }
             )
@@ -2862,6 +2868,7 @@ public extension Purchases {
 extension Purchases: SDKSettingsConfigProviderDelegate {
 
     func sdkSettingsConfigProviderDidUpdate(_ settings: SDKSettings) {
+        self.systemInfo.setPreferApplicationLocale(settings.paywalls?.preferApplicationLocale == true)
         self.setDiagnosticsCollectionDecision(remoteDiagnosticsEnabled: settings.diagnostics?.enabled)
     }
 

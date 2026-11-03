@@ -31,6 +31,7 @@
 
     RCIdentity *__unused oidc = [RCIdentity identityWithOIDCToken:[NSData data]];
     RCIdentity *__unused firebase = [RCIdentity identityWithFirebaseToken:[NSData data]];
+    RCIdentity *__unused google = [RCIdentity identityWithGoogleToken:[NSData data]];
 
     RCIdentitySource *__unused anonymousSource = [RCIdentitySource anonymous];
     RCIdentitySource *__unused appleSource = [RCIdentitySource signInWithApple];
