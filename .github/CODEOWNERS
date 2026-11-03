@@ -29,8 +29,8 @@
 /Sources/**/*Workflow* @RevenueCat/workflows
 /RevenueCatUI/**/*Workflow* @RevenueCat/workflows
 /Tests/**/*Workflow* @RevenueCat/workflows
-/Projects/rc-maestro/maestro/workflows/ @RevenueCat/workflows
-/Projects/rc-maestro/rc-maestro/Sources/rc-maestro/e2e-test-flows/*workflow* @RevenueCat/workflows
+/Projects/AutomatedSDKTestsApp/maestro/workflows/ @RevenueCat/workflows
+/Projects/AutomatedSDKTestsApp/AutomatedSDKTestsApp/Sources/AutomatedSDKTestsApp/e2e-test-flows/*workflow* @RevenueCat/workflows
 
 # Checkpoints (after Workflows, so checkpoint files with Workflow in the name stay here)
 /Sources/Checkpoints/ @RevenueCat/coresdk
@@ -53,7 +53,7 @@
 /Tests/UnitTests/Networking/**/*CustomerCenter* @RevenueCat/customer-center
 /RevenueCatUI/CustomerCenter/ @RevenueCat/customer-center
 /Tests/RevenueCatUITests/CustomerCenter/ @RevenueCat/customer-center
-/Projects/rc-maestro/maestro/customer_center/ @RevenueCat/customer-center
+/Projects/AutomatedSDKTestsApp/maestro/customer_center/ @RevenueCat/customer-center
 
 # Public API surface: changes here should stay visible to the whole SDK team
 /api/ @RevenueCat/sdk
