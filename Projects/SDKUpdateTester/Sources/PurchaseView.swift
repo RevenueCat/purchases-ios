@@ -11,7 +11,7 @@ import SwiftUI
 
 struct PurchaseView: View {
 
-    // An offering also used by rc-maestro's E2E tests, which only require it to have no paywall attached.
+    // An offering also used by AutomatedSDKTestsApp's E2E tests, which only require it to have no paywall attached.
     private static let offeringIdentifier = "no_paywall"
 
     @State private var activeEntitlements: String = "Loading..."

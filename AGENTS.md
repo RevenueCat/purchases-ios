@@ -90,7 +90,7 @@ Key top-level directories: `Sources/`, `RevenueCatUI/`, `Tests/`, `Examples/`, `
 ### Example apps
 
 - `Examples/SampleCat/` is the reference for app integration code (offerings, paywalls, checkpoints, Customer Center). The dashboard download writes over its `Constants.swift`, so keep other values out of that file.
-- PaywallsTester, rc-maestro, and `Tests/` are test tools with debug seams. Do not copy them into app code.
+- PaywallsTester, AutomatedSDKTestsApp, and `Tests/` are test tools with debug seams. Do not copy them into app code.
 
 ### Key Architectural Patterns
 

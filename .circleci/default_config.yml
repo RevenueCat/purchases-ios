@@ -1605,7 +1605,7 @@ jobs:
       - install-dependencies
       - revenuecat/install-maestro
       - tuist-generate-workspace:
-          query: "Maestro"
+          query: "AutomatedSDKTestsApp"
       # Create directory to track test failures
       - run:
           name: Initialize test tracking
@@ -1731,7 +1731,7 @@ jobs:
       - install-dependencies
       - revenuecat/install-maestro
       - tuist-generate-workspace:
-          query: "Maestro"
+          query: "AutomatedSDKTestsApp"
       - run:
           name: Set API key for workflow e2e tests (test_store)
           command: |
