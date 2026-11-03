@@ -3,12 +3,12 @@ import ProjectDescription
 import ProjectDescriptionHelpers
 
 var projects: [Path] = [
-    "./Examples/CheckpointTester/",
     "./Examples/rc-maestro/",
     "./Examples/MagicWeather/",
     "./Examples/MagicWeatherSwiftUI/",
     "./Examples/testCustomEntitlementsComputation/",
     "./Examples/PurchaseTester/",
+    "./Examples/SampleCat/",
     "./Projects/PaywallsTester",
     "./Projects/APITesters",
     "./Projects/PaywallValidationTester",

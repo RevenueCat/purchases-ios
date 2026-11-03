@@ -1213,20 +1213,22 @@ jobs:
           destination: scan-test-output-ios-26
       - github-notify-pr-on-fail
 
-  build-checkpoint-tester:
+  build-samplecat:
     executor:
       name: macos-executor
       xcode_version: "27.0.0"
     steps:
       - checkout
       - tuist-generate-workspace:
-          query: "CheckpointTester"
+          query: "SampleCat"
       - run:
-          name: Build CheckpointTester
+          name: Build SampleCat
+          # The sample's Constants.swift has #error lines until a developer sets their own API key.
           command: >-
+            sed -i '' 's/^\( *\)#error/\1\/\/ #error/' Examples/SampleCat/SampleCat/Constants.swift &&
             xcodebuild
             -workspace RevenueCat-Tuist.xcworkspace
-            -scheme CheckpointTester
+            -scheme SampleCat
             -destination "generic/platform=iOS Simulator"
             CODE_SIGNING_ALLOWED=NO
             build
@@ -2461,7 +2463,7 @@ workflows:
       - run-test-ios-27:
           context:
             - slack-secrets
-      - build-checkpoint-tester:
+      - build-samplecat:
           context:
             - slack-secrets
       - pod-lib-lint:
@@ -2655,7 +2657,7 @@ workflows:
             - lint
             - check-api-changes
             - run-test-ios-27
-            - build-checkpoint-tester
+            - build-samplecat
             - pod-lib-lint
             - run-revenuecat-ui-ios-27
             - run-revenuecat-ui-ios-26

@@ -22,6 +22,12 @@ struct ContentView: View {
                     Label("Paywalls", systemImage: "list.bullet.rectangle.portrait")
                 }
 
+            CheckpointsTabView()
+                .tabItem {
+                    Label("Checkpoints", systemImage: "flag.fill")
+                }
+                .badge("Beta")
+
             CustomerCenterTabView()
                 .tabItem {
                     Label("Customer Center", systemImage: "person.crop.circle")

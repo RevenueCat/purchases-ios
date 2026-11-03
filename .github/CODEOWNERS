@@ -37,7 +37,6 @@
 /Tests/UnitTests/Checkpoints/ @RevenueCat/coresdk
 /RevenueCatUI/Checkpoints/ @RevenueCat/coresdk
 /Tests/RevenueCatUITests/Checkpoints/ @RevenueCat/coresdk
-/Examples/CheckpointTester/ @RevenueCat/coresdk
 
 # Ads
 /Sources/Ads/ @RevenueCat/ads

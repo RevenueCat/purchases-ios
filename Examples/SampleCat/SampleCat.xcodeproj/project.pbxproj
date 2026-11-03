@@ -36,6 +36,12 @@
 		53E9CF9C2DAD41F5000285C6 /* RevenueCatUI in Frameworks */ = {isa = PBXBuildFile; productRef = 53E9CF9B2DAD41F5000285C6 /* RevenueCatUI */; };
 		BF03C6B52020202020202020 /* PaywallsTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF03C6B42020202020202020 /* PaywallsTabView.swift */; };
 		F486E0442020202020202020 /* CustomerCenterTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F486E0432020202020202020 /* CustomerCenterTabView.swift */; };
+		0521AE36B00C00CCC72CFA11 /* CheckpointsTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5ADEA7F84922CFEDADF586C0 /* CheckpointsTabView.swift */; };
+		9D299FF31073269E7D2E8EF3 /* HardPaywallView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 726F5137D0B8882CACA03A7D /* HardPaywallView.swift */; };
+		95BEC1F7322543DA41EDC978 /* SoftPaywallView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34133BD82F766B4010C03198 /* SoftPaywallView.swift */; };
+		ADF86F30356AB196A4C684D8 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53B458E2BC96136BB0C4B0AC /* OnboardingView.swift */; };
+		D8B0BDEED53E8BC9524BA23A /* EntitlementGateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BC147907D0387B2FED9FABC /* EntitlementGateView.swift */; };
+		AF43F4608852F0B851A81BAF /* CheckpointIdentifiers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0FC18792F8113A82EA342CC5 /* CheckpointIdentifiers.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -65,6 +71,12 @@
 		5364A73E2DF198E3007436B0 /* UserViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserViewModel.swift; sourceTree = "<group>"; };
 		BF03C6B42020202020202020 /* PaywallsTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallsTabView.swift; sourceTree = "<group>"; };
 		F486E0432020202020202020 /* CustomerCenterTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomerCenterTabView.swift; sourceTree = "<group>"; };
+		5ADEA7F84922CFEDADF586C0 /* CheckpointsTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckpointsTabView.swift; sourceTree = "<group>"; };
+		726F5137D0B8882CACA03A7D /* HardPaywallView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HardPaywallView.swift; sourceTree = "<group>"; };
+		34133BD82F766B4010C03198 /* SoftPaywallView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoftPaywallView.swift; sourceTree = "<group>"; };
+		53B458E2BC96136BB0C4B0AC /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
+		4BC147907D0387B2FED9FABC /* EntitlementGateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EntitlementGateView.swift; sourceTree = "<group>"; };
+		0FC18792F8113A82EA342CC5 /* CheckpointIdentifiers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckpointIdentifiers.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -134,6 +146,7 @@
 			children = (
 				5364A7252DF198E3007436B0 /* Offerings */,
 				5364A7282DF198E3007436B0 /* Products */,
+				9DB6042BB134E61D9DE27290 /* Checkpoints */,
 				A89794432020202020202020 /* CustomerCenter */,
 				68A906072020202020202020 /* Paywalls */,
 				5364A72B2DF198E3007436B0 /* Views */,
@@ -194,6 +207,7 @@
 			children = (
 				5364A72E2DF198E3007436B0 /* Screens */,
 				5364A73A2DF198E3007436B0 /* Utils */,
+				0FC18792F8113A82EA342CC5 /* CheckpointIdentifiers.swift */,
 				5364A73B2DF198E3007436B0 /* Constants.swift */,
 				5364A73C2DF198E3007436B0 /* HealthViewModel.swift */,
 				5364A73D2DF198E3007436B0 /* SampleCatApp.swift */,
@@ -216,6 +230,18 @@
 				F486E0432020202020202020 /* CustomerCenterTabView.swift */,
 			);
 			path = CustomerCenter;
+			sourceTree = "<group>";
+		};
+		9DB6042BB134E61D9DE27290 /* Checkpoints */ = {
+			isa = PBXGroup;
+			children = (
+				5ADEA7F84922CFEDADF586C0 /* CheckpointsTabView.swift */,
+				726F5137D0B8882CACA03A7D /* HardPaywallView.swift */,
+				34133BD82F766B4010C03198 /* SoftPaywallView.swift */,
+				53B458E2BC96136BB0C4B0AC /* OnboardingView.swift */,
+				4BC147907D0387B2FED9FABC /* EntitlementGateView.swift */,
+			);
+			path = Checkpoints;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -315,6 +341,12 @@
 				5364A74F2DF198E3007436B0 /* Spinner.swift in Sources */,
 				5364A7502DF198E3007436B0 /* ConceptIntroductionView.swift in Sources */,
 				5364A7512DF198E3007436B0 /* ContentBackgroundView.swift in Sources */,
+				AF43F4608852F0B851A81BAF /* CheckpointIdentifiers.swift in Sources */,
+				0521AE36B00C00CCC72CFA11 /* CheckpointsTabView.swift in Sources */,
+				9D299FF31073269E7D2E8EF3 /* HardPaywallView.swift in Sources */,
+				95BEC1F7322543DA41EDC978 /* SoftPaywallView.swift in Sources */,
+				ADF86F30356AB196A4C684D8 /* OnboardingView.swift in Sources */,
+				D8B0BDEED53E8BC9524BA23A /* EntitlementGateView.swift in Sources */,
 				5364A7522DF198E3007436B0 /* Constants.swift in Sources */,
 				5364A7532DF198E3007436B0 /* HealthViewModel.swift in Sources */,
 				5364A7542DF198E3007436B0 /* SampleCatApp.swift in Sources */,
