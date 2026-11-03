@@ -79,7 +79,8 @@ final class CheckpointsManagerTests: TestCase {
             defaultHandler: {
                 defaultCallCount += 1
                 return { _, _ in }
-            }
+            },
+            dialogPresenterFactory: nil
         )
         handler(Self.errorPresentationParams, Self.errorPresentationCompletion)
 
@@ -99,7 +100,8 @@ final class CheckpointsManagerTests: TestCase {
             defaultHandler: {
                 defaultCallCount += 1
                 return { _, _ in }
-            }
+            },
+            dialogPresenterFactory: nil
         )
         handler(Self.errorPresentationParams, Self.errorPresentationCompletion)
 
@@ -115,7 +117,8 @@ final class CheckpointsManagerTests: TestCase {
             for: .init(),
             defaultHandler: {
                 return { _, _ in defaultCallCount += 1 }
-            }
+            },
+            dialogPresenterFactory: nil
         )
         handler(Self.errorPresentationParams, Self.errorPresentationCompletion)
 
@@ -131,7 +134,8 @@ final class CheckpointsManagerTests: TestCase {
         var defaultCallCount = 0
         let handler = manager.errorPresentationHandler(
             for: .init(),
-            defaultHandler: { return { _, _ in defaultCallCount += 1 } }
+            defaultHandler: { return { _, _ in defaultCallCount += 1 } },
+            dialogPresenterFactory: nil
         )
 
         manager.errorPresenter = replacementPresenter
@@ -150,7 +154,8 @@ final class CheckpointsManagerTests: TestCase {
         var defaultCallCount = 0
         let handler = manager.errorPresentationHandler(
             for: .init(),
-            defaultHandler: { return { _, _ in defaultCallCount += 1 } }
+            defaultHandler: { return { _, _ in defaultCallCount += 1 } },
+            dialogPresenterFactory: nil
         )
 
         manager.errorPresenter = nil
@@ -170,7 +175,8 @@ final class CheckpointsManagerTests: TestCase {
         var defaultCallCount = 0
         let handler = manager.errorPresentationHandler(
             for: .init(errorPresenter: { _, _ in localCallCount += 1 }),
-            defaultHandler: { return { _, _ in defaultCallCount += 1 } }
+            defaultHandler: { return { _, _ in defaultCallCount += 1 } },
+            dialogPresenterFactory: nil
         )
 
         manager.errorPresenter = replacementPresenter
@@ -194,7 +200,8 @@ final class CheckpointsManagerTests: TestCase {
                 presentationOrder.append("custom")
                 customCompletion = completion
             }),
-            defaultHandler: { XCTFail("Expected custom presenter"); return { _, _ in } }
+            defaultHandler: { XCTFail("Expected custom presenter"); return { _, _ in } },
+            dialogPresenterFactory: nil
         )
         let defaultHandler = manager.errorPresentationHandler(
             for: .init(),
@@ -203,7 +210,8 @@ final class CheckpointsManagerTests: TestCase {
                     presentationOrder.append("default")
                     defaultPresented.fulfill()
                 }
-            }
+            },
+            dialogPresenterFactory: nil
         )
 
         customHandler(Self.errorPresentationParams, Self.errorPresentationCompletion)
