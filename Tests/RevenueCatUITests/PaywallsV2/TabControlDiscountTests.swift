@@ -165,8 +165,8 @@ final class TabControlDiscountTests: TestCase {
     }
 
     private static func containsText(_ text: String, in view: UIView) -> Bool {
-        let image = UIGraphicsImageRenderer(bounds: view.bounds).image { _ in
-            view.drawHierarchy(in: view.bounds, afterScreenUpdates: true)
+        let image = UIGraphicsImageRenderer(bounds: view.bounds).image { context in
+            view.layer.render(in: context.cgContext)
         }
         guard let cgImage = image.cgImage else { return false }
         let request = VNRecognizeTextRequest()
