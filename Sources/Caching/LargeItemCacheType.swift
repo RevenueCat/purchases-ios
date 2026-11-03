@@ -109,12 +109,20 @@ extension FileManager: LargeItemCacheType {
             defer { try? fileHandle.close() }
 
             // Hash in bounded chunks so checksum validation does not load large assets into memory.
+            // Use an autorelease pool per chunk because FileHandle's autoreleased read buffers otherwise
+            // remain alive until the outer pool drains.
             // 256 KiB keeps memory usage low while avoiding excessive file-read operations.
             let checksumReadChunkSize = 256 * 1024
             var hasher = checksum.algorithm.getHasher()
-            while let data = try fileHandle.read(upToCount: checksumReadChunkSize), !data.isEmpty {
+            while try autoreleasepool(invoking: {
+                guard let data = try fileHandle.read(upToCount: checksumReadChunkSize),
+                      !data.isEmpty else {
+                    return false
+                }
+
                 hasher.update(data: data)
-            }
+                return true
+            }) {}
 
             // Do not move corrupted or incomplete downloads into the cache.
             let value = hasher.toString()
