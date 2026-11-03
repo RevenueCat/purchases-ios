@@ -53,7 +53,8 @@ struct EntitlementGateView: View {
 
         Purchases.shared.checkpoint(CheckpointIdentifiers.entitlementGate,
                                     customVariables: ["gate": .string("entitlement")]) { result in
-            hasAccess = result.customer.hasPremiumAccess
+            hasAccess = Constants.entitlementIdentifier.map(result.hasEntitlement)
+                ?? result.customer.hasPremiumAccess
             if hasAccess {
                 status = "The customer has access. The content is unlocked."
             } else {
