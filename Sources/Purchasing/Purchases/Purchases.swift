@@ -1938,6 +1938,16 @@ public extension Purchases {
 
 // swiftlint:enable missing_docs
 
+public extension Purchases {
+
+    /// Returns ordered CDN URLs for managed images, icons and fonts using cached config.
+    @_spi(Internal) static func paywallAssetDownloadURLs(_ url: URL) async -> [URL] {
+        guard let purchases = Self.purchases.value else { return [url] }
+        return await PaywallAssetURLResolver.resolve(url, manager: purchases.remoteConfigManager)
+    }
+
+}
+
 // MARK: - Paywalls & Customer Center
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
@@ -2081,12 +2091,6 @@ public extension Purchases {
     /// Used by `RevenueCatUI` to download and cache paywall images.
     @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
     static let paywallImageDownloadSession: URLSession = PaywallCacheWarming.downloadSession
-
-    /// Returns ordered CDN URLs for managed images, icons and fonts using cached config.
-    @_spi(Internal) static func paywallAssetDownloadURLs(_ url: URL) async -> [URL] {
-        guard let purchases = Self.purchases.value else { return [url] }
-        return await PaywallAssetURLResolver.resolve(url, manager: purchases.remoteConfigManager)
-    }
 
 }
 
