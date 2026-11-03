@@ -8,6 +8,7 @@ var projects: [Path] = [
     "./Examples/MagicWeatherSwiftUI/",
     "./Examples/testCustomEntitlementsComputation/",
     "./Examples/PurchaseTester/",
+    "./Examples/SampleCat/",
     "./Projects/PaywallsTester",
     "./Projects/APITesters",
     "./Projects/PaywallValidationTester",

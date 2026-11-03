@@ -1213,6 +1213,27 @@ jobs:
           destination: scan-test-output-ios-26
       - github-notify-pr-on-fail
 
+  build-samplecat:
+    executor:
+      name: macos-executor
+      xcode_version: "27.0.0"
+    steps:
+      - checkout
+      - tuist-generate-workspace:
+          query: "SampleCat"
+      - run:
+          name: Build SampleCat
+          # The sample's Constants.swift has #error lines until a developer sets their own API key.
+          command: >-
+            sed -i '' 's/^\( *\)#error/\1\/\/ #error/' Examples/SampleCat/SampleCat/Constants.swift &&
+            xcodebuild
+            -workspace RevenueCat-Tuist.xcworkspace
+            -scheme SampleCat
+            -destination "generic/platform=iOS Simulator"
+            CODE_SIGNING_ALLOWED=NO
+            build
+          no_output_timeout: 30m
+
   check-app-extension-safe-api-usage:
     executor:
       name: macos-executor
@@ -2442,6 +2463,9 @@ workflows:
       - run-test-ios-27:
           context:
             - slack-secrets
+      - build-samplecat:
+          context:
+            - slack-secrets
       - pod-lib-lint:
           context:
             - slack-secrets
@@ -2633,6 +2657,7 @@ workflows:
             - lint
             - check-api-changes
             - run-test-ios-27
+            - build-samplecat
             - pod-lib-lint
             - run-revenuecat-ui-ios-27
             - run-revenuecat-ui-ios-26
