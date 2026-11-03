@@ -20,6 +20,12 @@ import Foundation
 #if canImport(UIKit) && !os(tvOS) && !os(watchOS)
 import UIKit
 
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private struct ActiveErrorPresentation {
+    let id: UUID
+    let context: ErrorPresentationContext
+}
+
 /// Presents resolved checkpoint workflows using RevenueCatUI.
 ///
 /// Purchase, restore, and error outcomes are staged as they occur and delivered
@@ -95,15 +101,17 @@ final class WorkflowPresenter: NSObject, WorkflowPresenterType {
         }
     }
 
-    private struct ActiveErrorPresentation {
-        let id: UUID
-    }
-
     private let presentationStarter: PresentationStarter?
     private var presentationState: PresentationState?
     private var pendingContinuation: Continuation?
     private weak var presentedViewController: PaywallViewController?
-    private var activeErrorPresentation: ActiveErrorPresentation?
+    private var activeErrorPresentation: ActiveErrorPresentation? {
+        didSet {
+            if oldValue?.id != self.activeErrorPresentation?.id {
+                oldValue?.context.invalidate()
+            }
+        }
+    }
 
     init(presentationStarter: PresentationStarter? = nil) {
         self.presentationStarter = presentationStarter
@@ -167,15 +175,18 @@ final class WorkflowPresenter: NSObject, WorkflowPresenterType {
         onCompletion: (@MainActor () -> Void)? = nil
     ) {
         guard let state = self.presentationState else { return }
-        let presentation = ActiveErrorPresentation(id: UUID())
+        let context = ErrorPresentationContext(viewController: self.presentedViewController)
+        let presentation = ActiveErrorPresentation(id: UUID(), context: context)
         self.activeErrorPresentation = presentation
+        let params = ErrorPresentationParams(
+            checkpointIdentifier: state.checkpointIdentifier,
+            error: error,
+            customVariables: state.customVariables,
+            kind: kind
+        )
+        params.presentationContext = context
         state.errorPresentationHandler(
-            .init(
-                checkpointIdentifier: state.checkpointIdentifier,
-                error: error,
-                customVariables: state.customVariables,
-                kind: kind
-            ),
+            params,
             .init { [weak self] in
                 self?.handleErrorPresentationResult(
                     presentationID: presentation.id,

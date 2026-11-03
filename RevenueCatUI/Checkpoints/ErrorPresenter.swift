@@ -54,6 +54,11 @@ public final class ErrorPresentationParams {
     /// The custom variables supplied to the checkpoint call.
     public let customVariables: [String: CustomVariableValue]
 
+    #if canImport(UIKit) && !os(tvOS) && !os(watchOS)
+    /// Presentation capability for hybrid UI, invalidated when its native error request ends.
+    @_spi(Internal) public internal(set) var presentationContext: ErrorPresentationContext?
+    #endif
+
     /// What kind of failure occurred.
     public let kind: CheckpointFailureKind
 
