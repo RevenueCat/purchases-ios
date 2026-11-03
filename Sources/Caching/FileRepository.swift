@@ -26,7 +26,7 @@ import Foundation
     private let store = KeyedDeferredValueStore<JobKey, OutputURL>()
     private let fileManager: LargeItemCacheType
     private let cacheURL: URL?
-    private let assetURLResolver: @Sendable (URL) async -> URL
+    private let assetURLResolver: @Sendable (URL) async -> [URL]
 
     /// Create a file repository
     /// - Parameters:
@@ -36,7 +36,7 @@ import Foundation
         networkService: SimpleNetworkServiceType = URLSession.shared,
         fileManager: LargeItemCacheType = FileManager.default,
         basePath: String = FileRepository.defaultBasePath,
-        assetURLResolver: @escaping @Sendable (URL) async -> URL = { await Purchases.resolvedPaywallAssetURL($0) }
+        assetURLResolver: @escaping @Sendable (URL) async -> [URL] = { await Purchases.paywallAssetDownloadURLs($0) }
     ) {
         self.networkService = networkService
         self.fileManager = fileManager
@@ -94,9 +94,7 @@ import Foundation
                     return cachedUrl
                 }
 
-                let bytes = try await self.getBytes(from: url)
-
-                try await self.saveCachedFile(url: cachedUrl, fromBytes: bytes, withChecksum: checksum)
+                try await self.downloadFile(from: url, to: cachedUrl, withChecksum: checksum)
                 return cachedUrl
             },
             forKey: JobKey(url, checksum)
@@ -116,11 +114,29 @@ import Foundation
         return nil
     }
 
+    private func downloadFile(from url: URL, to cachedURL: URL, withChecksum checksum: Checksum?) async throws {
+        let candidates = await self.assetURLResolver(url)
+        let urls = candidates.isEmpty ? [url] : candidates
+        for (index, downloadURL) in urls.enumerated() {
+            do {
+                try Task.checkCancellation()
+                let bytes = try await self.getBytes(from: downloadURL)
+                try await self.saveCachedFile(url: cachedURL, fromBytes: bytes, withChecksum: checksum)
+                return
+            } catch {
+                if PaywallAssetURLResolver.isCancellation(error) { throw error }
+                // A local write failure won't be repaired by downloading from another CDN.
+                if case Error.failedToSaveCachedFile = error { throw error }
+                if index == urls.count - 1 { throw error }
+            }
+        }
+    }
+
     private func getBytes(from url: URL) async throws -> AsyncThrowingStream<UInt8, Swift.Error> {
         do {
-            let downloadURL = await self.assetURLResolver(url)
-            return try await networkService.bytes(from: downloadURL)
+            return try await self.networkService.bytes(from: url)
         } catch {
+            if PaywallAssetURLResolver.isCancellation(error) { throw error }
             let message = Strings.fileRepository.failedToFetchFileFromRemoteSource(url, error)
             Logger.error(message)
             throw Error.failedToFetchFileFromRemoteSource(message.description)
@@ -137,6 +153,10 @@ import Foundation
         } catch is Checksum.ChecksumValidationFailure {
             throw Error.checksumMismatch
         } catch {
+            if PaywallAssetURLResolver.isCancellation(error) { throw error }
+            if error is URLError {
+                throw Error.failedToFetchFileFromRemoteSource(error.localizedDescription)
+            }
             let message = Strings.fileRepository.failedToSaveCachedFile(url, error)
             Logger.error(message)
             throw Error.failedToSaveCachedFile(message.description)

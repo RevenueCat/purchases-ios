@@ -39,8 +39,8 @@ class ImageLoaderTests: TestCase {
 
     func testAssetOverrideIsUsedForImageRequest() async throws {
         let original = try XCTUnwrap(URL(string: "https://assets.pawwalls.com/image.heic"))
-        let replacement = try XCTUnwrap(URL(string: "https://paywall-assets.revenuecat-static.net/image.heic"))
-        let loader = ImageLoader(urlSession: self.urlSession, assetURLResolver: { _ in replacement })
+        let replacement = try XCTUnwrap(URL(string: "https://assets.8-lives-cat.io/image.heic"))
+        let loader = ImageLoader(urlSession: self.urlSession, assetURLResolver: { _ in [replacement] })
 
         await loader.load(url: original)
 
@@ -56,6 +56,61 @@ class ImageLoaderTests: TestCase {
 
         expect(self.loader.result).to(beFailure())
         expect(self.loader.result?.error) == .responseError(error)
+    }
+
+    func testImageDownloadRetriesFallbackAfterHTTPFailure() async throws {
+        let backup = Self.url2
+        let response = try Self.createValidResponse(httpResponse: true)
+        self.urlSession.responses = [
+            .success((Data(), HTTPURLResponse(
+                url: Self.url, statusCode: 503, httpVersion: nil, headerFields: nil
+            )!)),
+            .success(response)
+        ]
+        self.loader = .init(urlSession: self.urlSession, assetURLResolver: { _ in [Self.url, backup] })
+
+        await self.loader.load(url: Self.url)
+
+        try self.verifyLoadedImage(matches: response.0)
+        XCTAssertEqual(self.urlSession.requestedURLs, [Self.url, backup])
+        await self.loader.load(url: Self.url)
+        XCTAssertEqual(self.urlSession.requestedURLs.count, 2)
+    }
+
+    func testImageDownloadRetriesInvalidBytesAndStopsAfterValidImage() async throws {
+        let response = try Self.createValidResponse(httpResponse: true)
+        self.urlSession.responses = [
+            .success((Data(), response.1)), .success(response)
+        ]
+        self.loader = .init(urlSession: self.urlSession, assetURLResolver: { _ in [Self.url, Self.url2, Self.url] })
+
+        await self.loader.load(url: Self.url)
+
+        try self.verifyLoadedImage(matches: response.0)
+        XCTAssertEqual(self.urlSession.requestedURLs, [Self.url, Self.url2])
+    }
+
+    func testImageDownloadAttemptsEachSourceOnceWhenAllFail() async {
+        self.urlSession.responses = [.failure(URLError(.timedOut)), .failure(URLError(.cannotConnectToHost))]
+        self.loader = .init(urlSession: self.urlSession, assetURLResolver: { _ in [Self.url, Self.url2] })
+
+        await self.loader.load(url: Self.url)
+
+        XCTAssertEqual(self.urlSession.requestedURLs, [Self.url, Self.url2])
+        expect(self.loader.result).to(beFailure())
+    }
+
+    func testCancelledImageDownloadDoesNotTryFallback() async {
+        for error in [URLError(.cancelled) as Error, CancellationError()] {
+            let session = MockURLSession()
+            session.response = .failure(error)
+            let loader = ImageLoader(urlSession: session, assetURLResolver: { _ in [Self.url, Self.url2] })
+
+            await loader.load(url: Self.url)
+
+            XCTAssertEqual(session.requestedURLs, [Self.url])
+            XCTAssertNil(loader.result)
+        }
     }
 
     func testNotFound() async {
@@ -265,7 +320,9 @@ class ImageLoaderTests: TestCase {
 private final class MockURLSession: URLSessionType {
 
     var requestedImage: URL?
+    var requestedURLs: [URL] = []
     var cachePolicy: URLRequest.CachePolicy?
+    var responses: [Result<(Data, URLResponse), Error>] = []
 
     var response: Result<(Data, URLResponse), Error> = .failure(
         NSError(domain: NSURLErrorDomain, code: NSURLErrorUnknown)
@@ -273,9 +330,10 @@ private final class MockURLSession: URLSessionType {
 
     func data(for request: URLRequest) async throws -> (Data, URLResponse) {
         self.requestedImage = request.url
+        if let url = request.url { self.requestedURLs.append(url) }
         self.cachePolicy = request.cachePolicy
 
-        return try self.response.get()
+        return try (self.responses.isEmpty ? self.response : self.responses.removeFirst()).get()
     }
 
 }

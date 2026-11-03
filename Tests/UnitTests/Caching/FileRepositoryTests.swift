@@ -32,11 +32,11 @@ class FileRepositoryTests: TestCase {
     func testAssetOverrideChangesNetworkURLWithoutChangingCacheIdentity() async throws {
         let sut = await self.makeSystemUnderTest()
         let original = try XCTUnwrap(URL(string: "https://assets.pawwalls.com/image.heic"))
-        let replacement = try XCTUnwrap(URL(string: "https://paywall-assets.revenuecat-static.net/image.heic"))
+        let replacement = try XCTUnwrap(URL(string: "https://assets.8-lives-cat.io/image.heic"))
         let repository = FileRepository(
             networkService: sut.networkService,
             fileManager: sut.cache,
-            assetURLResolver: { _ in replacement }
+            assetURLResolver: { _ in [replacement] }
         )
         sut.cache.stubCachedContentExists(with: false)
         sut.cache.stubSaveData(with: .success(.init(data: "SomeData".asData, url: original)))
@@ -64,6 +64,108 @@ class FileRepositoryTests: TestCase {
         await yield()
 
         await expect(sut.networkService.invocations.count).toEventually(equal(1))
+    }
+
+    func testNetworkFailureRetriesFallbackAndKeepsCanonicalCacheIdentity() async throws {
+        let sut = await self.makeSystemUnderTest()
+        let primary = try XCTUnwrap(URL(string: "https://assets.pawwalls.com/image.heic"))
+        let backup = try XCTUnwrap(URL(string: "https://assets.8-lives-cat.io/image.heic"))
+        let repository = FileRepository(networkService: sut.networkService, fileManager: sut.cache,
+                                        assetURLResolver: { _ in [primary, backup] })
+        sut.cache.stubCachedContentExists(with: false)
+        sut.cache.stubSaveData(with: .success(.init(data: "valid".asData, url: primary)))
+        sut.networkService.stubResponse(at: 0, result: .failure(URLError(.timedOut)))
+        sut.networkService.stubResponse(at: 1, result: .success("valid"))
+
+        let result = try await repository.generateOrGetCachedFileURL(for: primary, withChecksum: nil)
+
+        XCTAssertEqual(sut.networkService.invocations, [primary, backup])
+        XCTAssertEqual(result, repository.generateLocalFilesystemURL(forRemoteURL: primary, withChecksum: nil))
+    }
+
+    func testChecksumFailureRetriesFallbackButLocalWriteFailureDoesNot() async throws {
+        let failures: [Swift.Error] = [Checksum.ChecksumValidationFailure(), CocoaError(.fileWriteOutOfSpace)]
+        for failure in failures {
+            let sut = await self.makeSystemUnderTest()
+            let backup = try XCTUnwrap(URL(string: "https://assets.8-lives-cat.io/image.heic"))
+            let primary = self.someURL
+            let repository = FileRepository(networkService: sut.networkService, fileManager: sut.cache,
+                                            assetURLResolver: { _ in [primary, backup] })
+            sut.cache.stubCachedContentExists(with: false)
+            sut.cache.stubSaveData(with: .failure(failure))
+            sut.cache.stubSaveData(at: 1, with: .success(.init(data: "valid".asData, url: primary)))
+            sut.networkService.stubResponse(at: 0, result: .success("corrupt"))
+            sut.networkService.stubResponse(at: 1, result: .success("valid"))
+
+            do {
+                _ = try await repository.generateOrGetCachedFileURL(for: primary, withChecksum: nil)
+                XCTAssertTrue(failure is Checksum.ChecksumValidationFailure)
+            } catch {
+                XCTAssertTrue(failure is CocoaError)
+            }
+            XCTAssertEqual(sut.networkService.invocations,
+                           failure is CocoaError ? [primary] : [primary, backup])
+        }
+    }
+
+    func testCancelledFileDownloadDoesNotTryFallback() async throws {
+        let sut = await self.makeSystemUnderTest()
+        let backup = try XCTUnwrap(URL(string: "https://assets.8-lives-cat.io/image.heic"))
+        let primary = self.someURL
+        let repository = FileRepository(networkService: sut.networkService, fileManager: sut.cache,
+                                        assetURLResolver: { _ in [primary, backup] })
+        sut.cache.stubCachedContentExists(with: false)
+        sut.networkService.stubResponse(at: 0, result: .failure(URLError(.cancelled)))
+
+        do {
+            _ = try await repository.generateOrGetCachedFileURL(for: primary, withChecksum: nil)
+            XCTFail("Expected cancellation")
+        } catch {
+            XCTAssertEqual((error as? URLError)?.code, .cancelled)
+        }
+        XCTAssertEqual(sut.networkService.invocations, [primary])
+        XCTAssertTrue(sut.cache.saveDataInvocations.isEmpty)
+    }
+
+    func testAllFailedFileSourcesAreAttemptedOnce() async throws {
+        let sut = await self.makeSystemUnderTest()
+        let backup = try XCTUnwrap(URL(string: "https://assets.8-lives-cat.io/image.heic"))
+        let primary = self.someURL
+        let repository = FileRepository(networkService: sut.networkService, fileManager: sut.cache,
+                                        assetURLResolver: { _ in [primary, backup] })
+        sut.cache.stubCachedContentExists(with: false)
+        sut.networkService.stubResponse(at: 0, result: .failure(URLError(.badServerResponse)))
+        sut.networkService.stubResponse(at: 1, result: .failure(URLError(.cannotConnectToHost)))
+
+        do {
+            _ = try await repository.generateOrGetCachedFileURL(for: primary, withChecksum: nil)
+            XCTFail("Expected download failure")
+        } catch {
+            guard case FileRepository.Error.failedToFetchFileFromRemoteSource = error else {
+                return XCTFail("Unexpected error: \(error)")
+            }
+        }
+        XCTAssertEqual(sut.networkService.invocations, [primary, backup])
+    }
+
+    func testInterruptedStreamRetriesWithFreshBytesAndCachesOnlyTheValidFile() async throws {
+        let name = UUID().uuidString
+        let primary = try XCTUnwrap(URL(string: "https://assets.pawwalls.com/\(name).heic"))
+        let backup = try XCTUnwrap(URL(string: "https://assets.8-lives-cat.io/\(name).heic"))
+        let data = "complete image".asData
+        let repository = FileRepository(
+            networkService: InterruptedStreamService(primary: primary, data: data),
+            fileManager: FileManager.default,
+            basePath: "RevenueCat-CDN-Test-\(name)",
+            assetURLResolver: { _ in [primary, backup] }
+        )
+        let cacheURL = try XCTUnwrap(repository.generateLocalFilesystemURL(forRemoteURL: primary, withChecksum: nil))
+        defer { try? FileManager.default.removeItem(at: cacheURL.deletingLastPathComponent()) }
+
+        let result = try await repository.generateOrGetCachedFileURL(for: primary, withChecksum: nil)
+
+        XCTAssertEqual(result, cacheURL)
+        XCTAssertEqual(try Data(contentsOf: result), data)
     }
 
     func test_whenCacheURLCannotBeAssembled_returnsNil() async throws {
@@ -208,4 +310,24 @@ class FileRepositoryTests: TestCase {
     }
 
     struct SampleError: Error { }
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, visionOS 1.0, watchOS 8.0, *)
+private struct InterruptedStreamService: SimpleNetworkServiceType {
+
+    let primary: URL
+    let data: Data
+
+    func bytes(from url: URL) async throws -> AsyncThrowingStream<UInt8, Swift.Error> {
+        return AsyncThrowingStream { continuation in
+            if url == self.primary {
+                continuation.yield(0)
+                continuation.finish(throwing: URLError(.networkConnectionLost))
+            } else {
+                self.data.forEach { continuation.yield($0) }
+                continuation.finish()
+            }
+        }
+    }
+
 }
