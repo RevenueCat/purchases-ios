@@ -547,6 +547,7 @@ struct ViewModelFactory {
         offering: Offering,
         colorScheme: ColorScheme
     ) throws -> StackComponentViewModel {
+        let firstPackageIndex = packageValidator.packageInfos.count
         let viewModels = try component.components.filter {
             // fallback_header is injected by the dashboard for old SDK compatibility.
             // New SDKs render the header from PaywallComponentsConfig.header instead.
@@ -591,6 +592,10 @@ struct ViewModelFactory {
         for override in component.overrides ?? [] {
             try appendBadge(override.properties.badge)
         }
+
+        packageValidator.addAncestorStack(
+            component, startingAt: firstPackageIndex, discardRules: self.discardRules
+        )
 
         return StackComponentViewModel(
             component: component,

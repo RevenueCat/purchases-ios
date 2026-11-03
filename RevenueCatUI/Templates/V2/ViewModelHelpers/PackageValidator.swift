@@ -96,6 +96,18 @@ class PackageValidator {
         self.scopedPackageInfos.append((packageInfo, .tab))
     }
 
+    func addAncestorStack(
+        _ component: PaywallComponent.StackComponent,
+        startingAt index: Int,
+        discardRules: Bool
+    ) {
+        for packageIndex in index..<self.scopedPackageInfos.count {
+            self.scopedPackageInfos[packageIndex].info.visibilityResolver.addAncestorStack(
+                component, discardRules: discardRules
+            )
+        }
+    }
+
     var isValid: Bool {
         !self.scopedPackageInfos.isEmpty
     }

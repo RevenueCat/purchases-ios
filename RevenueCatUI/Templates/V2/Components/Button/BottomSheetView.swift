@@ -48,6 +48,7 @@ private struct SheetPackageSelectionModifier: ViewModifier {
     @EnvironmentObject private var introOfferEligibilityContext: IntroOfferEligibilityContext
     @EnvironmentObject private var paywallPromoOfferCache: PaywallPromoOfferCache
     @Environment(\.planSelectionDefaultPackage) private var inheritedDefaultPackage
+    @Environment(\.selectedPackageIsVisible) private var inheritedSelectionIsVisible
     @Environment(\.screenCondition) private var screenCondition
     @Environment(\.customPaywallVariables) private var customVariables
     @Environment(\.paywallWindowSize) private var paywallWindowSize
@@ -94,10 +95,23 @@ private struct SheetPackageSelectionModifier: ViewModifier {
         )
     }
 
+    private var selectedPackageIsVisible: Bool {
+        guard let validator = self.viewModel.packageValidator,
+              !validator.packages.isEmpty else { return self.inheritedSelectionIsVisible }
+        guard let package = self.packageContext.package else { return false }
+        return validator.couldBeRendering(
+            package,
+            in: self.selectionContext,
+            offerEligibilityLoading: self.offerEligibilityLoading,
+            offerEligibilityAvailability: self.offerEligibilityAvailability
+        )
+    }
+
     func body(content: Content) -> some View {
         content
         .environmentObject(self.packageContext)
         .environment(\.selectedPackageId, self.packageContext.package?.identifier)
+        .environment(\.selectedPackageIsVisible, self.selectedPackageIsVisible)
         .environment(\.workflowPackageContext, nil)
         .environment(\.planSelectionDefaultPackage, self.defaultPackage)
         .onAppear { self.reconcileSelection() }

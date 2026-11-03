@@ -53,6 +53,7 @@ enum PaywallFixture: String, CaseIterable {
 
     /// Root, active tabs, and a sheet each declare a different default package.
     case competingSheetDefaults = "competing_sheet_defaults"
+    case manualRootSelectionVisibility = "manual_root_selection_visibility"
 
     var title: String {
         switch self {
@@ -76,6 +77,8 @@ enum PaywallFixture: String, CaseIterable {
             return "Sheet over content"
         case .competingSheetDefaults:
             return "Competing sheet defaults"
+        case .manualRootSelectionVisibility:
+            return "Manual root selection visibility"
         }
     }
 
@@ -101,6 +104,8 @@ enum PaywallFixture: String, CaseIterable {
             return Self.sheetOverContentComponentsData()
         case .competingSheetDefaults:
             return Self.competingSheetDefaultsComponentsData()
+        case .manualRootSelectionVisibility:
+            return Self.competingSheetDefaultsComponentsData(hideRootOnWide: true)
         }
     }
 
@@ -124,7 +129,7 @@ enum PaywallFixture: String, CaseIterable {
             ]
         case .reportedTabs:
             return Self.reportedTabsPackages(offeringIdentifier: self.rawValue)
-        case .competingSheetDefaults:
+        case .competingSheetDefaults, .manualRootSelectionVisibility:
             return [
                 Self.monthlyPackage(offeringIdentifier: self.rawValue),
                 Self.annualPackage(offeringIdentifier: self.rawValue),
@@ -672,7 +677,7 @@ private extension PaywallFixture {
     static let radioGreen = "#7CB518"
 
     /// Competing root, tab, and sheet defaults, with real purchase and dismissal controls.
-    static func competingSheetDefaultsComponentsData() -> PaywallComponentsData {
+    static func competingSheetDefaultsComponentsData(hideRootOnWide: Bool = false) -> PaywallComponentsData {
         func text(_ lid: String) -> PaywallComponent {
             .text(.init(text: lid, color: .init(light: .hex("#000000"))))
         }
@@ -713,7 +718,12 @@ private extension PaywallFixture {
         return .init(
             templateName: "fixture-competing-sheet-defaults", assetBaseURL: URL(string: "https://assets.pawwalls.com")!,
             componentsConfig: .init(base: .init(stack: .init(components: [
-                Self.packageCard(packageID: "$rc_monthly", label: "root_monthly", isSelectedByDefault: true),
+                .stack(.init(components: [
+                    Self.packageCard(packageID: "$rc_monthly", label: "root_monthly", isSelectedByDefault: true)
+                ], overrides: hideRootOnWide ? [.init(
+                    extendedConditions: [.windowWidth(operator: .greaterThanOrEqual, value: 700)],
+                    properties: .init(visible: false)
+                )] : nil)),
                 tabs, text("root_price"), button("open", action: .navigateTo(destination: .sheet(sheet: sheet)))
             ], spacing: 16, padding: .init(top: 60, bottom: 24, leading: 16, trailing: 16)),
             stickyFooter: nil, background: .color(.init(light: .hex("#ffffff"))))),

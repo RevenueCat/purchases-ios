@@ -117,6 +117,9 @@ struct LoadedTabsComponentView: View {
     @Environment(\.selectedPackageId)
     private var selectedPackageId
 
+    @Environment(\.selectedPackageIsVisible)
+    private var selectedPackageIsVisible
+
     @Environment(\.paywallStateStore)
     private var stateStore
 
@@ -243,8 +246,9 @@ struct LoadedTabsComponentView: View {
     /// hidden.
     private func reconcileSelection(_ context: PackageContext, tabViewModel: TabViewModel) {
         // A root row can intentionally clear the tab's highlight. Resuming after a sheet
-        // must preserve that manual root choice instead of initializing the tab again.
-        if self.selectionState.didUserSelectPackage,
+        // must preserve that manual root choice while it can still render.
+        if self.selectedPackageIsVisible,
+           self.selectionState.didUserSelectPackage,
            self.packageContext.package?.identifier == self.selectionState.parentOwnedPackage?.identifier,
            TabPackageParentPropagation.shouldSuppressNotifyingParent(
             tabPackage: context.package,
@@ -357,6 +361,16 @@ struct LoadedTabsComponentView: View {
             )
             .environmentObject(self.tabControlContext)
             .environmentObject(tierPackageContext)
+            .environment(
+                \.selectedPackageIsVisible,
+                tierPackageContext === self.packageContext ? self.selectedPackageIsVisible
+                    : activeTabViewModel.validatedSelection(
+                        tierPackageContext.package,
+                        in: self.packageSelectionContext,
+                        offerEligibilityLoading: self.offerEligibilityLoading,
+                        offerEligibilityAvailability: self.offerEligibilityAvailability
+                    ) != nil
+            )
             .environment(
                 \.planSelectionDefaultPackage,
                 Self.effectiveTabDefaultPackage(

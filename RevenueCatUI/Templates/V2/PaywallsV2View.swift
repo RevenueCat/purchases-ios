@@ -747,6 +747,16 @@ struct LoadedPaywallsV2View: View {
         )
     }
 
+    private var selectedPackageIsVisible: Bool {
+        guard let package = self.selectedPackageContext.package else { return false }
+        return self.paywallState.viewModelFactory.packageValidator.couldBeRendering(
+            package,
+            in: self.packageSelectionContext,
+            offerEligibilityLoading: self.offerEligibilityLoading,
+            offerEligibilityAvailability: self.offerEligibilityAvailability
+        )
+    }
+
     @Environment(\.componentViewState) private var componentViewState
     @Environment(\.paywallStateValues) private var paywallStateValues
     @Environment(\.paywallStateDefaults) private var paywallStateDefaults
@@ -812,6 +822,7 @@ struct LoadedPaywallsV2View: View {
                 alignment: .top
             )
             .environment(\.selectedPackageId, self.selectedPackageContext.package?.identifier)
+            .environment(\.selectedPackageIsVisible, self.selectedPackageIsVisible)
             .environment(\.planSelectionDefaultPackage, self.defaultPackage)
             .environmentObject(self.selectedPackageContext)
             .edgesIgnoringSafeArea(.bottom)
