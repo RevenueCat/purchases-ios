@@ -6,18 +6,18 @@
 //  Copyright © 2025 RevenueCat, Inc. All rights reserved.
 //
 
-import SwiftUI
 @testable import RevenueCat
+import SwiftUI
 
 struct EntitlementView: View {
     let identifier: String
-    
+
     var entitlement: EntitlementInfo? {
         customerInfo?.entitlements.all[identifier]
     }
-    
+
     @State private var customerInfo: CustomerInfo?
-    
+
     var body: some View {
         VStack {
             if let entitlement {
@@ -26,8 +26,7 @@ struct EntitlementView: View {
                 } else {
                     Text("entitlement (\(entitlement.identifier)): inactive")
                 }
-            }
-            else {
+            } else {
                 Text("entitlement (\(identifier)): nil")
             }
 
