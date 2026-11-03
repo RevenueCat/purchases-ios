@@ -321,7 +321,8 @@ extension CheckpointsManager {
 
     func errorPresentationHandler(
         for params: CheckpointCallParams,
-        defaultHandler makeDefaultHandler: @escaping () -> ErrorPresentationHandler
+        defaultHandler makeDefaultHandler: @escaping () -> ErrorPresentationHandler,
+        dialogPresenterFactory: (@MainActor (CheckpointErrorDialog?) -> any ErrorPresenter)?
     ) -> ErrorPresentationHandler {
         if let localHandler = params.localErrorPresentationHandler {
             return { [errorPresentationQueue] params, completion in
@@ -330,6 +331,16 @@ extension CheckpointsManager {
                     handler: localHandler,
                     completion: completion
                 )
+            }
+        }
+
+        if let factory = params.localErrorDialogFactory {
+            let makePresenter = dialogPresenterFactory ?? { [preferredUILocaleProvider] dialog in
+                DefaultErrorPresenter.makePresenter(for: dialog, preferredUILocaleProvider: preferredUILocaleProvider)
+            }
+            let handler = makeErrorDialogFactoryHandler(factory: factory, makePresenter: makePresenter)
+            return { [errorPresentationQueue] params, completion in
+                errorPresentationQueue.enqueue(params: params, handler: handler, completion: completion)
             }
         }
 
@@ -384,7 +395,8 @@ extension CheckpointsManager {
                 return { params, completion in
                     presenter.present(params: params, completion: completion)
                 }
-            }
+            },
+            dialogPresenterFactory: nil
         )
     }
 

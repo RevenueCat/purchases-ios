@@ -20,23 +20,22 @@ class MockSimpleNetworkService: SimpleNetworkServiceType, @unchecked Sendable {
     var invocations: [URL] = []
     var stubResponses: [Result<String, Error>] = []
 
-    func bytes(from url: URL) async throws -> AsyncThrowingStream<UInt8, Error> {
-        return try lock.withLock {
+    func downloadFile(from url: URL) async throws -> URL {
+        let response = try lock.withLock {
             let count = invocations.count
             self.invocations.append(url)
             switch stubResponses[count] {
             case .success(let data):
-                return AsyncThrowingStream { continuation in
-                    data.utf8
-                        .forEach { byte in
-                            continuation.yield(byte)
-                        }
-                    continuation.finish()
-                }
+                return data
             case .failure(let error):
                 throw error
             }
         }
+
+        let temporaryURL = FileManager.default.temporaryDirectory
+            .appendingPathComponent(UUID().uuidString)
+        try Data(response.utf8).write(to: temporaryURL)
+        return temporaryURL
     }
 
     func stubResponse(at index: Int, result: Result<String, Error>) {

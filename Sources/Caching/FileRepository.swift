@@ -91,9 +91,12 @@ import Foundation
                     return cachedUrl
                 }
 
-                let bytes = try await self.getBytes(from: url)
-
-                try await self.saveCachedFile(url: cachedUrl, fromBytes: bytes, withChecksum: checksum)
+                let downloadedFileURL = try await self.downloadFile(from: url)
+                try self.saveCachedFile(
+                    downloadedFileURL,
+                    to: cachedUrl,
+                    withChecksum: checksum
+                )
                 return cachedUrl
             },
             forKey: JobKey(url, checksum)
@@ -113,9 +116,9 @@ import Foundation
         return nil
     }
 
-    private func getBytes(from url: URL) async throws -> AsyncThrowingStream<UInt8, Swift.Error> {
+    private func downloadFile(from url: URL) async throws -> URL {
         do {
-            return try await networkService.bytes(from: url)
+            return try await networkService.downloadFile(from: url)
         } catch {
             let message = Strings.fileRepository.failedToFetchFileFromRemoteSource(url, error)
             Logger.error(message)
@@ -124,16 +127,21 @@ import Foundation
     }
 
     private func saveCachedFile(
-        url: URL,
-        fromBytes bytes: AsyncThrowingStream<UInt8, Swift.Error>,
+        _ downloadedFileURL: URL,
+        to cachedURL: URL,
         withChecksum checksum: Checksum?
-    ) async throws {
+    ) throws {
         do {
-            try await fileManager.saveData(bytes, to: url, checksum: checksum)
+            // This transfers ownership of the downloaded temporary file to the cache.
+            try fileManager.saveDownloadedFile(
+                fromTemporaryURL: downloadedFileURL,
+                to: cachedURL,
+                checksum: checksum
+            )
         } catch is Checksum.ChecksumValidationFailure {
             throw Error.checksumMismatch
         } catch {
-            let message = Strings.fileRepository.failedToSaveCachedFile(url, error)
+            let message = Strings.fileRepository.failedToSaveCachedFile(cachedURL, error)
             Logger.error(message)
             throw Error.failedToSaveCachedFile(message.description)
         }
