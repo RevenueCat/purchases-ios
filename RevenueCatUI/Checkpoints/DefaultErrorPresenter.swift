@@ -176,7 +176,7 @@ extension DefaultErrorPresenter {
                     host: host,
                     title: title,
                     message: dialog.message,
-                    acknowledgementTitle: dialog.buttonTitle,
+                    acknowledgementTitle: dialog.dismissButtonTitle,
                     acknowledged: acknowledged
                 )
             }

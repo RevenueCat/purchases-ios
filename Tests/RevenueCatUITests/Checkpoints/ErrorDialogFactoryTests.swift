@@ -29,12 +29,12 @@ final class ErrorDialogFactoryTests: TestCase {
             receivedOutcome = outcome
             callCount += 1
         }
-        let dialog = CheckpointErrorDialog(message: "Message", buttonTitle: "OK")
+        let dialog = CheckpointErrorDialog(message: "Message", dismissButtonTitle: "OK")
 
         completion.complete(with: .show(dialog))
 
         XCTAssertEqual(callCount, 1)
-        XCTAssertEqual(receivedOutcome, .show(CheckpointErrorDialog(message: "Message", buttonTitle: "OK")))
+        XCTAssertEqual(receivedOutcome, .show(CheckpointErrorDialog(message: "Message", dismissButtonTitle: "OK")))
     }
 
     func testCompletionInvokesHandlerWithUseDefault() {
@@ -57,7 +57,7 @@ final class ErrorDialogFactoryTests: TestCase {
 
         completion.complete(with: .useDefault)
         completion.complete(with: .useDefault)
-        completion.complete(with: .show(CheckpointErrorDialog(message: "Second", buttonTitle: "OK")))
+        completion.complete(with: .show(CheckpointErrorDialog(message: "Second", dismissButtonTitle: "OK")))
 
         XCTAssertEqual(callCount, 1)
     }
@@ -86,7 +86,7 @@ final class ErrorDialogFactoryTests: TestCase {
     }
 
     func testShowAndUseDefaultSelectContentAndWaitForAcknowledgement() {
-        let dialog = CheckpointErrorDialog(message: "Custom", buttonTitle: "Continue")
+        let dialog = CheckpointErrorDialog(message: "Custom", dismissButtonTitle: "Continue")
         let cases: [(ErrorDialogFactoryOutcome, CheckpointErrorDialog?)] = [
             (.show(dialog), dialog),
             (.useDefault, nil)
@@ -230,7 +230,8 @@ final class ErrorDialogFactoryTests: TestCase {
 
         let handler = manager.errorPresentationHandler(
             for: .init(),
-            defaultHandler: { return { _, _ in defaultCallCount += 1 } }
+            defaultHandler: { return { _, _ in defaultCallCount += 1 } },
+            dialogPresenterFactory: nil
         )
         handler(Self.errorPresentationParams, Self.errorPresentationCompletion)
 
@@ -303,7 +304,8 @@ final class ErrorDialogFactoryTests: TestCase {
 
         let handler = manager.errorPresentationHandler(
             for: .init(errorDialogFactory: nil),
-            defaultHandler: { return { _, _ in defaultCallCount += 1 } }
+            defaultHandler: { return { _, _ in defaultCallCount += 1 } },
+            dialogPresenterFactory: nil
         )
         handler(Self.errorPresentationParams, Self.errorPresentationCompletion)
 
@@ -313,10 +315,10 @@ final class ErrorDialogFactoryTests: TestCase {
     // MARK: - CheckpointErrorDialog fields
 
     func testCheckpointErrorDialogStoredFields() {
-        let dialog = CheckpointErrorDialog(message: "Custom Message", buttonTitle: "Got it")
+        let dialog = CheckpointErrorDialog(message: "Custom Message", dismissButtonTitle: "Got it")
 
         XCTAssertEqual(dialog.message, "Custom Message")
-        XCTAssertEqual(dialog.buttonTitle, "Got it")
+        XCTAssertEqual(dialog.dismissButtonTitle, "Got it")
     }
 
 }

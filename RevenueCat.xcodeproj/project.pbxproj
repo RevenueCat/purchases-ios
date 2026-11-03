@@ -3153,6 +3153,7 @@
 		887A612F2C1D168B00E1A461 /* AvailabilityChecks.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AvailabilityChecks.swift; sourceTree = "<group>"; };
 		887A61302C1D168B00E1A461 /* CurrentTestCaseTracker.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CurrentTestCaseTracker.swift; sourceTree = "<group>"; };
 		887A61312C1D168B00E1A461 /* DataExtensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DataExtensions.swift; sourceTree = "<group>"; };
+		73A6E0000000000000000013 /* CheckpointCallParams+TestConvenience.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CheckpointCallParams+TestConvenience.swift"; sourceTree = "<group>"; };
 		887A61322C1D168B00E1A461 /* ImageSnapshot.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ImageSnapshot.swift; sourceTree = "<group>"; };
 		887A61332C1D168B00E1A461 /* OSVersionEquivalent.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OSVersionEquivalent.swift; sourceTree = "<group>"; };
 		887A61342C1D168B00E1A461 /* SnapshotTesting+Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "SnapshotTesting+Extensions.swift"; sourceTree = "<group>"; };
@@ -6795,6 +6796,7 @@
 		887A61362C1D168B00E1A461 /* Helpers */ = {
 			isa = PBXGroup;
 			children = (
+				73A6E0000000000000000013 /* CheckpointCallParams+TestConvenience.swift */,
 				169FF4EB2F4E014B00D2F8ED /* ColorComputationHelpersTests.swift */,
 				887A612E2C1D168B00E1A461 /* AsyncTestHelpers.swift */,
 				1D76F25B2F921D3500863AF8 /* PaywallEventTrackerTestDispatcher.swift */,

@@ -321,7 +321,7 @@ extension CheckpointsManager {
     func errorPresentationHandler(
         for params: CheckpointCallParams,
         defaultHandler makeDefaultHandler: @escaping () -> ErrorPresentationHandler,
-        dialogPresenterFactory: (@MainActor (CheckpointErrorDialog?) -> any ErrorPresenter)? = nil
+        dialogPresenterFactory: (@MainActor (CheckpointErrorDialog?) -> any ErrorPresenter)?
     ) -> ErrorPresentationHandler {
         if let localHandler = params.localErrorPresentationHandler {
             return { [errorPresentationQueue] params, completion in
@@ -394,7 +394,8 @@ extension CheckpointsManager {
                 return { params, completion in
                     presenter.present(params: params, completion: completion)
                 }
-            }
+            },
+            dialogPresenterFactory: nil
         )
     }
 

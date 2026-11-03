@@ -23,13 +23,14 @@ public struct CheckpointErrorDialog: Sendable, Equatable {
     public let message: String
 
     /// The title of the dismiss button.
-    public let buttonTitle: String
+    public let dismissButtonTitle: String
 
+    // Required by no_new_public_inits, which cannot inspect the enclosing type's SPI annotation.
     /// Creates a ``CheckpointErrorDialog`` with the given content.
     @_spi(Internal)
-    public init(message: String, buttonTitle: String) {
+    public init(message: String, dismissButtonTitle: String) {
         self.message = message
-        self.buttonTitle = buttonTitle
+        self.dismissButtonTitle = dismissButtonTitle
     }
 
 }
