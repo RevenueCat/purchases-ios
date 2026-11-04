@@ -60,14 +60,13 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
     private let introEligibiltyChecker: TrialOrIntroPriceEligibilityCheckerType
     private let fontsManager: PaywallFontManagerType
     private let fileRepository: FileRepositoryType
-    private let webBundleURLBatcher: WebBundleURLBatcherType
     private let preferredLocalesProvider: @Sendable () -> [String]
 
     private var warmedEligibilityProductIdentifiers: Set<String> = []
     private var pendingCurrentOfferingProductIdentifiers: Set<String> = []
     private var pendingEligibilityProductIdentifiers: Set<String> = []
     private var eligibilityWarmupTask: Task<Void, Never>?
-    private var preferredLocalesWithLoadedPaywallAssets: Set<[String]> = []
+    private var hasLoadedPaywallAssets = false
     private var assetPrewarmingLocalesByWorkflowID: [String: Set<[String]>] = [:]
     private var workflowFontAssetsWithPrewarmingAttempted: Set<DownloadableFont> = []
     private var ongoingFontDownloads: [URL: Task<Void, Never>] = [:]
@@ -76,13 +75,11 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
         introEligibiltyChecker: TrialOrIntroPriceEligibilityCheckerType,
         fontsManager: PaywallFontManagerType = DefaultPaywallFontsManager(session: PaywallCacheWarming.downloadSession),
         fileRepository: FileRepositoryType = FileRepository.shared,
-        webBundleURLBatcher: WebBundleURLBatcherType = WebBundleURLBatcher.shared,
         preferredLocalesProvider: @escaping @Sendable () -> [String] = { Locale.preferredLanguages }
     ) {
         self.introEligibiltyChecker = introEligibiltyChecker
         self.fontsManager = fontsManager
         self.fileRepository = fileRepository
-        self.webBundleURLBatcher = webBundleURLBatcher
         self.preferredLocalesProvider = preferredLocalesProvider
     }
 
@@ -160,39 +157,21 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
         _ = await checker.checkEligibility(productIdentifiers: productIdentifiers)
     }
 
-    /// Walks paywall component trees once, then downloads images.
+    /// Downloads V1 paywall image assets once.
     ///
-    /// Inline V2 web-view URLs are published here with an empty workflow map (RC-off). When remote
-    /// config is on, those trees are empty and ``WorkflowManager/publishWebBundleURLs(offerings:)``
-    /// is the real list. Video warming is still future work (FUN-2274).
+    /// Workflow assets and web bundles are prewarmed from decoded workflows. Assets stored in an offering's
+    /// `internalPaywallComponents` are intentionally excluded from offerings prewarming.
     func warmUpPaywallAssetsCache(offerings: Offerings) async {
-        await self.webBundleURLBatcher.publish(
-            offerings: offerings,
-            workflowsByOfferingId: [:],
-            workflowBackedOfferingIds: []
-        )
+        guard !self.hasLoadedPaywallAssets else { return }
+        self.hasLoadedPaywallAssets = true
 
-        let preferredLocaleIdentifiers = self.preferredLocalesProvider()
-        guard self.preferredLocalesWithLoadedPaywallAssets.insert(preferredLocaleIdentifiers).inserted else { return }
-
-        let cacheAssets = offerings.paywallV2CacheAssets(
-            preferredLocales: preferredLocaleIdentifiers.map(Locale.init(identifier:))
-        )
-
-        let imageSources: Set<URLWithValidation>
-        #if !os(tvOS)
-        imageSources = Set(cacheAssets.imageSourcesToDownload)
-        #else
-        imageSources = []
-        #endif
-        let v1ImageSources = offerings.allImagesInPaywallsV1.map {
+        let imageSources = Set(offerings.allImagesInPaywallsV1.map {
             URLWithValidation(url: $0, checksum: nil)
-        }
-        let allImageSources = imageSources.union(v1ImageSources)
+        })
 
-        if !allImageSources.isEmpty {
-            Logger.verbose(Strings.paywalls.warming_up_images(imageURLs: Set(allImageSources.map(\.url))))
-            await self.download(allImageSources)
+        if !imageSources.isEmpty {
+            Logger.verbose(Strings.paywalls.warming_up_images(imageURLs: Set(imageSources.map(\.url))))
+            await self.download(imageSources)
         }
     }
 
@@ -445,18 +424,6 @@ private extension Offerings {
                 .lazy
                 .compactMap(\.paywall)
                 .flatMap(\.allImageURLs)
-        )
-    }
-
-    @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
-    func paywallV2CacheAssets(preferredLocales: [Locale]) -> CacheAssetCollection {
-        let assets = self.all.values.compactMap(\.internalPaywallComponents).map {
-            $0.data.localizedCacheAssets(preferredLocales: preferredLocales)
-        }
-        return .init(
-            images: assets.flatMap(\.images),
-            videos: assets.flatMap(\.videos),
-            webBundles: assets.flatMap(\.webBundles)
         )
     }
 

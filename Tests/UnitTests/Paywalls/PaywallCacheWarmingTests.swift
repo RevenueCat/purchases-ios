@@ -27,7 +27,6 @@ import AppKit
 final class PaywallCacheWarmingTests: TestCase {
 
     private var eligibilityChecker: MockTrialOrIntroPriceEligibilityChecker!
-    private var mockWebBundleURLBatcher: MockWebBundleURLBatcher!
     private var cache: PaywallCacheWarmingType!
     private var delayedEligibilityChecker: DelayedIntroEligibilityChecker?
     private var eligibilityWarmupTasks: [Task<Void, Never>] = []
@@ -38,11 +37,7 @@ final class PaywallCacheWarmingTests: TestCase {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
         self.eligibilityChecker = .init()
-        self.mockWebBundleURLBatcher = MockWebBundleURLBatcher()
-        self.cache = PaywallCacheWarming(
-            introEligibiltyChecker: self.eligibilityChecker,
-            webBundleURLBatcher: self.mockWebBundleURLBatcher
-        )
+        self.cache = PaywallCacheWarming(introEligibiltyChecker: self.eligibilityChecker)
     }
 
     override func tearDown() async throws {
@@ -256,10 +251,7 @@ final class PaywallCacheWarmingTests: TestCase {
         let checker = DelayedIntroEligibilityChecker()
         self.delayedEligibilityChecker = checker
         let cachingChecker = CachingTrialOrIntroPriceEligibilityChecker(checker: checker)
-        self.cache = PaywallCacheWarming(
-            introEligibiltyChecker: cachingChecker,
-            webBundleURLBatcher: self.mockWebBundleURLBatcher
-        )
+        self.cache = PaywallCacheWarming(introEligibiltyChecker: cachingChecker)
         let offerings = try Self.eligibilityOfferings(current: "current", other: ["other"])
         let first = self.startEligibilityWarmup(offerings)
         await expect(checker.invocations).toEventually(equal([["current"]]))
@@ -354,10 +346,7 @@ final class PaywallCacheWarmingTests: TestCase {
             }
         }
         let cachingChecker = CachingTrialOrIntroPriceEligibilityChecker(checker: self.eligibilityChecker)
-        self.cache = PaywallCacheWarming(
-            introEligibiltyChecker: cachingChecker,
-            webBundleURLBatcher: self.mockWebBundleURLBatcher
-        )
+        self.cache = PaywallCacheWarming(introEligibiltyChecker: cachingChecker)
         let offerings = try Self.eligibilityOfferings(current: "current", other: ["other"])
         let first = self.startEligibilityWarmup(offerings)
         try await asyncWait { check.invocations == ["group"] }
@@ -656,8 +645,7 @@ final class PaywallCacheWarmingTests: TestCase {
         let fileRepository = MockCacheWarmingFileRepository()
         let cache = PaywallCacheWarming(
             introEligibiltyChecker: self.eligibilityChecker,
-            fileRepository: fileRepository,
-            webBundleURLBatcher: self.mockWebBundleURLBatcher
+            fileRepository: fileRepository
         )
         let sheet = PaywallComponent.ButtonComponent.Sheet(
             id: "sheet",
@@ -703,18 +691,7 @@ final class PaywallCacheWarmingTests: TestCase {
     func testWorkflowAssetPrewarmingDownloadsImagesForDisplayedLocaleOnly() async throws {
         for (preferredLocales, expectedImage) in Self.imagePrewarmingLocales {
             let requests = try await self.localizedImagePrewarmingRequests(
-                preferredLocales: [preferredLocales],
-                workflow: true
-            )
-            XCTAssertEqual(Set(requests), Self.localizedImageRequests(expectedImage), "\(preferredLocales)")
-        }
-    }
-
-    func testOfferingsAssetPrewarmingDownloadsImagesForDisplayedLocaleOnly() async throws {
-        for (preferredLocales, expectedImage) in Self.imagePrewarmingLocales {
-            let requests = try await self.localizedImagePrewarmingRequests(
-                preferredLocales: [preferredLocales],
-                workflow: false
+                preferredLocales: [preferredLocales]
             )
             XCTAssertEqual(Set(requests), Self.localizedImageRequests(expectedImage), "\(preferredLocales)")
         }
@@ -722,18 +699,7 @@ final class PaywallCacheWarmingTests: TestCase {
 
     func testWorkflowImagePrewarmingWarmsEachPreferredLocaleOnlyOnce() async throws {
         let requests = try await self.localizedImagePrewarmingRequests(
-            preferredLocales: [["en_US"], ["en_US"], ["es_ES"], ["es_ES"], ["en_US"]],
-            workflow: true
-        )
-        XCTAssertEqual(requests.count, 10)
-        XCTAssertEqual(Set(requests), Self.localizedImageRequests("localized-en")
-            .union(Self.localizedImageRequests("localized-es")))
-    }
-
-    func testOfferingsImagePrewarmingWarmsEachPreferredLocaleOnlyOnce() async throws {
-        let requests = try await self.localizedImagePrewarmingRequests(
-            preferredLocales: [["en_US"], ["en_US"], ["es_ES"], ["es_ES"], ["en_US"]],
-            workflow: false
+            preferredLocales: [["en_US"], ["en_US"], ["es_ES"], ["es_ES"], ["en_US"]]
         )
         XCTAssertEqual(requests.count, 10)
         XCTAssertEqual(Set(requests), Self.localizedImageRequests("localized-en")
@@ -758,62 +724,28 @@ final class PaywallCacheWarmingTests: TestCase {
         ])
     }
 
-    func testOfferingsAssetPrewarmingPublishesEveryTimeButDownloadsImagesOnlyOnce() async throws {
+    func testV1PaywallAssetPrewarmingDownloadsImagesOnlyOnce() async throws {
         let fileRepository = MockCacheWarmingFileRepository()
         let cache = PaywallCacheWarming(
             introEligibiltyChecker: self.eligibilityChecker,
-            fileRepository: fileRepository,
-            webBundleURLBatcher: self.mockWebBundleURLBatcher
+            fileRepository: fileRepository
         )
-        let data = Self.paywallComponentsData(components: [
-            .image(.init(source: Self.cacheWarmingImage("offering-image"))),
-            .video(.init(source: Self.cacheWarmingVideo("offering-video"))),
-            .webView(.init(
-                id: "webview",
-                protocolVersion: 1,
-                url: "https://example.com/cache"
-            ))
-        ])
-        let offering = Offering(
+        let paywall = try Self.loadPaywall("PaywallData-Sample1")
+        let offering = try Self.createOffering(
             identifier: Self.offeringIdentifier,
-            serverDescription: "Test",
-            paywallComponents: .init(uiConfig: Self.emptyUIConfig, data: data),
-            availablePackages: [],
-            webCheckoutUrl: nil
+            paywall: paywall,
+            products: []
         )
         let offerings = try Self.createOfferings([offering])
-        let refreshedData = Self.paywallComponentsData(components: [
-            .image(.init(source: Self.cacheWarmingImage("refreshed-offering-image"))),
-            .webView(.init(
-                id: "refreshed-webview",
-                protocolVersion: 1,
-                url: "https://example.com/refreshed-cache"
-            ))
-        ])
-        let refreshedOffering = Offering(
-            identifier: Self.offeringIdentifier,
-            serverDescription: "Refreshed",
-            paywallComponents: .init(uiConfig: Self.emptyUIConfig, data: refreshedData),
-            availablePackages: [],
-            webCheckoutUrl: nil
-        )
-        let refreshedOfferings = try Self.createOfferings([refreshedOffering])
 
         await cache.warmUpPaywallAssetsCache(offerings: offerings)
-        await cache.warmUpPaywallAssetsCache(offerings: refreshedOfferings)
+        await cache.warmUpPaywallAssetsCache(offerings: offerings)
 
         let requests = await fileRepository.requests
-        XCTAssertEqual(requests.count, 1)
-        XCTAssertEqual(Set(requests), [
-            .init(url: Self.cacheWarmingURL("offering-image-low.heic"), checksum: nil)
-        ])
-        XCTAssertEqual(
-            data.allCacheAssets.webBundles,
-            [.init(url: Self.url("https://example.com/cache"), checksum: nil)]
-        )
-        expect(self.mockWebBundleURLBatcher.invokedPublishCount) == 2
-        expect(self.mockWebBundleURLBatcher.invokedPublishOfferings) === refreshedOfferings
-        expect(self.mockWebBundleURLBatcher.invokedPublishWorkflowsByOfferingId).to(beEmpty())
+        XCTAssertEqual(Set(requests), Set(paywall.allImageURLs.map {
+            URLWithValidation(url: $0, checksum: nil)
+        }))
+        XCTAssertEqual(requests.count, paywall.allImageURLs.count)
     }
 
     func testTriggerFontDownload_DeduplicatesConcurrentDownloads() async throws {
@@ -828,8 +760,7 @@ final class PaywallCacheWarmingTests: TestCase {
 
         let cache = PaywallCacheWarming(
             introEligibiltyChecker: self.eligibilityChecker,
-            fontsManager: fontsManager,
-            webBundleURLBatcher: self.mockWebBundleURLBatcher
+            fontsManager: fontsManager
         )
 
         // Launch two tasks installing the same font concurrently
@@ -1069,8 +1000,7 @@ final class PaywallCacheWarmingTests: TestCase {
         let session = MockSession()
         let cache = PaywallCacheWarming(
             introEligibiltyChecker: self.eligibilityChecker,
-            fontsManager: Self.makeFontsManager(session: session),
-            webBundleURLBatcher: self.mockWebBundleURLBatcher
+            fontsManager: Self.makeFontsManager(session: session)
         )
         let fontsConfig = try Self.fontsConfig(fontName: font.name, family: derivedFamily)
 
@@ -1092,8 +1022,7 @@ final class PaywallCacheWarmingTests: TestCase {
 
         let cache = PaywallCacheWarming(
             introEligibiltyChecker: self.eligibilityChecker,
-            fontsManager: Self.makeFontsManager(session: session),
-            webBundleURLBatcher: self.mockWebBundleURLBatcher
+            fontsManager: Self.makeFontsManager(session: session)
         )
 
         let fontsConfig = try Self.fontsConfig(fontName: Self.unknownFontName,
@@ -1432,15 +1361,13 @@ private extension PaywallCacheWarmingTests {
     }
 
     func localizedImagePrewarmingRequests(
-        preferredLocales: [[String]],
-        workflow: Bool
+        preferredLocales: [[String]]
     ) async throws -> [URLWithValidation] {
         let locales: Atomic<[String]> = .init([])
         let fileRepository = MockCacheWarmingFileRepository()
         let cache = PaywallCacheWarming(
             introEligibiltyChecker: self.eligibilityChecker,
             fileRepository: fileRepository,
-            webBundleURLBatcher: self.mockWebBundleURLBatcher,
             preferredLocalesProvider: { locales.value }
         )
         let components: [PaywallComponent] = [.image(.init(
@@ -1453,33 +1380,18 @@ private extension PaywallCacheWarmingTests {
             "es-ES": ["hero": .image(Self.image("localized-es", dark: true)), "title": .string("Hola")],
             "fr_FR": ["hero": .image(Self.image("localized-fr", dark: true))]
         ]
-        let warmUp: () async -> Void
-        if workflow {
-            let screen = Self.workflowScreen(components: components, localizations: localizations)
-            let workflow = PublishedWorkflow(
-                id: "workflow",
-                displayName: "Test",
-                initialStepId: "step",
-                singleStepFallbackId: nil,
-                steps: [:],
-                screens: ["screen": screen]
-            )
-            warmUp = { await cache.prewarmWorkflowAssets(workflow: workflow, uiConfig: Self.emptyUIConfig) }
-        } else {
-            let data = Self.paywallComponentsData(components: components, localizations: localizations)
-            let offering = Offering(
-                identifier: Self.offeringIdentifier,
-                serverDescription: "Test",
-                paywallComponents: .init(uiConfig: Self.emptyUIConfig, data: data),
-                availablePackages: [],
-                webCheckoutUrl: nil
-            )
-            let offerings = try Self.createOfferings([offering])
-            warmUp = { await cache.warmUpPaywallAssetsCache(offerings: offerings) }
-        }
+        let screen = Self.workflowScreen(components: components, localizations: localizations)
+        let workflow = PublishedWorkflow(
+            id: "workflow",
+            displayName: "Test",
+            initialStepId: "step",
+            singleStepFallbackId: nil,
+            steps: [:],
+            screens: ["screen": screen]
+        )
         for preferredLocale in preferredLocales {
             locales.value = preferredLocale
-            await warmUp()
+            await cache.prewarmWorkflowAssets(workflow: workflow, uiConfig: Self.emptyUIConfig)
         }
         return await fileRepository.requests
     }
@@ -1490,7 +1402,6 @@ private extension PaywallCacheWarmingTests {
         let cache = PaywallCacheWarming(
             introEligibiltyChecker: self.eligibilityChecker,
             fileRepository: fileRepository,
-            webBundleURLBatcher: self.mockWebBundleURLBatcher,
             preferredLocalesProvider: { [preferredLocale] }
         )
         let video = PaywallComponent.VideoComponent(
@@ -1552,8 +1463,7 @@ private extension PaywallCacheWarmingTests {
         )
         let cache = PaywallCacheWarming(
             introEligibiltyChecker: self.eligibilityChecker,
-            fontsManager: fontsManager,
-            webBundleURLBatcher: self.mockWebBundleURLBatcher
+            fontsManager: fontsManager
         )
 
         for (index, fontName) in fontNames.enumerated() {
@@ -1590,10 +1500,7 @@ private extension PaywallCacheWarmingTests {
     func useDelayedEligibilityChecker() -> DelayedIntroEligibilityChecker {
         let checker = DelayedIntroEligibilityChecker()
         self.delayedEligibilityChecker = checker
-        self.cache = PaywallCacheWarming(
-            introEligibiltyChecker: checker,
-            webBundleURLBatcher: self.mockWebBundleURLBatcher
-        )
+        self.cache = PaywallCacheWarming(introEligibiltyChecker: checker)
         return checker
     }
 
