@@ -70,7 +70,8 @@ struct VideoCloseFixtureView: View {
                     loop: true,
                     muteAudio: true,
                     size: .init(width: .fill, height: .fit(nil)),
-                    fitMode: .fit
+                    fitMode: .fit,
+                    maskShape: ProcessInfo.processInfo.environment["VIDEO_CIRCLE_SHAPE"] == "1" ? .circle : nil
                 ))
             ],
             dimension: .vertical(.center, .start),
