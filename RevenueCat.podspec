@@ -33,4 +33,15 @@ Pod::Spec.new do |s|
   s.exclude_files = 'Sources/LocalReceiptParsing/ReceiptParser-only-files/**'
   
   s.resource_bundles = {'RevenueCat' => ['Sources/PrivacyInfo.xcprivacy']}
+
+  # No outputs: keep the migration notice visible on incremental builds.
+  s.script_phase = {
+    :name => 'RevenueCat CocoaPods migration',
+    :script => "printf '%s\\n' " \
+               '"warning: RevenueCat is installed through CocoaPods. ' \
+               'CocoaPods trunk becomes read-only on December 2, 2026. ' \
+               'Plan your migration to Swift Package Manager to continue receiving RevenueCat native SDK updates. ' \
+               'Migration guides: https://www.revenuecat.com/docs/sdk-guides/spm-migration-guides-index"',
+    :execution_position => :before_compile
+  }
 end
