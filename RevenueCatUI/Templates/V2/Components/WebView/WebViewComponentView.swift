@@ -160,6 +160,8 @@ private struct HostedWebViewComponentView: View {
                 idStore: .shared,
                 carouselDistance: self.carouselDistance
             )
+            // The host callbacks and coordinator belong to this instance for their entire lifetime.
+            .id(ObjectIdentifier(self.instance))
             .webViewSize(
                 self.size,
                 measuredWidth: self.instance.measuredWidth,
