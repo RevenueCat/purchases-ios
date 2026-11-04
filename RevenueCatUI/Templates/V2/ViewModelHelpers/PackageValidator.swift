@@ -96,6 +96,18 @@ class PackageValidator {
         self.scopedPackageInfos.append((packageInfo, .tab))
     }
 
+    func addAncestorStack(
+        _ component: PaywallComponent.StackComponent,
+        startingAt index: Int,
+        discardRules: Bool
+    ) {
+        for packageIndex in index..<self.scopedPackageInfos.count {
+            self.scopedPackageInfos[packageIndex].info.visibilityResolver.addAncestorStack(
+                component, discardRules: discardRules
+            )
+        }
+    }
+
     var isValid: Bool {
         !self.scopedPackageInfos.isEmpty
     }
@@ -168,7 +180,7 @@ class PackageValidator {
     ///
     /// Blind to which tab is showing: counting a tab copy protects the showing tab's selection, at the
     /// cost of the limitation pinned by `testDuplicateInAnotherTabMasksAHiddenPageDefault`.
-    private func couldBeRendering(
+    func couldBeRendering(
         _ package: Package,
         in context: PackageSelectionContext,
         offerEligibilityLoading: OfferEligibilityLoading,

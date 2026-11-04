@@ -114,6 +114,7 @@ final class BottomSheetSwitchTests: TestCase {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private final class SheetHolder: ObservableObject {
     @Published var sheet: SheetViewModel?
+    var openSheet: ((SheetViewModel) -> Void)?
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -138,14 +139,16 @@ private struct SheetSwitchTestHostView: View {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private extension BottomSheetSwitchTests {
 
-    static func makeSheetViewModel(id: String, text: String) throws -> SheetViewModel {
+    static func makeSheetViewModel(id: String, text: String, package: Package? = nil) throws -> SheetViewModel {
         let offering = Offering(
             identifier: "test",
             serverDescription: "",
-            availablePackages: [],
+            availablePackages: package.map { [$0] } ?? [],
             webCheckoutUrl: nil
         )
-        let localization = LocalizationProvider(locale: Locale(identifier: "en_US"), localizedStrings: [:])
+        let localization = LocalizationProvider(
+            locale: Locale(identifier: "en_US"), localizedStrings: [text: .string(text)]
+        )
         let uiConfigProvider = UIConfigProvider(uiConfig: PreviewUIConfig.make())
         let factory = ViewModelFactory()
 
@@ -158,8 +161,14 @@ private extension BottomSheetSwitchTests {
             ]
         )
 
+        let contentStack = package.map { package in
+            PaywallComponent.StackComponent(components: [.package(.init(
+                packageID: package.identifier, isSelectedByDefault: true,
+                applePromoOfferProductCode: nil, stack: stack
+            ))])
+        } ?? stack
         let stackViewModel = try factory.toStackViewModel(
-            component: stack,
+            component: contentStack,
             packageValidator: factory.packageValidator,
             purchaseButtonCollector: nil,
             localizationProvider: localization,
@@ -171,12 +180,13 @@ private extension BottomSheetSwitchTests {
         let sheet = PaywallComponent.ButtonComponent.Sheet(
             id: id,
             name: nil,
-            stack: stack,
+            stack: contentStack,
             backgroundBlur: false,
             size: .init(width: .fill, height: .fit(nil))
         )
 
-        return SheetViewModel(sheet: sheet, sheetStackViewModel: stackViewModel)
+        return SheetViewModel(sheet: sheet, sheetStackViewModel: stackViewModel,
+                              packageValidator: factory.packageValidator)
     }
 
     static func host<Content: View>(_ view: Content) -> (UIWindow, UIView) {
@@ -187,6 +197,114 @@ private extension BottomSheetSwitchTests {
         controller.view.layoutIfNeeded()
         RunLoop.main.run(until: Date().addingTimeInterval(0.2))
         return (window, controller.view)
+    }
+
+}
+
+#endif
+
+#if os(iOS)
+
+@available(iOS 15.0, *)
+extension BottomSheetSwitchTests {
+
+    func testPW11SheetOwnsSelectionAndVariablesWithoutChangingTabMemory() async throws {
+        let fixture = try PackageResolutionTestFixture(competingDefaults: true)
+        let validator = fixture.state.viewModelFactory.packageValidator
+        XCTAssertFalse(validator.packages.contains { $0.identifier == "annual_xl" })
+        XCTAssertTrue(fixture.state.packages.contains { $0.identifier == "annual_xl" },
+                      "Sheet packages must still participate in offer loading")
+        XCTAssertEqual(validator.defaultSelectedPackage(in: .provisional)?.identifier, "$rc_monthly")
+        let holder = SheetHolder()
+        let button = try XCTUnwrap(fixture.state.rootViewModel.stackViewModel.viewModels.compactMap {
+            if case .button(let button) = $0, button.sheetStackViewModel != nil { return button }
+            return nil
+        }.first)
+        guard case .sheet(let sheet) = button.action else { return XCTFail("Expected a sheet action") }
+        let model = SheetViewModel(
+            sheet: try XCTUnwrap(sheet),
+            sheetStackViewModel: try XCTUnwrap(button.sheetStackViewModel),
+            packageValidator: button.sheetPackageValidator
+        )
+        let host = PackageResolutionSheetHost(fixture: fixture, holder: holder)
+        let (window, _) = Self.host(host)
+        defer {
+            holder.openSheet = nil
+            window.isHidden = true
+            window.rootViewController = nil
+        }
+        try await PackageResolutionTestFixture.settlePresentation()
+        XCTAssertEqual(fixture.context.package?.identifier, "$rc_annual")
+        fixture.tabs.tabControlContext.selectedTabId = "tab-2"
+        try await PackageResolutionTestFixture.settlePresentation()
+        XCTAssertEqual(fixture.context.package?.identifier, "monthly_xl")
+        let tabContext = try XCTUnwrap(fixture.context.tabsState(for: fixture.tabs).contextsByTabId["tab-2"])
+        let previousTabPackage = tabContext.package
+        let previousVariables = fixture.context.variableContext
+
+        try XCTUnwrap(holder.openSheet)(model)
+        XCTAssertEqual(fixture.context.package?.identifier, "annual_xl", "Activation is synchronous")
+        try await PackageResolutionTestFixture.settlePresentation()
+        XCTAssertEqual(fixture.context.package?.identifier, "annual_xl", "Background reconcile cannot take ownership")
+        XCTAssertEqual(tabContext.package?.identifier, previousTabPackage?.identifier)
+        XCTAssertNil(tabContext.manuallySelectedPackage, "Opening a sheet isn't a manual tab choice")
+        let variables = PackageContext.VariableContext(
+            packages: try XCTUnwrap(model.packageValidator).packages, showZeroDecimalPlacePrices: false
+        )
+        XCTAssertEqual(fixture.context.variableContext.exactMostExpensivePricePerMonth,
+                       variables.exactMostExpensivePricePerMonth)
+        // Replacing the active sheet takes ownership before its content mounts. Updates from
+        // the outgoing sheet (including an animation's last render) cannot overwrite the new one.
+        let outgoingContext = try XCTUnwrap(fixture.context.presentedSheetContext)
+        let replacement = try Self.makeSheetViewModel(
+            id: "replacement", text: "Replacement", package: TestData.monthlyPackage
+        )
+        try XCTUnwrap(holder.openSheet)(replacement)
+        try await PackageResolutionTestFixture.settlePresentation()
+        outgoingContext.update(package: fixture.offering.package(identifier: "annual_xl"),
+                               variableContext: outgoingContext.variableContext)
+        try await PackageResolutionTestFixture.settlePresentation()
+        XCTAssertEqual(fixture.context.package?.identifier, TestData.monthlyPackage.identifier)
+        XCTAssertEqual(tabContext.package?.identifier, previousTabPackage?.identifier)
+        XCTAssertNotEqual(previousVariables.exactMostExpensivePricePerMonth,
+                          fixture.context.variableContext.exactMostExpensivePricePerMonth)
+
+    }
+
+}
+
+@available(iOS 15.0, *)
+private struct PackageResolutionSheetHost: View {
+
+    let fixture: PackageResolutionTestFixture
+    @ObservedObject var holder: SheetHolder
+
+    var body: some View {
+        VStack {
+            self.fixture.view()
+            SheetOpenProbe(holder: self.holder)
+        }
+            .modifier(RootPackageSelectionSheetModifier(
+                defaultPackage: self.fixture.state.viewModelFactory.packageValidator
+                    .defaultSelectedPackage(in: .provisional)
+            ))
+            .environmentObject(self.fixture.context)
+            .environmentObject(PurchaseHandler.mock())
+            .environmentObject(IntroOfferEligibilityContext(introEligibilityChecker: BaseSnapshotTest.eligibleChecker))
+            .environmentObject(PaywallPromoOfferCache(subscriptionHistoryTracker: SubscriptionHistoryTracker()))
+    }
+
+}
+
+@available(iOS 15.0, *)
+private struct SheetOpenProbe: View {
+
+    @Environment(\.openSheet) private var openSheet
+    let holder: SheetHolder
+
+    var body: some View {
+        Color.clear.frame(height: 1)
+            .onAppear { self.holder.openSheet = self.openSheet }
     }
 
 }
