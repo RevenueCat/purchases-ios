@@ -23,7 +23,7 @@ import UIKit
 @available(iOS 15.0, macOS 12.0, *)
 final class DefaultErrorPresenter: ErrorPresenter {
 
-    typealias PresentationContextProvider = @MainActor () -> UIViewController?
+    typealias PresentationViewControllerProvider = @MainActor () -> UIViewController?
     typealias PreferredUILocaleProvider = @MainActor () -> String?
     typealias AlertFactory = @MainActor (
         _ host: UIViewController,
@@ -45,7 +45,7 @@ final class DefaultErrorPresenter: ErrorPresenter {
         }
     }
 
-    private let presentationContextProvider: PresentationContextProvider
+    private let presentationViewControllerProvider: PresentationViewControllerProvider
     private let preferredUILocaleProvider: PreferredUILocaleProvider
     private let alertFactory: AlertFactory
     private var presentation: Presentation?
@@ -53,7 +53,7 @@ final class DefaultErrorPresenter: ErrorPresenter {
 
     init(
         presentationContext: PresentationContext? = nil,
-        presentationContextProvider: @escaping PresentationContextProvider = {
+        presentationViewControllerProvider: @escaping PresentationViewControllerProvider = {
             UIApplication.extensionSafeApplication?.currentPresentationViewController
         },
         preferredUILocaleProvider: @escaping PreferredUILocaleProvider = { nil },
@@ -67,11 +67,11 @@ final class DefaultErrorPresenter: ErrorPresenter {
             )
         }
     ) {
-        self.presentationContextProvider = {
+        self.presentationViewControllerProvider = {
             if let presentationContext {
                 return presentationContext.presentationViewController
             }
-            return presentationContextProvider()
+            return presentationViewControllerProvider()
         }
         self.preferredUILocaleProvider = preferredUILocaleProvider
         self.alertFactory = alertFactory
@@ -91,7 +91,7 @@ final class DefaultErrorPresenter: ErrorPresenter {
     }
 
     private func beginPresentation(_ current: Presentation) {
-        guard let host = self.presentationContextProvider() else {
+        guard let host = self.presentationViewControllerProvider() else {
             Logger.error("Cannot present checkpoint error: no presentation context found.")
             current.completion.complete()
             return

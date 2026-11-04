@@ -750,7 +750,7 @@ final class DefaultPaywallPresenterTests: TestCase {
         let scene = try XCTUnwrap(sceneClass.init() as? UIScene)
         var fallbackCallCount = 0
         var receivedError: ErrorPresentationParams?
-        let presenter = DefaultPaywallPresenter(presentationContextProvider: {
+        let presenter = DefaultPaywallPresenter(presentationViewControllerProvider: {
             fallbackCallCount += 1
             return UIViewController()
         })
@@ -779,7 +779,7 @@ final class DefaultPaywallPresenterTests: TestCase {
         var receivedParams: ErrorPresentationParams?
         var errorCompletion: ErrorPresentationCompletion?
         var presentationResult: PaywallPresentationResult?
-        let presenter = DefaultPaywallPresenter(presentationContextProvider: { nil })
+        let presenter = DefaultPaywallPresenter(presentationViewControllerProvider: { nil })
 
         presenter.present(
             params: .init(

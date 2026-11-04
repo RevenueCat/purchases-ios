@@ -135,7 +135,7 @@ final class CheckpointOutcomeBehaviorTests: TestCase {
         let errorPresenter = ErrorPresentationRecorder()
         let presenter = CheckpointPresenter(
             workflowPresenter: WorkflowPresenter(),
-            defaultPaywallPresenter: DefaultPaywallPresenter(presentationContextProvider: { nil })
+            defaultPaywallPresenter: DefaultPaywallPresenter(presentationViewControllerProvider: { nil })
         )
         let manager = CheckpointsManager(
             resolveCheckpoint: { _, _ in .matchedOffering(Self.offering(), traceID: "trace_id") },

@@ -30,7 +30,7 @@ final class DefaultErrorPresenterTests: TestCase {
         var completionCount = 0
         let presenter = DefaultErrorPresenter(
             presentationContext: .init(scene: scene),
-            presentationContextProvider: {
+            presentationViewControllerProvider: {
                 fallbackCallCount += 1
                 return UIViewController()
             }
@@ -293,7 +293,7 @@ final class DefaultErrorPresenterTests: TestCase {
     func testMissingPresentationContextDoesNotLeaveFlowWaiting() {
         var recoverableCompletionCount = 0
         var terminalCompletionCount = 0
-        let presenter = DefaultErrorPresenter(presentationContextProvider: { nil })
+        let presenter = DefaultErrorPresenter(presentationViewControllerProvider: { nil })
 
         presenter.present(
             params: Self.params(kind: .flowActionFailed),
@@ -375,7 +375,7 @@ final class DefaultErrorPresenterTests: TestCase {
         }
 
         lazy var presenter = DefaultErrorPresenter(
-            presentationContextProvider: { [host] in host },
+            presentationViewControllerProvider: { [host] in host },
             preferredUILocaleProvider: { [localeIdentifier] in localeIdentifier },
             alertFactory: { [weak self] _, title, message, acknowledgementTitle, acknowledgement in
                 self?.presentedTitle = title

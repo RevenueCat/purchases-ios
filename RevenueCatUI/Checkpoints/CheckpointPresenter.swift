@@ -297,17 +297,17 @@ import UIKit
 final class DefaultPaywallPresenter: NSObject, PaywallPresenter, PaywallViewControllerDelegate {
 
     private let cachedCustomerInfoProvider: CheckpointsManager.CachedCustomerInfoProvider
-    private let presentationContextProvider: @MainActor () -> UIViewController?
+    private let presentationViewControllerProvider: @MainActor () -> UIViewController?
     private var session: PresentationSession?
 
     init(
         cachedCustomerInfoProvider: @escaping CheckpointsManager.CachedCustomerInfoProvider = { nil },
-        presentationContextProvider: @escaping @MainActor () -> UIViewController? = {
+        presentationViewControllerProvider: @escaping @MainActor () -> UIViewController? = {
             UIApplication.extensionSafeApplication?.currentPresentationViewController
         }
     ) {
         self.cachedCustomerInfoProvider = cachedCustomerInfoProvider
-        self.presentationContextProvider = presentationContextProvider
+        self.presentationViewControllerProvider = presentationViewControllerProvider
     }
 
     private func finish(_ controller: PaywallViewController) {
@@ -540,13 +540,13 @@ extension DefaultPaywallPresenter {
             )
             return
         }
-        let presentationContext: UIViewController?
+        let presentationViewController: UIViewController?
         if let context = params.presentationContext {
-            presentationContext = context.presentationViewController
+            presentationViewController = context.presentationViewController
         } else {
-            presentationContext = self.presentationContextProvider()
+            presentationViewController = self.presentationViewControllerProvider()
         }
-        guard let presentationContext else {
+        guard let presentationViewController else {
             Self.presentStartupError(
                 .noPresentationContext,
                 params: params,
@@ -568,7 +568,7 @@ extension DefaultPaywallPresenter {
         )
         controller.delegate = self
         controller.modalPresentationStyle = params.presentationMode.modalPresentationStyle
-        presentationContext.present(controller, animated: true)
+        presentationViewController.present(controller, animated: true)
         if controller.presentingViewController == nil, let session = self.takeSession() {
             Self.presentStartupError(
                 .presentationFailed,
