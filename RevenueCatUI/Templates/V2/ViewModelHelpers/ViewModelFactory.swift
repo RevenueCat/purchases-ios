@@ -29,6 +29,8 @@ class PurchaseButtonCollector {
 struct ViewModelFactory {
 
     let packageValidator = PackageValidator()
+    /// Sheet inventory is still needed for offer loading, but never for page or tab selection.
+    let sheetPackageValidator = PackageValidator()
 
     /// When true, all rule-based overrides are discarded globally across all components.
     /// Set when any component in the paywall contains unsupported conditions.
@@ -169,17 +171,21 @@ struct ViewModelFactory {
             )
 
             var sheetStackViewModel: StackComponentViewModel?
+            var sheetPackageValidator: PackageValidator?
 
             if case let .navigateTo(.sheet(sheet)) = component.action, let sheet {
+                let validator = PackageValidator()
+                sheetPackageValidator = validator
                 sheetStackViewModel = try toStackViewModel(
                     component: sheet.stack,
-                    packageValidator: packageValidator,
+                    packageValidator: validator,
                     purchaseButtonCollector: purchaseButtonCollector,
                     localizationProvider: localizationProvider,
                     uiConfigProvider: uiConfigProvider,
                     offering: offering,
                     colorScheme: colorScheme
                 )
+                validator.packageInfos.forEach { self.sheetPackageValidator.add($0) }
             }
 
             return .button(
@@ -189,6 +195,7 @@ struct ViewModelFactory {
                     offering: offering,
                     stackViewModel: stackViewModel,
                     sheetStackViewModel: sheetStackViewModel,
+                    sheetPackageValidator: sheetPackageValidator,
                     uiConfigProvider: uiConfigProvider,
                     discardRules: discardRules
                 )
@@ -316,6 +323,7 @@ struct ViewModelFactory {
                 )
             )
         case .tabs(let component):
+            let firstControlPackageIndex = packageValidator.packageInfos.count
             let controlStackViewModel = try toStackViewModel(
                 component: component.control.stack,
                 packageValidator: packageValidator,
@@ -373,6 +381,14 @@ struct ViewModelFactory {
                 colorScheme: colorScheme
             )
 
+            // The synthetic stack renders the Tabs component's visibility rules. Its packages
+            // must use the same ancestor visibility, both in the control and in each tab.
+            packageValidator.addAncestorStack(
+                tabsStackComponent,
+                startingAt: firstControlPackageIndex,
+                discardRules: discardRules
+            )
+
             let tabViewModels: [TabViewModel] = try component.tabs.map { tab in
                 let tabPackageValidator = PackageValidator()
 
@@ -385,6 +401,13 @@ struct ViewModelFactory {
                     offering: offering,
                     colorScheme: colorScheme
                 )
+
+                tabPackageValidator.addAncestorStack(
+                    tabsStackComponent,
+                    startingAt: 0,
+                    discardRules: discardRules
+                )
+                packageValidator.addNestedScopes(from: tabPackageValidator)
 
                 // Merging into entire paywall package validator
                 for packageInfo in tabPackageValidator.packageInfos {
@@ -540,6 +563,10 @@ struct ViewModelFactory {
         offering: Offering,
         colorScheme: ColorScheme
     ) throws -> StackComponentViewModel {
+        let independentValidator = component.purchaseContext?.mode == "independent"
+            ? PackageValidator() : nil
+        let childValidator = independentValidator ?? packageValidator
+        let firstPackageIndex = childValidator.allPackageInfos.count
         let viewModels = try component.components.filter {
             // fallback_header is injected by the dashboard for old SDK compatibility.
             // New SDKs render the header from PaywallComponentsConfig.header instead.
@@ -548,7 +575,7 @@ struct ViewModelFactory {
         }.map { component in
             try self.toViewModel(
                 component: component,
-                packageValidator: packageValidator,
+                packageValidator: childValidator,
                 purchaseButtonCollector: purchaseButtonCollector,
                 offering: offering,
                 localizationProvider: localizationProvider,
@@ -568,7 +595,7 @@ struct ViewModelFactory {
                 viewModels: try badge.stack.components.map { component in
                     try self.toViewModel(
                         component: component,
-                        packageValidator: packageValidator,
+                        packageValidator: childValidator,
                         // Explicitly not looking for purchase button in badge
                         purchaseButtonCollector: nil,
                         offering: offering,
@@ -585,12 +612,20 @@ struct ViewModelFactory {
             try appendBadge(override.properties.badge)
         }
 
+        childValidator.addAncestorStack(
+            component, startingAt: firstPackageIndex, discardRules: self.discardRules
+        )
+        if let independentValidator {
+            packageValidator.addIndependentScope(independentValidator)
+        }
+
         return StackComponentViewModel(
             component: component,
             viewModels: viewModels,
             badgeViewModels: badgeViewModels,
             uiConfigProvider: uiConfigProvider,
-            discardRules: discardRules
+            discardRules: discardRules,
+            independentPackageValidator: independentValidator
         )
     }
 

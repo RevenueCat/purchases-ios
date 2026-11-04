@@ -34,6 +34,10 @@ struct PaywallState {
     var packages: [Package] {
         self.packageInfos.map(\.package)
     }
+
+    var sharedSelectionPackages: [Package] {
+        self.viewModelFactory.packageValidator.packageInfos.map(\.package)
+    }
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -724,6 +728,7 @@ struct LoadedPaywallsV2View: View {
     /// Scoped to packages outside the tabs; a tab's own selection is reconciled in
     /// `LoadedTabsComponentView`.
     private func reconcileSelection() {
+        guard !self.selectedPackageContext.isPresentingSheet else { return }
         let packageValidator = self.paywallState.viewModelFactory.packageValidator
 
         guard let resolved = packageValidator.reconciledSelection(
@@ -739,11 +744,21 @@ struct LoadedPaywallsV2View: View {
         self.selectedPackageContext.update(
             package: resolved,
             variableContext: .init(
-                packages: self.workflowPackages ?? self.paywallState.packages,
+                packages: self.workflowPackages ?? self.paywallState.sharedSelectionPackages,
                 showZeroDecimalPlacePrices: self.selectedPackageContext.variableContext
                     .showZeroDecimalPlacePrices
             ),
             isReconcile: true
+        )
+    }
+
+    private var selectedPackageIsVisible: Bool {
+        guard let package = self.selectedPackageContext.package else { return false }
+        return self.paywallState.viewModelFactory.packageValidator.couldBeRendering(
+            package,
+            in: self.packageSelectionContext,
+            offerEligibilityLoading: self.offerEligibilityLoading,
+            offerEligibilityAvailability: self.offerEligibilityAvailability
         )
     }
 
@@ -812,11 +827,15 @@ struct LoadedPaywallsV2View: View {
                 alignment: .top
             )
             .environment(\.selectedPackageId, self.selectedPackageContext.package?.identifier)
+            .environment(\.selectedPackageIsVisible, self.selectedPackageIsVisible)
             .environment(\.planSelectionDefaultPackage, self.defaultPackage)
             .environmentObject(self.selectedPackageContext)
             .edgesIgnoringSafeArea(.bottom)
             .onAppear {
                 self.reconcileSelection()
+            }
+            .onChangeOf(self.selectedPackageContext.isPresentingSheet) { isPresenting in
+                if !isPresenting { self.reconcileSelection() }
             }
             // Each eligibility result can independently flip package visibility.
             .onChangeOf(self.offerEligibilityLoading) { _ in
@@ -893,7 +912,9 @@ extension PaywallsV2View {
 //                throw PackageGroupValidationError.noAvailablePackages("No available packages found")
 //            }
 
-            let packageInfos = factory.packageValidator.packageInfos.map { info in
+            let allPackageInfos = factory.packageValidator.allPackageInfos +
+                factory.sheetPackageValidator.allPackageInfos
+            let packageInfos = allPackageInfos.map { info in
                 return (package: info.package, promotionalOfferProductCode: info.promotionalOfferProductCode)
             }
 
@@ -924,7 +945,7 @@ extension PaywallsV2View {
         return .init(
             package: defaultPackage,
             variableContext: .init(
-                packages: workflowPackages ?? paywallState.packages,
+                packages: workflowPackages ?? paywallState.sharedSelectionPackages,
                 showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
             )
         )

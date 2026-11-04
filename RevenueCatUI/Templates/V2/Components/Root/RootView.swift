@@ -29,15 +29,6 @@ struct RootView: View {
     @Environment(\.userInterfaceIdiom)
     private var userInterfaceIdiom
 
-    @EnvironmentObject
-    private var packageContext: PackageContext
-
-    @Environment(\.componentInteractionLogger)
-    private var componentInteractionLogger
-
-    @Environment(\.workflowPackageContext)
-    private var workflowPackageContext
-
     @Environment(\.workflowRenderingContext)
     private var workflowRenderingContext
 
@@ -45,9 +36,6 @@ struct RootView: View {
     private let onDismiss: () -> Void
     private let defaultPackage: Package?
 
-    @State private var sheetViewModel: SheetViewModel?
-    @State private var packageSelectionSheetComponentName: String?
-    @State private var packageBeforeOpeningSheet: Package?
     @State private var overlaidHeaderHeight: CGFloat = 0
     @State private var nativeHeaderCollapsed = false
     @State private var visibleBodyHero = false
@@ -165,9 +153,50 @@ struct RootView: View {
         }
         .environment(\.paywallRootStackIsZLayer, self.paywallRootStackIsZLayer)
         .onPreferenceChange(NativePaywallCollapsedHeaderKey.self) { self.nativeHeaderCollapsed = $0 }
-        .environment(\.openSheet, { sheet in
-            self.sheetViewModel = sheet
-        })
+        .modifier(RootPackageSelectionSheetModifier(defaultPackage: self.defaultPackage))
+        // The body owns this resolution; sheets and footers have independent layout roots.
+        .environment(\.paywallHeroLayout, nil)
+    }
+
+    /// Restores the selection from before the sheet opened, falling back to the page default
+    /// when no package was selected.
+    static func restoredPackageAfterSheetDismissal(
+        packageBeforeOpeningSheet: Package?,
+        defaultPackage: Package?
+    ) -> Package? {
+        return packageBeforeOpeningSheet ?? defaultPackage
+    }
+
+}
+
+/// Owns the sheet selection lifetime independently of the page's layout and tab renderings.
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+struct RootPackageSelectionSheetModifier: ViewModifier {
+
+    @Environment(\.safeAreaInsets) private var safeAreaInsets
+    @EnvironmentObject
+    private var packageContext: PackageContext
+
+    @Environment(\.componentInteractionLogger)
+    private var componentInteractionLogger
+
+    @Environment(\.screenCondition) private var screenCondition
+    @Environment(\.customPaywallVariables) private var customVariables
+    @Environment(\.paywallWindowSize) private var paywallWindowSize
+    @EnvironmentObject private var introOfferEligibilityContext: IntroOfferEligibilityContext
+    @EnvironmentObject private var paywallPromoOfferCache: PaywallPromoOfferCache
+
+    @State private var sheetPackageContext: PackageContext?
+    @State private var sheetOwnerContext: PackageContext?
+    @State private var presentedSheetViewModel: SheetViewModel?
+    @State private var variableContextBeforeOpeningSheet: PackageContext.VariableContext?
+    @State private var sheetViewModel: SheetViewModel?
+    @State private var packageSelectionSheetComponentName: String?
+    @State private var packageBeforeOpeningSheet: Package?
+    let defaultPackage: Package?
+
+    func body(content: Content) -> some View {
+        content
         .bottomSheet(
             sheet: $sheetViewModel,
             safeAreaInsets: self.safeAreaInsets,
@@ -176,27 +205,65 @@ struct RootView: View {
                 _ = self.componentInteractionLogger(
                     .paywallPackageSelectionSheetOpen(
                         sheetComponentName: sheetViewModel.sheet.name,
-                        rootSelectedPackage: self.packageContext.package
+                        rootSelectedPackage: self.packageBeforeOpeningSheet
                     )
                 )
-            }
+            },
+            packageContext: self.sheetPackageContext
         )
+        .environment(\.openSheet, { sheet in
+            let presentingContext = sheet.presentingPackageContext ?? self.packageContext
+            if self.sheetViewModel == nil {
+                self.sheetOwnerContext = presentingContext
+                self.packageBeforeOpeningSheet = presentingContext.package
+                self.variableContextBeforeOpeningSheet = presentingContext.variableContext
+            }
+            let validator = sheet.packageValidator
+            let selectionContext = PackageSelectionContext(
+                condition: self.screenCondition,
+                customVariables: self.customVariables,
+                windowSize: self.paywallWindowSize,
+                isEligibleForIntroOffer: { self.introOfferEligibilityContext.isEligible(package: $0) },
+                isEligibleForPromoOffer: { self.paywallPromoOfferCache.isMostLikelyEligible(for: $0) }
+            )
+            if let independentContext = sheet.independentPackageContext {
+                self.sheetPackageContext = independentContext
+                presentingContext.presentedSheetContext = independentContext
+            } else {
+                self.sheetPackageContext = presentingContext.activateSheet(
+                    validator: validator,
+                    selectionContext: selectionContext
+                )
+            }
+            self.packageContext.presentedSheetContext = self.sheetPackageContext
+            self.presentedSheetViewModel = sheet
+            self.sheetViewModel = sheet
+        })
         .onChangeOf(sheetViewModel) { newValue in
             if let newValue {
                 self.packageSelectionSheetComponentName = newValue.sheet.name
-                if self.workflowPackageContext != nil {
-                    self.packageBeforeOpeningSheet = self.packageContext.package
-                }
             } else {
                 // Reset package selection when sheet is dismissed; snapshot sheet name before clear for analytics.
-                let selectionInSheetContext = self.packageContext.package
-                self.packageContext.package = Self.restoredPackageAfterSheetDismissal(
-                    workflowPackageContext: self.workflowPackageContext,
+                let presentingContext = self.sheetOwnerContext ?? self.packageContext
+                let selectionInSheetContext = self.sheetPackageContext?.package
+                let restoredPackage = RootView.restoredPackageAfterSheetDismissal(
                     packageBeforeOpeningSheet: self.packageBeforeOpeningSheet,
-                    defaultPackage: self.defaultPackage
+                    defaultPackage: self.presentedSheetViewModel?.presentingDefaultPackage ?? self.defaultPackage
                 )
+                presentingContext.update(
+                    package: restoredPackage,
+                    variableContext: self.variableContextBeforeOpeningSheet ?? presentingContext.variableContext,
+                    isReconcile: true
+                )
+                self.packageContext.presentedSheetContext = nil
+                presentingContext.presentedSheetContext = nil
+                self.presentedSheetViewModel?.presentingPackageContext?.presentedSheetContext = nil
+                self.presentedSheetViewModel = nil
+                self.sheetOwnerContext = nil
+                self.sheetPackageContext = nil
+                self.variableContextBeforeOpeningSheet = nil
                 self.packageBeforeOpeningSheet = nil
-                let resultingRootPackage = self.packageContext.package
+                let resultingRootPackage = presentingContext.package
                 let sheetName = self.packageSelectionSheetComponentName
                 self.packageSelectionSheetComponentName = nil
                 _ = self.componentInteractionLogger(
@@ -208,24 +275,6 @@ struct RootView: View {
                 )
             }
         }
-        // The body owns this resolution; sheets and footers have independent layout roots.
-        .environment(\.paywallHeroLayout, nil)
-    }
-
-    /// Returns the package that should be selected after a selection sheet is dismissed.
-    ///
-    /// In a workflow context the view snapshots the pre-sheet selection on open; this restores
-    /// that snapshot so navigating into and out of the sheet is a no-op for the workflow step.
-    /// Outside a workflow the sheet always resets to the step default.
-    static func restoredPackageAfterSheetDismissal(
-        workflowPackageContext: WorkflowPackageContext?,
-        packageBeforeOpeningSheet: Package?,
-        defaultPackage: Package?
-    ) -> Package? {
-        if workflowPackageContext != nil {
-            return packageBeforeOpeningSheet ?? defaultPackage
-        }
-        return defaultPackage
     }
 
 }

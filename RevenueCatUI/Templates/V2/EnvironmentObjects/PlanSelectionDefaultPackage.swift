@@ -21,11 +21,30 @@ private struct PlanSelectionDefaultPackageKey: EnvironmentKey {
     static let defaultValue: Package? = nil
 }
 
+/// Whether the selected package has a card that can render in its owning scope.
+private struct SelectedPackageIsVisibleKey: EnvironmentKey {
+    static let defaultValue = true
+}
+
+private struct IndependentPurchaseContextKey: EnvironmentKey {
+    static let defaultValue = false
+}
+
 extension EnvironmentValues {
 
     var planSelectionDefaultPackage: Package? {
         get { self[PlanSelectionDefaultPackageKey.self] }
         set { self[PlanSelectionDefaultPackageKey.self] = newValue }
+    }
+
+    var selectedPackageIsVisible: Bool {
+        get { self[SelectedPackageIsVisibleKey.self] }
+        set { self[SelectedPackageIsVisibleKey.self] = newValue }
+    }
+
+    var independentPurchaseContext: Bool {
+        get { self[IndependentPurchaseContextKey.self] }
+        set { self[IndependentPurchaseContextKey.self] = newValue }
     }
 
 }
