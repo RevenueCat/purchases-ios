@@ -34,7 +34,6 @@ Pod::Spec.new do |s|
   
   s.resource_bundles = {'RevenueCat' => ['Sources/PrivacyInfo.xcprivacy']}
 
-  # No outputs: keep the migration notice visible on incremental builds.
   s.script_phase = {
     :name => 'RevenueCat CocoaPods migration',
     :script => "printf '%s\\n' " \
@@ -42,6 +41,7 @@ Pod::Spec.new do |s|
                'CocoaPods trunk becomes read-only on December 2, 2026. ' \
                'Plan your migration to Swift Package Manager to continue receiving RevenueCat native SDK updates. ' \
                'Migration guides: https://www.revenuecat.com/docs/sdk-guides/spm-migration-guides-index"',
-    :execution_position => :before_compile
+    :execution_position => :before_compile,
+    :always_out_of_date => '1'
   }
 end
