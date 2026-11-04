@@ -40,7 +40,7 @@ Pod::Spec.new do |s|
                '"warning: RevenueCat is installed through CocoaPods. ' \
                'The CocoaPods trunk becomes read-only on December 2, 2026. ' \
                'Plan your migration to Swift Package Manager to continue receiving RevenueCat native SDK updates. ' \
-               'Migration guides: https://www.revenuecat.com/docs/sdk-guides/spm-migration-guides-index"',
+               'Migration guides: https://rev.cat/cocoapods-to-spm"',
     :execution_position => :before_compile,
     :always_out_of_date => '1'
   }
