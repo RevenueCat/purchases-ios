@@ -22,7 +22,7 @@ import AppKit
 #endif
 
 /// The platform UI context for presenting SDK-owned UI.
-@_spi(Internal) public struct PresentationContext: @unchecked Sendable {
+@_spi(Internal) public struct PresentationContext: Sendable {
 
     #if canImport(UIKit) && !os(watchOS)
 
