@@ -37,6 +37,25 @@ final class RootViewSheetDismissalTests: TestCase {
         expect(result?.identifier) == defaultPackage.identifier
     }
 
+    @MainActor
+    func testEmptySheetCopiesActiveSheetSelectionWithoutChangingRoot() {
+        let root = PackageContext(package: TestData.annualPackage, variableContext: .init(packages: []))
+        let first = root.activateSheet(validator: nil, selectionContext: .provisional)
+        XCTAssertTrue(first !== root)
+        XCTAssertEqual(first.package?.identifier, TestData.annualPackage.identifier)
+        first.update(package: TestData.monthlyPackage,
+                     variableContext: .init(packages: [TestData.monthlyPackage], showZeroDecimalPlacePrices: false))
+
+        let replacement = root.activateSheet(validator: nil, selectionContext: .provisional)
+        XCTAssertTrue(replacement !== first)
+        XCTAssertEqual(replacement.package?.identifier, TestData.monthlyPackage.identifier)
+        XCTAssertFalse(replacement.variableContext.showZeroDecimalPlacePrices)
+        replacement.update(package: TestData.weeklyPackage, variableContext: replacement.variableContext)
+        XCTAssertEqual(first.package?.identifier, TestData.monthlyPackage.identifier)
+        XCTAssertEqual(root.package?.identifier, TestData.annualPackage.identifier)
+        XCTAssertTrue(root.variableContext.showZeroDecimalPlacePrices)
+    }
+
     func testReturnsNilWhenSnapshotAndDefaultAreNil() {
         let result = RootView.restoredPackageAfterSheetDismissal(
             packageBeforeOpeningSheet: nil,
@@ -79,7 +98,7 @@ extension RootViewSheetDismissalTests {
         let sheetContext = fixture.context.activateSheet(validator: sheetValidator, selectionContext: .provisional)
         try await PackageResolutionTestFixture.settlePresentation()
         XCTAssertEqual(sheetContext.package?.identifier, "annual_xl")
-        XCTAssertEqual(fixture.context.package?.identifier, "annual_xl")
+        XCTAssertEqual(fixture.context.package?.identifier, "$rc_monthly")
 
         fixture.context.update(
             package: RootView.restoredPackageAfterSheetDismissal(

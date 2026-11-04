@@ -710,6 +710,7 @@ private extension PaywallFixture {
             id: "competing-sheet", name: "Plans",
             stack: .init(components: [
                 Self.packageCard(packageID: "annual_xl", label: "annual_xl", isSelectedByDefault: true),
+                Self.packageCard(packageID: "monthly_xl", label: "sheet_monthly", isSelectedByDefault: false),
                 text("sheet_price"),
                 .purchaseButton(.init(stack: .init(
                     components: [text("purchase")], padding: .init(top: 12, bottom: 12, leading: 12, trailing: 12)
@@ -756,7 +757,9 @@ private extension PaywallFixture {
                 "open": .string("Open plans"), "close": .string("Close plans"),
                 "purchase": .string("Purchase from sheet"),
                 "root_price": .string("Selected price: {{ product.price }}"),
-                "sheet_price": .string("Sheet price: {{ product.price }}")
+                "sheet_price": .string("Sheet price: {{ product.price }}"),
+                "sheet_monthly": .string("Sheet monthly"),
+                "sheet_monthly_selected": .string("Sheet monthly selected")
             ]], revision: 1, defaultLocaleIdentifier: "en_US"
         )
     }

@@ -243,16 +243,28 @@ extension BottomSheetSwitchTests {
         let previousVariables = fixture.context.variableContext
 
         try XCTUnwrap(holder.openSheet)(model)
-        XCTAssertEqual(fixture.context.package?.identifier, "annual_xl", "Activation is synchronous")
+        XCTAssertEqual(fixture.context.package?.identifier, previousTabPackage?.identifier,
+                       "Opening the sheet must preserve the root selection synchronously")
         try await PackageResolutionTestFixture.settlePresentation()
-        XCTAssertEqual(fixture.context.package?.identifier, "annual_xl", "Background reconcile cannot take ownership")
+        XCTAssertEqual(fixture.context.package?.identifier, previousTabPackage?.identifier)
         XCTAssertEqual(tabContext.package?.identifier, previousTabPackage?.identifier)
         XCTAssertNil(tabContext.manuallySelectedPackage, "Opening a sheet isn't a manual tab choice")
         let variables = PackageContext.VariableContext(
             packages: try XCTUnwrap(model.packageValidator).packages, showZeroDecimalPlacePrices: false
         )
         XCTAssertEqual(fixture.context.variableContext.exactMostExpensivePricePerMonth,
+                       previousVariables.exactMostExpensivePricePerMonth)
+        let activeContext = try XCTUnwrap(fixture.context.presentedSheetContext)
+        XCTAssertEqual(activeContext.package?.identifier, "annual_xl")
+        XCTAssertEqual(activeContext.variableContext.exactMostExpensivePricePerMonth,
                        variables.exactMostExpensivePricePerMonth)
+        activeContext.update(package: TestData.monthlyPackage, variableContext: variables)
+        try await PackageResolutionTestFixture.settlePresentation()
+        XCTAssertEqual(activeContext.package?.identifier, TestData.monthlyPackage.identifier)
+        XCTAssertEqual(fixture.context.package?.identifier, previousTabPackage?.identifier)
+        XCTAssertEqual(fixture.context.variableContext.exactMostExpensivePricePerMonth,
+                       previousVariables.exactMostExpensivePricePerMonth)
+
         // Replacing the active sheet takes ownership before its content mounts. Updates from
         // the outgoing sheet (including an animation's last render) cannot overwrite the new one.
         let outgoingContext = try XCTUnwrap(fixture.context.presentedSheetContext)
@@ -264,10 +276,11 @@ extension BottomSheetSwitchTests {
         outgoingContext.update(package: fixture.offering.package(identifier: "annual_xl"),
                                variableContext: outgoingContext.variableContext)
         try await PackageResolutionTestFixture.settlePresentation()
-        XCTAssertEqual(fixture.context.package?.identifier, TestData.monthlyPackage.identifier)
+        XCTAssertEqual(fixture.context.presentedSheetContext?.package?.identifier, TestData.monthlyPackage.identifier)
+        XCTAssertEqual(fixture.context.package?.identifier, previousTabPackage?.identifier)
         XCTAssertEqual(tabContext.package?.identifier, previousTabPackage?.identifier)
-        XCTAssertNotEqual(previousVariables.exactMostExpensivePricePerMonth,
-                          fixture.context.variableContext.exactMostExpensivePricePerMonth)
+        XCTAssertEqual(previousVariables.exactMostExpensivePricePerMonth,
+                       fixture.context.variableContext.exactMostExpensivePricePerMonth)
 
     }
 

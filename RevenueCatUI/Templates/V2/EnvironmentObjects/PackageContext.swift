@@ -95,7 +95,7 @@ class PackageContext: ObservableObject {
         return state
     }
 
-    /// A sheet mirrors its selection here for page-level consumers, while owning its own context.
+    /// Tracks the active sheet without changing this presentation's selection or variables.
     weak var presentedSheetContext: PackageContext? {
         willSet { self.objectWillChange.send() }
     }
@@ -105,15 +105,17 @@ class PackageContext: ObservableObject {
     @MainActor
     func activateSheet(validator: PackageValidator?, selectionContext: PackageSelectionContext) -> PackageContext {
         let packages = validator?.packages ?? []
+        let inheritedContext = self.presentedSheetContext ?? self
         let context = PackageContext(
-            package: packages.isEmpty ? self.package : validator?.defaultSelectedPackage(in: selectionContext),
-            variableContext: packages.isEmpty ? self.variableContext : .init(
+            package: packages.isEmpty
+                ? inheritedContext.package
+                : validator?.defaultSelectedPackage(in: selectionContext),
+            variableContext: packages.isEmpty ? inheritedContext.variableContext : .init(
                 packages: packages,
                 showZeroDecimalPlacePrices: self.variableContext.showZeroDecimalPlacePrices
             )
         )
         self.presentedSheetContext = context
-        self.update(package: context.package, variableContext: context.variableContext, isReconcile: true)
         return context
     }
 

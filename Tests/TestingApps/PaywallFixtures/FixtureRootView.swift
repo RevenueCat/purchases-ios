@@ -90,6 +90,7 @@ struct FixturePaywallView: View {
 
     @State private var purchasedPackageIdentifier = ""
     @State private var showingPurchaseResult = false
+    @State private var sheetCloseSummary = ""
 
     /// Eligibility is stubbed and purchases are no-ops, so nothing here reaches StoreKit or the
     /// network and the accessibility tree depends only on the fixture.
@@ -117,6 +118,17 @@ struct FixturePaywallView: View {
             },
             performRestore: { (success: false, error: nil) }
         )
+        .onPaywallInteraction { event in
+            guard self.fixture == .competingSheetDefaults,
+                  event.property(for: PaywallInteractionEvent.Keys.componentType) == PaywallInteractionEvent.ComponentTypes.packageSelectionSheet,
+                  event.property(for: PaywallInteractionEvent.Keys.componentValue) == "close" else { return }
+            let sheetPackage = event.property(for: PaywallInteractionEvent.Keys.currentPackageId) ?? "nil"
+            let rootPackage = event.property(for: PaywallInteractionEvent.Keys.resultingPackageId) ?? "nil"
+            self.sheetCloseSummary = "Sheet closed: \(sheetPackage), root: \(rootPackage)"
+        }
+        .overlay(alignment: .top) {
+            Text(self.sheetCloseSummary).accessibilityIdentifier("sheet-close-summary")
+        }
         .environment(\.voiceOverEnabledOverride, self.pretendsVoiceOverIsRunning)
         .alert("Purchase callback", isPresented: self.$showingPurchaseResult) {
             Button("OK", role: .cancel) {}

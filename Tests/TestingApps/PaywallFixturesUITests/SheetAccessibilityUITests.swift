@@ -59,17 +59,32 @@ final class SheetAccessibilityUITests: XCTestCase {
         app.buttons["Open plans"].tap()
         XCTAssertTrue(app.buttons["Annual XL selected"].waitForExistence(timeout: 5), app.debugDescription)
         XCTAssertTrue(app.staticTexts["Sheet price: $199.99"].exists)
+        XCTAssertTrue(app.buttons["Root monthly selected"].exists, app.debugDescription)
+        XCTAssertTrue(app.staticTexts["Selected price: $4.99"].exists)
+        app.buttons["Sheet monthly"].tap()
+        XCTAssertTrue(app.buttons["Sheet monthly selected"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["Sheet price: $29.99"].exists)
+        XCTAssertTrue(app.buttons["Root monthly selected"].exists)
+        XCTAssertTrue(app.staticTexts["Selected price: $4.99"].exists)
         app.buttons["Purchase from sheet"].tap()
         let result = app.alerts["Purchase callback"]
         XCTAssertTrue(result.waitForExistence(timeout: 5), app.debugDescription)
-        XCTAssertTrue(result.staticTexts["annual_xl"].exists, result.debugDescription)
+        XCTAssertTrue(result.staticTexts["monthly_xl"].exists, result.debugDescription)
         result.buttons["OK"].tap()
 
         app.buttons["Close plans"].tap()
+        XCTAssertTrue(app.staticTexts["Sheet closed: monthly_xl, root: $rc_monthly"]
+            .waitForExistence(timeout: 5), app.debugDescription)
         XCTAssertTrue(app.buttons["Annual XL selected"].waitForNonExistence(timeout: 5))
         XCTAssertTrue(app.buttons["Root monthly selected"].exists)
         XCTAssertTrue(app.staticTexts["Selected price: $4.99"].exists)
         XCTAssertFalse(app.buttons["Monthly XL selected"].exists)
+
+        app.buttons["Open plans"].tap()
+        XCTAssertTrue(app.buttons["Annual XL selected"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["Sheet price: $199.99"].exists)
+        XCTAssertTrue(app.buttons["Root monthly selected"].exists)
+        XCTAssertTrue(app.staticTexts["Selected price: $4.99"].exists)
     }
 
     func testHiddenManualRootChoiceFallsBackToVisibleTabOnResize() throws {
