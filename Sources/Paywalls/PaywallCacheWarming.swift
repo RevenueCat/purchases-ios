@@ -288,10 +288,11 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
         ) else { return nil }
 
         let limiter = self.workflowAssetPrewarmingLimiter
-        return Task { [weak self] in
-            await limiter.perform {
-                _ = await self?.executeWorkflowAssetPrewarming(request)
-            }
+        let operation: @Sendable () async -> Void = { [weak self] in
+            _ = await self?.executeWorkflowAssetPrewarming(request)
+        }
+        return Task {
+            await limiter.perform(operation)
         }
     }
 
