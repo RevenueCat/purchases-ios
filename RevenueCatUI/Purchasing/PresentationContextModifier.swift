@@ -25,14 +25,7 @@ struct PresentationContextModifier: ViewModifier {
     let purchaseHandler: PurchaseHandler
 
     func body(content: Content) -> some View {
-        #if canImport(UIKit) && !os(watchOS)
-        content.background {
-            PresentationContextReader { window in
-                self.purchaseHandler.presentationWindow = window
-            }
-            .frame(width: 0, height: 0)
-        }
-        #elseif canImport(AppKit)
+        #if (canImport(UIKit) && !os(watchOS)) || canImport(AppKit)
         content.background {
             PresentationContextReader { window in
                 self.purchaseHandler.presentationWindow = window
