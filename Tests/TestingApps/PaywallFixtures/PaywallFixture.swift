@@ -59,10 +59,14 @@ enum PaywallFixture: String, CaseIterable {
     case competingSheetDefaults = "competing_sheet_defaults"
     case manualRootSelectionVisibility = "manual_root_selection_visibility"
 
+    case independentTabDefaults = "independent_tab_defaults"
+
     var title: String {
         switch self {
         case .nestedBillingTabs:
             return "Nested billing tabs across tiers"
+        case .independentTabDefaults:
+            return "Independent package defaults across tabs"
         case .carouselTabs:
             return "Carousel pages across tabs"
         case .iconOnlyButton:
@@ -98,6 +102,8 @@ enum PaywallFixture: String, CaseIterable {
         switch self {
         case .nestedBillingTabs:
             return Self.nestedBillingTabsComponentsData()
+        case .independentTabDefaults:
+            return Self.independentTabDefaultsComponentsData()
         case .carouselTabs:
             return Self.carouselTabsComponentsData()
         case .iconOnlyButton:
@@ -145,6 +151,11 @@ enum PaywallFixture: String, CaseIterable {
             return [Self.annualPackageWithPromoOffer(offeringIdentifier: self.rawValue)]
         case .offerPriceWithZero:
             return [Self.annualPackageWithFreeTrial(offeringIdentifier: self.rawValue)]
+        case .independentTabDefaults:
+            return [
+                Self.annualPackage(offeringIdentifier: self.rawValue),
+                Self.monthlyPackage(offeringIdentifier: self.rawValue)
+            ]
         case .mixedTabsPageDefault, .hiddenTabs, .responsiveTabsVisibility:
             return [
                 Self.annualPackage(offeringIdentifier: self.rawValue),
@@ -534,6 +545,59 @@ private extension PaywallFixture {
         ))
     }
 
+    static func independentTabDefaultsComponentsData() -> PaywallComponentsData {
+        let purchaseContext = try! JSONDecoder().decode(
+            PaywallComponent.PurchaseContext.self,
+            from: Data(#"{"mode":"independent"}"#.utf8)
+        )
+        func text(_ key: String) -> PaywallComponent {
+            return .text(.init(text: key, color: .init(light: .hex("#000000"))))
+        }
+        func tab(_ id: String, monthlyDefault: Bool) -> PaywallComponent.TabsComponent.Tab {
+            return .init(id: id, stack: .init(components: [
+                .tabControl(.init()),
+                .stack(.init(components: [
+                    Self.packageCard(packageID: "$rc_annual", label: "annual", isSelectedByDefault: !monthlyDefault),
+                    Self.packageCard(packageID: "$rc_monthly", label: "monthly", isSelectedByDefault: monthlyDefault),
+                    .purchaseButton(.init(stack: .init(
+                        components: [text("purchase")],
+                        padding: .init(top: 12, bottom: 12, leading: 12, trailing: 12)
+                    ), action: .inAppCheckout, method: .inAppCheckout, name: nil))
+                ], purchaseContext: purchaseContext))
+            ]))
+        }
+        let tabs = PaywallComponent.tabs(.init(
+            control: .init(type: .buttons, stack: .init(components: [
+                .tabControlButton(.init(tabId: "monthly", stack: .init(components: [text("monthly_tab")]))),
+                .tabControlButton(.init(tabId: "annual", stack: .init(components: [text("annual_tab")])))
+            ])),
+            tabs: [tab("monthly", monthlyDefault: true), tab("annual", monthlyDefault: false)],
+            defaultTabId: "monthly"
+        ))
+        return .init(
+            templateName: "fixture-independent-tab-defaults",
+            assetBaseURL: URL(string: "https://assets.pawwalls.com")!,
+            componentsConfig: .init(base: .init(
+                stack: .init(
+                    components: [tabs],
+                    size: .init(width: .fill, height: .fill),
+                    backgroundColor: .init(light: .hex("#ffffff")),
+                    padding: .init(top: 60, bottom: 24, leading: 16, trailing: 16)
+                ),
+                stickyFooter: nil,
+                background: .color(.init(light: .hex("#ffffff")))
+            )),
+            componentsLocalizations: ["en_US": [
+                "annual": .string("Annual"), "annual_selected": .string("Annual selected"),
+                "monthly": .string("Monthly"), "monthly_selected": .string("Monthly selected"),
+                "annual_tab": .string("Annual default tab"), "monthly_tab": .string("Monthly default tab"),
+                "purchase": .string("Purchase")
+            ]],
+            revision: 1,
+            defaultLocaleIdentifier: "en_US"
+        )
+    }
+
     /// Two page packages with the default among them hidden, plus two tabs declaring their own.
     static func mixedTabsPageDefaultComponentsData(
         tabsVisible: Bool? = nil,
@@ -774,12 +838,29 @@ private extension PaywallFixture {
     /// A package row with a fixed 22x22 pill ring and a 10x10 dot. `overflow: scroll` wraps the
     /// ring in a scroll view, which must not change its size.
     static func sheetOverContentComponentsData() -> PaywallComponentsData {
+        let secondSheet = PaywallComponent.ButtonComponent.Sheet(
+            id: "second-sheet",
+            name: "Second sheet",
+            stack: .init(
+                components: [.text(.init(text: "second_sheet_lid", color: .init(light: .hex("#000000"))))],
+                backgroundColor: .init(light: .hex("#ffffff"))
+            ),
+            backgroundBlur: false,
+            size: .init(width: .fill, height: .fixed(240))
+        )
         let sheet = PaywallComponent.ButtonComponent.Sheet(
             id: "sheet-over-content",
             name: "Sheet",
             stack: .init(
                 components: [
-                    .text(.init(text: "sheet_text_lid", color: .init(light: .hex("#000000"))))
+                    .text(.init(text: "sheet_text_lid", color: .init(light: .hex("#000000")))),
+                    .button(.init(
+                        action: .navigateTo(destination: .sheet(sheet: secondSheet)),
+                        stack: .init(
+                            components: [.text(.init(text: "open_second_lid", color: .init(light: .hex("#000000"))))],
+                            padding: .init(top: 12, bottom: 12, leading: 16, trailing: 16)
+                        )
+                    ))
                 ],
                 size: .init(width: .fill, height: .fit(nil)),
                 backgroundColor: .init(light: .hex("#ffffff")),
@@ -820,7 +901,9 @@ private extension PaywallFixture {
                 "en_US": [
                     "behind_text_lid": .string("Text behind the sheet"),
                     "open_lid": .string("Open the sheet"),
-                    "sheet_text_lid": .string("Text inside the sheet")
+                    "sheet_text_lid": .string("Text inside the sheet"),
+                    "open_second_lid": .string("Open the second sheet"),
+                    "second_sheet_lid": .string("Text inside the second sheet")
                 ]
             ],
             revision: 1,

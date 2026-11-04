@@ -187,6 +187,8 @@ struct RootPackageSelectionSheetModifier: ViewModifier {
     @EnvironmentObject private var paywallPromoOfferCache: PaywallPromoOfferCache
 
     @State private var sheetPackageContext: PackageContext?
+    @State private var sheetOwnerContext: PackageContext?
+    @State private var presentedSheetViewModel: SheetViewModel?
     @State private var variableContextBeforeOpeningSheet: PackageContext.VariableContext?
     @State private var sheetViewModel: SheetViewModel?
     @State private var packageSelectionSheetComponentName: String?
@@ -195,25 +197,6 @@ struct RootPackageSelectionSheetModifier: ViewModifier {
 
     func body(content: Content) -> some View {
         content
-        .environment(\.openSheet, { sheet in
-            if self.sheetViewModel == nil {
-                self.packageBeforeOpeningSheet = self.packageContext.package
-                self.variableContextBeforeOpeningSheet = self.packageContext.variableContext
-            }
-            let validator = sheet.packageValidator
-            let selectionContext = PackageSelectionContext(
-                condition: self.screenCondition,
-                customVariables: self.customVariables,
-                windowSize: self.paywallWindowSize,
-                isEligibleForIntroOffer: { self.introOfferEligibilityContext.isEligible(package: $0) },
-                isEligibleForPromoOffer: { self.paywallPromoOfferCache.isMostLikelyEligible(for: $0) }
-            )
-            self.sheetPackageContext = self.packageContext.activateSheet(
-                validator: validator,
-                selectionContext: selectionContext
-            )
-            self.sheetViewModel = sheet
-        })
         .bottomSheet(
             sheet: $sheetViewModel,
             safeAreaInsets: self.safeAreaInsets,
@@ -228,26 +211,59 @@ struct RootPackageSelectionSheetModifier: ViewModifier {
             },
             packageContext: self.sheetPackageContext
         )
+        .environment(\.openSheet, { sheet in
+            let presentingContext = sheet.presentingPackageContext ?? self.packageContext
+            if self.sheetViewModel == nil {
+                self.sheetOwnerContext = presentingContext
+                self.packageBeforeOpeningSheet = presentingContext.package
+                self.variableContextBeforeOpeningSheet = presentingContext.variableContext
+            }
+            let validator = sheet.packageValidator
+            let selectionContext = PackageSelectionContext(
+                condition: self.screenCondition,
+                customVariables: self.customVariables,
+                windowSize: self.paywallWindowSize,
+                isEligibleForIntroOffer: { self.introOfferEligibilityContext.isEligible(package: $0) },
+                isEligibleForPromoOffer: { self.paywallPromoOfferCache.isMostLikelyEligible(for: $0) }
+            )
+            if let independentContext = sheet.independentPackageContext {
+                self.sheetPackageContext = independentContext
+                presentingContext.presentedSheetContext = independentContext
+            } else {
+                self.sheetPackageContext = presentingContext.activateSheet(
+                    validator: validator,
+                    selectionContext: selectionContext
+                )
+            }
+            self.packageContext.presentedSheetContext = self.sheetPackageContext
+            self.presentedSheetViewModel = sheet
+            self.sheetViewModel = sheet
+        })
         .onChangeOf(sheetViewModel) { newValue in
             if let newValue {
                 self.packageSelectionSheetComponentName = newValue.sheet.name
             } else {
                 // Reset package selection when sheet is dismissed; snapshot sheet name before clear for analytics.
-                let selectionInSheetContext = self.packageContext.package
+                let presentingContext = self.sheetOwnerContext ?? self.packageContext
+                let selectionInSheetContext = self.sheetPackageContext?.package
                 let restoredPackage = RootView.restoredPackageAfterSheetDismissal(
                     packageBeforeOpeningSheet: self.packageBeforeOpeningSheet,
-                    defaultPackage: self.defaultPackage
+                    defaultPackage: self.presentedSheetViewModel?.presentingDefaultPackage ?? self.defaultPackage
                 )
-                self.packageContext.update(
+                presentingContext.update(
                     package: restoredPackage,
-                    variableContext: self.variableContextBeforeOpeningSheet ?? self.packageContext.variableContext,
+                    variableContext: self.variableContextBeforeOpeningSheet ?? presentingContext.variableContext,
                     isReconcile: true
                 )
                 self.packageContext.presentedSheetContext = nil
+                presentingContext.presentedSheetContext = nil
+                self.presentedSheetViewModel?.presentingPackageContext?.presentedSheetContext = nil
+                self.presentedSheetViewModel = nil
+                self.sheetOwnerContext = nil
                 self.sheetPackageContext = nil
                 self.variableContextBeforeOpeningSheet = nil
                 self.packageBeforeOpeningSheet = nil
-                let resultingRootPackage = self.packageContext.package
+                let resultingRootPackage = presentingContext.package
                 let sheetName = self.packageSelectionSheetComponentName
                 self.packageSelectionSheetComponentName = nil
                 _ = self.componentInteractionLogger(

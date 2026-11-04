@@ -31,6 +31,7 @@ struct BadgeContents {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 class StackComponentViewModel: OfferEligibilityVisibilityDependency {
 
+    let independentPackageValidator: PackageValidator?
     let component: PaywallComponent.StackComponent
     let uiConfigProvider: UIConfigProvider
     private let presentedOverrides: PresentedOverrides<PresentedStackPartial>?
@@ -105,8 +106,10 @@ class StackComponentViewModel: OfferEligibilityVisibilityDependency {
         viewModels: [PaywallComponentViewModel],
         badgeViewModels: [BadgeContents],
         uiConfigProvider: UIConfigProvider,
-        discardRules: Bool = false
+        discardRules: Bool = false,
+        independentPackageValidator: PackageValidator? = nil
     ) {
+        self.independentPackageValidator = independentPackageValidator
         self.component = component
         self.viewModels = viewModels
         self.uiConfigProvider = uiConfigProvider
@@ -123,7 +126,8 @@ class StackComponentViewModel: OfferEligibilityVisibilityDependency {
             viewModels: newViewModels,
             badgeViewModels: self.badgeViewModels,
             uiConfigProvider: self.uiConfigProvider,
-            discardRules: self.discardRules
+            discardRules: self.discardRules,
+            independentPackageValidator: self.independentPackageValidator
         )
     }
 

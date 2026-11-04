@@ -102,4 +102,24 @@ final class SheetAccessibilityUITests: XCTestCase {
         XCTAssertTrue(app.staticTexts["Selected price: $4.99"].exists)
     }
 
+    func testLegacySheetCanOpenAnotherSheet() throws {
+        let app = XCUIApplication()
+        app.launchEnvironment["PAYWALL_FIXTURE"] = "sheet_over_content"
+        app.launch()
+
+        let openSheet = app.buttons["Open the sheet"]
+        XCTAssertTrue(openSheet.waitForExistence(timeout: 30), app.debugDescription)
+        openSheet.tap()
+
+        let openSecondSheet = app.buttons["Open the second sheet"]
+        XCTAssertTrue(openSecondSheet.waitForExistence(timeout: 10), app.debugDescription)
+        openSecondSheet.tap()
+
+        XCTAssertTrue(
+            app.staticTexts["Text inside the second sheet"].waitForExistence(timeout: 10),
+            app.debugDescription
+        )
+        XCTAssertFalse(app.staticTexts["Text inside the sheet"].exists, app.debugDescription)
+    }
+
 }

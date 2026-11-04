@@ -34,6 +34,29 @@ struct SheetViewModel: Equatable {
     let sheet: RevenueCat.PaywallComponent.ButtonComponent.Sheet
     let sheetStackViewModel: StackComponentViewModel
     let packageValidator: PackageValidator?
+    let presentingPackageContext: PackageContext?
+    let presentingDefaultPackage: Package?
+    let independentPackageContext: PackageContext?
+
+    init(
+        sheet: RevenueCat.PaywallComponent.ButtonComponent.Sheet,
+        sheetStackViewModel: StackComponentViewModel,
+        packageValidator: PackageValidator?,
+        presentingPackageContext: PackageContext? = nil,
+        presentingDefaultPackage: Package? = nil
+    ) {
+        self.sheet = sheet
+        self.sheetStackViewModel = sheetStackViewModel
+        self.packageValidator = packageValidator
+        self.presentingPackageContext = presentingPackageContext
+        self.presentingDefaultPackage = presentingDefaultPackage
+        self.independentPackageContext = sheetStackViewModel.independentPackageValidator.map { validator in
+            PackageContext(
+                package: validator.defaultSelectedPackage(in: .provisional),
+                variableContext: .init(packages: validator.pagePackages)
+            )
+        }
+    }
 
     static func == (lhs: SheetViewModel, rhs: SheetViewModel) -> Bool {
         lhs.sheet.id == rhs.sheet.id
@@ -74,15 +97,19 @@ private struct SheetPackageSelectionModifier: ViewModifier {
         )
     }
 
+    private var validator: PackageValidator? {
+        self.viewModel.sheetStackViewModel.independentPackageValidator ?? self.viewModel.packageValidator
+    }
+
     private var defaultPackage: Package? {
-        guard let validator = self.viewModel.packageValidator,
+        guard let validator = self.validator,
               !validator.packages.isEmpty else { return self.inheritedDefaultPackage }
         return validator.defaultSelectedPackage(in: self.selectionContext)
     }
 
     private func reconcileSelection() {
         guard self.parentPackageContext.presentedSheetContext === self.packageContext,
-              let resolved = self.viewModel.packageValidator?.reconciledSelection(
+              let resolved = self.validator?.reconciledSelection(
                 current: self.packageContext.package,
                 in: self.selectionContext,
                 offerEligibilityLoading: self.offerEligibilityLoading,
@@ -96,7 +123,7 @@ private struct SheetPackageSelectionModifier: ViewModifier {
     }
 
     private var selectedPackageIsVisible: Bool {
-        guard let validator = self.viewModel.packageValidator,
+        guard let validator = self.validator,
               !validator.packages.isEmpty else { return self.inheritedSelectionIsVisible }
         guard let package = self.packageContext.package else { return false }
         return validator.couldBeRendering(
@@ -121,7 +148,8 @@ private struct SheetPackageSelectionModifier: ViewModifier {
         .onChangeOf(self.screenCondition) { _ in self.reconcileSelection() }
         .onReceive(self.packageContext.$variableContext.dropFirst()) { variableContext in
             // A dismissed sheet can remain mounted during its removal animation.
-            guard self.parentPackageContext.presentedSheetContext === self.packageContext else { return }
+            guard self.viewModel.independentPackageContext == nil,
+                  self.parentPackageContext.presentedSheetContext === self.packageContext else { return }
             self.parentPackageContext.update(
                 package: self.packageContext.package,
                 variableContext: variableContext,
@@ -185,6 +213,7 @@ struct BottomSheetOverlayModifier: ViewModifier {
     let packageContext: PackageContext?
 
     @Environment(\.workflowRenderingContext) private var workflowRenderingContext
+    @EnvironmentObject private var parentPackageContext: PackageContext
 
     @State private var parentHeight: CGFloat?
 
@@ -280,6 +309,7 @@ struct BottomSheetOverlayModifier: ViewModifier {
                 if let sheetViewModel {
                     StackComponentView(
                         viewModel: sheetViewModel.sheetStackViewModel,
+                        independentSelectionContext: sheetViewModel.independentPackageContext,
                         onDismiss: {
                             self.sheetViewModel = nil
                         },
@@ -297,6 +327,8 @@ struct BottomSheetOverlayModifier: ViewModifier {
                         ))
                     }
                     .environment(\.nativePaywallCloseEnabled, false)
+                    .environmentObject(sheetViewModel.presentingPackageContext ?? self.parentPackageContext)
+                    .environment(\.independentPurchaseContext, sheetViewModel.presentingPackageContext != nil)
                     // Dismissal in here closes the sheet, so a `navigate_back` button must not
                     // inherit the workflow's back stack or handler. Its label and tap both refer
                     // to the sheet's local dismissal.

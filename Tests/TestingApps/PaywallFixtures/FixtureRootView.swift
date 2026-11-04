@@ -109,7 +109,7 @@ struct FixturePaywallView: View {
             introEligibility: Self.eligibility,
             simulatePromoEligible: true,
             performPurchase: { package in
-                if self.fixture == .competingSheetDefaults {
+                if [.competingSheetDefaults, .independentTabDefaults].contains(self.fixture) {
                     self.purchasedPackageIdentifier = package.identifier
                     self.showingPurchaseResult = true
                 }

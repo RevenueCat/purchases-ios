@@ -407,6 +407,7 @@ struct ViewModelFactory {
                     startingAt: 0,
                     discardRules: discardRules
                 )
+                packageValidator.addNestedScopes(from: tabPackageValidator)
 
                 // Merging into entire paywall package validator
                 for packageInfo in tabPackageValidator.packageInfos {
@@ -562,7 +563,10 @@ struct ViewModelFactory {
         offering: Offering,
         colorScheme: ColorScheme
     ) throws -> StackComponentViewModel {
-        let firstPackageIndex = packageValidator.packageInfos.count
+        let independentValidator = component.purchaseContext?.mode == "independent"
+            ? PackageValidator() : nil
+        let childValidator = independentValidator ?? packageValidator
+        let firstPackageIndex = childValidator.allPackageInfos.count
         let viewModels = try component.components.filter {
             // fallback_header is injected by the dashboard for old SDK compatibility.
             // New SDKs render the header from PaywallComponentsConfig.header instead.
@@ -571,7 +575,7 @@ struct ViewModelFactory {
         }.map { component in
             try self.toViewModel(
                 component: component,
-                packageValidator: packageValidator,
+                packageValidator: childValidator,
                 purchaseButtonCollector: purchaseButtonCollector,
                 offering: offering,
                 localizationProvider: localizationProvider,
@@ -591,7 +595,7 @@ struct ViewModelFactory {
                 viewModels: try badge.stack.components.map { component in
                     try self.toViewModel(
                         component: component,
-                        packageValidator: packageValidator,
+                        packageValidator: childValidator,
                         // Explicitly not looking for purchase button in badge
                         purchaseButtonCollector: nil,
                         offering: offering,
@@ -608,16 +612,20 @@ struct ViewModelFactory {
             try appendBadge(override.properties.badge)
         }
 
-        packageValidator.addAncestorStack(
+        childValidator.addAncestorStack(
             component, startingAt: firstPackageIndex, discardRules: self.discardRules
         )
+        if let independentValidator {
+            packageValidator.addIndependentScope(independentValidator)
+        }
 
         return StackComponentViewModel(
             component: component,
             viewModels: viewModels,
             badgeViewModels: badgeViewModels,
             uiConfigProvider: uiConfigProvider,
-            discardRules: discardRules
+            discardRules: discardRules,
+            independentPackageValidator: independentValidator
         )
     }
 

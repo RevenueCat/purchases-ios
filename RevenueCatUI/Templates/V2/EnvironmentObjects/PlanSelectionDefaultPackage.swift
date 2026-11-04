@@ -26,6 +26,10 @@ private struct SelectedPackageIsVisibleKey: EnvironmentKey {
     static let defaultValue = true
 }
 
+private struct IndependentPurchaseContextKey: EnvironmentKey {
+    static let defaultValue = false
+}
+
 extension EnvironmentValues {
 
     var planSelectionDefaultPackage: Package? {
@@ -36,6 +40,11 @@ extension EnvironmentValues {
     var selectedPackageIsVisible: Bool {
         get { self[SelectedPackageIsVisibleKey.self] }
         set { self[SelectedPackageIsVisibleKey.self] = newValue }
+}
+
+    var independentPurchaseContext: Bool {
+        get { self[IndependentPurchaseContextKey.self] }
+        set { self[IndependentPurchaseContextKey.self] = newValue }
     }
 
 }
