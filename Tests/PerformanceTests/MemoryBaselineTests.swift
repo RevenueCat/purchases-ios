@@ -32,13 +32,15 @@ final class MemoryBaselineTests: XCTestCase {
     func testComparisonUsesToleranceAndRejectsChangedInputs() throws {
         try Data("""
         {"Example/testMemory()": {
-          "peakMemoryMiB": 100, "tolerancePercent": 10,
+          "peakMemoryMiB": 100,
           "workloadSHA256": "workload", "environment": {"model": "simulator"}
         }}
         """.utf8).write(to: self.fileURL)
 
         XCTAssertNoThrow(try self.check(peak: 110))
         XCTAssertNoThrow(try self.check(peak: 80))
+        XCTAssertNoThrow(try self.check(peak: 115, tolerancePercent: 20))
+        XCTAssertThrowsError(try self.check(peak: 110, tolerancePercent: 5))
         XCTAssertThrowsError(try self.check(peak: 111)) { error in
             XCTAssertTrue(String(describing: error).contains("limit 110.00 MiB"))
         }
@@ -47,27 +49,22 @@ final class MemoryBaselineTests: XCTestCase {
         XCTAssertThrowsError(try self.check(peak: 80, test: "Missing/testMemory()"))
     }
 
-    func testRecordCreatesFileAndPreservesOtherBaselinesAndTolerance() throws {
+    func testRecordCreatesFileAndPreservesOtherBaselines() throws {
         try self.check(peak: 100, record: true)
-        var data = try Data(contentsOf: self.fileURL)
-        var baselines = try JSONDecoder().decode([String: MemoryBaseline].self, from: data)
-        baselines["Example/testMemory()"]?.tolerancePercent = 20
-        try JSONEncoder().encode(baselines).write(to: self.fileURL)
-
         try self.check(peak: 50, test: "Another/testMemory()", record: true)
         try self.check(peak: 200, workload: "changed", record: true)
 
-        data = try Data(contentsOf: self.fileURL)
+        let data = try Data(contentsOf: self.fileURL)
         let json = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: [String: Any]])
         XCTAssertEqual(json.count, 2)
         XCTAssertEqual(json["Example/testMemory()"]?["peakMemoryMiB"] as? Double, 200)
-        XCTAssertEqual(json["Example/testMemory()"]?["tolerancePercent"] as? Double, 20)
         XCTAssertEqual(json["Example/testMemory()"]?["workloadSHA256"] as? String, "changed")
         XCTAssertEqual(json["Another/testMemory()"]?["peakMemoryMiB"] as? Double, 50)
     }
 
     private func check(
         peak: Double,
+        tolerancePercent: Double = 10,
         workload: String = "workload",
         model: String = "simulator",
         test: String = "Example/testMemory()",
@@ -75,6 +72,7 @@ final class MemoryBaselineTests: XCTestCase {
     ) throws {
         try MemoryBaseline.checkOrRecord(
             peakMemoryMiB: peak,
+            tolerancePercent: tolerancePercent,
             testName: test,
             workloadSHA256: workload,
             environment: ["model": model],

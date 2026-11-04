@@ -14,7 +14,6 @@ import Foundation
 
 struct MemoryBaseline: Codable {
     var peakMemoryMiB: Double
-    var tolerancePercent: Double
     var workloadSHA256: String
     var environment: [String: String]
 
@@ -23,10 +22,11 @@ struct MemoryBaseline: Codable {
 
     static func checkOrRecord(
         peakMemoryMiB: Double,
+        tolerancePercent: Double,
         testName: String,
         workloadSHA256: String,
         environment: [String: String],
-        record: Bool,
+        record: Bool = false,
         fileURL: URL = Self.fileURL
     ) throws {
         var baselines: [String: Self] = [:]
@@ -37,7 +37,6 @@ struct MemoryBaseline: Codable {
         if record {
             baselines[testName] = Self(
                 peakMemoryMiB: peakMemoryMiB,
-                tolerancePercent: baselines[testName]?.tolerancePercent ?? 10,
                 workloadSHA256: workloadSHA256,
                 environment: environment
             )
@@ -56,7 +55,7 @@ struct MemoryBaseline: Codable {
         guard baseline.workloadSHA256 == workloadSHA256 else {
             throw Failure("\(testName): workload differs. Review the change before you record a new baseline.")
         }
-        let limit = baseline.peakMemoryMiB * (1 + baseline.tolerancePercent / 100)
+        let limit = baseline.peakMemoryMiB * (1 + tolerancePercent / 100)
         let values = String(format: "peak %.2f MiB, baseline %.2f MiB, limit %.2f MiB",
                             peakMemoryMiB, baseline.peakMemoryMiB, limit)
         guard peakMemoryMiB <= limit else { throw Failure("\(testName): \(values)") }

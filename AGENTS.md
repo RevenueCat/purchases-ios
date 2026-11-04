@@ -134,6 +134,7 @@ Before you add or change a test, read [Contributing/TESTING.md](Contributing/TES
 
 - Add a test in `Tests/PerformanceTests/` for a measurable memory regression or a change to a memory-sensitive SDK path.
 - Use `PerformanceTestCase.measureMemory` and keep backend setup, asynchronous waits, and workload construction in shared helpers.
+- Set `tolerancePercent` explicitly in each performance test. Keep the allowed regression in code, separate from baseline measurements.
 - Keep setup outside the measurement interval unless setup is the behavior under test. Verify that every iteration completes the expected work.
 - Verify benchmark sensitivity against a known regression before you use it as evidence for a performance improvement.
 - Run the `PerformanceTests` scheme on the baseline simulator. Set `REVENUECAT_PERFORMANCE_API_KEY` in the test environment.
@@ -143,7 +144,7 @@ Before you add or change a test, read [Contributing/TESTING.md](Contributing/TES
 - Never update baselines automatically after a failure.
 - Use unit or integration tests for functional correctness. A performance baseline does not replace those tests.
 
-XCTest compares the mean of the iteration peaks with the JSON baseline plus its tolerance. A missing baseline or changed environment or workload fails the test. Record mode writes the selected entry to the source file. It preserves other entries and the previous tolerance.
+XCTest compares the mean of the iteration peaks with the JSON baseline plus the tolerance from the test. A missing baseline or changed environment or workload fails the test. Record mode writes the selected entry to the source file. It preserves other entries.
 
 The current Release build requires `ENABLE_TESTABILITY=YES` for internal SDK access. For command-line runs:
 

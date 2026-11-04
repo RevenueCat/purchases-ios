@@ -7,7 +7,6 @@
       "xcodeBuild" : "17A324"
     },
     "peakMemoryMiB" : 55.52786102294922,
-    "tolerancePercent" : 10,
     "workloadSHA256" : "c8a180f3987990f72428ffb0a0c6ad1a0884b7562b19eee6c259ec183a1f6814"
   }
 }

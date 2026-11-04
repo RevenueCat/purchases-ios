@@ -30,6 +30,7 @@ final class WorkflowPrewarmingMemoryTests: PerformanceTestCase {
     func testPublishWebBundleURLsPeakMemory() throws {
         try self.measureMemory(
             workloadSHA256: self.workload.sha256,
+            tolerancePercent: 10,
             prepare: { try await self.workload.prepareIteration() },
             operation: { await $0.run() },
             validate: { $0.validate() }

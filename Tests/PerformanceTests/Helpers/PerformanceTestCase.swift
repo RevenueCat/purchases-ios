@@ -32,6 +32,7 @@ class PerformanceTestCase: XCTestCase {
 
     func measureMemory<Context>(
         workloadSHA256: String,
+        tolerancePercent: Double,
         prepare: @escaping () async throws -> Context,
         operation: @escaping (Context) async throws -> Void,
         validate: (Context) -> Void,
@@ -64,6 +65,7 @@ class PerformanceTestCase: XCTestCase {
         guard peaks.count == options.iterationCount else { return }
         try MemoryBaseline.checkOrRecord(
             peakMemoryMiB: peaks.reduce(0, +) / Double(peaks.count),
+            tolerancePercent: tolerancePercent,
             testName: "\(type(of: self))/\(testName)",
             workloadSHA256: workloadSHA256,
             environment: try self.baselineEnvironment(),
