@@ -29,7 +29,8 @@ import UIKit
     /// Identifies the ad slot on
     public let placementID: String
 
-    /// Held weakly.
+    /// Receives the ad's lifecycle events (load, presentation, impression, click, dismissal).
+    /// Set it before calling ``load()``. Held weakly.
     public weak var delegate: AdsInterstitialDelegate?
 
     /// Whether the ad is loaded and can be presented.
