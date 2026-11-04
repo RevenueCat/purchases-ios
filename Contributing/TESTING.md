@@ -1,6 +1,6 @@
 # Where to test behavior
 
-- **PerformanceTests**: Memory regressions and changes to memory-sensitive SDK paths. Use `Tests/PerformanceTests/` and the shared benchmark command in `AGENTS.md`.
+- **PerformanceTests**: Memory regressions and changes to memory-sensitive SDK paths. Use `Tests/PerformanceTests/` and the baseline instructions in `AGENTS.md`.
 - **Unit tests**: Logic, state changes, and serialization. Use `Tests/UnitTests/` for the core SDK, `Tests/StoreKitUnitTests/` for StoreKit, and `Tests/RevenueCatUITests/` for RevenueCatUI logic.
 - **PaywallFixtures**: Paywall UI behavior with fixed data and no backend dependency. Examples include carousel pages across tabs, package selection, gestures, and accessibility. Add fixtures in `Tests/TestingApps/PaywallFixtures/` and XCUITests in `Tests/TestingApps/PaywallFixturesUITests/`.
 - **Maestro**: Complete app flows, such as purchases, entitlement updates, and workflow navigation. Use the app and YAML flows in `Projects/AutomatedSDKTestsApp/`.

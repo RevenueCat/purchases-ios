@@ -136,13 +136,25 @@ Before you add or change a test, read [Contributing/TESTING.md](Contributing/TES
 - Use `PerformanceTestCase.measureMemory` and keep backend setup, asynchronous waits, and workload construction in shared helpers.
 - Keep setup outside the measurement interval unless setup is the behavior under test. Verify that every iteration completes the expected work.
 - Verify benchmark sensitivity against a known regression before you use it as evidence for a performance improvement.
-- Set `REVENUECAT_PERFORMANCE_API_KEY` and run `python3 scripts/performance_tests.py` to compare memory measurements with stored baselines.
-- Use `python3 scripts/performance_tests.py --record --test Class/testMethod` to create or update a selected baseline. Review the baseline diff.
+- Run the `PerformanceTests` scheme on the baseline simulator. Set `REVENUECAT_PERFORMANCE_API_KEY` in the test environment.
+- Set `RECORD_PERFORMANCE_BASELINES=1` in the test environment to record a baseline. Run only the selected test.
+- Disable record mode after the run. Review the diff in `Tests/PerformanceTests/Baselines.json`.
 - Keep the workload, environment, and measurement interval consistent. Record a new baseline explicitly when these change.
 - Never update baselines automatically after a failure.
 - Use unit or integration tests for functional correctness. A performance baseline does not replace those tests.
 
-The command compares the mean of the iteration peaks with the baseline plus its tolerance. XCTest alone collects metrics without baseline enforcement.
+XCTest compares the mean of the iteration peaks with the JSON baseline plus its tolerance. A missing baseline or changed environment or workload fails the test. Record mode writes the selected entry to the source file. It preserves other entries and the previous tolerance.
+
+The current Release build requires `ENABLE_TESTABILITY=YES` for internal SDK access. For command-line runs:
+
+```sh
+TEST_RUNNER_REVENUECAT_PERFORMANCE_API_KEY="$REVENUECAT_PERFORMANCE_API_KEY" \
+xcodebuild test -workspace RevenueCat-Tuist.xcworkspace -scheme PerformanceTests \
+  -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=26.0' \
+  ENABLE_TESTABILITY=YES
+```
+
+Add `TEST_RUNNER_RECORD_PERFORMANCE_BASELINES=1` to record from the command line. Select one test with `-only-testing:PerformanceTests/Class/testMethod`.
 
 ## Development Workflow
 

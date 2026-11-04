@@ -37,15 +37,13 @@ class PerformanceTestCase: XCTestCase {
         validate: (Context) -> Void,
         testName: String = #function
     ) throws {
-        let metadata = ["test": "\(type(of: self))/\(testName)", "sha256": workloadSHA256]
-        let data = try JSONSerialization.data(withJSONObject: metadata, options: .sortedKeys)
-        let metadataJSON = try XCTUnwrap(String(bytes: data, encoding: .utf8))
-        print("PERFORMANCE_WORKLOAD \(metadataJSON)")
+        let metric = RecordingMemoryMetric()
+        let failuresBeforeMeasurement = self.testRun?.failureCount
         let options = XCTMeasureOptions()
         options.iterationCount = 5
         options.invocationOptions = [.manuallyStart, .manuallyStop]
         var failure: Error?
-        self.measure(metrics: [XCTMemoryMetric(), XCTClockMetric()], options: options) {
+        self.measure(metrics: [metric, XCTClockMetric()], options: options) {
             do {
                 let context = try self.waitForCompletion(prepare)
                 self.startMeasuring()
@@ -59,22 +57,34 @@ class PerformanceTestCase: XCTestCase {
             }
         }
         if let failure { throw failure }
+        guard self.testRun?.failureCount == failuresBeforeMeasurement else { return }
+        // XCTest excludes the first iteration from its results.
+        let peaks = metric.samples.peaksMiB.dropFirst()
+        XCTAssertEqual(peaks.count, options.iterationCount)
+        guard peaks.count == options.iterationCount else { return }
+        try MemoryBaseline.checkOrRecord(
+            peakMemoryMiB: peaks.reduce(0, +) / Double(peaks.count),
+            testName: "\(type(of: self))/\(testName)",
+            workloadSHA256: workloadSHA256,
+            environment: try self.baselineEnvironment(),
+            record: ProcessInfo.processInfo.environment["RECORD_PERFORMANCE_BASELINES"] == "1"
+        )
     }
 
-    private func waitForCompletion<Value>(_ operation: @escaping () async throws -> Value) throws -> Value {
-        let completed = self.expectation(description: "Performance operation completed")
-        let result = Atomic<Result<Value, Error>?>(nil)
-        let task = Task {
-            do {
-                result.value = .success(try await operation())
-            } catch {
-                result.value = .failure(error)
-            }
-            completed.fulfill()
-        }
-        defer { task.cancel() }
-        self.wait(for: [completed], timeout: 120)
-        return try XCTUnwrap(result.value).get()
+    private func baselineEnvironment() throws -> [String: String] {
+        let environment = ProcessInfo.processInfo.environment
+        #if arch(arm64)
+        let architecture = "arm64"
+        #else
+        let architecture = "x86_64"
+        #endif
+        return [
+            "architecture": architecture,
+            "model": try XCTUnwrap(environment["SIMULATOR_MODEL_IDENTIFIER"]),
+            "os": ProcessInfo.processInfo.operatingSystemVersionString,
+            "xcodeBuild": try XCTUnwrap(Bundle(for: PerformanceTestCase.self)
+                .object(forInfoDictionaryKey: "PerformanceXcodeBuild") as? String)
+        ]
     }
 
 }

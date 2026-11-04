@@ -262,7 +262,7 @@ let project = Project(
             product: .unitTests,
             bundleId: "com.revenuecat.PerformanceTests",
             deploymentTargets: .iOS("15.0"),
-            infoPlist: .default,
+            infoPlist: .extendingDefault(with: ["PerformanceXcodeBuild": "$(XCODE_PRODUCT_BUILD_VERSION)"]),
             sources: [
                 "../../Tests/PerformanceTests/**/*.swift"
             ],

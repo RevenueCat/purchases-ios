@@ -1,15 +1,13 @@
 {
-  "WorkflowPrewarmingMemoryTests/testPublishWebBundleURLsPeakMemory()": {
-    "environment": {
-      "architecture": "arm64",
-      "modelName": "iPhone 17 Pro",
-      "osBuildNumber": "23A343",
-      "osVersion": "26.0",
-      "platform": "iOS Simulator",
-      "xcode": "Xcode 26.0 / Build version 17A324"
+  "WorkflowPrewarmingMemoryTests/testPublishWebBundleURLsPeakMemory()" : {
+    "environment" : {
+      "architecture" : "arm64",
+      "model" : "iPhone18,1",
+      "os" : "Version 26.0 (Build 23A343)",
+      "xcodeBuild" : "17A324"
     },
-    "peakMemoryMiB": 30.96,
-    "tolerancePercent": 10,
-    "workloadSHA256": "2b2fc22a0d72d01bc28024672020eee716e5339040040b17714e022b1820266d"
+    "peakMemoryMiB" : 55.52786102294922,
+    "tolerancePercent" : 10,
+    "workloadSHA256" : "c8a180f3987990f72428ffb0a0c6ad1a0884b7562b19eee6c259ec183a1f6814"
   }
 }
