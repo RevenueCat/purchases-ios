@@ -84,6 +84,7 @@ class SystemInfo {
     private let _finishTransactions: Atomic<Bool>
     private let _isAppBackgroundedState: Atomic<Bool>
     private let _bundle: Atomic<Bundle>
+    private let _isSandbox: Atomic<Bool?> = nil
 
     private static let _forceUniversalAppStore: Atomic<Bool> = false
     private static let _proxyURL: Atomic<URL?> = nil
@@ -92,12 +93,16 @@ class SystemInfo {
     static let defaultApiBaseURL = URL(string: "https://api.revenuecat.com")!
     private static let _apiBaseURL: Atomic<URL> = .init(defaultApiBaseURL)
 
-    private lazy var _isSandbox: Bool = {
-        return self.sandboxEnvironmentDetector.isSandbox
-    }()
-
     var isSandbox: Bool {
-        return self._isSandbox
+        return self._isSandbox.modify { cachedValue in
+            if let cachedValue {
+                return cachedValue
+            }
+
+            let isSandbox = self.sandboxEnvironmentDetector.isSandbox
+            cachedValue = isSandbox
+            return isSandbox
+        }
     }
 
     /// Whether remote config lifecycle wiring is enabled. Paywall workflows read entirely through
@@ -120,7 +125,7 @@ class SystemInfo {
     }
 
     static var frameworkVersion: String {
-        return "5.100.0-SNAPSHOT"
+        return "5.103.0-SNAPSHOT"
     }
 
     static var installationMethod: String {
@@ -128,6 +133,8 @@ class SystemInfo {
         return "spm"
         #elseif COCOAPODS
         return "cocoapods"
+        #elseif CARTHAGE_SOURCE
+        return "carthage_source"
         #elseif RC_XCFRAMEWORK
         return "xcframework"
         #else
@@ -333,6 +340,10 @@ class SystemInfo {
 
     func overridePreferredLocale(_ locale: String?) {
         self.preferredLocalesProvider.overridePreferredLocale(locale)
+    }
+
+    func setPreferApplicationLocale(_ enabled: Bool) {
+        self.preferredLocalesProvider.setPreferApplicationLocale(enabled)
     }
 }
 

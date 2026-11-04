@@ -1,3 +1,65 @@
+## 5.102.0
+## RevenueCat SDK
+### ✨ New Features
+* feat(ads): dispatch checkpoint ad presentation by format (#7786) via Peter Porfy (@peterporfy)
+* feat(ads): extend admob presenter with rewarded support (#7785) via Peter Porfy (@peterporfy)
+### 🐞 Bugfixes
+* fix: preserve workflow attribution in custom paywall impressions (#8183) via Álvaro Marco (@amarco90)
+### Paywallsv2
+#### 🐞 Bugfixes
+* fix: Reduce CPU usage when downloading large assets (#8177) via Rick (@rickvdl)
+
+## RevenueCatUI SDK
+### 🐞 Bugfixes
+* Fix(Paywalls) Prioritize app locale (#8165) via Jacob Rakidzich (@JZDesign)
+
+### 🔄 Other Changes
+* feat(checkpoints): Add internal error dialog factory for checkpoints (#8134) via Cesar de la Vega (@vegaro)
+* Move PurchaseTester to Projects (#8189) via Facundo Menzella (@facumenzella)
+* other: move the checkpoint samples to SampleCat and delete CheckpointTester (#8162) via Facundo Menzella (@facumenzella)
+* lint: add SwiftLint rule against Int for epoch milliseconds (#8181) via Will Taylor (@fire-at-will)
+* ci: limit the Lock Threads token to `issues: write` (#8178) via Álvaro Brey (@AlvaroBrey)
+* ci: run actionlint from the shared workflow (#8159) via Álvaro Brey (@AlvaroBrey)
+* WFL-800 send step analytics for all step types in a flow (#8160) via Rosie Watson (@RosieWatson)
+
+## 5.101.0
+## RevenueCat SDK
+### ✨ New Features
+* feat(ads): AdMob interstitial checkpoint presenter (#7784) via Peter Porfy (@peterporfy)
+### 🐞 Bugfixes
+* Fix diagnostics timestamp overflow on 32-bit watchOS (#8170) via Josh Holtz (@joshdholtz)
+### 📦 Dependency Updates
+* [RENOVATE] Update dependency revenuecat to v4.7.1 (#8168) via RevenueCat Git Bot (@RCGitBot)
+
+## RevenueCatUI SDK
+### Paywallsv2
+#### ✨ New Features
+* feat(paywalls): Resume each carousel on its last page when returning to its tab (#8077) via Vinh P. Dinh (@vpdn)
+#### 🐞 Bugfixes
+* Fix video playback on inactive workflow pages (#8131) via Facundo Menzella (@facumenzella)
+
+### 🔄 Other Changes
+* Support Google IAM identities (#8136) via Dave DeLong (@davedelong)
+
+## 5.100.0
+## RevenueCat SDK
+### ✨ New Features
+* feat(checkpoints): ad checkpoint presenter (#7783) via Peter Porfy (@peterporfy)
+### 🐞 Bugfixes
+* Avoid repeated rejected SK2 observer-mode history submissions (#8142) via Josh Holtz (@joshdholtz)
+
+## RevenueCatUI SDK
+### 🐞 Bugfixes
+* fix: Explain why a workflow step's offering is not found (#8141) via Cesar de la Vega (@vegaro)
+
+### 🔄 Other Changes
+* Chore(deps): Bump fastlane from 2.241.1 to 2.241.2 (#8158) via dependabot[bot] (@dependabot[bot])
+* Don't block releases on CocoaPods publishing (#8125) via Álvaro Brey (@AlvaroBrey)
+* Detect Carthage source installations (#8144) via Antonio Pallares (@ajpallares)
+* Fix flaky StoreKit transaction fetcher test on iOS 17 (#8139) via Rick (@rickvdl)
+* docs: add behavior testing guide (#8106) via Facundo Menzella (@facumenzella)
+* other(maestro): add checkpoint purchase flows with the SDK presenter (#8132) via Facundo Menzella (@facumenzella)
+
 ## 5.99.2
 ## RevenueCat SDK
 ### 🐞 Bugfixes

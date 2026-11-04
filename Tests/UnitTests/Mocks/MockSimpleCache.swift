@@ -36,7 +36,7 @@ class MockSimpleCache: LargeItemCacheType, @unchecked Sendable {
     }
 
     func saveData(_ data: Data, to url: URL) throws {
-        saveDataInvocations.append(.init(data: data, url: url))
+        saveDataInvocations.append(.init(data: data, url: url, checksum: nil))
 
         if saveDataResponses.indices.contains(saveDataInvocations.count - 1) {
             switch saveDataResponses[saveDataInvocations.count - 1] {
@@ -49,25 +49,20 @@ class MockSimpleCache: LargeItemCacheType, @unchecked Sendable {
     }
 
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, visionOS 1.0, watchOS 8.0, *)
-    func saveData(
-        _ bytes: AsyncThrowingStream<UInt8, any Error>,
+    func saveDownloadedFile(
+        fromTemporaryURL temporaryURL: URL,
         to url: URL,
         checksum: RevenueCat.Checksum?
-    ) async throws {
+    ) throws {
         let count = saveDataInvocations.count
-        var data = Data()
+        let data = try Data(contentsOf: temporaryURL)
+        defer { try? FileManager.default.removeItem(at: temporaryURL) }
 
-        for try await byte in bytes {
-            data.append(contentsOf: [byte])
-        }
+        self.saveDataInvocations.append(.init(data: data, url: url, checksum: checksum))
 
-        self.saveDataInvocations.append(.init(data: data, url: url))
-
-        switch saveDataResponses[count] {
-        case .failure(let error):
+        if saveDataResponses.indices.contains(count),
+           case .failure(let error) = saveDataResponses[count] {
             throw error
-        default:
-            break
         }
     }
 
@@ -143,6 +138,13 @@ class MockSimpleCache: LargeItemCacheType, @unchecked Sendable {
     struct SaveData: Equatable {
         var data: Data
         var url: URL
+        var checksum: Checksum?
+
+        init(data: Data, url: URL, checksum: Checksum? = nil) {
+            self.data = data
+            self.url = url
+            self.checksum = checksum
+        }
     }
 }
 

@@ -18,6 +18,20 @@ import XCTest
 
 class BackendErrorCodeTests: TestCase {
 
+    // MARK: - oldReplayedReceipt
+
+    func testOldReplayedReceiptDecodesFromItsRawIntValue() {
+        expect(BackendErrorCode(code: 7934)) == .oldReplayedReceipt
+    }
+
+    func testOldReplayedReceiptDecodesFromItsRawStringValue() {
+        expect(BackendErrorCode(code: "7934")) == .oldReplayedReceipt
+    }
+
+    func testOldReplayedReceiptMapsToUnknownBackendError() {
+        expect(BackendErrorCode.oldReplayedReceipt.toPurchasesErrorCode()) == .unknownBackendError
+    }
+
     // MARK: - invalidIAMToken
 
     func testInvalidIAMTokenDecodesFromItsRawIntValue() {

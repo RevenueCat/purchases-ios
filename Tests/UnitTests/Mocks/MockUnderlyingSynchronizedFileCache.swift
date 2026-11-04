@@ -53,16 +53,13 @@ extension SynchronizedLargeItemCache {
         }
 
         @available(iOS 15.0, macOS 12.0, tvOS 15.0, visionOS 1.0, watchOS 8.0, *)
-        func saveData(
-            _ bytes: AsyncThrowingStream<UInt8, any Error>,
+        func saveDownloadedFile(
+            fromTemporaryURL temporaryURL: URL,
             to url: URL,
             checksum: RevenueCat.Checksum?
-        ) async throws {
-            var data = Data()
-
-            for try await byte in bytes {
-                data.append(contentsOf: [byte])
-            }
+        ) throws {
+            let data = try Data(contentsOf: temporaryURL)
+            defer { try? FileManager.default.removeItem(at: temporaryURL) }
 
             self.saveDataInvocations.append(.init(data: data, url: url))
 

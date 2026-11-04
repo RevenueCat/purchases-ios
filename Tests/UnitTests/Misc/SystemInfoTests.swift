@@ -1,7 +1,7 @@
 import Nimble
 import XCTest
 
-@testable import RevenueCat
+@_spi(Internal) @testable import RevenueCat
 
 #if os(watchOS)
 import WatchKit
@@ -36,7 +36,7 @@ class SystemInfoTests: TestCase {
     func testInstallationMethodIsNotEmpty() {
         let method = SystemInfo.installationMethod
         expect(method).toNot(beEmpty())
-        expect(["spm", "cocoapods", "xcframework", "unknown"]).to(contain(method))
+        expect(["spm", "cocoapods", "carthage_source", "xcframework", "unknown"]).to(contain(method))
     }
 
     func testFinishTransactions() {
@@ -70,6 +70,38 @@ class SystemInfoTests: TestCase {
 
         expect(SystemInfo.withReceiptResult(.sandboxReceipt, sandboxDetector).isSandbox) == false
         expect(SystemInfo.withReceiptResult(.appStoreReceipt, sandboxDetector).isSandbox) == false
+    }
+
+    func testIsSandboxIsComputedOnlyOnceWhenAccessedConcurrently() {
+        let sandboxDetector = SynchronizingSandboxEnvironmentDetector()
+        let systemInfo = SystemInfo(
+            platformInfo: nil,
+            finishTransactions: false,
+            sandboxEnvironmentDetector: sandboxDetector,
+            apiKey: "api_key",
+            preferredLocalesProvider: .mock()
+        )
+        let workersReady = DispatchSemaphore(value: 0)
+        let startWorkers = DispatchSemaphore(value: 0)
+        let workersFinished = DispatchGroup()
+
+        for _ in 0..<2 {
+            workersFinished.enter()
+            DispatchQueue.global().async {
+                workersReady.signal()
+                startWorkers.wait()
+                _ = systemInfo.isSandbox
+                workersFinished.leave()
+            }
+        }
+
+        workersReady.wait()
+        workersReady.wait()
+        startWorkers.signal()
+        startWorkers.signal()
+        workersFinished.wait()
+
+        expect(sandboxDetector.callCount) == 1
     }
 
     func testIsAppleSubscriptionURLWithAnotherURL() {
@@ -108,6 +140,88 @@ class SystemInfoTests: TestCase {
                               apiKey: "api_key",
                               preferredLocalesProvider: localesProvider)
         expect(info.preferredLocales).to(equal(["fr_FR", "de_DE", "en_US"]))
+    }
+
+    func testPreferredLocalesPrioritizesAppLanguageOverDeviceLanguage() {
+        let provider: PreferredLocalesProvider = .mock(bundlePreferredLocale: "en",
+                                                       locales: ["zh-Hans", "fr_FR"])
+        provider.setPreferApplicationLocale(true)
+
+        expect(provider.preferredLocales) == ["en", "zh-Hans", "fr_FR"]
+    }
+
+    func testPreferredLocalesOverrideTakesPrecedenceOverAppLanguage() {
+        let provider: PreferredLocalesProvider = .mock(preferredLocaleOverride: "es_ES",
+                                                       bundlePreferredLocale: "en",
+                                                       locales: ["zh-Hans", "fr_FR"])
+        provider.setPreferApplicationLocale(true)
+
+        expect(provider.preferredLocales) == ["es_ES", "en", "zh-Hans", "fr_FR"]
+
+        provider.overridePreferredLocale(nil)
+
+        expect(provider.preferredLocales) == ["en", "zh-Hans", "fr_FR"]
+    }
+
+    func testPreferredLocalesIgnoresAppLanguageByDefault() {
+        let provider: PreferredLocalesProvider = .mock(bundlePreferredLocale: "en", locales: ["zh-Hans"])
+
+        expect(provider.preferredLocales) == ["zh-Hans"]
+    }
+
+    func testDisablingAppLanguagePreservesExplicitOverride() {
+        let provider: PreferredLocalesProvider = .mock(preferredLocaleOverride: "es_ES",
+                                                       bundlePreferredLocale: "en",
+                                                       locales: ["zh-Hans"])
+        provider.setPreferApplicationLocale(true)
+        provider.setPreferApplicationLocale(false)
+
+        expect(provider.preferredLocales) == ["es_ES", "zh-Hans"]
+    }
+
+    func testPreferringAppLanguageFallsBackWhenBundleHasNoLocalization() {
+        let provider: PreferredLocalesProvider = .mock(locales: ["zh-Hans"])
+        provider.setPreferApplicationLocale(true)
+
+        expect(provider.preferredLocales) == ["zh-Hans"]
+    }
+
+    func testAppLanguagePreservesRegionalPaywallLocale() {
+        let cases: [(app: String, system: [String], available: [String], expected: String)] = [
+            ("en", ["en-GB"], ["en_US", "en_GB"], "en_GB"),
+            ("pt", ["pt-PT"], ["pt_BR", "pt_PT"], "pt_PT"),
+            ("en", ["zh-Hans", "en-GB"], ["zh_Hans", "en_US", "en_GB"], "en_GB"),
+            ("en", ["zh-Hans"], ["zh_Hans", "en_US"], "en_US"),
+            ("en_US", ["en-GB"], ["en_US", "en_GB"], "en_US"),
+            ("zh-Hans", ["zh-Hant-TW"], ["zh_Hans", "zh_Hant"], "zh_Hans")
+        ]
+
+        for testCase in cases {
+            let provider: PreferredLocalesProvider = .mock(bundlePreferredLocale: testCase.app,
+                                                           locales: testCase.system)
+            provider.setPreferApplicationLocale(true)
+
+            let selectedLocale = Locale.selectPreferredLocale(
+                from: testCase.available.map(Locale.init(identifier:)),
+                preferredLocales: provider.preferredLocales.map(Locale.init(identifier:))
+            )
+
+            expect(selectedLocale).to(equal(Locale(identifier: testCase.expected)),
+                                      description: "App \(testCase.app), system \(testCase.system)")
+        }
+    }
+
+    func testAppLanguagePromotionDeduplicatesLocalesAndPreservesOverride() {
+        let provider: PreferredLocalesProvider = .mock(preferredLocaleOverride: "fr_FR",
+                                                       bundlePreferredLocale: "en",
+                                                       locales: ["zh-Hans", "en-GB", "en", "fr_FR"])
+        provider.setPreferApplicationLocale(true)
+
+        expect(provider.preferredLocales) == ["fr_FR", "en-GB", "en", "zh-Hans"]
+        expect(Locale.selectPreferredLocale(
+            from: [Locale(identifier: "en_GB"), Locale(identifier: "fr_FR")],
+            preferredLocales: provider.preferredLocales.map(Locale.init(identifier:))
+        )) == Locale(identifier: "fr_FR")
     }
 
     // MARK: - identifierForVendor
@@ -206,6 +320,27 @@ class SystemInfoTests: TestCase {
                                     dangerousSettings: dangerousSettings,
                                     preferredLocalesProvider: .mock())
         expect(systemInfo.remoteConfigEnabled) == false
+    }
+
+}
+
+private final class SynchronizingSandboxEnvironmentDetector: SandboxEnvironmentDetector, @unchecked Sendable {
+
+    private let calls: Atomic<Int> = .init(0)
+    private let secondCallStarted = DispatchSemaphore(value: 0)
+
+    var callCount: Int { self.calls.value }
+
+    var isSandbox: Bool {
+        let callCount = self.calls.increment()
+
+        if callCount == 1 {
+            _ = self.secondCallStarted.wait(timeout: .now() + 0.25)
+        } else {
+            self.secondCallStarted.signal()
+        }
+
+        return true
     }
 
 }

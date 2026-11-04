@@ -11,6 +11,7 @@
 //
 //  Created by Josh Holtz on 11/14/24.
 
+import Foundation
 @_spi(Internal) import RevenueCat
 import SwiftUI
 
@@ -77,10 +78,27 @@ class PackageContext: ObservableObject {
         var didUserSelectPackage = false
         var didSeedInitialState = false
 
+        @MainActor
+        private var appearedViewIDs: Set<UUID> = []
+
         init(parent: PackageContext, viewModel: TabsComponentViewModel) {
             self.viewModel = viewModel
             self.parentOwnedPackage = parent.package
             self.parentOwnedVariableContext = parent.variableContext
+        }
+
+        /// Duplicate renderings share appearance tracking within this presentation context.
+        /// Returning after every copy disappeared must restore the selected tab's package.
+        @MainActor
+        func registerAppearance(id: UUID) -> Bool {
+            let isFirstAppearance = self.appearedViewIDs.isEmpty
+            self.appearedViewIDs.insert(id)
+            return isFirstAppearance
+        }
+
+        @MainActor
+        func unregisterAppearance(id: UUID) {
+            self.appearedViewIDs.remove(id)
         }
 
     }

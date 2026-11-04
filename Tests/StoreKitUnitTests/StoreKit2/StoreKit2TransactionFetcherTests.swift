@@ -73,12 +73,13 @@ class StoreKit2TransactionFetcherTests: StoreKitConfigTestCase {
     }
 
     func testFiltersOutFinishedTransaction() async throws {
-        _ = try await self.createTransaction(productID: Self.product1, finished: true)
+        let finishedTransaction = try await self.createTransaction(productID: Self.product1, finished: false)
+        // On iOS 17, finish() can be lost if purchase() returns before the transaction enters this queue.
+        try await self.waitUntilUnfinishedTransactions(condition: { $0 == 1 }, timeout: .seconds(10))
+        try await XCTUnwrap(finishedTransaction.sk2Transaction).finish()
         let transaction = try await self.createTransaction(productID: Self.product2, finished: false)
 
-        // `finish()` is eventually consistent on OS 27: the finished transaction can still be
-        // listed in `Transaction.unfinished` for a short while after it returns, which would
-        // otherwise make the fetcher report both transactions here.
+        // On iOS 27, finish() is eventually consistent. This also waits for the second transaction to appear.
         try await self.waitUntilUnfinishedTransactions(condition: { $0 == 1 }, timeout: .seconds(10))
 
         let result = await self.fetcher.unfinishedVerifiedTransactions

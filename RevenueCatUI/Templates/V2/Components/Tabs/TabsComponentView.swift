@@ -84,6 +84,8 @@ struct TabsComponentView: View {
             workflowDefaultPackage: self.workflowPackageContext?.selectedPackage,
             onDismiss: self.onDismiss
         )
+        // Nested tabs at the same parent index must initialize state for their own view model.
+        .id(ObjectIdentifier(self.viewModel))
     }
 }
 
@@ -137,6 +139,9 @@ struct LoadedTabsComponentView: View {
     private var tabControlContext: TabControlContext
 
     private let selectionState: PackageContext.TabsState
+
+    @State
+    private var appearanceID = UUID()
 
     private var tierPackageContexts: [String: PackageContext] {
         self.viewModel.tabViewModels.mapValues { tab in
@@ -402,6 +407,7 @@ struct LoadedTabsComponentView: View {
                 }
             }
             .onAppear {
+                let shouldRestorePackage = self.selectionState.registerAppearance(id: self.appearanceID)
                 // The provisional selection made in `init` couldn't evaluate variable/eligibility rules.
                 self.reconcileSelection(tierPackageContext, tabViewModel: activeTabViewModel)
                 if !self.packageContext.isPresentingSheet, !self.selectionState.didSeedInitialState {
@@ -410,17 +416,22 @@ struct LoadedTabsComponentView: View {
                     // render their correct state on first appearance. A no-op when the declared
                     // default already matches the initial tab.
                     self.publishSelectedTabState(self.tabControlContext.selectedTabId)
-                    // Propagate the initial tab's package to parent context for the purchase button.
-                    // Subsequent changes are handled by the onChange callback in LoadedTabComponentView.
-                    // A package-less tab shares that context, so it has nothing to propagate.
-                    if let package = tierPackageContext.package, tierPackageContext !== self.packageContext {
-                        self.packageContext.update(
-                            package: package,
-                            variableContext: tierPackageContext.variableContext,
-                            isReconcile: true
-                        )
-                    }
                 }
+                // Restore the visible tab on a revisit too, without a duplicate measuring branch
+                // overwriting a selection that the displayed copy has already propagated.
+                if shouldRestorePackage,
+                   !self.packageContext.isPresentingSheet,
+                   let package = tierPackageContext.package,
+                   tierPackageContext !== self.packageContext {
+                    self.packageContext.update(
+                        package: package,
+                        variableContext: tierPackageContext.variableContext,
+                        isReconcile: true
+                    )
+                }
+            }
+            .onDisappear {
+                self.selectionState.unregisterAppearance(id: self.appearanceID)
             }
             // MARK: - Tab Switch Handling
             //

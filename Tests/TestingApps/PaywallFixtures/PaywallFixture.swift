@@ -52,6 +52,8 @@ enum PaywallFixture: String, CaseIterable {
 
     /// A button opening a bottom sheet, for checking what is reachable while it is up.
     case sheetOverContent = "sheet_over_content"
+    case carouselTabs = "carousel_tabs"
+    case nestedBillingTabs = "nested_billing_tabs"
 
     /// Root, active tabs, and a sheet each declare a different default package.
     case competingSheetDefaults = "competing_sheet_defaults"
@@ -59,6 +61,10 @@ enum PaywallFixture: String, CaseIterable {
 
     var title: String {
         switch self {
+        case .nestedBillingTabs:
+            return "Nested billing tabs across tiers"
+        case .carouselTabs:
+            return "Carousel pages across tabs"
         case .iconOnlyButton:
             return "Icon-only button"
         case .mixedTabsPageDefault:
@@ -90,6 +96,10 @@ enum PaywallFixture: String, CaseIterable {
 
     var componentsData: PaywallComponentsData {
         switch self {
+        case .nestedBillingTabs:
+            return Self.nestedBillingTabsComponentsData()
+        case .carouselTabs:
+            return Self.carouselTabsComponentsData()
         case .iconOnlyButton:
             return Self.iconOnlyButtonComponentsData()
         case .mixedTabsPageDefault:
@@ -127,7 +137,7 @@ enum PaywallFixture: String, CaseIterable {
     /// A component referencing a package the offering lacks renders with no product.
     var packages: [Package] {
         switch self {
-        case .iconOnlyButton, .fixedPillOverflowScroll:
+        case .iconOnlyButton, .fixedPillOverflowScroll, .carouselTabs:
             return [Self.monthlyPackage(offeringIdentifier: self.rawValue)]
         case .spokenTextAndLinks, .sheetOverContent:
             return [Self.annualPackage(offeringIdentifier: self.rawValue)]
@@ -142,7 +152,7 @@ enum PaywallFixture: String, CaseIterable {
                 Self.weeklyPackage(offeringIdentifier: self.rawValue),
                 Self.lifetimePackage(offeringIdentifier: self.rawValue)
             ]
-        case .reportedTabs:
+        case .reportedTabs, .nestedBillingTabs:
             return Self.reportedTabsPackages(offeringIdentifier: self.rawValue)
         case .competingSheetDefaults, .manualRootSelectionVisibility:
             return [

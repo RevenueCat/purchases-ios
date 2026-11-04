@@ -1,6 +1,6 @@
 orbs:
   macos: circleci/macos@2.5.1
-  revenuecat: revenuecat/sdks-common-config@4.7.0
+  revenuecat: revenuecat/sdks-common-config@4.7.1
   # Disabled until compatible with M1: codecov: codecov/codecov@3.3.0
   # codecov: codecov/codecov@3.3.0
 
@@ -1213,20 +1213,41 @@ jobs:
           destination: scan-test-output-ios-26
       - github-notify-pr-on-fail
 
-  build-checkpoint-tester:
+  build-samplecat:
     executor:
       name: macos-executor
       xcode_version: "27.0.0"
     steps:
       - checkout
       - tuist-generate-workspace:
-          query: "CheckpointTester"
+          query: "SampleCat"
       - run:
-          name: Build CheckpointTester
+          name: Build SampleCat
+          # The sample's Constants.swift has #error lines until a developer sets their own API key.
+          command: >-
+            sed -i '' 's/^\( *\)#error/\1\/\/ #error/' Examples/SampleCat/SampleCat/Constants.swift &&
+            xcodebuild
+            -workspace RevenueCat-Tuist.xcworkspace
+            -scheme SampleCat
+            -destination "generic/platform=iOS Simulator"
+            CODE_SIGNING_ALLOWED=NO
+            build
+          no_output_timeout: 30m
+
+  build-purchase-tester:
+    executor:
+      name: macos-executor
+      xcode_version: "27.0.0"
+    steps:
+      - checkout
+      - tuist-generate-workspace:
+          query: "PurchaseTester"
+      - run:
+          name: Build PurchaseTester
           command: >-
             xcodebuild
             -workspace RevenueCat-Tuist.xcworkspace
-            -scheme CheckpointTester
+            -scheme PurchaseTester
             -destination "generic/platform=iOS Simulator"
             CODE_SIGNING_ALLOWED=NO
             build
@@ -1584,7 +1605,7 @@ jobs:
       - install-dependencies
       - revenuecat/install-maestro
       - tuist-generate-workspace:
-          query: "Maestro"
+          query: "AutomatedSDKTestsApp"
       # Create directory to track test failures
       - run:
           name: Initialize test tracking
@@ -1710,7 +1731,7 @@ jobs:
       - install-dependencies
       - revenuecat/install-maestro
       - tuist-generate-workspace:
-          query: "Maestro"
+          query: "AutomatedSDKTestsApp"
       - run:
           name: Set API key for workflow e2e tests (test_store)
           command: |
@@ -2461,7 +2482,10 @@ workflows:
       - run-test-ios-27:
           context:
             - slack-secrets
-      - build-checkpoint-tester:
+      - build-samplecat:
+          context:
+            - slack-secrets
+      - build-purchase-tester:
           context:
             - slack-secrets
       - pod-lib-lint:
@@ -2655,7 +2679,8 @@ workflows:
             - lint
             - check-api-changes
             - run-test-ios-27
-            - build-checkpoint-tester
+            - build-samplecat
+            - build-purchase-tester
             - pod-lib-lint
             - run-revenuecat-ui-ios-27
             - run-revenuecat-ui-ios-26
@@ -2717,7 +2742,8 @@ workflows:
           <<: *release-tags
       - make-release:
           requires:
-            - push-revenuecatui-pod
+            # TODO: restore after Nov 7, 2026, once CocoaPods trunk is writable again.
+            # - push-revenuecatui-pod
             - deploy-to-spm
             - docs-deploy
           <<: *release-tags

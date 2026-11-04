@@ -25,12 +25,6 @@ import Foundation
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 final class WorkflowStepEventTracker {
 
-    enum EntryReason: String {
-        case start
-        case forward
-        case back
-    }
-
     private let workflow: PublishedWorkflow
     /// The step `initialTrigger` picked, once shown. `initialStepId` is only its fallback.
     private var resolvedInitialStepId: String?
@@ -57,8 +51,7 @@ final class WorkflowStepEventTracker {
     }
 
     /// Emits `stepCompleted` for the step being left, then `stepStarted` for the step being entered.
-    /// Mirrors Android's `trackWorkflowStepNavigation`.
-    func trackNavigation(from fromStep: WorkflowStep, to toStep: WorkflowStep, entryReason: EntryReason) {
+    func trackNavigation(from fromStep: WorkflowStep, to toStep: WorkflowStep, entryReason: WorkflowEvent.EntryReason) {
         self.trackStepCompleted(fromStep, toStepId: toStep.id)
         self.trackStepStarted(toStep, fromStepId: fromStep.id, entryReason: entryReason)
     }
@@ -87,7 +80,7 @@ final class WorkflowStepEventTracker {
         )
     }
 
-    private func trackStepStarted(_ step: WorkflowStep, fromStepId: String?, entryReason: EntryReason) {
+    private func trackStepStarted(_ step: WorkflowStep, fromStepId: String?, entryReason: WorkflowEvent.EntryReason) {
         self.sink(
             .stepStarted(
                 .init(),
@@ -116,18 +109,8 @@ final class WorkflowStepEventTracker {
             isLastStep: Self.isTerminalStep(step),
             workflowBlobRef: self.workflowBlobRef,
             fallbackOriginalStepId: step.fallbackOriginalStepId,
-            experiment: self.experimentData(for: step)
+            experiment: step.experimentData(workflowBlobRef: self.workflowBlobRef)
         )
-    }
-
-    private func experimentData(for step: WorkflowStep) -> WorkflowEvent.ExperimentData? {
-        guard let experimentId = step.experimentId,
-              let experimentVariant = step.experimentVariant,
-              self.workflowBlobRef != nil else {
-            return nil
-        }
-
-        return .init(experimentId: experimentId, experimentVariant: experimentVariant)
     }
 
     /// A step is terminal when none of its trigger actions navigate to another step.

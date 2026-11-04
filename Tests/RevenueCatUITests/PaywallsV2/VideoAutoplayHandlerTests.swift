@@ -11,6 +11,7 @@
 //
 //  Created by RevenueCat on 2/2/26.
 
+import AVFoundation
 import Combine
 @testable import RevenueCatUI
 import XCTest
@@ -38,7 +39,7 @@ class VideoAutoplayHandlerTests: TestCase {
 
     func testResumesPlaybackWhenReturningFromBackgroundWhilePlaying() {
         // Given: Video was playing before backgrounding
-        mockPlayer.isPlaying = true
+        mockPlayer.isPlaybackRequested = true
         handler = VideoAutoplayHandler(
             playbackController: mockPlayer,
             lifecycleObserver: mockLifecycle
@@ -48,7 +49,7 @@ class VideoAutoplayHandlerTests: TestCase {
         mockLifecycle.triggerWillResignActive()
 
         // And: App returns to foreground (player might have stopped)
-        mockPlayer.isPlaying = false
+        mockPlayer.isPlaybackRequested = false
         mockLifecycle.triggerDidBecomeActive()
 
         // Then: Playback should resume
@@ -57,7 +58,7 @@ class VideoAutoplayHandlerTests: TestCase {
 
     func testDoesNotResumePlaybackWhenWasNotPlayingBeforeBackground() {
         // Given: Video was paused before backgrounding
-        mockPlayer.isPlaying = false
+        mockPlayer.isPlaybackRequested = false
         handler = VideoAutoplayHandler(
             playbackController: mockPlayer,
             lifecycleObserver: mockLifecycle
@@ -81,16 +82,16 @@ class VideoAutoplayHandlerTests: TestCase {
         )
 
         // First cycle: playing -> background -> foreground
-        mockPlayer.isPlaying = true
+        mockPlayer.isPlaybackRequested = true
         mockLifecycle.triggerWillResignActive()
-        mockPlayer.isPlaying = false
+        mockPlayer.isPlaybackRequested = false
         mockLifecycle.triggerDidBecomeActive()
 
         XCTAssertTrue(mockPlayer.playWasCalled)
         mockPlayer.playWasCalled = false
 
         // Second cycle: not playing -> background -> foreground
-        mockPlayer.isPlaying = false
+        mockPlayer.isPlaybackRequested = false
         mockLifecycle.triggerWillResignActive()
         mockLifecycle.triggerDidBecomeActive()
 
@@ -98,7 +99,7 @@ class VideoAutoplayHandlerTests: TestCase {
     }
 
     func testHandleWillResignActiveRecordsPlayingState() {
-        mockPlayer.isPlaying = true
+        mockPlayer.isPlaybackRequested = true
         handler = VideoAutoplayHandler(
             playbackController: mockPlayer,
             lifecycleObserver: mockLifecycle
@@ -108,14 +109,14 @@ class VideoAutoplayHandlerTests: TestCase {
         handler.handleWillResignActive()
 
         // Verify state was recorded by checking behavior on foreground
-        mockPlayer.isPlaying = false
+        mockPlayer.isPlaybackRequested = false
         handler.handleDidBecomeActive()
 
         XCTAssertTrue(mockPlayer.playWasCalled)
     }
 
     func testHandleDidBecomeActiveDoesNothingWhenWasNotPlaying() {
-        mockPlayer.isPlaying = false
+        mockPlayer.isPlaybackRequested = false
         handler = VideoAutoplayHandler(
             playbackController: mockPlayer,
             lifecycleObserver: mockLifecycle
@@ -129,7 +130,7 @@ class VideoAutoplayHandlerTests: TestCase {
 
     func testDoesNotResumeAfterInvalidate() {
         // Given: video was playing and recorded before backgrounding
-        mockPlayer.isPlaying = true
+        mockPlayer.isPlaybackRequested = true
         handler = VideoAutoplayHandler(
             playbackController: mockPlayer,
             lifecycleObserver: mockLifecycle
@@ -138,7 +139,7 @@ class VideoAutoplayHandlerTests: TestCase {
 
         // When: the player is torn down (handler invalidated) before returning to foreground
         handler.invalidate()
-        mockPlayer.isPlaying = false
+        mockPlayer.isPlaybackRequested = false
         mockLifecycle.triggerDidBecomeActive()
 
         // Then: playback must NOT resume for a dismantled player
@@ -148,17 +149,60 @@ class VideoAutoplayHandlerTests: TestCase {
         )
     }
 
+    func testAutoplayWaitsUntilThePageBecomesActive() {
+        handler = VideoAutoplayHandler(
+            playbackController: mockPlayer,
+            lifecycleObserver: mockLifecycle,
+            isPlaybackEnabled: false
+        )
+        handler.play()
+        XCTAssertFalse(mockPlayer.playWasCalled)
+        handler.setPlaybackEnabled(true)
+        XCTAssertTrue(mockPlayer.playWasCalled)
+    }
+
+    func testPageReactivationWaitsForTheAppToReturnToForeground() {
+        mockPlayer.isPlaybackRequested = true
+        handler = VideoAutoplayHandler(playbackController: mockPlayer, lifecycleObserver: mockLifecycle)
+        mockLifecycle.triggerWillResignActive()
+        mockPlayer.isPlaybackRequested = false
+        handler.setPlaybackEnabled(false)
+        handler.setPlaybackEnabled(true)
+        XCTAssertFalse(mockPlayer.playWasCalled)
+        mockLifecycle.triggerDidBecomeActive()
+        XCTAssertTrue(mockPlayer.playWasCalled)
+    }
+
+    @MainActor
+    func testPageReactivationResumesPlaybackWhileWaitingForMedia() {
+        let player = AVPlayer()
+        handler = VideoAutoplayHandler(playbackController: player, lifecycleObserver: mockLifecycle)
+        player.play()
+        XCTAssertEqual(player.rate, 1)
+        XCTAssertNotEqual(player.timeControlStatus, .playing)
+        handler.setPlaybackEnabled(false)
+        XCTAssertEqual(player.rate, 0)
+        handler.setPlaybackEnabled(true)
+        XCTAssertEqual(player.rate, 1)
+        player.pause()
+    }
+
 }
 
 // MARK: - Mocks
 
 private final class MockPlaybackController: VideoPlaybackController {
 
-    var isPlaying: Bool = false
+    var isPlaybackRequested: Bool = false
     var playWasCalled: Bool = false
 
     func play() {
         playWasCalled = true
+        isPlaybackRequested = true
+    }
+
+    func pause() {
+        isPlaybackRequested = false
     }
 
 }

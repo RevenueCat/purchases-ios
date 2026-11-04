@@ -67,8 +67,8 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
     private var pendingCurrentOfferingProductIdentifiers: Set<String> = []
     private var pendingEligibilityProductIdentifiers: Set<String> = []
     private var eligibilityWarmupTask: Task<Void, Never>?
-    private var hasLoadedPaywallAssets = false
-    private var workflowIDsWithAssetPrewarmingStarted: Set<String> = []
+    private var preferredLocalesWithLoadedPaywallAssets: Set<[String]> = []
+    private var assetPrewarmingLocalesByWorkflowID: [String: Set<[String]>] = [:]
     private var workflowFontAssetsWithPrewarmingAttempted: Set<DownloadableFont> = []
     private var ongoingFontDownloads: [URL: Task<Void, Never>] = [:]
 
@@ -172,10 +172,12 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
             workflowBackedOfferingIds: []
         )
 
-        guard !self.hasLoadedPaywallAssets else { return }
-        self.hasLoadedPaywallAssets = true
+        let preferredLocaleIdentifiers = self.preferredLocalesProvider()
+        guard self.preferredLocalesWithLoadedPaywallAssets.insert(preferredLocaleIdentifiers).inserted else { return }
 
-        let cacheAssets = offerings.allPaywallV2CacheAssets
+        let cacheAssets = offerings.paywallV2CacheAssets(
+            preferredLocales: preferredLocaleIdentifiers.map(Locale.init(identifier:))
+        )
 
         let imageSources: Set<URLWithValidation>
         #if !os(tvOS)
@@ -210,11 +212,13 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
 
     /// Pre-downloads every screen's images and low-resolution videos plus downloadable `ui_config` fonts.
     ///
-    /// The workflow ID is recorded before downloads start so the presentation and background body-data paths cannot
-    /// enqueue duplicate work. Individual downloads are best-effort and do not fail workflow delivery.
+    /// The workflow ID and locale preferences are recorded before downloads start so the presentation and background
+    /// body-data paths cannot enqueue duplicate work for the same locale preferences. Individual downloads are
+    /// best-effort and do not fail workflow delivery.
     func prewarmWorkflowAssets(workflow: PublishedWorkflow, uiConfig: UIConfig) async {
-        guard !self.workflowIDsWithAssetPrewarmingStarted.contains(workflow.id) else { return }
-        self.workflowIDsWithAssetPrewarmingStarted.insert(workflow.id)
+        let preferredLocaleIdentifiers = self.preferredLocalesProvider()
+        guard self.assetPrewarmingLocalesByWorkflowID[workflow.id, default: []]
+            .insert(preferredLocaleIdentifiers).inserted else { return }
 
         // Intentionally prewarming all screens, not just those reachable from
         // `initialStepId`. This trades off potentially downloading assets for
@@ -226,7 +230,7 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
 
         Logger.verbose(Strings.paywalls.warming_up_workflow(screenCount: screens.count))
 
-        let preferredLocales = self.preferredLocalesProvider().map(Locale.init(identifier:))
+        let preferredLocales = preferredLocaleIdentifiers.map(Locale.init(identifier:))
         let screenAssets = screens.map { $0.localizedCacheAssets(preferredLocales: preferredLocales) }
         let imageURLs = Set(screenAssets.flatMap(\.imageSourcesToDownload))
         let videoURLs = Set(screenAssets.flatMap(\.videoSourcesToDownload))
@@ -261,7 +265,8 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
     }
 
     func hasStartedWorkflowAssetPrewarming(for workflowID: String) async -> Bool {
-        return self.workflowIDsWithAssetPrewarmingStarted.contains(workflowID)
+        return self.assetPrewarmingLocalesByWorkflowID[workflowID]?
+            .contains(self.preferredLocalesProvider()) ?? false
     }
 
     private func download(_ sources: Set<URLWithValidation>) async {
@@ -444,8 +449,10 @@ private extension Offerings {
     }
 
     @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
-    var allPaywallV2CacheAssets: CacheAssetCollection {
-        let assets = self.all.values.compactMap(\.internalPaywallComponents).map(\.data.allCacheAssets)
+    func paywallV2CacheAssets(preferredLocales: [Locale]) -> CacheAssetCollection {
+        let assets = self.all.values.compactMap(\.internalPaywallComponents).map {
+            $0.data.localizedCacheAssets(preferredLocales: preferredLocales)
+        }
         return .init(
             images: assets.flatMap(\.images),
             videos: assets.flatMap(\.videos),

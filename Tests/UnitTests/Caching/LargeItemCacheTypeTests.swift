@@ -29,14 +29,15 @@ final class LargeItemCacheTypeTests: TestCase {
     func testSaveDataWritesDataToFile() async throws {
         let testData = "Hello, World!"
         let url = self.testDirectory.appendingPathComponent("test.txt")
-        let stream = createAsyncStream(from: testData)
+        let sourceURL = try createTemporaryFile(from: testData)
 
-        try await self.fileManager.saveData(stream, to: url, checksum: nil)
+        try self.fileManager.saveDownloadedFile(fromTemporaryURL: sourceURL, to: url, checksum: nil)
 
         let savedData = try Data(contentsOf: url)
         let savedString = String(data: savedData, encoding: .utf8)
 
         expect(savedString) == testData
+        expect(self.fileManager.fileExists(atPath: sourceURL.path)) == false
         try fileManager.removeItem(at: url)
     }
 
@@ -77,12 +78,12 @@ final class LargeItemCacheTypeTests: TestCase {
             .appendingPathComponent(nonExistentSubdir)
             .appendingPathComponent("nested_async_file.txt")
         let testData = "async test content"
-        let stream = createAsyncStream(from: testData)
+        let sourceURL = try createTemporaryFile(from: testData)
 
         // Ensure the directory doesn't exist
         expect(self.fileManager.fileExists(atPath: url.deletingLastPathComponent().path)) == false
 
-        try await self.fileManager.saveData(stream, to: url, checksum: nil)
+        try self.fileManager.saveDownloadedFile(fromTemporaryURL: sourceURL, to: url, checksum: nil)
 
         let savedData = try Data(contentsOf: url)
         let savedString = String(data: savedData, encoding: .utf8)
@@ -97,9 +98,9 @@ final class LargeItemCacheTypeTests: TestCase {
         let data = Data(testData.utf8)
         let checksum = Checksum.generate(from: data, with: .sha256)
         let url = self.testDirectory.appendingPathComponent("checksum_test.txt")
-        let stream = createAsyncStream(from: testData)
+        let sourceURL = try createTemporaryFile(from: testData)
 
-        try await self.fileManager.saveData(stream, to: url, checksum: checksum)
+        try self.fileManager.saveDownloadedFile(fromTemporaryURL: sourceURL, to: url, checksum: checksum)
 
         let savedData = try Data(contentsOf: url)
         expect(savedData) == data
@@ -110,10 +111,10 @@ final class LargeItemCacheTypeTests: TestCase {
         let testData = "Test data"
         let wrongChecksum = Checksum.generate(from: Data("Different data".utf8), with: .sha256)
         let url = self.testDirectory.appendingPathComponent("invalid_checksum.txt")
-        let stream = createAsyncStream(from: testData)
+        let sourceURL = try createTemporaryFile(from: testData)
 
         do {
-            try await self.fileManager.saveData(stream, to: url, checksum: wrongChecksum)
+            try self.fileManager.saveDownloadedFile(fromTemporaryURL: sourceURL, to: url, checksum: wrongChecksum)
             XCTFail("Expected checksum validation to fail")
         } catch {
             expect(error).to(beAKindOf(Checksum.ChecksumValidationFailure.self))
@@ -121,15 +122,34 @@ final class LargeItemCacheTypeTests: TestCase {
 
         // Verify the file was not saved to the final location
         expect(self.fileManager.fileExists(atPath: url.path)) == false
+        expect(self.fileManager.fileExists(atPath: sourceURL.path)) == false
+    }
+
+    func testSaveFileRemovesSourceWhenMoveFails() throws {
+        let sourceURL = try createTemporaryFile(from: "new content")
+        let destinationURL = self.testDirectory.appendingPathComponent("existing_destination.txt")
+        let existingData = Data("existing content".utf8)
+        try existingData.write(to: destinationURL)
+        defer { try? self.fileManager.removeItem(at: destinationURL) }
+
+        XCTAssertThrowsError(
+            try self.fileManager.saveDownloadedFile(
+                fromTemporaryURL: sourceURL,
+                to: destinationURL,
+                checksum: nil
+            )
+        )
+        XCTAssertFalse(self.fileManager.fileExists(atPath: sourceURL.path))
+        XCTAssertEqual(try Data(contentsOf: destinationURL), existingData)
     }
 
     func testSaveDataWithLargeDataSucceeds() async throws {
         // Create data larger than the buffer size (256KB)
         let largeData = String(repeating: "A", count: 500_000)
         let url = self.testDirectory.appendingPathComponent("large_file.txt")
-        let stream = createAsyncStream(from: largeData)
+        let sourceURL = try createTemporaryFile(from: largeData)
 
-        try await self.fileManager.saveData(stream, to: url, checksum: nil)
+        try self.fileManager.saveDownloadedFile(fromTemporaryURL: sourceURL, to: url, checksum: nil)
 
         let savedData = try Data(contentsOf: url)
         let savedString = String(data: savedData, encoding: .utf8)
@@ -143,9 +163,9 @@ final class LargeItemCacheTypeTests: TestCase {
     func testSaveDataWithMultipleChunksWritesCorrectly() async throws {
         let testData = String(repeating: "X", count: 1_000_000) // 1MB
         let url = self.testDirectory.appendingPathComponent("chunked_file.txt")
-        let stream = createAsyncStream(from: testData)
+        let sourceURL = try createTemporaryFile(from: testData)
         let checksum = Checksum.generate(from: testData.asData, with: .sha256)
-        try await self.fileManager.saveData(stream, to: url, checksum: checksum)
+        try self.fileManager.saveDownloadedFile(fromTemporaryURL: sourceURL, to: url, checksum: checksum)
 
         let savedData = try Data(contentsOf: url)
         expect(savedData.count) == 1_000_000
@@ -161,9 +181,9 @@ final class LargeItemCacheTypeTests: TestCase {
         for algorithm in algorithms {
             let checksum = Checksum.generate(from: data, with: algorithm)
             let url = self.testDirectory.appendingPathComponent("checksum_\(algorithm.rawValue).txt")
-            let stream = createAsyncStream(from: testData)
+            let sourceURL = try createTemporaryFile(from: testData)
 
-            try await self.fileManager.saveData(stream, to: url, checksum: checksum)
+            try self.fileManager.saveDownloadedFile(fromTemporaryURL: sourceURL, to: url, checksum: checksum)
 
             let savedData = try Data(contentsOf: url)
             expect(savedData) == data
@@ -306,9 +326,9 @@ final class LargeItemCacheTypeTests: TestCase {
     func testSaveAndLoadRoundTrip() async throws {
         let testData = "Round trip test"
         let url = self.testDirectory.appendingPathComponent("roundtrip.txt")
-        let stream = createAsyncStream(from: testData)
+        let sourceURL = try createTemporaryFile(from: testData)
 
-        try await self.fileManager.saveData(stream, to: url, checksum: nil)
+        try self.fileManager.saveDownloadedFile(fromTemporaryURL: sourceURL, to: url, checksum: nil)
         let loadedData = try self.fileManager.loadFile(at: url)
         let loadedString = String(data: loadedData, encoding: .utf8)
 
@@ -320,10 +340,10 @@ final class LargeItemCacheTypeTests: TestCase {
     func testSaveDataThenCheckExists() async throws {
         let testData = "Existence test"
         let url = self.testDirectory.appendingPathComponent("exists_test.txt")
-        let stream = createAsyncStream(from: testData)
+        let sourceURL = try createTemporaryFile(from: testData)
 
         let existsBefore = self.fileManager.cachedContentExists(at: url)
-        try await self.fileManager.saveData(stream, to: url, checksum: nil)
+        try self.fileManager.saveDownloadedFile(fromTemporaryURL: sourceURL, to: url, checksum: nil)
         let existsAfter = self.fileManager.cachedContentExists(at: url)
 
         expect(existsBefore) == false
@@ -337,9 +357,9 @@ final class LargeItemCacheTypeTests: TestCase {
         let data = Data(testData.utf8)
         let checksum = Checksum.generate(from: data, with: .sha256)
         let url = self.testDirectory.appendingPathComponent("checksum_roundtrip.txt")
-        let stream = createAsyncStream(from: testData)
+        let sourceURL = try createTemporaryFile(from: testData)
 
-        try await self.fileManager.saveData(stream, to: url, checksum: checksum)
+        try self.fileManager.saveDownloadedFile(fromTemporaryURL: sourceURL, to: url, checksum: checksum)
         let loadedData = try self.fileManager.loadFile(at: url)
 
         expect(loadedData) == data
@@ -353,13 +373,9 @@ final class LargeItemCacheTypeTests: TestCase {
 
     // MARK: - Helper Methods
 
-    private func createAsyncStream(from string: String) -> AsyncThrowingStream<UInt8, Error> {
-        let data = Data(string.utf8)
-        return AsyncThrowingStream { continuation in
-            for byte in data {
-                continuation.yield(byte)
-            }
-            continuation.finish()
-        }
+    private func createTemporaryFile(from string: String) throws -> URL {
+        let url = self.fileManager.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        try Data(string.utf8).write(to: url)
+        return url
     }
 }

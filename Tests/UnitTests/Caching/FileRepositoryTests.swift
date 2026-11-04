@@ -100,12 +100,13 @@ class FileRepositoryTests: TestCase {
     func test_savingData_mapsURLToNewURLType_withChecksum_andReturnsIt() async throws {
         let sut = await makeSystemUnderTest()
         let data = "SomeData".data(using: .utf8).unsafelyUnwrapped
+        let checksum = Checksum(algorithm: .md5, value: "mock-checksum-value-")
         sut.cache.stubCachedContentExists(with: false)
         sut.cache.stubSaveData(with: .success(.init(data: data, url: someURL)))
         sut.networkService.stubResponse(at: 0, result: .success("SomeData"))
         let result = try await sut.fileRepository.generateOrGetCachedFileURL(
             for: someURL,
-            withChecksum: .init(algorithm: .md5, value: "mock-checksum-value-")
+            withChecksum: checksum
         )
 
         let expectedCachedURL = URL(
@@ -113,28 +114,17 @@ class FileRepositoryTests: TestCase {
         ).unsafelyUnwrapped
 
         XCTAssertEqual(sut.networkService.invocations, [someURL])
-        XCTAssertEqual(sut.cache.saveDataInvocations, [.init(data: data, url: expectedCachedURL)])
+        XCTAssertEqual(
+            sut.cache.saveDataInvocations,
+            [.init(data: data, url: expectedCachedURL, checksum: checksum)]
+        )
         XCTAssertEqual(result, expectedCachedURL)
         XCTAssertNotEqual(someURL, expectedCachedURL)
     }
 
-    func test_dataValidChecksum_savesAndReturns() async throws {
-        let sut = await makeSystemUnderTest()
-        let data = "SomeData".asData
-
-        sut.cache.stubSaveData(with: .success(.init(data: data, url: someURL)))
-        sut.cache.stubCachedContentExists(with: false)
-        sut.networkService.stubResponse(at: 0, result: .success("SomeData"))
-        let url = try await sut.fileRepository
-            .generateOrGetCachedFileURL(for: someURL, withChecksum: Checksum.generate(from: data, with: .md5))
-
-        XCTAssertEqual(sut.networkService.invocations.count, 1)
-        XCTAssertEqual(sut.cache.saveDataInvocations.count, 1)
-        XCTAssertEqual(url, sut.cache.saveDataInvocations.first?.url)
-    }
-
     func test_whenChecksumMismatch_throwsChecksumMismatch() async throws {
         let sut = await makeSystemUnderTest()
+        let checksum = Checksum(algorithm: .sha256, value: "expected-hash")
         sut.cache.stubCachedContentExists(with: false)
         sut.networkService.stubResponse(at: 0, result: .success("SomeData"))
         sut.cache.stubSaveData(with: .failure(Checksum.ChecksumValidationFailure()))
@@ -142,7 +132,7 @@ class FileRepositoryTests: TestCase {
         do {
             _ = try await sut.fileRepository.generateOrGetCachedFileURL(
                 for: someURL,
-                withChecksum: .init(algorithm: .sha256, value: "expected-hash")
+                withChecksum: checksum
             )
             XCTFail("Expected checksumMismatch error")
         } catch {
@@ -153,6 +143,85 @@ class FileRepositoryTests: TestCase {
                 XCTFail("Expected checksumMismatch, got \(error)")
             }
         }
+
+        XCTAssertEqual(sut.cache.saveDataInvocations.first?.checksum, checksum)
+    }
+
+    func test_urlSessionDownloadFile_rejectsNonSuccessfulResponse() async throws {
+        MockFileDownloadURLProtocol.handler = { request in
+            return (try Self.response(for: request, statusCode: 404), Data("not found".utf8))
+        }
+        let session = self.fileDownloadSession()
+        defer {
+            session.invalidateAndCancel()
+            MockFileDownloadURLProtocol.handler = nil
+        }
+
+        do {
+            _ = try await session.downloadFile(from: self.someURL)
+            XCTFail("Expected a bad server response")
+        } catch let error as URLError {
+            XCTAssertEqual(error.code, .badServerResponse)
+        }
+    }
+
+    func test_validateDownloadedFile_removesRejectedDownload() throws {
+        let temporaryURL = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        try Data("not found".utf8).write(to: temporaryURL)
+        let response = try Self.response(for: URLRequest(url: self.someURL), statusCode: 500)
+
+        XCTAssertThrowsError(try validatedDownloadedFileURL(temporaryURL, response: response))
+        XCTAssertFalse(FileManager.default.fileExists(atPath: temporaryURL.path))
+    }
+
+    func test_urlSessionDownloadFile_savesValidatedFileToCache() async throws {
+        let expectedData = Data("downloaded content".utf8)
+        let checksum = Checksum.generate(from: expectedData, with: .sha256)
+        MockFileDownloadURLProtocol.handler = { request in
+            return (try Self.response(for: request, statusCode: 200), expectedData)
+        }
+        let session = self.fileDownloadSession()
+        let basePath = "FileRepositoryTests-\(UUID().uuidString)"
+        let repository = FileRepository(
+            networkService: session,
+            fileManager: FileManager.default,
+            basePath: basePath
+        )
+        defer {
+            session.invalidateAndCancel()
+            MockFileDownloadURLProtocol.handler = nil
+        }
+
+        let cachedURL = try await repository.generateOrGetCachedFileURL(
+            for: self.someURL,
+            withChecksum: checksum
+        )
+        defer { try? FileManager.default.removeItem(at: cachedURL.deletingLastPathComponent()) }
+
+        XCTAssertEqual(try Data(contentsOf: cachedURL), expectedData)
+    }
+
+    func test_validateDownloadedFile_acceptsHTTPBoundaryAndNonHTTPResponses() throws {
+        let temporaryURL = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        let response299 = try Self.response(for: URLRequest(url: self.someURL), statusCode: 299)
+        let nonHTTPResponse = URLResponse(
+            url: self.someURL,
+            mimeType: nil,
+            expectedContentLength: 0,
+            textEncodingName: nil
+        )
+
+        XCTAssertEqual(try validatedDownloadedFileURL(temporaryURL, response: response299), temporaryURL)
+        XCTAssertEqual(try validatedDownloadedFileURL(temporaryURL, response: nonHTTPResponse), temporaryURL)
+    }
+
+    func test_validateDownloadedFile_rejectsHTTPRedirectBoundary() throws {
+        let temporaryURL = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        try Data("redirect".utf8).write(to: temporaryURL)
+        let response = try Self.response(for: URLRequest(url: self.someURL), statusCode: 300)
+
+        XCTAssertThrowsError(try validatedDownloadedFileURL(temporaryURL, response: response))
+        XCTAssertFalse(FileManager.default.fileExists(atPath: temporaryURL.path))
     }
 
     func makeSystemUnderTest(
@@ -188,4 +257,50 @@ class FileRepositoryTests: TestCase {
     }
 
     struct SampleError: Error { }
+
+    private func fileDownloadSession() -> URLSession {
+        let configuration = URLSessionConfiguration.ephemeral
+        configuration.protocolClasses = [MockFileDownloadURLProtocol.self]
+        return URLSession(configuration: configuration)
+    }
+
+    private static func response(for request: URLRequest, statusCode: Int) throws -> HTTPURLResponse {
+        return try XCTUnwrap(HTTPURLResponse(
+            url: try XCTUnwrap(request.url),
+            statusCode: statusCode,
+            httpVersion: nil,
+            headerFields: nil
+        ))
+    }
+}
+
+private final class MockFileDownloadURLProtocol: URLProtocol {
+
+    static var handler: ((URLRequest) throws -> (HTTPURLResponse, Data))?
+
+    override class func canInit(with request: URLRequest) -> Bool {
+        return true
+    }
+
+    override class func canonicalRequest(for request: URLRequest) -> URLRequest {
+        return request
+    }
+
+    override func startLoading() {
+        guard let handler = Self.handler else {
+            self.client?.urlProtocol(self, didFailWithError: URLError(.unknown))
+            return
+        }
+
+        do {
+            let (response, data) = try handler(self.request)
+            self.client?.urlProtocol(self, didReceive: response, cacheStoragePolicy: .notAllowed)
+            self.client?.urlProtocol(self, didLoad: data)
+            self.client?.urlProtocolDidFinishLoading(self)
+        } catch {
+            self.client?.urlProtocol(self, didFailWithError: error)
+        }
+    }
+
+    override func stopLoading() { }
 }

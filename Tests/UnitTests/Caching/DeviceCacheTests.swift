@@ -49,6 +49,27 @@ class DeviceCacheTests: TestCase {
         self.deviceCache = self.create()
     }
 
+    func testSK2ObserverReceiptRetrySurvivesCacheRecreation() {
+        let retry = SK2ObserverModeReceiptRetry(transactionID: 123, retryAfter: Date(timeIntervalSince1970: 456))
+        self.deviceCache.cacheSK2ObserverModeReceiptRetry(retry)
+
+        expect(self.create().cachedSK2ObserverModeReceiptRetry()) == retry
+        expect(self.deviceCache.cachedSyncedSK2ObserverModeTransactionIDs()).to(beEmpty())
+    }
+
+    func testSK2ObserverReceiptRetryCanBeCleared() {
+        self.deviceCache.cacheSK2ObserverModeReceiptRetry(.init(transactionID: 123, retryAfter: Date()))
+        self.deviceCache.cacheSK2ObserverModeReceiptRetry(nil)
+
+        expect(self.create().cachedSK2ObserverModeReceiptRetry()).to(beNil())
+    }
+
+    func testInvalidSK2ObserverReceiptRetryDoesNotBlockDetection() {
+        self.mockUserDefaults.mockValues[DeviceCache.CacheKey.sk2ObserverModeReceiptRetry.rawValue] = Data([0])
+
+        expect(self.deviceCache.cachedSK2ObserverModeReceiptRetry()).to(beNil())
+    }
+
     func testLegacyCachedUserIDUsesRightKey() {
         self.mockUserDefaults.mockValues["com.revenuecat.userdefaults.appUserID"] = "cesar"
 

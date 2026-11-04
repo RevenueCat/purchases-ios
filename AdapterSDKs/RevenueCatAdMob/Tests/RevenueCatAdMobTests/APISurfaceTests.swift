@@ -3,10 +3,64 @@ import XCTest
 #if os(iOS) && canImport(GoogleMobileAds)
 import GoogleMobileAds
 import RevenueCat
-@testable import RevenueCatAdMob
+@_spi(CheckpointsInternal) @_spi(Internal) @testable import RevenueCatAdMob
+@_spi(InviteOnlyCheckpointsApi) import RevenueCatUI
 
 @available(iOS 15.0, *)
 final class APISurfaceTests: AdapterTestCase {
+
+    @MainActor
+    func testCheckpointPresenterEntryPointsRemainAvailableInSwift() {
+        let presenter: AdPresenter = AdMobPresenter()
+        let present: (
+            AdMobPresenter
+        ) -> (AdPresentationParams, @escaping AdPresentationCompletion) -> Void = AdMobPresenter.present(
+            params:completion:
+        )
+
+        XCTAssertNotNil(presenter)
+        XCTAssertNotNil(present)
+    }
+
+    @MainActor
+    func testInterstitialCheckpointPresenterEntryPointsRemainAvailableInSwift() {
+        let presenter: AdPresenter = AdMobInterstitialPresenter()
+        let present: (
+            AdMobInterstitialPresenter
+        ) -> (AdPresentationParams, @escaping AdPresentationCompletion) -> Void = AdMobInterstitialPresenter.present(
+            params:completion:
+        )
+
+        XCTAssertNotNil(presenter)
+        XCTAssertNotNil(present)
+    }
+
+    @MainActor
+    func testRewardedCheckpointPresenterEntryPointsRemainAvailableInSwift() {
+        let presenter: AdPresenter = AdMobRewardedPresenter()
+        let present: (
+            AdMobRewardedPresenter
+        ) -> (AdPresentationParams, @escaping AdPresentationCompletion) -> Void = AdMobRewardedPresenter.present(
+            params:completion:
+        )
+
+        XCTAssertNotNil(presenter)
+        XCTAssertNotNil(present)
+    }
+
+    @MainActor
+    func testRewardedInterstitialCheckpointPresenterEntryPointsRemainAvailableInSwift() {
+        let presenter: AdPresenter = AdMobRewardedInterstitialPresenter()
+        let present: (
+            AdMobRewardedInterstitialPresenter
+        ) -> (AdPresentationParams, @escaping AdPresentationCompletion) -> Void
+            = AdMobRewardedInterstitialPresenter.present(
+                params:completion:
+            )
+
+        XCTAssertNotNil(presenter)
+        XCTAssertNotNil(present)
+    }
 
     func testBannerAndNativeEntryPointsRemainAvailableInSwift() {
         let bannerLoadAndTrack: (GoogleMobileAds.BannerView) -> (
