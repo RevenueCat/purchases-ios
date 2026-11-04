@@ -74,7 +74,6 @@ private extension WorkflowPrewarmingCoordinator {
         let assetWorkflowIDs = Set(workflowIDsForAssetPrewarming)
         var handledAssetWorkflowIDs: Set<String> = []
         var resolvedTargetWorkflowIDs: Set<String> = []
-        var assetPrewarmingTasks: [Task<Void, Never>] = []
 
         for offeringId in WebBundleURLBatcher.targetOfferingIds(from: offerings) {
             guard let workflowId = await self.workflowsConfigProvider.workflowId(forOfferingId: offeringId) else {
@@ -99,17 +98,12 @@ private extension WorkflowPrewarmingCoordinator {
                 shouldPublishWebBundles: shouldPublishWebBundles,
                 configGeneration: configGeneration
             ) {
-                assetPrewarmingTasks.append(task)
+                await withTaskCancellationHandler {
+                    await task.value
+                } onCancel: {
+                    task.cancel()
+                }
             }
-        }
-
-        let targetAssetPrewarmingTasks = assetPrewarmingTasks
-        await withTaskCancellationHandler {
-            for task in targetAssetPrewarmingTasks {
-                await task.value
-            }
-        } onCancel: {
-            targetAssetPrewarmingTasks.forEach { $0.cancel() }
         }
 
         await self.prewarmRemainingAssetWorkflows(
