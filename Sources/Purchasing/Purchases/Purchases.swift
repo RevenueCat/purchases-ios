@@ -2183,6 +2183,7 @@ extension Purchases {
         captureMethod: AdEventCaptureMethod = .manual,
         poller: RewardVerification.Poller
     ) async -> RewardVerificationResult {
+        let appUserID = self.appUserID
         self.trackRewardEarnedUnverified(
             trackingMetadata: trackingMetadata,
             captureMethod: captureMethod
@@ -2195,7 +2196,11 @@ extension Purchases {
             captureMethod: captureMethod
         )
 
-        let result = await self.rewardVerificationResult(for: outcome, clientTransactionID: clientTransactionID)
+        let result = await self.rewardVerificationResult(
+            for: outcome,
+            clientTransactionID: clientTransactionID,
+            appUserID: appUserID
+        )
         Logger.info(AdsStrings.reward_verification_completed(
             result: result,
             transactionID: clientTransactionID
@@ -2273,7 +2278,8 @@ extension Purchases {
     /// Applies local side effects before building the result delivered to the caller.
     private func rewardVerificationResult(
         for outcome: RewardVerification.Outcome,
-        clientTransactionID: String
+        clientTransactionID: String,
+        appUserID: String
     ) async -> RewardVerificationResult {
         #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
         if case let .verified(reward, moreRewards, customerInfo) = outcome {
@@ -2289,7 +2295,7 @@ extension Purchases {
                     Logger.debug(AdsStrings.reward_verification_entitlement_caching_customer_info(
                         transactionID: clientTransactionID
                     ))
-                    self.customerInfoManager.cache(customerInfo: customerInfo, appUserID: self.appUserID)
+                    self.customerInfoManager.cache(customerInfo: customerInfo, appUserID: appUserID)
                 }
             }
         }

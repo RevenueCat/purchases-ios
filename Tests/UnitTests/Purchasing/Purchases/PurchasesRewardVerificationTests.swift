@@ -322,6 +322,40 @@ extension PurchasesRewardVerificationTests {
         expect(result.moreRewards) == [.entitlement(entitlement)]
     }
 
+    func testPollRewardVerificationCachesEmbeddedCustomerInfoUnderUserPolledFor() async throws {
+        let reward = try XCTUnwrap(EntitlementReward(identifier: "pro", expiresAt: Date()))
+        let customerInfo = try Self.makeCustomerInfoWithEntitlement("pro")
+        let originalAppUserID = self.identityManager.currentAppUserID
+        let newAppUserID = "other-user"
+        let identityManager = try XCTUnwrap(self.identityManager)
+        let statusPoller = UserSwitchingStatusPoller(
+            status: .verified(reward: .entitlement(reward), moreRewards: [], customerInfo: customerInfo)
+        ) { identityManager.mockAppUserID = newAppUserID }
+        let poller = makePoller(statusPoller: statusPoller, sleeper: RecordingSleeper())
+
+        _ = await self.purchases.pollRewardVerification(clientTransactionID: "tx-1", poller: poller)
+
+        expect(try self.customerInfoManager.cachedCustomerInfo(appUserID: originalAppUserID)) == customerInfo
+        expect(try self.customerInfoManager.cachedCustomerInfo(appUserID: newAppUserID)).to(beNil())
+    }
+
+}
+
+private final class UserSwitchingStatusPoller: RewardVerificationStatusPolling, @unchecked Sendable {
+
+    private let status: RewardVerificationPollStatus
+    private let onPoll: () -> Void
+
+    init(status: RewardVerificationPollStatus, onPoll: @escaping () -> Void) {
+        self.status = status
+        self.onPoll = onPoll
+    }
+
+    func pollStatus(clientTransactionID: String) async throws -> RewardVerificationPollStatus {
+        self.onPoll()
+        return self.status
+    }
+
 }
 
 // MARK: - pollRewardVerification tracking
