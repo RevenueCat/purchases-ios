@@ -37,7 +37,7 @@ class CustomerInfoManager {
     /// Underlying synchronized data for in-memory-only mutable state.
     private let data: Atomic<Data>
 
-    private let entitlementExpirationScheduler: EntitlementExpirationScheduler
+    private let promotionalEntitlementExpirationScheduler: PromotionalEntitlementExpirationScheduler
 
     init(offlineEntitlementsManager: OfflineEntitlementsManager,
          operationDispatcher: OperationDispatcher,
@@ -47,7 +47,7 @@ class CustomerInfoManager {
          transactionPoster: TransactionPosterType,
          systemInfo: SystemInfo,
          dateProvider: DateProvider = DateProvider(),
-         entitlementExpirationScheduler: EntitlementExpirationScheduler = .init()
+         promotionalEntitlementExpirationScheduler: PromotionalEntitlementExpirationScheduler = .init()
     ) {
         self.offlineEntitlementsManager = offlineEntitlementsManager
         self.operationDispatcher = operationDispatcher
@@ -57,12 +57,12 @@ class CustomerInfoManager {
         self.systemInfo = systemInfo
         self.dateProvider = dateProvider
         self.deviceCache = deviceCache
-        self.entitlementExpirationScheduler = entitlementExpirationScheduler
+        self.promotionalEntitlementExpirationScheduler = promotionalEntitlementExpirationScheduler
 
         self.data = .init(.init())
 
-        self.entitlementExpirationScheduler.handler = { [weak self] appUserID in
-            self?.handleEntitlementsExpired(appUserID: appUserID)
+        self.promotionalEntitlementExpirationScheduler.handler = { [weak self] appUserID in
+            self?.handlePromotionalEntitlementsExpired(appUserID: appUserID)
         }
     }
 
@@ -297,7 +297,7 @@ class CustomerInfoManager {
         }
 
         self.sendUpdateIfChanged(customerInfo: customerInfo, appUserID: appUserID)
-        self.trackEntitlementExpirations(of: customerInfo, appUserID: appUserID)
+        self.trackPromotionalEntitlementExpirations(of: customerInfo, appUserID: appUserID)
     }
 
     func clearCustomerInfoCache(forAppUserID appUserID: String) {
@@ -423,7 +423,7 @@ extension CustomerInfoManager {
     /// Starts (or restarts) tracking expirations of `customerInfo`'s active entitlements.
     /// `cache(customerInfo:appUserID:)` does this automatically; this exists for `CustomerInfo`
     /// that was read from cache without going through it.
-    func trackEntitlementExpirations(of customerInfo: CustomerInfo, appUserID: String) {
+    func trackPromotionalEntitlementExpirations(of customerInfo: CustomerInfo, appUserID: String) {
         #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
         guard !self.systemInfo.dangerousSettings.customEntitlementComputation,
               !self.systemInfo.dangerousSettings.uiPreviewMode else {
@@ -433,19 +433,19 @@ extension CustomerInfoManager {
         if let currentAppUserID = self.currentUserProvider?.currentAppUserID, currentAppUserID != appUserID {
             return
         }
-        self.entitlementExpirationScheduler.track(customerInfo, appUserID: appUserID)
+        self.promotionalEntitlementExpirationScheduler.track(customerInfo, appUserID: appUserID)
         #endif
     }
 
     /// Re-checks the last tracked `CustomerInfo` against the wall clock. Call on foreground: the
     /// sleeping task does not advance while the process is suspended.
-    func checkEntitlementExpirations() {
-        self.entitlementExpirationScheduler.checkExpirations()
+    func checkPromotionalEntitlementExpirations() {
+        self.promotionalEntitlementExpirationScheduler.checkExpirations()
     }
 
     /// Sends observers the cached `CustomerInfo` decoded again now, which is what `customerInfo()`
     /// would return: its promotional entitlements are evaluated against the device clock.
-    private func handleEntitlementsExpired(appUserID: String) {
+    private func handlePromotionalEntitlementsExpired(appUserID: String) {
         // Read outside of the lock: `DeviceCache` must not be accessed while holding `data`.
         guard let customerInfo = try? self.cachedCustomerInfo(appUserID: appUserID) else { return }
 

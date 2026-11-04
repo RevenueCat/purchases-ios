@@ -7,7 +7,7 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  EntitlementExpirationScheduler.swift
+//  PromotionalEntitlementExpirationScheduler.swift
 //
 
 import Foundation
@@ -27,7 +27,8 @@ import Foundation
 ///
 /// `Task.sleep` does not reliably advance while the process is suspended, so callers must
 /// ``checkExpirations()`` on foreground to catch expirations that happened while backgrounded.
-final class EntitlementExpirationScheduler {
+// swiftlint:disable:next type_name
+final class PromotionalEntitlementExpirationScheduler {
 
     typealias ExpirationHandler = @Sendable (_ appUserID: String) -> Void
 
@@ -90,7 +91,7 @@ final class EntitlementExpirationScheduler {
 
 }
 
-private extension EntitlementExpirationScheduler {
+private extension PromotionalEntitlementExpirationScheduler {
 
     func evaluate(_ update: (inout State) -> Void) {
         typealias Fired = (handler: ExpirationHandler, appUserID: String, identifiers: [String])
@@ -113,7 +114,7 @@ private extension EntitlementExpirationScheduler {
             state.notified.formUnion(due)
 
             if let next = keys.lazy.map(\.expirationDate).filter({ $0 >= now }).min() {
-                Logger.verbose(Strings.customerInfo.entitlement_expiration_scheduled(date: next))
+                Logger.verbose(Strings.customerInfo.promotional_entitlement_expiration_scheduled(date: next))
                 state.task = self.makeTask(firingAt: next, from: now)
             }
 
@@ -122,7 +123,9 @@ private extension EntitlementExpirationScheduler {
         }
 
         if let fired {
-            Logger.debug(Strings.customerInfo.entitlements_reached_expiration(identifiers: fired.identifiers))
+            Logger.debug(
+                Strings.customerInfo.promotional_entitlements_reached_expiration(identifiers: fired.identifiers)
+            )
             fired.handler(fired.appUserID)
         }
     }
@@ -138,4 +141,4 @@ private extension EntitlementExpirationScheduler {
 }
 
 // @unchecked because all mutable state lives in `Atomic`.
-extension EntitlementExpirationScheduler: @unchecked Sendable {}
+extension PromotionalEntitlementExpirationScheduler: @unchecked Sendable {}
