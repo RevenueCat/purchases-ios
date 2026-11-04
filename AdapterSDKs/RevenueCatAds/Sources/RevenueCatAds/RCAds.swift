@@ -22,16 +22,31 @@ import Foundation
     ///
     /// - Parameter configuration: Overrides for the API key and server URL. By default both are taken
     ///   from the configured `Purchases` instance.
-    /// - Throws: ``AdsError`` with code ``AdsError/Code/notConfigured`` or
-    ///   ``AdsError/Code/invalidConfiguration``.
+    /// - Throws: ``AdsError`` with code ``AdsError/Code/notConfigured`` if `Purchases` is not configured,
+    ///   or ``AdsError/Code/invalidConfiguration``.
     public static func configure(with configuration: AdsConfiguration = AdsConfiguration()) throws {
-        try Self.configure(with: configuration, makeModule: { PrebidAdModule() })
-    }
-
-    static func configure(with configuration: AdsConfiguration, makeModule: () -> AdModule) throws {
-        let resolved = try configuration.resolve(
+        try Self.configure(
+            with: configuration,
+            makeModule: { PrebidAdModule() },
             purchasesAPIKey: Purchases.isConfigured ? Purchases.shared.apiKey : nil,
             purchasesProxyURL: Purchases.proxyURL
+        )
+    }
+
+    static func configure(
+        with configuration: AdsConfiguration,
+        makeModule: () -> AdModule,
+        purchasesAPIKey: String?,
+        purchasesProxyURL: URL?
+    ) throws {
+        // Ad tracking goes through `Purchases.shared`, so an explicit API key alone is not enough.
+        guard let purchasesAPIKey else {
+            throw AdsError(code: .notConfigured, message: "Call Purchases.configure before RCAds.configure.")
+        }
+
+        let resolved = try configuration.resolve(
+            purchasesAPIKey: purchasesAPIKey,
+            purchasesProxyURL: purchasesProxyURL
         )
         let module = makeModule()
         try module.initialize(with: resolved)

@@ -149,6 +149,21 @@ final class AdsConfigureTests: TestCase {
         ])
     }
 
+    func testConfigureWithoutPurchasesThrowsNotConfigured() {
+        let module: FakeAdModule = self.module
+
+        XCTAssertThrowsError(try RCAds.configure(
+            with: AdsConfiguration(apiKey: "appl_key"),
+            makeModule: { module },
+            purchasesAPIKey: nil,
+            purchasesProxyURL: nil
+        )) {
+            XCTAssertEqual(($0 as? AdsError)?.code, .notConfigured)
+        }
+        XCTAssertNil(RCAds.module)
+        XCTAssertTrue(self.module.initializedConfigurations.isEmpty)
+    }
+
     func testConfigureFailureLeavesAdsUnconfigured() {
         self.module.initializeError = AdsError(code: .invalidConfiguration, message: "rejected")
 
@@ -170,7 +185,12 @@ final class AdsConfigureTests: TestCase {
 
     private func configure(_ configuration: AdsConfiguration) throws {
         let module: FakeAdModule = self.module
-        try RCAds.configure(with: configuration, makeModule: { module })
+        try RCAds.configure(
+            with: configuration,
+            makeModule: { module },
+            purchasesAPIKey: "appl_purchases",
+            purchasesProxyURL: nil
+        )
     }
 
 }
