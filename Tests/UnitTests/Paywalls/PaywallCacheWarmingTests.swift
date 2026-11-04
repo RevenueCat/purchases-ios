@@ -29,6 +29,8 @@ final class PaywallCacheWarmingTests: TestCase {
     private var eligibilityChecker: MockTrialOrIntroPriceEligibilityChecker!
     private var mockWebBundleURLBatcher: MockWebBundleURLBatcher!
     private var cache: PaywallCacheWarmingType!
+    private var delayedEligibilityChecker: DelayedIntroEligibilityChecker?
+    private var eligibilityWarmupTasks: [Task<Void, Never>] = []
 
     override func setUpWithError() throws {
         try super.setUpWithError()
@@ -41,6 +43,17 @@ final class PaywallCacheWarmingTests: TestCase {
             introEligibiltyChecker: self.eligibilityChecker,
             webBundleURLBatcher: self.mockWebBundleURLBatcher
         )
+    }
+
+    override func tearDown() async throws {
+        // Drain checks even if an assertion failed while a warm-up was suspended.
+        self.delayedEligibilityChecker?.completeAll()
+        for task in self.eligibilityWarmupTasks {
+            await task.value
+        }
+        self.eligibilityWarmupTasks.removeAll()
+        self.delayedEligibilityChecker = nil
+        try await super.tearDown()
     }
 
     func testOfferingsWithNoProductsDoesNotCheckEligibility() async throws {
@@ -190,6 +203,235 @@ final class PaywallCacheWarmingTests: TestCase {
         let invocations = self.eligibilityChecker
             .invokedCheckTrialOrIntroPriceEligibilityFromOptimalStoreParametersList
         expect(invocations) == [["product_1"], ["product_1"]]
+    }
+
+    func testOverlappingWarmupsShareCurrentAndRemainingChecks() async throws {
+        let checker = self.useDelayedEligibilityChecker()
+        let offerings = try Self.eligibilityOfferings(current: "current", other: ["other"])
+        let first = self.startEligibilityWarmup(offerings)
+        await expect(checker.invocations).toEventually(equal([["current"]]))
+
+        let second = self.startEligibilityWarmup(offerings)
+        try await self.waitForWarmupJoins(count: 1)
+        expect(checker.invocations) == [["current"]]
+
+        checker.complete(productIdentifiers: ["current"], with: [:])
+        await expect(checker.invocations).toEventually(equal([["current"], ["other"]]))
+
+        let third = self.startEligibilityWarmup(offerings)
+        try await self.waitForWarmupJoins(count: 2)
+        expect(checker.invocations) == [["current"], ["other"]]
+
+        checker.complete(productIdentifiers: ["other"], with: [:])
+        await self.fulfillment(of: [first, second, third], timeout: 5)
+        let cached = self.startEligibilityWarmup(offerings)
+        await self.fulfillment(of: [cached], timeout: 5)
+        expect(checker.invocations) == [["current"], ["other"]]
+    }
+
+    func testOverlappingWarmupPrioritizesNewCurrentOfferingAndRetainsNewProducts() async throws {
+        let checker = self.useDelayedEligibilityChecker()
+        let first = self.startEligibilityWarmup(
+            try Self.eligibilityOfferings(current: "first_current", other: ["next_current", "other"])
+        )
+        await expect(checker.invocations).toEventually(equal([["first_current"]]))
+
+        let second = self.startEligibilityWarmup(
+            try Self.eligibilityOfferings(current: "next_current", other: ["other", "new_other"])
+        )
+        try await self.waitForWarmupJoins(count: 1)
+        expect(checker.invocations) == [["first_current"]]
+
+        checker.complete(productIdentifiers: ["first_current"], with: [:])
+        await expect(checker.invocations).toEventually(equal([["first_current"], ["next_current"]]))
+        checker.complete(productIdentifiers: ["next_current"], with: [:])
+        await expect(checker.invocations).toEventually(equal([
+            ["first_current"], ["next_current"], ["other", "new_other"]
+        ]))
+        checker.complete(productIdentifiers: ["other", "new_other"], with: [:])
+        await self.fulfillment(of: [first, second], timeout: 5)
+    }
+
+    func testDirectEligibilityRequestCompletesWhileCurrentOfferingWarmupIsPending() async throws {
+        let checker = DelayedIntroEligibilityChecker()
+        self.delayedEligibilityChecker = checker
+        let cachingChecker = CachingTrialOrIntroPriceEligibilityChecker(checker: checker)
+        self.cache = PaywallCacheWarming(
+            introEligibiltyChecker: cachingChecker,
+            webBundleURLBatcher: self.mockWebBundleURLBatcher
+        )
+        let offerings = try Self.eligibilityOfferings(current: "current", other: ["other"])
+        let first = self.startEligibilityWarmup(offerings)
+        await expect(checker.invocations).toEventually(equal([["current"]]))
+
+        let second = self.startEligibilityWarmup(offerings)
+        try await self.waitForWarmupJoins(count: 1)
+
+        // A displayed paywall checks eligibility directly, even when its product is queued for warm-up.
+        let requested: [String: IntroEligibility] = ["other": .init(eligibilityStatus: .eligible)]
+        let requestFinished = self.expectation(description: "Direct eligibility request finished")
+        cachingChecker.checkEligibility(productIdentifiers: ["other"]) { result in
+            expect(result) == requested
+            requestFinished.fulfill()
+        }
+        await expect(checker.invocations).toEventually(equal([["current"], ["other"]]))
+
+        checker.complete(productIdentifiers: ["other"], with: requested)
+        await self.fulfillment(of: [requestFinished], timeout: 5)
+
+        // Only release the current offering after the unrelated request has delivered its result.
+        checker.complete(productIdentifiers: ["current"], with: ["current": .init(eligibilityStatus: .ineligible)])
+        await self.fulfillment(of: [first, second], timeout: 5)
+
+        // The remaining warm-up reuses the result of the direct request without checking it again.
+        expect(checker.invocations) == [["current"], ["other"]]
+    }
+
+    func testProductsAddedDuringRemainingCheckAreWarmedInPriorityOrder() async throws {
+        let checker = self.useDelayedEligibilityChecker()
+        let first = self.startEligibilityWarmup(
+            try Self.eligibilityOfferings(current: "current", other: ["other"])
+        )
+        await expect(checker.invocations).toEventually(equal([["current"]]))
+        checker.complete(productIdentifiers: ["current"], with: [:])
+        await expect(checker.invocations).toEventually(equal([["current"], ["other"]]))
+
+        let second = self.startEligibilityWarmup(
+            try Self.eligibilityOfferings(current: "new_current", other: ["current", "other", "new_other"])
+        )
+        try await self.waitForWarmupJoins(count: 1)
+        expect(checker.invocations) == [["current"], ["other"]]
+
+        checker.complete(productIdentifiers: ["other"], with: [:])
+        await expect(checker.invocations).toEventually(equal([["current"], ["other"], ["new_current"]]))
+        checker.complete(productIdentifiers: ["new_current"], with: [:])
+        await expect(checker.invocations).toEventually(equal([
+            ["current"], ["other"], ["new_current"], ["new_other"]
+        ]))
+        checker.complete(productIdentifiers: ["new_other"], with: [:])
+        await self.fulfillment(of: [first, second], timeout: 5)
+    }
+
+    func testOverlappingWarmupsWithoutCurrentOfferingShareRemainingCheck() async throws {
+        let checker = self.useDelayedEligibilityChecker()
+        let offerings = try Self.eligibilityOfferings(current: nil, other: ["other"])
+        let first = self.startEligibilityWarmup(offerings)
+        await expect(checker.invocations).toEventually(equal([["other"]]))
+        let second = self.startEligibilityWarmup(offerings)
+        try await self.waitForWarmupJoins(count: 1)
+
+        expect(checker.invocations) == [["other"]]
+        checker.complete(productIdentifiers: ["other"], with: [:])
+        await self.fulfillment(of: [first, second], timeout: 5)
+    }
+
+    func testInvalidationPreventsSuspendedWarmupFromStartingRemainingProducts() async throws {
+        let checker = self.useDelayedEligibilityChecker()
+        let offerings = try Self.eligibilityOfferings(current: "current", other: ["other"])
+        let first = self.startEligibilityWarmup(offerings)
+        await expect(checker.invocations).toEventually(equal([["current"]]))
+
+        await self.cache.clearEligibilityCache()
+        checker.complete(productIdentifiers: ["current"], with: [:])
+        await self.fulfillment(of: [first], timeout: 5)
+        expect(checker.invocations) == [["current"]]
+
+        let second = self.startEligibilityWarmup(offerings)
+        await expect(checker.invocations).toEventually(equal([["current"], ["current"]]))
+        checker.complete(productIdentifiers: ["current"], with: [:])
+        await expect(checker.invocations).toEventually(equal([["current"], ["current"], ["other"]]))
+        checker.complete(productIdentifiers: ["other"], with: [:])
+        await self.fulfillment(of: [second], timeout: 5)
+    }
+
+    func testInvalidatingWarmupPreservesSharedEligibilityResultForExistingCallers() async throws {
+        let check = HeldSubscriptionGroupEligibilityCheck()
+        defer { check.completeAll() }
+        self.eligibilityChecker.asyncCheckEligibility = { productIDs in
+            let eligible = await check.call("group")
+            return productIDs.dictionaryWithValues { _ in
+                IntroEligibility(eligibilityStatus: eligible ? .eligible : .ineligible)
+            }
+        }
+        let cachingChecker = CachingTrialOrIntroPriceEligibilityChecker(checker: self.eligibilityChecker)
+        self.cache = PaywallCacheWarming(
+            introEligibiltyChecker: cachingChecker,
+            webBundleURLBatcher: self.mockWebBundleURLBatcher
+        )
+        let offerings = try Self.eligibilityOfferings(current: "current", other: ["other"])
+        let first = self.startEligibilityWarmup(offerings)
+        try await asyncWait { check.invocations == ["group"] }
+        let second = self.startEligibilityWarmup(offerings)
+        try await self.waitForWarmupJoins(count: 1)
+
+        let requestFinished = self.expectation(description: "Shared eligibility result delivered")
+        cachingChecker.checkEligibility(productIdentifiers: ["current"]) { result in
+            expect(result["current"]?.status) == .eligible
+            requestFinished.fulfill()
+        }
+        try await self.logger.verifyMessageIsEventuallyLogged(
+            Strings.eligibility.waiting_for_intro_eligibility(["current"]), level: .debug
+        )
+
+        cachingChecker.clearCache()
+        await self.cache.clearEligibilityCache()
+        check.complete(at: 0, eligible: true)
+        await self.fulfillment(of: [first, second, requestFinished], timeout: 5)
+
+        expect(check.wasCancelled.value) == false
+        expect(check.invocations) == ["group"]
+    }
+
+    func testOldCompletionDoesNotInterfereWithReplacementWarmup() async throws {
+        let checker = self.useDelayedEligibilityChecker()
+        let first = self.startEligibilityWarmup(
+            try Self.eligibilityOfferings(current: "current", other: ["stale_other"])
+        )
+        await expect(checker.invocations).toEventually(equal([["current"]]))
+        await self.cache.clearEligibilityCache()
+
+        let offerings = try Self.eligibilityOfferings(current: "current", other: ["new_other"])
+        let second = self.startEligibilityWarmup(offerings)
+        await expect(checker.invocations).toEventually(equal([["current"], ["current"]]))
+
+        // Finish the invalidated warm-up while its replacement is still waiting for the same product.
+        checker.complete(productIdentifiers: ["current"], with: [:])
+        await self.fulfillment(of: [first], timeout: 5)
+        let third = self.startEligibilityWarmup(offerings)
+        try await self.waitForWarmupJoins(count: 1)
+        expect(checker.invocations) == [["current"], ["current"]]
+
+        checker.complete(productIdentifiers: ["current"], with: [:])
+        await expect(checker.invocations).toEventually(equal([["current"], ["current"], ["new_other"]]))
+        checker.complete(productIdentifiers: ["new_other"], with: [:])
+        await self.fulfillment(of: [second, third], timeout: 5)
+    }
+
+    func testOldCompletionAfterReplacementDoesNotMarkOldProductsWarmed() async throws {
+        let checker = self.useDelayedEligibilityChecker()
+        let oldOfferings = try Self.eligibilityOfferings(current: "old_current", other: ["old_other"])
+        let first = self.startEligibilityWarmup(oldOfferings)
+        await expect(checker.invocations).toEventually(equal([["old_current"]]))
+        await self.cache.clearEligibilityCache()
+
+        let replacement = try Self.eligibilityOfferings(current: "new_current", other: [])
+        let second = self.startEligibilityWarmup(replacement)
+        await expect(checker.invocations).toEventually(equal([["old_current"], ["new_current"]]))
+        checker.complete(productIdentifiers: ["new_current"], with: [:])
+        await self.fulfillment(of: [second], timeout: 5)
+        checker.complete(productIdentifiers: ["old_current"], with: [:])
+        await self.fulfillment(of: [first], timeout: 5)
+
+        let cached = self.startEligibilityWarmup(replacement)
+        await self.fulfillment(of: [cached], timeout: 5)
+        let third = self.startEligibilityWarmup(oldOfferings)
+        await expect(checker.invocations).toEventually(equal([["old_current"], ["new_current"], ["old_current"]]))
+        checker.complete(productIdentifiers: ["old_current"], with: [:])
+        await expect(checker.invocations).toEventually(equal([
+            ["old_current"], ["new_current"], ["old_current"], ["old_other"]
+        ]))
+        checker.complete(productIdentifiers: ["old_other"], with: [:])
+        await self.fulfillment(of: [third], timeout: 5)
     }
 
 #if !os(tvOS) // For Paywalls V2
@@ -456,6 +698,46 @@ final class PaywallCacheWarmingTests: TestCase {
                 checksum: .init(algorithm: .sha256, value: "video-low")
             )
         ])
+    }
+
+    func testWorkflowAssetPrewarmingDownloadsImagesForDisplayedLocaleOnly() async throws {
+        for (preferredLocales, expectedImage) in Self.imagePrewarmingLocales {
+            let requests = try await self.localizedImagePrewarmingRequests(
+                preferredLocales: [preferredLocales],
+                workflow: true
+            )
+            XCTAssertEqual(Set(requests), Self.localizedImageRequests(expectedImage), "\(preferredLocales)")
+        }
+    }
+
+    func testOfferingsAssetPrewarmingDownloadsImagesForDisplayedLocaleOnly() async throws {
+        for (preferredLocales, expectedImage) in Self.imagePrewarmingLocales {
+            let requests = try await self.localizedImagePrewarmingRequests(
+                preferredLocales: [preferredLocales],
+                workflow: false
+            )
+            XCTAssertEqual(Set(requests), Self.localizedImageRequests(expectedImage), "\(preferredLocales)")
+        }
+    }
+
+    func testWorkflowImagePrewarmingWarmsEachPreferredLocaleOnlyOnce() async throws {
+        let requests = try await self.localizedImagePrewarmingRequests(
+            preferredLocales: [["en_US"], ["en_US"], ["es_ES"], ["es_ES"], ["en_US"]],
+            workflow: true
+        )
+        XCTAssertEqual(requests.count, 10)
+        XCTAssertEqual(Set(requests), Self.localizedImageRequests("localized-en")
+            .union(Self.localizedImageRequests("localized-es")))
+    }
+
+    func testOfferingsImagePrewarmingWarmsEachPreferredLocaleOnlyOnce() async throws {
+        let requests = try await self.localizedImagePrewarmingRequests(
+            preferredLocales: [["en_US"], ["en_US"], ["es_ES"], ["es_ES"], ["en_US"]],
+            workflow: false
+        )
+        XCTAssertEqual(requests.count, 10)
+        XCTAssertEqual(Set(requests), Self.localizedImageRequests("localized-en")
+            .union(Self.localizedImageRequests("localized-es")))
     }
 
     func testWorkflowAssetPrewarmingDownloadsLocalizedVideosForPreferredLocaleOnly() async {
@@ -1136,6 +1418,72 @@ private extension PaywallCacheWarmingTests {
         return URL(string: "https://assets.example.com/\(path)")!
     }
 
+    static let imagePrewarmingLocales: [([String], String)] = [
+        (["es_ES"], "localized-es"),
+        (["es_MX"], "localized-es"),
+        (["fr_FR", "es_ES"], "localized-fr"),
+        (["ja_JP"], "localized-en"),
+        ([], "localized-en")
+    ]
+
+    static func localizedImageRequests(_ localizedImage: String) -> Set<URLWithValidation> {
+        let names = ["base", "base-dark", "override", localizedImage, "\(localizedImage)-dark"]
+        return Set(names.map { .init(url: Self.assetURL("\($0)-low.heic"), checksum: nil) })
+    }
+
+    func localizedImagePrewarmingRequests(
+        preferredLocales: [[String]],
+        workflow: Bool
+    ) async throws -> [URLWithValidation] {
+        let locales: Atomic<[String]> = .init([])
+        let fileRepository = MockCacheWarmingFileRepository()
+        let cache = PaywallCacheWarming(
+            introEligibiltyChecker: self.eligibilityChecker,
+            fileRepository: fileRepository,
+            webBundleURLBatcher: self.mockWebBundleURLBatcher,
+            preferredLocalesProvider: { locales.value }
+        )
+        let components: [PaywallComponent] = [.image(.init(
+            source: Self.image("base", dark: true),
+            overrideSourceLid: "hero",
+            overrides: [.init(conditions: [.compact], properties: .init(source: Self.image("override")))]
+        ))]
+        let localizations: [PaywallComponent.LocaleID: PaywallComponent.LocalizationDictionary] = [
+            "en_US": ["hero": .image(Self.image("localized-en", dark: true))],
+            "es-ES": ["hero": .image(Self.image("localized-es", dark: true)), "title": .string("Hola")],
+            "fr_FR": ["hero": .image(Self.image("localized-fr", dark: true))]
+        ]
+        let warmUp: () async -> Void
+        if workflow {
+            let screen = Self.workflowScreen(components: components, localizations: localizations)
+            let workflow = PublishedWorkflow(
+                id: "workflow",
+                displayName: "Test",
+                initialStepId: "step",
+                singleStepFallbackId: nil,
+                steps: [:],
+                screens: ["screen": screen]
+            )
+            warmUp = { await cache.prewarmWorkflowAssets(workflow: workflow, uiConfig: Self.emptyUIConfig) }
+        } else {
+            let data = Self.paywallComponentsData(components: components, localizations: localizations)
+            let offering = Offering(
+                identifier: Self.offeringIdentifier,
+                serverDescription: "Test",
+                paywallComponents: .init(uiConfig: Self.emptyUIConfig, data: data),
+                availablePackages: [],
+                webCheckoutUrl: nil
+            )
+            let offerings = try Self.createOfferings([offering])
+            warmUp = { await cache.warmUpPaywallAssetsCache(offerings: offerings) }
+        }
+        for preferredLocale in preferredLocales {
+            locales.value = preferredLocale
+            await warmUp()
+        }
+        return await fileRepository.requests
+    }
+
     /// Prewarms a workflow whose video and video override both use localized videos, for `en_US` (default) and `es_ES`.
     func localizedVideoPrewarmingRequests(preferredLocale: String) async -> Set<URLWithValidation> {
         let fileRepository = MockCacheWarmingFileRepository()
@@ -1238,6 +1586,46 @@ private extension PaywallCacheWarmingTests {
         return await fontsManager.installCallCount
     }
 #endif
+
+    func useDelayedEligibilityChecker() -> DelayedIntroEligibilityChecker {
+        let checker = DelayedIntroEligibilityChecker()
+        self.delayedEligibilityChecker = checker
+        self.cache = PaywallCacheWarming(
+            introEligibiltyChecker: checker,
+            webBundleURLBatcher: self.mockWebBundleURLBatcher
+        )
+        return checker
+    }
+
+    func startEligibilityWarmup(_ offerings: Offerings) -> XCTestExpectation {
+        let finished = self.expectation(description: "Eligibility warm-up finished")
+        let cache = self.cache!
+        self.eligibilityWarmupTasks.append(Task {
+            await cache.warmUpEligibilityCache(offerings: offerings)
+            finished.fulfill()
+        })
+        return finished
+    }
+
+    func waitForWarmupJoins(count: Int) async throws {
+        try await self.logger.verifyMessageIsEventuallyLogged(
+            Strings.paywalls.joining_eligibility_cache_warmup,
+            level: .debug,
+            expectedCount: count
+        )
+    }
+
+    static func eligibilityOfferings(current: String?, other: [String]) throws -> Offerings {
+        var offerings = [try Self.createOffering(
+            identifier: "other_offering", paywall: nil, products: other.map { (.annual, $0) }
+        )]
+        if let current {
+            offerings.append(try Self.createOffering(
+                identifier: Self.offeringIdentifier, paywall: nil, products: [(.monthly, current)]
+            ))
+        }
+        return try Self.createOfferings(offerings)
+    }
 
     static func createOffering(
         identifier: String,

@@ -189,6 +189,33 @@ class ConfigurationTests: TestCase {
         expect(configuration.storeKitVersion) == .default
     }
 
+    func testIntroEligibilityWarmupPriorityDefaultsToBackground() {
+        let configuration = Configuration.builder(withAPIKey: "test").build()
+
+        expect(configuration.introEligibilityWarmupPriority) == .background
+    }
+
+    func testIntroEligibilityWarmupPriorityCanBeOverriddenWithoutMutatingBuiltConfiguration() {
+        let builder = Configuration.builder(withAPIKey: "test")
+            .with(introEligibilityWarmupPriority: .userInitiated)
+        let configuration = builder.build()
+        let updatedConfiguration = builder.with(introEligibilityWarmupPriority: .utility).build()
+
+        expect(configuration.introEligibilityWarmupPriority) == .userInitiated
+        expect(updatedConfiguration.introEligibilityWarmupPriority) == .utility
+        expect(configuration) != updatedConfiguration
+    }
+
+    func testExplicitBackgroundIntroEligibilityWarmupPriorityEqualsDefault() {
+        let configuration = Configuration.builder(withAPIKey: "test").build()
+        let explicitConfiguration = Configuration.builder(withAPIKey: "test")
+            .with(introEligibilityWarmupPriority: .background)
+            .build()
+
+        expect(configuration) == explicitConfiguration
+        expect(configuration.hashValue) == explicitConfiguration.hashValue
+    }
+
     @available(*, deprecated)
     func testLegacyFlagSetsStoreKitVersionWhenStoreKit2Enabled() {
         let configuration = Configuration.Builder(withAPIKey: "test")
@@ -451,6 +478,7 @@ class ConfigurationTests: TestCase {
             .with(preferredUILocaleOverride: "en-US")
             .with(automaticDeviceIdentifierCollectionEnabled: true)
             .with(iamEnabled: false)
+            .with(introEligibilityWarmupPriority: .userInitiated)
             .with(useExternalPurchaseCustomLinks: false, enableExternalPurchasesInSimulator: true)
     }
 

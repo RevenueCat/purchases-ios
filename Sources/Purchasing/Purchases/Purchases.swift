@@ -603,15 +603,16 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                                                systemInfo: systemInfo)
         let introCalculator = IntroEligibilityCalculator(productsManager: productsManager, receiptParser: receiptParser)
 
-        let trialOrIntroPriceChecker = CachingTrialOrIntroPriceEligibilityChecker.create(
-            with: TrialOrIntroPriceEligibilityChecker(systemInfo: systemInfo,
-                                                      receiptFetcher: receiptFetcher,
-                                                      introEligibilityCalculator: introCalculator,
-                                                      backend: backend,
-                                                      currentUserProvider: identityManager,
-                                                      operationDispatcher: operationDispatcher,
-                                                      productsManager: productsManager,
-                                                      diagnosticsTracker: diagnosticsTracker)
+        let trialOrIntroPriceChecker = CachingTrialOrIntroPriceEligibilityChecker(
+            checker: TrialOrIntroPriceEligibilityChecker(systemInfo: systemInfo,
+                                                         receiptFetcher: receiptFetcher,
+                                                         introEligibilityCalculator: introCalculator,
+                                                         backend: backend,
+                                                         currentUserProvider: identityManager,
+                                                         operationDispatcher: operationDispatcher,
+                                                         productsManager: productsManager,
+                                                         diagnosticsTracker: diagnosticsTracker,
+                                                         groupEligibilityCache: .init())
         )
 
         let paywallCache: PaywallCacheWarmingType?
@@ -654,6 +655,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                                                 uiConfigProvider: systemInfo.remoteConfigEnabled
                                                 ? uiConfigProvider
                                                 : nil,
+                                                sdkSettingsConfigProvider: sdkSettingsConfigProvider,
                                                 workflowAssetPrewarmer: systemInfo.remoteConfigEnabled
                                                 ? workflowManager
                                                 : nil)
@@ -738,6 +740,11 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                             trackDiagnostics: false,
                             completion: { result in continuation.resume(with: result) }
                         )
+                    }
+                },
+                trackWorkflowEvent: { event in
+                    if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
+                        await eventsManager?.track(featureEvent: event)
                     }
                 }
             )
@@ -1638,7 +1645,9 @@ public extension Purchases {
     }
 
     func checkTrialOrIntroDiscountEligibility(productIdentifiers: [String]) async -> [String: IntroEligibility] {
-        return await checkTrialOrIntroductoryDiscountEligibilityAsync(productIdentifiers)
+        return await self.trialOrIntroPriceEligibilityChecker.checkEligibility(
+            productIdentifiers: Set(productIdentifiers)
+        )
     }
 
     func checkTrialOrIntroDiscountEligibility(packages: [Package]) async -> [Package: IntroEligibility] {
@@ -1659,7 +1668,8 @@ public extension Purchases {
     }
 
     func checkTrialOrIntroDiscountEligibility(product: StoreProduct) async -> IntroEligibilityStatus {
-        return await checkTrialOrIntroductoryDiscountEligibilityAsync(product)
+        let result = await self.checkTrialOrIntroDiscountEligibility(productIdentifiers: [product.id])
+        return result[product.id]?.status ?? .unknown
     }
 
 #if os(iOS) || targetEnvironment(macCatalyst) || VISION_OS
@@ -2852,6 +2862,7 @@ public extension Purchases {
 extension Purchases: SDKSettingsConfigProviderDelegate {
 
     func sdkSettingsConfigProviderDidUpdate(_ settings: SDKSettings) {
+        self.systemInfo.setPreferApplicationLocale(settings.paywalls?.preferApplicationLocale == true)
         self.setDiagnosticsCollectionDecision(remoteDiagnosticsEnabled: settings.diagnostics?.enabled)
     }
 
@@ -3483,7 +3494,8 @@ private extension Purchases {
         #if DEBUG
         let warmupFinished = Self.eligibilityCacheWarmupStarted.value?()
         #endif
-        let warmupTask = self.operationDispatcher.dispatchOnWorkerThread {
+        let priority = self.currentConfiguration?.introEligibilityWarmupPriority ?? .background
+        let warmupTask = self.operationDispatcher.dispatchOnWorkerThread(priority: priority) {
             #if DEBUG
             defer { warmupFinished?() }
             #endif

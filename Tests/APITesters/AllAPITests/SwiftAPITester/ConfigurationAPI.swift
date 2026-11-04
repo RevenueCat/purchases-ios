@@ -21,6 +21,7 @@ func checkConfigurationAPI() {
         .with(storeKit1Timeout: 1)
         .with(platformInfo: Purchases.PlatformInfo(flavor: "", version: ""))
         .with(storeKitVersion: .default)
+        .with(introEligibilityWarmupPriority: .userInitiated)
         .with(entitlementVerificationMode: .informational)
         .with(automaticDeviceIdentifierCollectionEnabled: true)
         .with(iamEnabled: false)

@@ -210,7 +210,9 @@ class CachingProductsManagerIntegrationTests: StoreKitConfigTestCase {
         let checker = self.createEligibilityChecker(manager: manager)
         _ = try await manager.products(withIdentifiers: [Self.productID])
 
-        let eligibility = try await checker.sk2CheckEligibility([Self.productID, "lifetime"])
+        let eligibility = try await checker.sk2CheckEligibility(
+            [Self.productID, "lifetime"]
+        )
 
         expect(eligibility[Self.productID]?.status) == .eligible
         expect(eligibility["lifetime"]?.status) == .noIntroOfferExists
@@ -319,7 +321,9 @@ private extension CachingProductsManagerIntegrationTests {
         if !startWithEligibility {
             manager.products(withIdentifiers: [Self.productID]) { generalResult = $0 }
         }
-        let eligibilityTask = Task { try await checker.sk2CheckEligibility([Self.productID]) }
+        let eligibilityTask = Task {
+            try await checker.sk2CheckEligibility([Self.productID])
+        }
         defer { eligibilityTask.cancel() }
         try await asyncWait(description: "Product response was not captured", timeout: .seconds(5)) {
             fetcher.deferredProductsRequestCount == 1
@@ -368,7 +372,8 @@ private extension CachingProductsManagerIntegrationTests {
             currentUserProvider: MockCurrentUserProvider(mockAppUserID: "app_user"),
             operationDispatcher: MockOperationDispatcher(),
             productsManager: manager,
-            diagnosticsTracker: nil
+            diagnosticsTracker: nil,
+            groupEligibilityCache: .init()
         )
     }
 

@@ -563,6 +563,23 @@ class DeviceCache {
         }
     }
 
+    func cachedSK2ObserverModeReceiptRetry() -> SK2ObserverModeReceiptRetry? {
+        self.userDefaults.read { defaults in
+            guard let data = defaults.data(forKey: CacheKey.sk2ObserverModeReceiptRetry.rawValue) else { return nil }
+            return try? JSONDecoder().decode(SK2ObserverModeReceiptRetry.self, from: data)
+        }
+    }
+
+    func cacheSK2ObserverModeReceiptRetry(_ retry: SK2ObserverModeReceiptRetry?) {
+        self.userDefaults.write { defaults in
+            if let retry, let data = try? JSONEncoder().encode(retry) {
+                defaults.set(data, forKey: CacheKey.sk2ObserverModeReceiptRetry.rawValue)
+            } else {
+                defaults.removeObject(forKey: CacheKey.sk2ObserverModeReceiptRetry.rawValue)
+            }
+        }
+    }
+
     // MARK: - Virtual Currencies
 
     func cache(
@@ -639,6 +656,7 @@ class DeviceCache {
         case legacySubscriberAttributes(String)
         case attributionDataDefaults(String)
         case syncedSK2ObserverModeTransactionIDs
+        case sk2ObserverModeReceiptRetry
         case virtualCurrencies(String)
         case virtualCurrenciesLastUpdated(String)
 
@@ -652,6 +670,8 @@ class DeviceCache {
             case let .attributionDataDefaults(userID): return "\(Self.base)attribution.\(userID)"
             case .syncedSK2ObserverModeTransactionIDs:
                 return "\(Self.base)syncedSK2ObserverModeTransactionIDs"
+            case .sk2ObserverModeReceiptRetry:
+                return "\(Self.base)sk2ObserverModeReceiptRetry"
             case let .virtualCurrencies(userID): return "\(Self.base)virtualCurrencies.\(userID)"
             case let .virtualCurrenciesLastUpdated(userID): return "\(Self.base)virtualCurrenciesLastUpdated.\(userID)"
             }

@@ -103,8 +103,7 @@ private extension HTTPRequestTimeoutManagerType {
         return self.timeout(host: host,
                             isFallbackHostRequest: false,
                             endpointSupportsFallbackURLs: false,
-                            isProxied: false,
-                            reTieredTimeoutsEnabled: true)
+                            isProxied: false)
     }
 
     /// The timeout a blob download gets when its host has no recent timeout on record.

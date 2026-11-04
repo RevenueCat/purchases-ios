@@ -144,7 +144,7 @@ class PurchasesGetProductsTests: BasePurchasesTests {
 
         expect(
             self.trialOrIntroPriceEligibilityChecker.invokedCheckTrialOrIntroPriceEligibilityFromOptimalStore
-        ) == true
+        ).toEventually(beTrue())
     }
 
     func testGetEligibilityForPackages() async throws {

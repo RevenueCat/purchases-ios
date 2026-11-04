@@ -50,29 +50,22 @@ final class APISourceFailover: APISourceFailoverType {
 
     }
 
-    private let usesRemoteConfigAPISources: Bool
     private let sourceProvider: RemoteConfigSourceProviderType
     private let healthChecker: SourceHealthCheckerType
 
-    /// - Parameter usesRemoteConfigAPISources: the `usesRemoteConfigAPISources` dangerous setting.
-    /// Taken as a plain value because the whole settings chain is immutable per SDK instance.
-    init(usesRemoteConfigAPISources: Bool,
-         sourceProvider: RemoteConfigSourceProviderType,
+    init(sourceProvider: RemoteConfigSourceProviderType,
          healthChecker: SourceHealthCheckerType) {
-        self.usesRemoteConfigAPISources = usesRemoteConfigAPISources
         self.sourceProvider = sourceProvider
         self.healthChecker = healthChecker
     }
 
     /// The source a request to `path` should target, or `nil` to keep using the path's default host.
     ///
-    /// API sources apply only when: the `usesRemoteConfigAPISources` dangerous setting is enabled, no
-    /// proxy is configured (a proxy pins every request to itself), this is not an endpoint
-    /// fallback-host attempt, the path opts in via `usesAPISources`, and `SystemInfo.apiBaseURL`
-    /// still holds its default (an override pins the host, e.g. in tests).
+    /// API sources apply only when: no proxy is configured (a proxy pins every request to itself),
+    /// this is not an endpoint fallback-host attempt, the path opts in via `usesAPISources`, and
+    /// `SystemInfo.apiBaseURL` still holds its default (an override pins the host, e.g. in tests).
     func currentSource(for path: HTTPRequest.Path, isFallbackAttempt: Bool) -> ResolvedSource? {
-        guard self.usesRemoteConfigAPISources,
-              SystemInfo.proxyURL == nil,
+        guard SystemInfo.proxyURL == nil,
               !isFallbackAttempt,
               path.usesAPISources,
               SystemInfo.apiBaseURL == SystemInfo.defaultApiBaseURL else {

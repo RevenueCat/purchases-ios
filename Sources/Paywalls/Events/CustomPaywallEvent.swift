@@ -71,6 +71,9 @@ extension CustomPaywallEvent {
         var placementIdentifier: String?
         var targetingRevision: Int?
         var targetingRuleId: String?
+        var workflowId: String?
+        var stepId: String?
+        var blobRef: String?
 
         init(
             paywallId: String?,
@@ -82,6 +85,9 @@ extension CustomPaywallEvent {
             self.placementIdentifier = presentedOfferingContext?.placementIdentifier
             self.targetingRevision = presentedOfferingContext?.targetingContext?.revision
             self.targetingRuleId = presentedOfferingContext?.targetingContext?.ruleId
+            self.workflowId = presentedOfferingContext?.workflowId
+            self.stepId = presentedOfferingContext?.stepId
+            self.blobRef = presentedOfferingContext?.blobRef
         }
 
     }

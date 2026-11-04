@@ -85,6 +85,32 @@ import Foundation
     /// Whether this terminal step returns an offering for app-owned presentation.
     @_spi(Internal) public var isOfferingStep: Bool { self.type == "offering" }
 
+    /// The gate in `param_values.gating`, or `nil` when the key is absent.
+    public var gating: WorkflowStepGating? {
+        guard let value = self.paramValues["gating"] else { return nil }
+        guard case let .object(gate) = value,
+              case let .string(type)? = gate["type"] else { return .invalid }
+
+        switch type {
+        case "soft":
+            return gate["entitlement_identifiers"] == nil ? .soft : .invalid
+        case "hard":
+            guard case let .array(values)? = gate["entitlement_identifiers"] else { return .invalid }
+            let identifiers = values.compactMap { value -> String? in
+                guard case let .string(identifier) = value,
+                      !identifier.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return nil }
+                return identifier
+            }
+            let uniqueIdentifiers = Set(identifiers)
+            guard !identifiers.isEmpty,
+                  identifiers.count == values.count,
+                  uniqueIdentifiers.count == identifiers.count else { return .invalid }
+            return .hard(entitlementIdentifiers: uniqueIdentifiers)
+        default:
+            return .invalid
+        }
+    }
+
     /// The step's `screen_type` from the backend (`metadata.screen_type`). `nil` = untagged (older
     /// workflows), `[]` = tagged with no known type; the distinction drives paywall-event gating (see
     /// `PaywallsV2View.shouldTrackPaywallEvents`). Key is literal snake_case: `convertFromSnakeCase` skips

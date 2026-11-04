@@ -1,0 +1,54 @@
+# Launches the checkpoint screen with a new user, hits CHECKPOINT_ID once and asserts the result.
+#  ATTRIBUTE: `true` or `false` sets `should_use_custom_ui` before the hit. `none` leaves it unset.
+#  EXPECTED_OFFERING: the offering the presenter must receive, or `none` when nothing may be presented.
+
+appId: com.revenuecat.maestro.ios
+name: Hit a checkpoint and assert the result
+---
+- clearState
+# Dismiss any leftover system alerts from previous test runs.
+- pressKey: home
+- runFlow:
+    when:
+      true: ${ATTRIBUTE == 'none'}
+    commands:
+      - launchApp:
+          arguments:
+              e2e_test_flow: checkpoint_resolution
+              checkpoint_identifier: ${CHECKPOINT_ID}
+- runFlow:
+    when:
+      true: ${ATTRIBUTE != 'none'}
+    commands:
+      - launchApp:
+          arguments:
+              e2e_test_flow: checkpoint_resolution
+              checkpoint_identifier: ${CHECKPOINT_ID}
+              checkpoint_attribute: ${ATTRIBUTE}
+
+- runFlow:
+    when:
+      true: ${EXPECTED_OFFERING != 'none'}
+    commands:
+      - extendedWaitUntil:
+          visible: "presented offering: ${EXPECTED_OFFERING}"
+          timeout: 20000
+      - tapOn:
+          id: checkpoint_close
+      - extendedWaitUntil:
+          visible: "callback: obtained"
+          timeout: 20000
+      - assertVisible: "presenter invocations: 1"
+      - assertVisible: "offering: ${EXPECTED_OFFERING}"
+
+- runFlow:
+    when:
+      true: ${EXPECTED_OFFERING == 'none'}
+    commands:
+      - extendedWaitUntil:
+          visible: "callback: nil"
+          timeout: 20000
+      - assertVisible: "presenter invocations: 0"
+      - assertVisible: "offering: none"
+
+- takeScreenshot: "${CHECKPOINT_ID} - attribute ${ATTRIBUTE}"

@@ -92,6 +92,48 @@ class IdentityTests: TestCase {
         expect(identity1.authToken.cacheIdentifier) == identity2.authToken.cacheIdentifier
     }
 
+    func testGoogleFactoryCreatesIdentityWithGoogleSource() {
+        let token = "identity-token".asData
+        let identity = Identity.google(token)
+
+        expect(identity.identitySource) === IdentitySource.google
+    }
+
+    func testGoogleFactoryStoresGoogleAuthToken() {
+        let token = "identity-token".asData
+        let identity = Identity.google(token)
+
+        expect(identity.authToken) == .google(token)
+    }
+
+    func testGoogleFactoryCreatesDistinctIdentitiesForDifferentTokens() {
+        let identity1 = Identity.google("token-1".asData)
+        let identity2 = Identity.google("token-2".asData)
+
+        expect(identity1.authToken.cacheIdentifier) != identity2.authToken.cacheIdentifier
+    }
+
+    func testGoogleFactoryCreatesEqualCacheIdentifierForSameToken() {
+        let token = "identity-token".asData
+        let identity1 = Identity.google(token)
+        let identity2 = Identity.google(token)
+
+        expect(identity1.authToken.cacheIdentifier) == identity2.authToken.cacheIdentifier
+    }
+
+    func testGoogleCacheIdentifierDiffersFromOtherProvidersWithSameToken() {
+        let token = "identity-token".asData
+        let google = Identity.google(token).authToken.cacheIdentifier
+
+        expect(google) != Identity.oidc(token).authToken.cacheIdentifier
+        expect(google) != Identity.firebase(token).authToken.cacheIdentifier
+        expect(google) != Identity.signInWithApple(token).authToken.cacheIdentifier
+    }
+
+    func testGoogleFactoryWithEmptyTokenFailsValidation() {
+        expect(Identity.google(Data()).authToken.validate()) == false
+    }
+
     // MARK: - IdentitySource
 
     func testIdentitySourceAllCasesContainsEverySource() {

@@ -23,17 +23,11 @@ struct RootView: View {
     @Environment(\.safeAreaInsets)
     private var safeAreaInsets
 
+    @Environment(\.paywallHeroLayout)
+    private var heroLayout
+
     @Environment(\.userInterfaceIdiom)
     private var userInterfaceIdiom
-
-    @EnvironmentObject
-    private var packageContext: PackageContext
-
-    @Environment(\.componentInteractionLogger)
-    private var componentInteractionLogger
-
-    @Environment(\.workflowPackageContext)
-    private var workflowPackageContext
 
     @Environment(\.workflowRenderingContext)
     private var workflowRenderingContext
@@ -42,9 +36,6 @@ struct RootView: View {
     private let onDismiss: () -> Void
     private let defaultPackage: Package?
 
-    @State private var sheetViewModel: SheetViewModel?
-    @State private var packageSelectionSheetComponentName: String?
-    @State private var packageBeforeOpeningSheet: Package?
     @State private var overlaidHeaderHeight: CGFloat = 0
     @State private var nativeHeaderCollapsed = false
     @State private var visibleBodyHero = false
@@ -109,49 +100,9 @@ struct RootView: View {
         }
         .environment(\.paywallRootStackIsZLayer, self.paywallRootStackIsZLayer)
         .onPreferenceChange(NativePaywallCollapsedHeaderKey.self) { self.nativeHeaderCollapsed = $0 }
-        .environment(\.openSheet, { sheet in
-            self.sheetViewModel = sheet
-        })
-        .bottomSheet(
-            sheet: $sheetViewModel,
-            safeAreaInsets: self.safeAreaInsets,
-            onSheetContentAppear: {
-                guard let sheetViewModel else { return }
-                _ = self.componentInteractionLogger(
-                    .paywallPackageSelectionSheetOpen(
-                        sheetComponentName: sheetViewModel.sheet.name,
-                        rootSelectedPackage: self.packageContext.package
-                    )
-                )
-            }
-        )
-        .onChangeOf(sheetViewModel) { newValue in
-            if let newValue {
-                self.packageSelectionSheetComponentName = newValue.sheet.name
-                if self.workflowPackageContext != nil {
-                    self.packageBeforeOpeningSheet = self.packageContext.package
-                }
-            } else {
-                // Reset package selection when sheet is dismissed; snapshot sheet name before clear for analytics.
-                let selectionInSheetContext = self.packageContext.package
-                self.packageContext.package = Self.restoredPackageAfterSheetDismissal(
-                    workflowPackageContext: self.workflowPackageContext,
-                    packageBeforeOpeningSheet: self.packageBeforeOpeningSheet,
-                    defaultPackage: self.defaultPackage
-                )
-                self.packageBeforeOpeningSheet = nil
-                let resultingRootPackage = self.packageContext.package
-                let sheetName = self.packageSelectionSheetComponentName
-                self.packageSelectionSheetComponentName = nil
-                _ = self.componentInteractionLogger(
-                    .paywallPackageSelectionSheetClose(
-                        sheetComponentName: sheetName,
-                        sheetSelectedPackage: selectionInSheetContext,
-                        resultingRootPackage: resultingRootPackage
-                    )
-                )
-            }
-        }
+        .modifier(RootPackageSelectionSheetModifier(defaultPackage: self.defaultPackage))
+        // The body owns this resolution; sheets and footers have independent layout roots.
+        .environment(\.paywallHeroLayout, nil)
     }
 
     private func mainContent(footerLayout: PaywallComponent.StickyFooterComponent.Layout) -> some View {
@@ -178,10 +129,10 @@ struct RootView: View {
                         bottom: footerLayout == .normal ? overlaidFooterHeight : safeAreaInsets.bottom, trailing: 0
                     )
                 )
+                .environment(\.paywallHeroLayout, self.heroLayout)
                 .environment(\.overlaidHeaderHeight, overlaidHeaderHeight)
-                .environment(\.nativePaywallBodyHeroIdentifier,
-                             viewModel.firstItemIsFullWidthMedia
-                                 ? viewModel.stackViewModel.viewModels.first?.firstNativeMediaIdentifier : nil)
+                .environment(\.nativePaywallBodyHeroIdentifier, viewModel.bodyHeroMediaIdentifier)
+                .environment(\.paywallHeroMediaIdentifier, viewModel.bodyHeroMediaIdentifier)
                 .environment(\.nativePaywallBodySafeAreaRestored, self.restoresBodyTopInset)
                 .onPreferenceChange(NativePaywallVisibleBodyHeroKey.self) { self.visibleBodyHero = $0 }
                 // An authored hero can be hidden by a rule. Once its native-only header collapses,
@@ -249,20 +200,107 @@ struct RootView: View {
         }
     }
 
-    /// Returns the package that should be selected after a selection sheet is dismissed.
-    ///
-    /// In a workflow context the view snapshots the pre-sheet selection on open; this restores
-    /// that snapshot so navigating into and out of the sheet is a no-op for the workflow step.
-    /// Outside a workflow the sheet always resets to the step default.
+    /// Restores the selection from before the sheet opened, falling back to the page default
+    /// when no package was selected.
     static func restoredPackageAfterSheetDismissal(
-        workflowPackageContext: WorkflowPackageContext?,
         packageBeforeOpeningSheet: Package?,
         defaultPackage: Package?
     ) -> Package? {
-        if workflowPackageContext != nil {
-            return packageBeforeOpeningSheet ?? defaultPackage
+        return packageBeforeOpeningSheet ?? defaultPackage
+    }
+
+}
+
+/// Owns the sheet selection lifetime independently of the page's layout and tab renderings.
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+struct RootPackageSelectionSheetModifier: ViewModifier {
+
+    @Environment(\.safeAreaInsets) private var safeAreaInsets
+    @EnvironmentObject
+    private var packageContext: PackageContext
+
+    @Environment(\.componentInteractionLogger)
+    private var componentInteractionLogger
+
+    @Environment(\.screenCondition) private var screenCondition
+    @Environment(\.customPaywallVariables) private var customVariables
+    @Environment(\.paywallWindowSize) private var paywallWindowSize
+    @EnvironmentObject private var introOfferEligibilityContext: IntroOfferEligibilityContext
+    @EnvironmentObject private var paywallPromoOfferCache: PaywallPromoOfferCache
+
+    @State private var sheetPackageContext: PackageContext?
+    @State private var variableContextBeforeOpeningSheet: PackageContext.VariableContext?
+    @State private var sheetViewModel: SheetViewModel?
+    @State private var packageSelectionSheetComponentName: String?
+    @State private var packageBeforeOpeningSheet: Package?
+    let defaultPackage: Package?
+
+    func body(content: Content) -> some View {
+        content
+        .environment(\.openSheet, { sheet in
+            if self.sheetViewModel == nil {
+                self.packageBeforeOpeningSheet = self.packageContext.package
+                self.variableContextBeforeOpeningSheet = self.packageContext.variableContext
+            }
+            let validator = sheet.packageValidator
+            let selectionContext = PackageSelectionContext(
+                condition: self.screenCondition,
+                customVariables: self.customVariables,
+                windowSize: self.paywallWindowSize,
+                isEligibleForIntroOffer: { self.introOfferEligibilityContext.isEligible(package: $0) },
+                isEligibleForPromoOffer: { self.paywallPromoOfferCache.isMostLikelyEligible(for: $0) }
+            )
+            self.sheetPackageContext = self.packageContext.activateSheet(
+                validator: validator,
+                selectionContext: selectionContext
+            )
+            self.sheetViewModel = sheet
+        })
+        .bottomSheet(
+            sheet: $sheetViewModel,
+            safeAreaInsets: self.safeAreaInsets,
+            onSheetContentAppear: {
+                guard let sheetViewModel else { return }
+                _ = self.componentInteractionLogger(
+                    .paywallPackageSelectionSheetOpen(
+                        sheetComponentName: sheetViewModel.sheet.name,
+                        rootSelectedPackage: self.packageBeforeOpeningSheet
+                    )
+                )
+            },
+            packageContext: self.sheetPackageContext
+        )
+        .onChangeOf(sheetViewModel) { newValue in
+            if let newValue {
+                self.packageSelectionSheetComponentName = newValue.sheet.name
+            } else {
+                // Reset package selection when sheet is dismissed; snapshot sheet name before clear for analytics.
+                let selectionInSheetContext = self.packageContext.package
+                let restoredPackage = RootView.restoredPackageAfterSheetDismissal(
+                    packageBeforeOpeningSheet: self.packageBeforeOpeningSheet,
+                    defaultPackage: self.defaultPackage
+                )
+                self.packageContext.update(
+                    package: restoredPackage,
+                    variableContext: self.variableContextBeforeOpeningSheet ?? self.packageContext.variableContext,
+                    isReconcile: true
+                )
+                self.packageContext.presentedSheetContext = nil
+                self.sheetPackageContext = nil
+                self.variableContextBeforeOpeningSheet = nil
+                self.packageBeforeOpeningSheet = nil
+                let resultingRootPackage = self.packageContext.package
+                let sheetName = self.packageSelectionSheetComponentName
+                self.packageSelectionSheetComponentName = nil
+                _ = self.componentInteractionLogger(
+                    .paywallPackageSelectionSheetClose(
+                        sheetComponentName: sheetName,
+                        sheetSelectedPackage: selectionInSheetContext,
+                        resultingRootPackage: resultingRootPackage
+                    )
+                )
+            }
         }
-        return defaultPackage
     }
 
 }
@@ -290,11 +328,22 @@ private struct NativePaywallBodyHeroIdentifierKey: EnvironmentKey {
     static let defaultValue: ObjectIdentifier? = nil
 }
 
+private struct PaywallHeroMediaIdentifierKey: EnvironmentKey {
+    static let defaultValue: ObjectIdentifier? = nil
+}
+
 private struct NativePaywallBodySafeAreaRestoredKey: EnvironmentKey {
     static let defaultValue = false
 }
 
 extension EnvironmentValues {
+    /// The hero media that bleeds into the top safe area. ZStacks whose first child leads to it push their
+    /// other children, the overlays, below the safe area.
+    var paywallHeroMediaIdentifier: ObjectIdentifier? {
+        get { self[PaywallHeroMediaIdentifierKey.self] }
+        set { self[PaywallHeroMediaIdentifierKey.self] = newValue }
+    }
+
     var nativePaywallBodySafeAreaRestored: Bool {
         get { self[NativePaywallBodySafeAreaRestoredKey.self] }
         set { self[NativePaywallBodySafeAreaRestoredKey.self] = newValue }

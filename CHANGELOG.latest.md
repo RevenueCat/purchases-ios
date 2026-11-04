@@ -1,28 +1,22 @@
 ## RevenueCat SDK
+### ✨ New Features
+* feat(ads): dispatch checkpoint ad presentation by format (#7786) via Peter Porfy (@peterporfy)
+* feat(ads): extend admob presenter with rewarded support (#7785) via Peter Porfy (@peterporfy)
 ### 🐞 Bugfixes
-* Share one product cache between offerings and intro eligibility (#8085) via Antonio Pallares (@ajpallares)
-* Fix product cache invalidation and shared request results (#8084) via Antonio Pallares (@ajpallares)
-* Handle re-login as the same user (#8100) via Dave DeLong (@davedelong)
+* fix: preserve workflow attribution in custom paywall impressions (#8183) via Álvaro Marco (@amarco90)
+### Paywallsv2
+#### 🐞 Bugfixes
+* fix: Reduce CPU usage when downloading large assets (#8177) via Rick (@rickvdl)
 
 ## RevenueCatUI SDK
-### Paywallsv2
-#### ✨ New Features
-* 6 of 6: Support native Back and Close in paywall workflows (#8025) via Josh Holtz (@joshdholtz)
-* 5 of 6: Show native paywall buttons in UIKit (#8024) via Josh Holtz (@joshdholtz)
-* 4 of 6: Show native paywall buttons in SwiftUI (#8023) via Josh Holtz (@joshdholtz)
-* 3 of 6: Connect native paywall buttons to existing actions (#8022) via Josh Holtz (@joshdholtz)
-* 2 of 6: Register native paywall button actions (#8027) via Josh Holtz (@joshdholtz)
-* 1 of 6: Add native paywall button preferences (#8021) via Josh Holtz (@joshdholtz)
-#### 🐞 Bugfixes
-* 8 of 8: Replace nested paywall navigation buttons (#8075) via Josh Holtz (@joshdholtz)
-* 7 of 7: Hide caller Back when native paywall controls are shown (#8071) via Josh Holtz (@joshdholtz)
-* fix: avoid redacting packages without applicable offers (#8074) via Antonio Pallares (@ajpallares)
+### 🐞 Bugfixes
+* Fix(Paywalls) Prioritize app locale (#8165) via Jacob Rakidzich (@JZDesign)
 
 ### 🔄 Other Changes
-* Improve intro eligibility debug logging (#8104) via Antonio Pallares (@ajpallares)
-* 10 of 10: Verify native and embedded navigation analytics (#8082) via Josh Holtz (@joshdholtz)
-* 9 of 9: Share paywall component traversal (#8080) via Josh Holtz (@joshdholtz)
-* Remove snapshots for iOS versions no longer tested on CI (#8092) via Antonio Pallares (@ajpallares)
-* Run iOS 26 tests on Xcode 26.6 with the iOS 26.2 simulator (#8090) via Antonio Pallares (@ajpallares)
-* Update fallback offerings snapshot for Filipino locale (#8102) via Josh Holtz (@joshdholtz)
-* Revert "Migrate existing anonymous user IDs when logging in" (#8101) via Dave DeLong (@davedelong)
+* feat(checkpoints): Add internal error dialog factory for checkpoints (#8134) via Cesar de la Vega (@vegaro)
+* Move PurchaseTester to Projects (#8189) via Facundo Menzella (@facumenzella)
+* other: move the checkpoint samples to SampleCat and delete CheckpointTester (#8162) via Facundo Menzella (@facumenzella)
+* lint: add SwiftLint rule against Int for epoch milliseconds (#8181) via Will Taylor (@fire-at-will)
+* ci: limit the Lock Threads token to `issues: write` (#8178) via Álvaro Brey (@AlvaroBrey)
+* ci: run actionlint from the shared workflow (#8159) via Álvaro Brey (@AlvaroBrey)
+* WFL-800 send step analytics for all step types in a flow (#8160) via Rosie Watson (@RosieWatson)

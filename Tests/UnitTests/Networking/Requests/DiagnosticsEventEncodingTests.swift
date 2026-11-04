@@ -72,4 +72,38 @@ class DiagnosticsEventEncodingTests: TestCase {
         expect(try self.exampleEvent.encodeAndDecode()) == self.exampleEvent
     }
 
+    func testTransactionDatesPreserve64BitEpochMilliseconds() throws {
+        let properties = DiagnosticsEvent.Properties(
+            purchaseDate: Date(timeIntervalSince1970: 1_793_491_200),
+            expirationDate: Date(timeIntervalSince1970: 1_796_083_200)
+        )
+
+        // These values exceed Int.max on arm64_32 watchOS devices.
+        expect(properties.purchaseDate) == Int64(1_793_491_200_000)
+        expect(properties.expirationDate) == Int64(1_796_083_200_000)
+
+        let data = try JSONEncoder.default.encode(properties)
+        let json = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
+
+        expect((json["purchase_date"] as? NSNumber)?.int64Value) == Int64(1_793_491_200_000)
+        expect((json["expiration_date"] as? NSNumber)?.int64Value) == Int64(1_796_083_200_000)
+
+        let decoded = try JSONDecoder.default.decode(DiagnosticsEvent.Properties.self, from: data)
+        expect(decoded.purchaseDate) == Int64(1_793_491_200_000)
+        expect(decoded.expirationDate) == Int64(1_796_083_200_000)
+    }
+
+    func testMissingTransactionDatesRemainAbsent() throws {
+        let properties = DiagnosticsEvent.Properties()
+        let data = try JSONEncoder.default.encode(properties)
+        let json = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
+
+        expect(json["purchase_date"]).to(beNil())
+        expect(json["expiration_date"]).to(beNil())
+
+        let decoded = try JSONDecoder.default.decode(DiagnosticsEvent.Properties.self, from: data)
+        expect(decoded.purchaseDate).to(beNil())
+        expect(decoded.expirationDate).to(beNil())
+    }
+
 }

@@ -13,7 +13,7 @@
 //
 
 import RevenueCat
-@_spi(InviteOnlyCheckpointsApi) import RevenueCatUI
+@_spi(InviteOnlyCheckpointsApi) @_spi(Internal) import RevenueCatUI
 
 func checkCheckpointAPI(_ purchases: Purchases) {
     let literalCustomVariables: [String: CustomVariableValue] = [
@@ -112,6 +112,21 @@ private func checkErrorPresentationAPI(_ purchases: Purchases) {
 }
 
 @MainActor
+private func checkErrorDialogFactoryAPI(_ purchases: Purchases) {
+    let dialog = CheckpointErrorDialog(message: "Something went wrong.", dismissButtonTitle: "OK")
+    let _: String = dialog.dismissButtonTitle
+    let factory: ErrorDialogFactory = { _, completion in
+        let _: ErrorDialogFactoryOutcome = .show(dialog)
+        let _: ErrorDialogFactoryOutcome = .useDefault
+        let _: ErrorDialogFactoryOutcome = .suppress
+        completion.complete(with: .show(dialog))
+    }
+
+    purchases.checkpoint("test_checkpoint", errorDialogFactory: factory) { _ in }
+    purchases.checkpoint("test_checkpoint", errorDialogFactory: nil) { _ in }
+}
+
+@MainActor
 private final class CheckpointAPIPaywallPresenter: PaywallPresenter {
 
     func present(
@@ -128,6 +143,36 @@ private final class CheckpointAPIErrorPresenter: ErrorPresenter {
 
     func present(params: ErrorPresentationParams, completion: ErrorPresentationCompletion) {
         completion.complete()
+    }
+
+}
+
+@MainActor
+private func checkAdPresentationAPI(
+    _ purchases: Purchases
+) {
+    let presenter = CheckpointAPIAdPresenter()
+    purchases.adPresenter = presenter
+    let _: AdPresenter? = purchases.adPresenter
+
+    let error: PublicError = NSError(domain: "", code: 0)
+    let _: AdPresentationResult = .shown
+    let _: AdPresentationResult = .failed(error: error)
+    let _: Bool = AdPresentationResult.shown == AdPresentationResult.shown
+}
+
+@MainActor
+private final class CheckpointAPIAdPresenter: AdPresenter {
+
+    func present(
+        params: AdPresentationParams,
+        completion: @escaping AdPresentationCompletion
+    ) {
+        let _: String = params.checkpointIdentifier
+        let _: String = params.adIdentifier
+        let _: MediatorName = params.mediator
+        let _: AdFormat = params.adFormat
+        completion(.shown)
     }
 
 }

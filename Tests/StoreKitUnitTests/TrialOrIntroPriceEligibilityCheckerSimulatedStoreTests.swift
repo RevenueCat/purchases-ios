@@ -57,7 +57,8 @@ class TrialOrIntroPriceEligibilityCheckerSimulatedStoreTests: StoreKitConfigTest
             currentUserProvider: userProvider,
             operationDispatcher: mockOperationDispatcher,
             productsManager: self.cachingManager,
-            diagnosticsTracker: nil
+            diagnosticsTracker: nil,
+            groupEligibilityCache: .init()
         )
     }
 
@@ -124,7 +125,7 @@ class TrialOrIntroPriceEligibilityCheckerSimulatedStoreTests: StoreKitConfigTest
         ])
     }
 
-    func testSimulatedStoreReportsEligibleForProductsWithIntroductoryDiscount() throws {
+    func testSimulatedStoreReportsEligibleForProductsWithIntroductoryDiscount() async throws {
         try setupSimulatedStore(storeKitVersion: .storeKit2)
         stubProducts()
 
@@ -134,12 +135,9 @@ class TrialOrIntroPriceEligibilityCheckerSimulatedStoreTests: StoreKitConfigTest
             Self.productWithoutDiscountID
         ]
 
-        let eligibilities = try XCTUnwrap(waitUntilValue { completed in
-            self.trialOrIntroPriceEligibilityChecker.checkEligibility(
-                productIdentifiers: productIdentifiers,
-                completion: completed
-            )
-        })
+        let eligibilities = await self.trialOrIntroPriceEligibilityChecker.checkEligibility(
+            productIdentifiers: productIdentifiers
+        )
 
         expect(eligibilities[Self.productWithFreeTrialID]?.status) == .eligible
         expect(eligibilities[Self.productWithIntroPriceID]?.status) == .eligible
@@ -149,36 +147,28 @@ class TrialOrIntroPriceEligibilityCheckerSimulatedStoreTests: StoreKitConfigTest
         expect(eligibilities.values.map(\.status)).toNot(contain(IntroEligibilityStatus.ineligible))
     }
 
-    func testSimulatedStoreReportsUnknownForUnknownProducts() throws {
+    func testSimulatedStoreReportsUnknownForUnknownProducts() async throws {
         try setupSimulatedStore(storeKitVersion: .storeKit2)
         stubProducts()
 
         let unknownProductID = "com.test.not_returned_by_manager"
         let productIdentifiers: Set<String> = [Self.productWithFreeTrialID, unknownProductID]
 
-        let eligibilities = try XCTUnwrap(waitUntilValue { completed in
-            self.trialOrIntroPriceEligibilityChecker.checkEligibility(
-                productIdentifiers: productIdentifiers,
-                completion: completed
-            )
-        })
+        let eligibilities = await self.trialOrIntroPriceEligibilityChecker.checkEligibility(
+            productIdentifiers: productIdentifiers
+        )
 
         expect(eligibilities[Self.productWithFreeTrialID]?.status) == .eligible
         expect(eligibilities[unknownProductID]?.status) == .unknown
     }
 
-    func testSimulatedStoreDoesNotCheckEligibilityThroughStoreKitOrBackend() throws {
+    func testSimulatedStoreDoesNotCheckEligibilityThroughStoreKitOrBackend() async throws {
         try setupSimulatedStore(storeKitVersion: .storeKit2)
         stubProducts()
 
         let productIdentifiers: Set<String> = [Self.productWithFreeTrialID]
 
-        _ = waitUntilValue { completed in
-            self.trialOrIntroPriceEligibilityChecker.checkEligibility(
-                productIdentifiers: productIdentifiers,
-                completion: completed
-            )
-        }
+        _ = await self.trialOrIntroPriceEligibilityChecker.checkEligibility(productIdentifiers: productIdentifiers)
 
         expect(self.receiptFetcher.receiptDataCalled) == false
         expect(self.mockIntroEligibilityCalculator.invokedCheckTrialOrIntroDiscountEligibility) == false
@@ -193,6 +183,32 @@ class TrialOrIntroPriceEligibilityCheckerSimulatedStoreTests: StoreKitConfigTest
         try await self.verifySharingCachedProducts(storeKitVersion: .storeKit2)
     }
 
+    func testSimulatedStoreRetainsPerProductEligibilityCachingWithSK2Configured() async throws {
+        try self.setupSimulatedStore(storeKitVersion: .storeKit2)
+        self.stubProducts()
+        let caching = CachingTrialOrIntroPriceEligibilityChecker(checker: self.trialOrIntroPriceEligibilityChecker)
+        let identifiers: Set<String> = [Self.productWithFreeTrialID]
+        let first = await withCheckedContinuation { continuation in
+            caching.checkEligibility(productIdentifiers: identifiers) { continuation.resume(returning: $0) }
+        }
+
+        self.cachingManager.clearCache()
+        self.mockProductsManager.stubbedProductsCompletionResult = .failure(ErrorUtils.productRequestTimedOutError())
+        let cached = await withCheckedContinuation { continuation in
+            caching.checkEligibility(productIdentifiers: identifiers) { continuation.resume(returning: $0) }
+        }
+        expect(first[Self.productWithFreeTrialID]?.status) == .eligible
+        expect(cached) == first
+        expect(self.mockProductsManager.invokedProductsCount) == 1
+
+        caching.clearCache()
+        let refreshed = await withCheckedContinuation { continuation in
+            caching.checkEligibility(productIdentifiers: identifiers) { continuation.resume(returning: $0) }
+        }
+        expect(refreshed[Self.productWithFreeTrialID]?.status) == .unknown
+        expect(self.mockProductsManager.invokedProductsCount) == 2
+    }
+
 }
 
 @available(iOS 14.0, tvOS 14.0, macOS 11.0, watchOS 7.0, *)
@@ -204,20 +220,14 @@ private extension TrialOrIntroPriceEligibilityCheckerSimulatedStoreTests {
         let identifiers: Set<String> = [Self.productWithFreeTrialID]
         _ = try await self.cachingManager.products(withIdentifiers: identifiers)
 
-        let eligibility = await withCheckedContinuation { continuation in
-            self.trialOrIntroPriceEligibilityChecker.checkEligibility(productIdentifiers: identifiers) {
-                continuation.resume(returning: $0)
-            }
-        }
+        let eligibility = await self.trialOrIntroPriceEligibilityChecker.checkEligibility(
+            productIdentifiers: identifiers
+        )
 
         expect(eligibility[Self.productWithFreeTrialID]?.status) == .eligible
         expect(self.mockProductsManager.invokedProductsCount) == 1
         self.cachingManager.clearCache()
-        _ = await withCheckedContinuation { continuation in
-            self.trialOrIntroPriceEligibilityChecker.checkEligibility(productIdentifiers: identifiers) {
-                continuation.resume(returning: $0)
-            }
-        }
+        _ = await self.trialOrIntroPriceEligibilityChecker.checkEligibility(productIdentifiers: identifiers)
         expect(self.mockProductsManager.invokedProductsCount) == 2
         expect(self.receiptFetcher.receiptDataCalled) == false
         expect(self.mockOfferingsAPI.invokedGetIntroEligibility) == false

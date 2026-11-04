@@ -16,6 +16,10 @@ import Foundation
 
 final class MockPaywallCacheWarming: PaywallCacheWarmingType {
 
+    let eligibilityWarmupPriority: Atomic<TaskPriority?> = .init(nil)
+    let assetsWarmupPriority: Atomic<TaskPriority?> = .init(nil)
+    let fontsWarmupPriority: Atomic<TaskPriority?> = .init(nil)
+
     private let _invokedWarmUpEligibilityCache: Atomic<Bool> = false
     private let _invokedWarmUpEligibilityCacheOfferings: Atomic<Offerings?> = nil
 
@@ -29,6 +33,7 @@ final class MockPaywallCacheWarming: PaywallCacheWarmingType {
     }
 
     func warmUpEligibilityCache(offerings: Offerings) {
+        self.eligibilityWarmupPriority.value = Task.currentPriority
         self.invokedWarmUpEligibilityCache = true
         self.invokedWarmUpEligibilityCacheOfferings = offerings
     }
@@ -67,6 +72,7 @@ final class MockPaywallCacheWarming: PaywallCacheWarmingType {
     }
 
     func warmUpPaywallAssetsCache(offerings: Offerings) async {
+        self.assetsWarmupPriority.value = Task.currentPriority
         self.invokedWarmUpPaywallAssetsCache = true
         self.invokedWarmUpPaywallAssetsCacheOfferings = offerings
     }
@@ -86,6 +92,7 @@ final class MockPaywallCacheWarming: PaywallCacheWarmingType {
     }
 
     func warmUpPaywallFontsCache(offerings: Offerings) {
+        self.fontsWarmupPriority.value = Task.currentPriority
         self.invokedWarmUpPaywallFontsCache = true
         self.invokedWarmUpPaywallFontsCacheOfferings = offerings
     }

@@ -46,6 +46,16 @@ public extension Purchases {
         set { self.checkpointsManager.setErrorPresenter(newValue) }
     }
 
+    /// The presenter used when a checkpoint selects an ad step.
+    ///
+    /// Set this to let an ad mediator adapter register itself so a resolved checkpoint displays an ad
+    /// automatically, with no per-checkpoint app code.
+    @MainActor
+    var adPresenter: AdPresenter? {
+        get { return self.checkpointsManager.adPresenter }
+        set { self.checkpointsManager.setAdPresenter(newValue) }
+    }
+
     /// Passes a checkpoint and calls `onPassed` when the app can continue past it.
     ///
     /// The callback receives a result with an optional flow result and the customer's information. The flow result is
@@ -78,7 +88,37 @@ public extension Purchases {
             customVariables: customVariables,
             presentationMode: presentationMode,
             paywallPresenter: paywallPresenter,
-            errorPresenter: errorPresenter
+            errorPresenter: errorPresenter,
+            errorDialogFactory: nil
+        )
+        self.performCheckpoint(identifier, params: params, onPassed: onPassed)
+    }
+
+}
+
+/// Internal-only checkpoint entry point that supports a per-call ``ErrorDialogFactory``.
+@_spi(Internal)
+@available(iOS 15.0, *)
+public extension Purchases {
+
+    /// Passes a checkpoint and calls `onPassed` when the app can continue past it.
+    ///
+    /// Behaves like ``checkpoint(_:customVariables:presentationMode:paywallPresenter:errorPresenter:_:)``, but
+    /// takes an `errorDialogFactory` for hybrid bridges. It overrides the global ``errorPresenter`` for this call.
+    @MainActor
+    func checkpoint(
+        _ identifier: String,
+        customVariables: [String: CustomVariableValue] = [:],
+        presentationMode: FlowPresentationMode = .default,
+        paywallPresenter: PaywallPresentationHandler? = nil,
+        errorDialogFactory: ErrorDialogFactory?,
+        _ onPassed: @escaping (CheckpointResult) -> Void
+    ) {
+        let params = CheckpointCallParams(
+            customVariables: customVariables,
+            presentationMode: presentationMode,
+            paywallPresenter: paywallPresenter,
+            errorDialogFactory: errorDialogFactory
         )
         self.performCheckpoint(identifier, params: params, onPassed: onPassed)
     }

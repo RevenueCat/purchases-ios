@@ -13,22 +13,30 @@
 
 import Foundation
 
-/// An inteface representing a simple cache
+/// An interface for storing and retrieving files from a local cache.
 protocol LargeItemCacheType {
-    /// Store data to a url
+    /// Stores data at the given URL.
     func saveData(_ data: Data, to url: URL) throws
 
-    /// Store data to a url
+    /// Validates and moves a downloaded temporary file into the cache.
+    ///
+    /// This method takes ownership of the temporary file. It removes the file from
+    /// `temporaryURL` whether validation and storage succeed or fail.
+    ///
+    /// - Parameters:
+    ///   - temporaryURL: The location of the downloaded temporary file.
+    ///   - destinationURL: The final cache location.
+    ///   - checksum: An optional checksum used to validate the downloaded file before moving it.
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, visionOS 1.0, watchOS 8.0, *)
-    func saveData(_ bytes: AsyncThrowingStream<UInt8, Error>, to url: URL, checksum: Checksum?) async throws
+    func saveDownloadedFile(fromTemporaryURL temporaryURL: URL, to destinationURL: URL, checksum: Checksum?) throws
 
-    /// Check if there is content cached at the url
+    /// Checks whether non-empty content is cached at the URL.
     func cachedContentExists(at url: URL) -> Bool
 
-    /// Load data from url
+    /// Loads data from the URL.
     func loadFile(at url: URL) throws -> Data
 
-    /// delete data at url
+    /// Deletes data at the URL.
     func remove(_ url: URL) throws
 
     /// Creates a directory from a base path in the specified directory type
@@ -40,7 +48,7 @@ protocol LargeItemCacheType {
         inAppSpecificDirectory: Bool
     ) -> URL?
 
-    /// List all file URLs in a directory
+    /// Lists all file URLs in a directory.
     func contentsOfDirectory(at url: URL) throws -> [URL]
 }
 
@@ -70,73 +78,61 @@ extension LargeItemCacheType {
 
 extension FileManager: LargeItemCacheType {
 
-    /// Store data to a url
+    /// Stores data at the given URL.
     func saveData(_ data: Data, to url: URL) throws {
         let directoryURL = url.deletingLastPathComponent()
         try createDirectory(at: directoryURL, withIntermediateDirectories: true, attributes: nil)
         try data.write(to: url, options: .atomic)
     }
 
-    /// Store data to a url and validate that the file is correct before saving
+    /// Validates and moves a downloaded temporary file into the cache.
+    ///
+    /// This method takes ownership of the temporary file. It removes the file from
+    /// `temporaryURL` whether validation and storage succeed or fail.
+    ///
+    /// - Parameters:
+    ///   - temporaryURL: The location of the downloaded temporary file.
+    ///   - destinationURL: The final cache location.
+    ///   - checksum: An optional checksum used to validate the downloaded file before moving it.
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, visionOS 1.0, watchOS 8.0, *)
-    func saveData(
-        _ bytes: AsyncThrowingStream<UInt8, Error>,
-        to url: URL,
+    func saveDownloadedFile(
+        fromTemporaryURL temporaryURL: URL,
+        to destinationURL: URL,
         checksum: Checksum?
-    ) async throws {
+    ) throws {
+        // URLSession creates downloaded files in a temporary location. Ensure that file is
+        // not leaked if checksum validation, directory creation, or the final move fails.
+        defer { try? removeItem(at: temporaryURL) }
 
-        // Set up file handling
+        if let checksum {
+            let fileHandle = try FileHandle(forReadingFrom: temporaryURL)
+            defer { try? fileHandle.close() }
 
-        let tempFileURL = temporaryDirectory.appendingPathComponent((checksum?.value ?? "") + url.lastPathComponent)
+            // Hash in bounded chunks so checksum validation does not load large assets into memory.
+            // Use an autorelease pool per chunk because FileHandle's autoreleased read buffers otherwise
+            // remain alive until the outer pool drains.
+            // 256 KiB keeps memory usage low while avoiding excessive file-read operations.
+            let checksumReadChunkSize = 256 * 1024
+            var hasher = checksum.algorithm.getHasher()
+            while try autoreleasepool(invoking: {
+                guard let data = try fileHandle.read(upToCount: checksumReadChunkSize),
+                      !data.isEmpty else {
+                    return false
+                }
 
-        guard createFile(atPath: tempFileURL.path, contents: nil, attributes: nil) else {
-            let message = Strings.fileRepository.failedToCreateTemporaryFile(tempFileURL)
-            Logger.error(message)
-            throw CocoaError(.fileWriteUnknown)
+                hasher.update(data: data)
+                return true
+            }) {}
+
+            // Do not move corrupted or incomplete downloads into the cache.
+            let value = hasher.toString()
+            try Checksum(algorithm: checksum.algorithm, value: value).compare(to: checksum)
         }
 
-        let fileHandle = try FileHandle(forWritingTo: tempFileURL)
-        defer { try? fileHandle.close() }
-        defer { try? removeItem(at: tempFileURL) }
-
-        // Write data in chunks to the temporary file
-
-        let bufferSize: Int = 262_144 // 256KB
-        var buffer = Data()
-        buffer.reserveCapacity(bufferSize)
-        var hasher = checksum?.algorithm.getHasher()
-
-        for try await byte in bytes {
-            buffer.append(byte)
-
-            if buffer.count >= bufferSize {
-                hasher?.update(data: buffer)
-                try fileHandle.write(contentsOf: buffer)
-                buffer.removeAll(keepingCapacity: true)
-            }
-        }
-
-        // Write any remaining bytes missed during the while loop
-        if !buffer.isEmpty {
-            hasher?.update(data: buffer)
-            try fileHandle.write(contentsOf: buffer)
-        }
-
-        // Validate the stored data matches what the server has
-        if let checksum = checksum, let hasher = hasher {
-            // If this fails… should we retry?
-
-            let digest = hasher.finalize()
-            let value = digest.compactMap { String(format: "%02x", $0) }.joined()
-            try Checksum(algorithm: checksum.algorithm, value: value)
-                .compare(to: checksum)
-        }
-
-        // If all succeeds, move the temporary file to the more permanant storage location
-        // effectively a "save" operation
-        let directoryURL = url.deletingLastPathComponent()
+        // Validation is complete, so move the temporary file into its final cache location.
+        let directoryURL = destinationURL.deletingLastPathComponent()
         try createDirectory(at: directoryURL, withIntermediateDirectories: true, attributes: nil)
-        try moveItem(at: tempFileURL, to: url)
+        try moveItem(at: temporaryURL, to: destinationURL)
     }
 
     /// Check if there is content cached at the given path

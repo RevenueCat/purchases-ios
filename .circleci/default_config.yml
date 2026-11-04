@@ -1,6 +1,6 @@
 orbs:
   macos: circleci/macos@2.5.1
-  revenuecat: revenuecat/sdks-common-config@4.7.0
+  revenuecat: revenuecat/sdks-common-config@4.7.1
   # Disabled until compatible with M1: codecov: codecov/codecov@3.3.0
   # codecov: codecov/codecov@3.3.0
 
@@ -646,6 +646,36 @@ jobs:
           path: fastlane/test_output
           destination: scan-test-output
 
+  revenuecat-ads-tests:
+    executor:
+      name: macos-executor
+      xcode_version: "27.0.0"
+    steps:
+      - checkout
+      - install-dependencies:
+          install_xcbeautify: false
+      - update-spm-installation-commit
+      - run:
+          name: SPM RevenueCatAds iOS Release Build
+          command: >-
+            cd AdapterSDKs/RevenueCatAds &&
+            swift build -c release --triple arm64-apple-ios15.0 --sdk "$(xcrun --sdk iphoneos --show-sdk-path)"
+          no_output_timeout: 30m
+      - run:
+          name: RevenueCatAds unit tests
+          command: bundle exec fastlane test_revenuecat_ads
+          no_output_timeout: 10m
+          environment:
+            DEVICE: iPhone 17,OS=27.0
+      - compress_result_bundle:
+          directory: fastlane/test_output
+          bundle_name: revenuecat_ads
+      - store_test_results:
+          path: fastlane/test_output/revenuecat_ads/tests.xml
+      - store_artifacts:
+          path: fastlane/test_output
+          destination: scan-test-output
+
   spm-receipt-parser:
     executor:
       name: macos-executor
@@ -1183,20 +1213,41 @@ jobs:
           destination: scan-test-output-ios-26
       - github-notify-pr-on-fail
 
-  build-checkpoint-tester:
+  build-samplecat:
     executor:
       name: macos-executor
       xcode_version: "27.0.0"
     steps:
       - checkout
       - tuist-generate-workspace:
-          query: "CheckpointTester"
+          query: "SampleCat"
       - run:
-          name: Build CheckpointTester
+          name: Build SampleCat
+          # The sample's Constants.swift has #error lines until a developer sets their own API key.
+          command: >-
+            sed -i '' 's/^\( *\)#error/\1\/\/ #error/' Examples/SampleCat/SampleCat/Constants.swift &&
+            xcodebuild
+            -workspace RevenueCat-Tuist.xcworkspace
+            -scheme SampleCat
+            -destination "generic/platform=iOS Simulator"
+            CODE_SIGNING_ALLOWED=NO
+            build
+          no_output_timeout: 30m
+
+  build-purchase-tester:
+    executor:
+      name: macos-executor
+      xcode_version: "27.0.0"
+    steps:
+      - checkout
+      - tuist-generate-workspace:
+          query: "PurchaseTester"
+      - run:
+          name: Build PurchaseTester
           command: >-
             xcodebuild
             -workspace RevenueCat-Tuist.xcworkspace
-            -scheme CheckpointTester
+            -scheme PurchaseTester
             -destination "generic/platform=iOS Simulator"
             CODE_SIGNING_ALLOWED=NO
             build
@@ -1554,7 +1605,7 @@ jobs:
       - install-dependencies
       - revenuecat/install-maestro
       - tuist-generate-workspace:
-          query: "Maestro"
+          query: "AutomatedSDKTestsApp"
       # Create directory to track test failures
       - run:
           name: Initialize test tracking
@@ -1680,7 +1731,7 @@ jobs:
       - install-dependencies
       - revenuecat/install-maestro
       - tuist-generate-workspace:
-          query: "Maestro"
+          query: "AutomatedSDKTestsApp"
       - run:
           name: Set API key for workflow e2e tests (test_store)
           command: |
@@ -1694,6 +1745,52 @@ jobs:
           path: fastlane/test_output
       - store_artifacts:
           path: fastlane/test_output
+
+  # Builds the SDKUpdateTester app against the latest released SDK and against the local SDK, then runs each SDK
+  # update test case with them.
+  run-sdk-update-test:
+    executor:
+      name: macos-executor
+      xcode_version: "27.0.0"
+    steps:
+      - macos/preboot-simulator:
+          version: "27.0"
+          platform: "iOS"
+          device: "iPhone 17"
+      - checkout
+      - install-dependencies:
+          install_xcbeautify: false
+      - revenuecat/install-mise-tools:
+          tools: tuist
+      - revenuecat/install-maestro
+      - run:
+          name: Build SDK update test apps
+          command: |
+            REVENUECAT_API_KEY="${RC_E2E_TEST_API_KEY_PRODUCTION_TEST_STORE}" bundle exec fastlane build_sdk_update_test_apps
+          no_output_timeout: 20m
+      - run:
+          name: Run SDK update test (anonymous_user)
+          command: bundle exec fastlane run_sdk_update_test test_case:anonymous_user
+          no_output_timeout: 15m
+      - run:
+          name: Run SDK update test (logged_in_user)
+          command: bundle exec fastlane run_sdk_update_test test_case:logged_in_user
+          no_output_timeout: 15m
+          when: always
+      # Not storing the apps as artifacts, since they contain the API key.
+      - store_artifacts:
+          path: build/sdk_update_tests/release/xcodebuild.log
+          destination: release/xcodebuild.log
+      - store_artifacts:
+          path: build/sdk_update_tests/local/xcodebuild.log
+          destination: local/xcodebuild.log
+      # One path per test case, since their output also contains the reports of retried attempts.
+      - store_test_results:
+          path: fastlane/test_output/sdk_update_tests/anonymous_user/junit
+      - store_test_results:
+          path: fastlane/test_output/sdk_update_tests/logged_in_user/junit
+      - store_artifacts:
+          path: fastlane/test_output/sdk_update_tests
 
   release-checks:
     executor:
@@ -1980,6 +2077,9 @@ jobs:
       - run:
           name: Run api diff helper unit tests
           command: ruby fastlane/api_diff_helper_test.rb
+      - run:
+          name: Run SwiftLint custom rule tests
+          command: ruby Tests/SwiftLintCustomRules/swiftlint_custom_rules_test.rb
       - store_test_results:
           path: fastlane/test_output
       - store_artifacts:
@@ -2382,7 +2482,10 @@ workflows:
       - run-test-ios-27:
           context:
             - slack-secrets
-      - build-checkpoint-tester:
+      - build-samplecat:
+          context:
+            - slack-secrets
+      - build-purchase-tester:
           context:
             - slack-secrets
       - pod-lib-lint:
@@ -2405,6 +2508,9 @@ workflows:
           context:
             - slack-secrets
       - revenuecat-admob-tests:
+          context:
+            - slack-secrets
+      - revenuecat-ads-tests:
           context:
             - slack-secrets
 
@@ -2573,7 +2679,8 @@ workflows:
             - lint
             - check-api-changes
             - run-test-ios-27
-            - build-checkpoint-tester
+            - build-samplecat
+            - build-purchase-tester
             - pod-lib-lint
             - run-revenuecat-ui-ios-27
             - run-revenuecat-ui-ios-26
@@ -2604,6 +2711,7 @@ workflows:
             - spm-receipt-parser
             - check-app-extension-safe-api-usage
             - revenuecat-admob-tests
+            - revenuecat-ads-tests
             - deploy-purchase-tester
             - run-workflow-maestro-tests
             - run-all-maestro-e2e-tests
@@ -2634,7 +2742,8 @@ workflows:
           <<: *release-tags
       - make-release:
           requires:
-            - push-revenuecatui-pod
+            # TODO: restore after Nov 7, 2026, once CocoaPods trunk is writable again.
+            # - push-revenuecatui-pod
             - deploy-to-spm
             - docs-deploy
           <<: *release-tags
@@ -2843,6 +2952,10 @@ workflows:
           context:
             - e2e-tests
             - slack-secrets
+      - run-sdk-update-test:
+          <<: *release-branches
+          context:
+            - e2e-tests
       - backend-integration-tests-SK1:
           context:
             - slack-secrets
@@ -2909,6 +3022,9 @@ workflows:
       - revenuecat-admob-tests:
           context:
             - slack-secrets
+      - revenuecat-ads-tests:
+          context:
+            - slack-secrets
       - deploy-purchase-tester:
           dry_run: true
           context:
@@ -2947,6 +3063,7 @@ workflows:
             - check-api-changes
             - run-all-maestro-e2e-tests
             - run-workflow-maestro-tests
+            - run-sdk-update-test
             - lint
             - run-test-ios-26
             - run-test-ios-27
@@ -2976,6 +3093,7 @@ workflows:
             - installation-tests-carthage
             - api-tests
             - revenuecat-admob-tests
+            - revenuecat-ads-tests
             - deploy-purchase-tester
             - binary_size_analysis
 

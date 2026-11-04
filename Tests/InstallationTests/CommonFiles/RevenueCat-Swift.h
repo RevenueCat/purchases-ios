@@ -1728,6 +1728,8 @@ SWIFT_CLASS_NAMED("Identity")
 + (RCIdentity * _Nonnull)identityWithOIDCToken:(NSData * _Nonnull)identityToken SWIFT_WARN_UNUSED_RESULT;
 /// A Firebase identity
 + (RCIdentity * _Nonnull)identityWithFirebaseToken:(NSData * _Nonnull)identityToken SWIFT_WARN_UNUSED_RESULT;
+/// A Google identity
++ (RCIdentity * _Nonnull)identityWithGoogleToken:(NSData * _Nonnull)identityToken SWIFT_WARN_UNUSED_RESULT;
 /// Retrieve the source service of this identity
 @property (nonatomic, readonly, strong) RCIdentitySource * _Nonnull identitySource;
 - (nonnull instancetype)init SWIFT_UNAVAILABLE;
@@ -3474,6 +3476,13 @@ SWIFT_AVAILABILITY(visionos,introduced=2.0) SWIFT_AVAILABILITY(watchos,introduce
 @end
 
 @interface RCPurchases (SWIFT_EXTENSION(RevenueCat))
+- (void)getVirtualCurrenciesWithCompletion:(void (^ _Nonnull)(RCVirtualCurrencies * _Nullable, NSError * _Nullable))completion;
+@property (nonatomic, readonly, strong) RCVirtualCurrencies * _Nullable cachedVirtualCurrencies;
+- (void)invalidateVirtualCurrenciesCache;
+- (void)spendVirtualCurrenciesWithAmounts:(NSDictionary<NSString *, NSNumber *> * _Nonnull)amounts reference:(NSString * _Nullable)reference completion:(void (^ _Nonnull)(RCVirtualCurrencies * _Nullable, NSError * _Nullable))completion;
+@end
+
+@interface RCPurchases (SWIFT_EXTENSION(RevenueCat))
 /// Configures an instance of the Purchases SDK with a specified <code>Configuration</code>.
 /// The instance will be set as a singleton.
 /// You should access the singleton instance using <code>Purchases/shared</code>
@@ -3567,13 +3576,6 @@ SWIFT_AVAILABILITY(visionos,introduced=2.0) SWIFT_AVAILABILITY(watchos,introduce
 /// returns:
 /// An instantiated <code>Purchases</code> object that has been set as a singleton.
 + (RCPurchases * _Nonnull)configureWithAPIKey:(NSString * _Nonnull)apiKey appUserID:(NSString * _Nullable)appUserID purchasesAreCompletedBy:(enum RCPurchasesAreCompletedBy)purchasesAreCompletedBy storeKitVersion:(enum RCStoreKitVersion)storeKitVersion;
-@end
-
-@interface RCPurchases (SWIFT_EXTENSION(RevenueCat))
-- (void)getVirtualCurrenciesWithCompletion:(void (^ _Nonnull)(RCVirtualCurrencies * _Nullable, NSError * _Nullable))completion;
-@property (nonatomic, readonly, strong) RCVirtualCurrencies * _Nullable cachedVirtualCurrencies;
-- (void)invalidateVirtualCurrenciesCache;
-- (void)spendVirtualCurrenciesWithAmounts:(NSDictionary<NSString *, NSNumber *> * _Nonnull)amounts reference:(NSString * _Nullable)reference completion:(void (^ _Nonnull)(RCVirtualCurrencies * _Nullable, NSError * _Nullable))completion;
 @end
 
 @interface RCPurchases (SWIFT_EXTENSION(RevenueCat))
@@ -4604,12 +4606,12 @@ typedef SWIFT_ENUM_NAMED(NSInteger, RCSubscriptionPeriodUnit, "Unit", open) {
 };
 
 @interface RCSubscriptionPeriod (SWIFT_EXTENSION(RevenueCat))
-@property (nonatomic, readonly, copy) NSString * _Nonnull debugDescription;
+/// The number of units per subscription period
+@property (nonatomic, readonly) NSInteger numberOfUnits SWIFT_AVAILABILITY(macos,unavailable,message="'numberOfUnits' has been renamed to 'value'") SWIFT_AVAILABILITY(watchos,unavailable,message="'numberOfUnits' has been renamed to 'value'") SWIFT_AVAILABILITY(tvos,unavailable,message="'numberOfUnits' has been renamed to 'value'") SWIFT_AVAILABILITY(ios,unavailable,message="'numberOfUnits' has been renamed to 'value'");
 @end
 
 @interface RCSubscriptionPeriod (SWIFT_EXTENSION(RevenueCat))
-/// The number of units per subscription period
-@property (nonatomic, readonly) NSInteger numberOfUnits SWIFT_AVAILABILITY(macos,unavailable,message="'numberOfUnits' has been renamed to 'value'") SWIFT_AVAILABILITY(watchos,unavailable,message="'numberOfUnits' has been renamed to 'value'") SWIFT_AVAILABILITY(tvos,unavailable,message="'numberOfUnits' has been renamed to 'value'") SWIFT_AVAILABILITY(ios,unavailable,message="'numberOfUnits' has been renamed to 'value'");
+@property (nonatomic, readonly, copy) NSString * _Nonnull debugDescription;
 @end
 
 SWIFT_CLASS("_TtC10RevenueCat19TokenLogInOperation")

@@ -270,6 +270,7 @@ struct PaywallsV2View: View {
                 }
             }
         )
+        .environment(\.isPaywallPageActive, self.isActiveWorkflowPage != false)
         .environment(\.nativePaywallButtonRegistrationEnabled, self.isActiveWorkflowPage != false)
         .modifier(PaywallURLEventsModifier(purchaseHandler: self.purchaseHandler))
         // Only publish the state-store environment when this paywall owns the store (standalone).
@@ -723,6 +724,7 @@ struct LoadedPaywallsV2View: View {
     /// Scoped to packages outside the tabs; a tab's own selection is reconciled in
     /// `LoadedTabsComponentView`.
     private func reconcileSelection() {
+        guard !self.selectedPackageContext.isPresentingSheet else { return }
         let packageValidator = self.paywallState.viewModelFactory.packageValidator
 
         guard let resolved = packageValidator.reconciledSelection(
@@ -746,8 +748,53 @@ struct LoadedPaywallsV2View: View {
         )
     }
 
+    private var selectedPackageIsVisible: Bool {
+        guard let package = self.selectedPackageContext.package else { return false }
+        return self.paywallState.viewModelFactory.packageValidator.couldBeRendering(
+            package,
+            in: self.packageSelectionContext,
+            offerEligibilityLoading: self.offerEligibilityLoading,
+            offerEligibilityAvailability: self.offerEligibilityAvailability
+        )
+    }
+
+    @Environment(\.componentViewState) private var componentViewState
+    @Environment(\.paywallStateValues) private var paywallStateValues
+    @Environment(\.paywallStateDefaults) private var paywallStateDefaults
+
+    private var heroLayout: PaywallHeroLayout? {
+        // Header overlay placement retains its existing policy.
+        guard self.paywallState.rootViewModel.headerViewModel == nil else { return nil }
+        return PaywallHeroLayoutResolver(
+            state: self.componentViewState,
+            condition: self.screenCondition,
+            isEligibleForIntroOffer: self.introOfferEligibilityContext.isEligible(
+                package: self.selectedPackageContext.package
+            ),
+            isEligibleForPromoOffer: self.paywallPromoOfferCache.isMostLikelyEligible(
+                for: self.selectedPackageContext.package
+            ),
+            textPromoOffer: self.paywallPromoOfferCache.get(for: self.selectedPackageContext.package),
+            conditionContext: self.uiConfigProvider.conditionContext(
+                selectedPackageId: self.selectedPackageContext.package?.identifier,
+                customVariables: self.customVariables,
+                stateValues: self.paywallStateValues,
+                stateDefaults: self.paywallStateDefaults,
+                windowSize: self.paywallWindowSize
+            ),
+            discardRules: self.paywallState.viewModelFactory.discardRules,
+            eligibilityForPackage: { package in
+                (
+                    intro: self.introOfferEligibilityContext.isEligible(package: package),
+                    promo: self.paywallPromoOfferCache.isMostLikelyEligible(for: package)
+                )
+            }
+        ).resolve(self.paywallState.rootViewModel.stackViewModel)
+    }
+
     var body: some View {
-        GeometryReader { proxy in
+        let heroLayout = self.heroLayout
+        return GeometryReader { proxy in
             VStack(spacing: 0) {
                 ComponentsView(
                     componentViewModels: [.root(paywallState.rootViewModel)],
@@ -759,13 +806,11 @@ struct LoadedPaywallsV2View: View {
             }
             // Used for header image and sticky footer
             .environment(\.safeAreaInsets, proxy.safeAreaInsets)
-            .applyIf(
-                paywallState.rootViewModel.headerViewModel != nil
-                || paywallState.rootViewModel.firstItemIsFullWidthMedia,
-                apply: { view in
-                view
-                    .edgesIgnoringSafeArea(.top)
-            })
+            .environment(\.paywallHeroLayout, heroLayout)
+            .edgesIgnoringSafeArea(
+                self.paywallState.rootViewModel.headerViewModel != nil
+                    || heroLayout?.heroIdentifier != nil ? .top : []
+            )
             .applyIf(paywallState.rootViewModel.stackViewModel.component.size.height.isFill, apply: { view in
                 view.frame(maxHeight: .infinity, alignment: paywallState.rootViewModel.frameAlignment)
             })
@@ -778,11 +823,15 @@ struct LoadedPaywallsV2View: View {
                 alignment: .top
             )
             .environment(\.selectedPackageId, self.selectedPackageContext.package?.identifier)
+            .environment(\.selectedPackageIsVisible, self.selectedPackageIsVisible)
             .environment(\.planSelectionDefaultPackage, self.defaultPackage)
             .environmentObject(self.selectedPackageContext)
             .edgesIgnoringSafeArea(.bottom)
             .onAppear {
                 self.reconcileSelection()
+            }
+            .onChangeOf(self.selectedPackageContext.isPresentingSheet) { isPresenting in
+                if !isPresenting { self.reconcileSelection() }
             }
             // Each eligibility result can independently flip package visibility.
             .onChangeOf(self.offerEligibilityLoading) { _ in
@@ -859,7 +908,8 @@ extension PaywallsV2View {
 //                throw PackageGroupValidationError.noAvailablePackages("No available packages found")
 //            }
 
-            let packageInfos = factory.packageValidator.packageInfos.map { info in
+            let allPackageInfos = factory.packageValidator.packageInfos + factory.sheetPackageValidator.packageInfos
+            let packageInfos = allPackageInfos.map { info in
                 return (package: info.package, promotionalOfferProductCode: info.promotionalOfferProductCode)
             }
 

@@ -109,13 +109,14 @@ class MockOperationDispatcher: OperationDispatcher {
     @discardableResult
     override func dispatchOnWorkerThread(
         jitterableDelay delay: JitterableDelay = .none,
+        priority: TaskPriority = .background,
         block: @escaping @Sendable () async -> Void
     ) -> Task<Void, Never> {
         self.invokedDispatchAsyncOnWorkerThreadDelayParam = delay
         self.invokedDispatchAsyncOnWorkerThread = true
         self.invokedDispatchAsyncOnWorkerThreadCount += 1
         if self.forwardToOriginalDispatchOnWorkerThread {
-            return super.dispatchOnWorkerThread(jitterableDelay: delay, block: block)
+            return super.dispatchOnWorkerThread(jitterableDelay: delay, priority: priority, block: block)
         }
 
         self.dispatchedAsyncWorkerThreadBlocks.append(block)
@@ -128,7 +129,7 @@ class MockOperationDispatcher: OperationDispatcher {
 
             // Execute the async task on a background queue to avoid blocking
             DispatchQueue.global(qos: .userInitiated).async {
-                Task {
+                Task(priority: priority) {
                     await block()
                     dispatchGroup.leave()
                 }

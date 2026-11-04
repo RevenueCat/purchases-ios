@@ -36,6 +36,7 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
     private var workflowManager: WorkflowManager!
     private var offering: Offering!
     private var offerings: Offerings!
+    private var trackedEvents: [WorkflowEvent] = []
 
     override func setUpWithError() throws {
         try super.setUpWithError()
@@ -792,6 +793,72 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
         )
     }
 
+    func testInvalidGatingOnAnyStepDoesNotFallThroughToALaterRule() async throws {
+        self.stubTwoRules(secondWorkflowID: "wf_later")
+        let invalidGates: [AnyDecodable] = [
+            .null, .string("hard"), .object(["type": .string("unknown")]),
+            .object(["type": .string("hard")])
+        ]
+        var offeringsFetched = 0
+        let resolver = self.makeResolver(offeringsProvider: {
+            offeringsFetched += 1
+            return self.offerings
+        })
+
+        for gate in invalidGates {
+            self.workflowsProvider.stubbedGetWorkflowResult[self.workflowID] = Self.workflowDataResult(
+                id: self.workflowID,
+                gates: [nil, gate]
+            )
+
+            let resolved = try await resolver.resolve(identifier: self.checkpointIdentifier, params: self.params)
+
+            XCTAssertEqual(Self.noActionReason(resolved.resolution), .configurationUnavailable)
+            XCTAssertNil(resolved.checkpointRuleID)
+        }
+
+        XCTAssertEqual(offeringsFetched, 0)
+        XCTAssertFalse(self.workflowsProvider.invokedGetWorkflowParameters.contains("wf_later"))
+    }
+
+    func testSoftAndHardGatesAllowWorkflowResolution() async throws {
+        self.workflowsProvider.stubbedGetWorkflowResult[self.workflowID] = Self.workflowDataResult(
+            id: self.workflowID,
+            gates: [
+                .object(["type": .string("soft")]),
+                .object(["type": .string("hard"), "entitlement_identifiers": .array([.string("pro")])])
+            ]
+        )
+
+        let resolution = try await self.resolve()
+
+        XCTAssertEqual(Self.resolvedWorkflow(resolution)?.workflow.steps["step_1"]?.gating, .soft)
+        XCTAssertEqual(
+            Self.resolvedWorkflow(resolution)?.workflow.steps["step_2"]?.gating,
+            .hard(entitlementIdentifiers: ["pro"])
+        )
+    }
+
+    func testInvalidGatingOnTerminalOfferingDoesNotFallThroughToALaterRule() async throws {
+        self.stubTwoRules(secondWorkflowID: "wf_later")
+        self.stubOfferingWorkflow(
+            offeringID: self.offeringID,
+            gating: .object(["type": .string("hard")])
+        )
+        var offeringsFetched = 0
+        let resolver = self.makeResolver(offeringsProvider: {
+            offeringsFetched += 1
+            return self.offerings
+        })
+
+        let resolved = try await resolver.resolve(identifier: self.checkpointIdentifier, params: self.params)
+
+        XCTAssertEqual(Self.noActionReason(resolved.resolution), .configurationUnavailable)
+        XCTAssertNil(resolved.checkpointRuleID)
+        XCTAssertEqual(offeringsFetched, 0)
+        XCTAssertFalse(self.workflowsProvider.invokedGetWorkflowParameters.contains("wf_later"))
+    }
+
     /// The audience gate runs before the workflow body decides between presenting and handing back an
     /// offering, so a terminal-offering rule nobody matches must not hand back its offering either.
     func testAudienceGateAppliesToTerminalOfferingRulesToo() async throws {
@@ -892,6 +959,169 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
         XCTAssertEqual(cache.invokedPrewarmWorkflowAssetIDs, [self.workflowID])
     }
 
+    func testTerminalOfferingStepTracksStepStartedThenCompletedSharingTheResolutionTraceID() async throws {
+        self.stubOfferingWorkflow(offeringID: self.offeringID)
+
+        let resolved = try await self.resolveCheckpoint()
+
+        XCTAssertEqual(self.trackedEvents.count, 2)
+        guard case let .stepStarted(_, started) = self.trackedEvents[0],
+              case let .stepCompleted(_, completed) = self.trackedEvents[1] else {
+            return XCTFail("Expected stepStarted then stepCompleted, got \(self.trackedEvents)")
+        }
+        XCTAssertEqual(started.workflowId, self.workflowID)
+        XCTAssertEqual(started.stepId, "step_1")
+        XCTAssertEqual(started.stepType, "offering")
+        XCTAssertEqual(started.entryReason, "start")
+        XCTAssertEqual(started.isFirstStep, true)
+        XCTAssertEqual(started.isLastStep, true)
+        XCTAssertEqual(completed.stepId, started.stepId)
+        XCTAssertNil(completed.toStepId)
+        XCTAssertEqual(started.traceId, resolved.traceID)
+        XCTAssertEqual(completed.traceId, resolved.traceID)
+    }
+
+    func testTerminalOfferingStepWhoseOfferingIsUnavailableTracksStartedButNotCompleted() async throws {
+        self.stubOfferingWorkflow(offeringID: "missing")
+
+        let resolved = try await self.resolveCheckpoint(identifier: nil)
+
+        XCTAssertEqual(self.trackedEvents.count, 1)
+        guard case let .stepStarted(_, started) = self.trackedEvents[0] else {
+            return XCTFail("Expected stepStarted, got \(self.trackedEvents)")
+        }
+        XCTAssertEqual(started.traceId, resolved.traceID)
+    }
+
+    func testTerminalOfferingStepEventsCarryTheBlobRefAndExperimentData() async throws {
+        self.stubOfferingWorkflow(
+            offeringID: self.offeringID,
+            workflowBlobRef: "blob-ref-1",
+            experimentParams: ["experiment_id": .string("exp_abc"), "experiment_variant": .string("b")]
+        )
+
+        _ = try await self.resolve()
+
+        XCTAssertEqual(self.trackedEvents.count, 2)
+        for event in self.trackedEvents {
+            XCTAssertEqual(event.data.workflowBlobRef, "blob-ref-1")
+            XCTAssertEqual(event.data.experiment?.experimentId, "exp_abc")
+            XCTAssertEqual(event.data.experiment?.experimentVariant, "b")
+        }
+    }
+
+    func testTerminalOfferingStepEventsHaveNoExperimentDataWithoutABlobRef() async throws {
+        self.stubOfferingWorkflow(
+            offeringID: self.offeringID,
+            workflowBlobRef: nil,
+            experimentParams: ["experiment_id": .string("exp_abc"), "experiment_variant": .string("b")]
+        )
+
+        _ = try await self.resolve()
+
+        XCTAssertEqual(self.trackedEvents.count, 2)
+        for event in self.trackedEvents {
+            XCTAssertNil(event.data.workflowBlobRef)
+            XCTAssertNil(event.data.experiment)
+        }
+    }
+
+    func testTerminalOfferingPreservesFlowContextForCustomPaywallImpressions() async throws {
+        let embeddedStepID = "wf_offering~exp~b~offering"
+        self.stubOfferingWorkflow(
+            offeringID: self.offeringID,
+            stepID: embeddedStepID,
+            workflowBlobRef: "blob-ref-1"
+        )
+
+        let resolution = try await self.resolve()
+        let offering = try XCTUnwrap(Self.resolvedOffering(resolution))
+        let params = CustomPaywallImpressionParams(paywallId: "custom", offering: offering)
+        let data = CustomPaywallEvent.Data(
+            paywallId: params.paywallId,
+            offeringId: params.offeringId,
+            presentedOfferingContext: params.presentedOfferingContext
+        )
+        let encoded = try JSONEncoder.default.encode(data)
+        let json = try XCTUnwrap(JSONSerialization.jsonObject(with: encoded) as? [String: Any])
+
+        XCTAssertEqual(json["workflow_id"] as? String, self.workflowID)
+        XCTAssertEqual(json["step_id"] as? String, embeddedStepID)
+        XCTAssertEqual(json["blob_ref"] as? String, "blob-ref-1")
+        XCTAssertNil(self.offering.presentedOfferingContext?.checkpointIdentifier)
+        XCTAssertNil(self.offering.presentedOfferingContext?.workflowId)
+    }
+
+    func testStaleAttemptDiscardsItsStepEventsSoOnlyTheRetriedAnswerIsTracked() async throws {
+        self.stubOfferingWorkflow(offeringID: self.offeringID)
+        let fetchCount = Atomic<Int>(0)
+        let resolver = self.makeResolver {
+            fetchCount.modify { $0 += 1 }
+            // The first attempt goes stale while its offering step is loading, after its events were built.
+            if fetchCount.value == 1 {
+                self.checkpointsProvider.configGeneration += 1
+                self.audiencesProvider.configGeneration += 1
+            }
+            return self.offerings
+        }
+
+        let resolved = try await resolver.resolve(identifier: self.checkpointIdentifier, params: self.params)
+
+        XCTAssertEqual(fetchCount.value, 2)
+        XCTAssertEqual(self.trackedEvents.count, 2)
+        XCTAssertEqual(Set(self.trackedEvents.map(\.data.traceId)), [resolved.traceID])
+    }
+
+    func testTerminalOfferingStepWithoutAnOfferingIdentifierTracksNoStepEvents() async throws {
+        self.stubOfferingWorkflow(offeringID: nil)
+
+        _ = try await self.resolve()
+
+        XCTAssertTrue(self.trackedEvents.isEmpty)
+    }
+
+    func testTerminalAdStepTracksStepStartedThenCompletedSharingTheResolutionTraceID() async throws {
+        self.stubAdWorkflow(adIdentifier: "ad_unit_1", mediator: "admob")
+
+        let resolved = try await self.resolveCheckpoint()
+
+        XCTAssertEqual(self.trackedEvents.count, 2)
+        guard case let .stepStarted(_, started) = self.trackedEvents[0],
+              case let .stepCompleted(_, completed) = self.trackedEvents[1] else {
+            return XCTFail("Expected stepStarted then stepCompleted, got \(self.trackedEvents)")
+        }
+        XCTAssertEqual(started.stepType, "ad")
+        XCTAssertEqual(started.entryReason, "start")
+        XCTAssertEqual(started.isFirstStep, true)
+        XCTAssertEqual(started.isLastStep, true)
+        XCTAssertEqual(started.traceId, resolved.traceID)
+        XCTAssertEqual(completed.traceId, resolved.traceID)
+    }
+
+    func testTerminalAdStepWithoutAnAdIdentifierTracksStartedButNotCompleted() async throws {
+        self.stubAdWorkflow(adIdentifier: nil, mediator: "admob")
+
+        _ = try await self.resolve()
+
+        XCTAssertEqual(self.trackedEvents.count, 1)
+        guard case .stepStarted = self.trackedEvents[0] else {
+            return XCTFail("Expected stepStarted, got \(self.trackedEvents)")
+        }
+    }
+
+    func testUIWorkflowResolutionSharesItsTraceIDWithTheHit() async throws {
+        let resolved = try await self.resolveCheckpoint()
+
+        let workflow = try XCTUnwrap(Self.resolvedWorkflow(resolved.resolution))
+        XCTAssertEqual(workflow.traceId, resolved.traceID)
+    }
+
+    func testUIWorkflowResolutionTracksNoStepEvents() async throws {
+        _ = try await self.resolve()
+
+        XCTAssertTrue(self.trackedEvents.isEmpty)
+    }
+
     /// An offering step renders nothing, so anything else it happens to carry is ignored rather than
     /// treated as unservable.
     func testOfferingStepAncillaryFieldsDoNotPreventResolution() async throws {
@@ -907,25 +1137,150 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
         XCTAssertEqual(Self.resolvedOffering(resolution)?.identifier, self.offeringID)
     }
 
-    private func stubOfferingWorkflow(
-        offeringID: String?,
+    // MARK: - Terminal ad workflows
+
+    func testTerminalAdWorkflowResolvesItsAdWithoutAWorkflowToPresent() async throws {
+        self.stubAdWorkflow(adIdentifier: "ad_unit_1", mediator: "admob")
+
+        let resolution = try await self.resolve()
+
+        let adStep = Self.resolvedAd(resolution)
+        XCTAssertEqual(adStep?.adIdentifier, "ad_unit_1")
+        XCTAssertEqual(adStep?.mediator, .adMob)
+        XCTAssertEqual(adStep?.adFormat, .interstitial)
+        XCTAssertNil(Self.resolvedWorkflow(resolution))
+    }
+
+    func testLowercaseWireMediatorResolvesToCanonicalMediatorName() async throws {
+        // The backend serializes the mediator as `admob`; presenters match against `MediatorName.adMob`.
+        self.stubAdWorkflow(adIdentifier: "ad_unit_1", mediator: "admob")
+
+        let resolution = try await self.resolve()
+
+        let mediator = Self.resolvedAd(resolution)?.mediator
+        XCTAssertEqual(mediator, .adMob)
+        XCTAssertEqual(mediator?.rawValue, MediatorName.adMob.rawValue)
+    }
+
+    func testCanonicallyCasedMediatorResolvesToCanonicalMediatorName() async throws {
+        self.stubAdWorkflow(adIdentifier: "ad_unit_1", mediator: MediatorName.adMob.rawValue)
+
+        let resolution = try await self.resolve()
+
+        XCTAssertEqual(Self.resolvedAd(resolution)?.mediator, .adMob)
+    }
+
+    func testUnknownMediatorResolvesAsItsRawValue() async throws {
+        self.stubAdWorkflow(adIdentifier: "ad_unit_1", mediator: "Some_Future_Mediator")
+
+        let resolution = try await self.resolve()
+
+        XCTAssertEqual(Self.resolvedAd(resolution)?.mediator, MediatorName(rawValue: "Some_Future_Mediator"))
+    }
+
+    func testAdStepWithoutAnAdIdentifierResolvesConfigurationUnavailable() async throws {
+        self.stubAdWorkflow(adIdentifier: nil, mediator: "admob")
+
+        let resolution = try await self.resolve()
+
+        XCTAssertEqual(Self.noActionReason(resolution), .configurationUnavailable)
+    }
+
+    func testAdStepWithoutAMediatorResolvesConfigurationUnavailable() async throws {
+        self.stubAdWorkflow(adIdentifier: "ad_unit_1", mediator: nil)
+
+        let resolution = try await self.resolve()
+
+        XCTAssertEqual(Self.noActionReason(resolution), .configurationUnavailable)
+    }
+
+    func testAdStepFormatsResolveToCanonicalAdFormats() async throws {
+        // The backend serializes the same raw values as core's `AdFormat` statics, so no normalization applies.
+        let expectations: [(wire: String, format: AdFormat)] = [
+            ("interstitial", .interstitial),
+            ("rewarded", .rewarded),
+            ("rewarded_interstitial", .rewardedInterstitial)
+        ]
+
+        for (wire, format) in expectations {
+            self.stubAdWorkflow(adIdentifier: "ad_unit_1", mediator: "admob", adFormat: wire)
+
+            let resolution = try await self.resolve()
+
+            XCTAssertEqual(Self.resolvedAd(resolution)?.adFormat, format, "wire value '\(wire)'")
+        }
+    }
+
+    func testUnknownAdFormatResolvesAsItsRawValue() async throws {
+        self.stubAdWorkflow(adIdentifier: "ad_unit_1", mediator: "admob", adFormat: "some_future_format")
+
+        let resolution = try await self.resolve()
+
+        XCTAssertEqual(Self.resolvedAd(resolution)?.adFormat, AdFormat(rawValue: "some_future_format"))
+    }
+
+    func testAdStepWithoutAnAdFormatResolvesConfigurationUnavailable() async throws {
+        self.stubAdWorkflow(adIdentifier: "ad_unit_1", mediator: "admob", adFormat: nil)
+
+        let resolution = try await self.resolve()
+
+        XCTAssertEqual(Self.noActionReason(resolution), .configurationUnavailable)
+    }
+
+    func testAdStepWithAnEmptyAdFormatResolvesConfigurationUnavailable() async throws {
+        self.stubAdWorkflow(adIdentifier: "ad_unit_1", mediator: "admob", adFormat: "")
+
+        let resolution = try await self.resolve()
+
+        XCTAssertEqual(Self.noActionReason(resolution), .configurationUnavailable)
+    }
+
+    func testAdStepMixedWithAnotherStepResolvesConfigurationUnavailable() async throws {
+        self.stubAdWorkflow(
+            adIdentifier: "ad_unit_1",
+            mediator: "admob",
+            extraSteps: ["step_2": WorkflowStep(id: "step_2", type: "screen", screenId: nil)]
+        )
+
+        let resolution = try await self.resolve()
+
+        XCTAssertEqual(Self.noActionReason(resolution), .configurationUnavailable)
+    }
+
+    func testUIWorkflowContainingAnAdStepResolvesConfigurationUnavailable() async throws {
+        // Initial step is the screen step, so the ad step is an unreachable extra.
+        self.stubAdWorkflow(
+            adIdentifier: "ad_unit_1",
+            mediator: "admob",
+            initialStepID: "step_2",
+            extraSteps: ["step_2": WorkflowStep(id: "step_2", type: "screen", screenId: nil)]
+        )
+
+        let resolution = try await self.resolve()
+
+        XCTAssertEqual(Self.noActionReason(resolution), .configurationUnavailable)
+    }
+
+    private func stubAdWorkflow(
+        adIdentifier: String?,
+        mediator: String?,
+        adFormat: String? = "interstitial",
         initialStepID: String? = nil,
-        extraSteps: [String: WorkflowStep] = [:],
-        screenID: String? = nil,
-        triggers: [WorkflowTrigger] = [],
-        triggerActions: [String: WorkflowTriggerAction] = [:]
+        extraSteps: [String: WorkflowStep] = [:]
     ) {
         let stepID = "step_1"
-        var step = WorkflowStep(
-            id: stepID,
-            type: "offering",
-            screenId: screenID,
-            triggers: triggers,
-            triggerActions: triggerActions
-        )
-        if let offeringID {
-            step.paramValues = ["offering": .object(["identifier": .string(offeringID)])]
+        var step = WorkflowStep(id: stepID, type: "ad", screenId: nil)
+        var paramValues: [String: AnyDecodable] = [:]
+        if let adIdentifier {
+            paramValues["ad_identifier"] = .string(adIdentifier)
         }
+        if let mediator {
+            paramValues["mediator"] = .string(mediator)
+        }
+        if let adFormat {
+            paramValues["ad_format"] = .string(adFormat)
+        }
+        step.paramValues = paramValues
 
         var steps = extraSteps
         steps[stepID] = step
@@ -941,6 +1296,49 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
             ),
             uiConfig: .empty,
             enrolledVariants: nil
+        )
+    }
+
+    private func stubOfferingWorkflow(
+        offeringID: String?,
+        stepID: String = "step_1",
+        initialStepID: String? = nil,
+        extraSteps: [String: WorkflowStep] = [:],
+        screenID: String? = nil,
+        triggers: [WorkflowTrigger] = [],
+        triggerActions: [String: WorkflowTriggerAction] = [:],
+        gating: AnyDecodable? = nil,
+        workflowBlobRef: String? = nil,
+        experimentParams: [String: AnyDecodable] = [:]
+    ) {
+        var step = WorkflowStep(
+            id: stepID,
+            type: "offering",
+            screenId: screenID,
+            triggers: triggers,
+            triggerActions: triggerActions
+        )
+        if let offeringID {
+            step.paramValues = ["offering": .object(["identifier": .string(offeringID)])]
+        }
+        step.paramValues["gating"] = gating
+        step.paramValues.merge(experimentParams) { _, new in new }
+
+        var steps = extraSteps
+        steps[stepID] = step
+
+        self.workflowsProvider.stubbedGetWorkflowResult[self.workflowID] = WorkflowDataResult(
+            workflow: PublishedWorkflow(
+                id: self.workflowID,
+                displayName: "Test",
+                initialStepId: initialStepID ?? stepID,
+                singleStepFallbackId: nil,
+                steps: steps,
+                screens: [:]
+            ),
+            uiConfig: .empty,
+            enrolledVariants: nil,
+            workflowBlobRef: workflowBlobRef
         )
     }
 
@@ -967,7 +1365,8 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
             audiencesConfigProvider: self.audiencesProvider,
             localRulesEvaluator: localRulesEvaluator,
             workflowManager: self.workflowManager,
-            offeringsProvider: offeringsProvider ?? { self.offerings }
+            offeringsProvider: offeringsProvider ?? { self.offerings },
+            trackWorkflowEvent: { event in self.trackedEvents.append(event) }
         )
     }
 
@@ -986,14 +1385,28 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
         return offering
     }
 
+    private static func resolvedAd(_ resolution: CheckpointResolution) -> ResolvedAdStep? {
+        guard case let .matchedAd(step) = resolution else { return nil }
+        return step
+    }
+
     private static func rule(workflowID: String, audienceID: String = "audience") -> CheckpointRule {
         return CheckpointRule(id: "rule_\(workflowID)", audienceId: audienceID, workflowId: workflowID)
     }
 
-    private static func workflowDataResult(id: String, offeringID: String? = "default") -> WorkflowDataResult {
-        var step = WorkflowStep(id: "step_1", type: "screen", screenId: nil)
-        if let offeringID {
-            step.paramValues = ["offering": .object(["identifier": .string(offeringID)])]
+    private static func workflowDataResult(
+        id: String,
+        offeringID: String? = "default",
+        gates: [AnyDecodable?] = [nil]
+    ) -> WorkflowDataResult {
+        var steps: [String: WorkflowStep] = [:]
+        for (index, gate) in gates.enumerated() {
+            var step = WorkflowStep(id: "step_\(index + 1)", type: "screen", screenId: nil)
+            if let offeringID {
+                step.paramValues = ["offering": .object(["identifier": .string(offeringID)])]
+            }
+            step.paramValues["gating"] = gate
+            steps[step.id] = step
         }
         return WorkflowDataResult(
             workflow: PublishedWorkflow(
@@ -1001,7 +1414,7 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
                 displayName: "Test",
                 initialStepId: "step_1",
                 singleStepFallbackId: nil,
-                steps: ["step_1": step],
+                steps: steps,
                 screens: [:]
             ),
             uiConfig: .empty,

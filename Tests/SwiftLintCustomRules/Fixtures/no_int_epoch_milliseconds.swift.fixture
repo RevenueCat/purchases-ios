@@ -1,0 +1,34 @@
+import Foundation
+
+let date = Date()
+
+// Int(... * 1000)
+let purchaseDate = date.map { Int($0.timeIntervalSince1970 * 1000) } // violation
+let expirationDate = Int(date.timeIntervalSince1970 * 1000) // violation
+let underscored = Int(date.timeIntervalSince1970 * 1_000) // violation
+let nested = Int((date.timeIntervalSince1970 * 1000).rounded()) // violation
+let fromNow = Int(Date().timeIntervalSince1970 * 1000) // violation
+let wrapped = Int(max(0, date.timeIntervalSince1970 * 1000)) // violation
+let safePurchaseDate = date.map { Int64($0.timeIntervalSince1970 * 1000) }
+let safeRounded = Int64((date.timeIntervalSince1970 * 1000).rounded())
+
+// Int(...) * 1000
+let convertedFirst = Int(date.timeIntervalSince1970) * 1000 // violation
+let leadingMultiplier = 1000 * Int(date.timeIntervalSince1970) // violation
+let safeConvertedFirst = Int64(date.timeIntervalSince1970) * 1000
+
+// Reversed operands
+let reversed = Int(1000 * date.timeIntervalSince1970) // violation
+let reversedNested = Int((1_000 * date.timeIntervalSinceReferenceDate).rounded()) // violation
+let safeReversed = Int64(1000 * date.timeIntervalSince1970)
+
+// Not epoch milliseconds
+let seconds = Int(date.timeIntervalSince1970)
+let smallDuration = Int(duration * 1000)
+let unrelatedReversed = Int(1000 * duration)
+let otherCall = Int(1) + foo(date.timeIntervalSince1970 * 1000)
+let separateInt = Int(5); let millis = Double(date.timeIntervalSince1970 * 1000)
+
+// Comments are ignored
+// let commented = Int(date.timeIntervalSince1970 * 1000)
+let trailingComment = Int(1) // timeIntervalSince1970 * 1000

@@ -1,0 +1,54 @@
+import Foundation
+
+/// Doc comments may mention `public init(x:)` without being flagged.
+public class PlainInits {
+    public init() {} // violation
+    public convenience init(a: Int) {} // violation
+    required public init(b: Int) {} // violation
+    public required init(c: Int) {} // violation
+    open init?(d: Int) {} // violation
+    public init<T>(e: T) {} // violation
+    public init<T: Collection<Int>>(f: T) where T.Element == Int {} // violation
+    @_spi(Experimental) public init(g: Int) {} // violation
+    @_spi(Experimental)
+    public init(h: Int) {} // violation
+    @_spi(InviteOnlyCheckpointsApi) public init(i: Int) {} // violation
+    // A line comment mentioning public init(j:) is not flagged.
+    let text = "public init(k:)"
+}
+
+public struct NonPublicInits {
+    internal init(a: Int) {}
+    private init(b: Int) {}
+    fileprivate init(c: Int) {}
+    init(d: Int) {}
+}
+
+public class InternalSpiInits {
+    @_spi(Internal) public init(a: Int) {}
+    @_spi(Internal)
+    public init(b: Int) {}
+    @_spi(Internal)
+    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
+    @objc(initWithLongParameterName:)
+    public init(c: Int) {}
+    @_spi(Internal) @MainActor public init(d: Int) {}
+    @_spi(Internal) public convenience init<T>(e: T) {}
+}
+
+public struct SpiMembersBeforeInits {
+    @_spi(Internal) public let value: Int
+    public init(a: Int) {} // violation
+    @_spi(Internal) public func method() {}
+    public init(b: Int) {} // violation
+}
+
+public struct ProtocolRequiredInits: Decodable, RawRepresentable {
+    public init(from decoder: Decoder) throws {}
+    public init?(rawValue: Int) {}
+    public init<D: Decoder>(from decoder: D) throws {}
+}
+
+public class CoderInit: NSObject, NSCoding {
+    public required init?(coder: NSCoder) {}
+}

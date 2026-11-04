@@ -38,6 +38,12 @@ struct VideoComponentView: View {
     @Environment(\.paywallWindowSize)
     private var paywallWindowSize
 
+    @Environment(\.paywallStateValues)
+    private var paywallStateValues
+
+    @Environment(\.paywallStateDefaults)
+    private var paywallStateDefaults
+
     @Environment(\.colorScheme)
     private var colorScheme
 
@@ -84,6 +90,8 @@ struct VideoComponentView: View {
                 ),
                 selectedPackageId: self.selectedPackageId,
                 customVariables: self.customVariables,
+                stateValues: self.paywallStateValues,
+                stateDefaults: self.paywallStateDefaults,
                 windowSize: self.paywallWindowSize,
                 colorScheme: colorScheme
             ) { style in

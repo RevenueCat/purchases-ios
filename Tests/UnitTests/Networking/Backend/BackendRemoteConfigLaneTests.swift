@@ -198,13 +198,7 @@ final class BackendRemoteConfigLaneParallelTests: TestCase {
 
     /// Both lanes talk to the same hosts, so a timeout either of them sees must fast-fail the other.
     func testTimeoutOnMainLaneReducesTimeoutOnRemoteConfigLane() throws {
-        let systemInfo = MockSystemInfo(
-            finishTransactions: true,
-            dangerousSettings: DangerousSettings(
-                autoSyncPurchases: true,
-                internalSettings: DangerousSettings.Internal(usesRemoteConfigAPISources: true)
-            )
-        )
+        let systemInfo = MockSystemInfo(finishTransactions: true)
         let backend = Backend(
             systemInfo: systemInfo,
             httpClientTimeout: .default,
