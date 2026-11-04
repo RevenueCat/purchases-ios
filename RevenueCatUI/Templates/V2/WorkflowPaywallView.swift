@@ -291,7 +291,7 @@ struct WorkflowPaywallView: View {
     private let onDismiss: () -> Void
     private let onPresentationError: WorkflowPresentationErrorHandler?
 
-    @ObservedObject private var backNavigationBridge: WorkflowBackNavigationBridge
+    @StateObject private var backNavigationBridge: WorkflowBackNavigationBridge
 
     @Environment(\.nativePaywallCloseCoordinator) private var nativeButtonCoordinator
 
@@ -480,7 +480,7 @@ struct WorkflowPaywallView: View {
         // Must use exitOfferContext(for:currentStepId:), not context.exitOfferOffering, because
         // exitOfferOffering is not step-aware — it is non-nil for any step whenever configured.
         .onAppear {
-            self.backNavigationBridge.workflowDidAppear()
+            self.backNavigationBridge.workflowDidAppear(onCompletion: self.completeAndDismiss)
             switch self.presentationState {
             case .displayingError(_, .endFlow):
                 self.exitOfferOfferingBinding.wrappedValue = nil
@@ -726,7 +726,8 @@ struct WorkflowPaywallView: View {
         ) {
         case let .dismissWorkflow(reason):
             if self.purchaseHandler.hasPurchasedInSession {
-                self.markWorkflowCompletedInSession()
+                self.completeAndDismiss()
+                return
             }
             if reason == .navigatedBack {
                 self.workflowDismissalObserver?(.navigatedBack)
@@ -797,9 +798,10 @@ struct WorkflowPaywallView: View {
         return context.exitOfferContext(forStepId: currentStepId)
     }
 
-    private func markWorkflowCompletedInSession() {
+    private func completeAndDismiss() {
         self.hasCompletedWorkflowInSession = true
         self.workflowCompletedInSessionBinding.wrappedValue = true
+        self.onDismiss()
     }
 
     /// Finishes the current step and, unless purchase or restore completed this presentation, records

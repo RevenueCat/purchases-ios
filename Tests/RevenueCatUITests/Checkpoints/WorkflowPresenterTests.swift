@@ -14,6 +14,7 @@
 
 @_spi(Internal) @testable import RevenueCat
 @_spi(InviteOnlyCheckpointsApi) @_spi(Internal) @testable import RevenueCatUI
+import SwiftUI
 import XCTest
 
 #if canImport(UIKit) && !os(tvOS) && !os(watchOS)
@@ -37,6 +38,24 @@ final class WorkflowPresenterTests: TestCase {
         guard case .failed? = execution else {
             return XCTFail("Expected an error outcome")
         }
+    }
+
+    func testQualifyingRestoreDoesNotTrackWorkflowAbandonment() async throws {
+        try await self.assertRestoreWorkflowEvents(
+            initialActiveEntitlements: [], restoredEntitlements: ["pro"], shouldDismiss: true
+        )
+    }
+
+    func testAlreadyActiveRestoreStillTracksAbandonmentWhenClosed() async throws {
+        try await self.assertRestoreWorkflowEvents(
+            initialActiveEntitlements: ["pro"], restoredEntitlements: ["pro"], shouldDismiss: false
+        )
+    }
+
+    func testUnrelatedRestoreStillTracksAbandonmentWhenClosed() async throws {
+        try await self.assertRestoreWorkflowEvents(
+            initialActiveEntitlements: [], restoredEntitlements: ["other"], shouldDismiss: false
+        )
     }
 
     func testWorkflowPresentationErrorProducesErrorOutcomeAfterDismissal() throws {
@@ -261,7 +280,7 @@ final class WorkflowPresenterTests: TestCase {
 
     func testWorkflowBackNavigationBridgeWaitsForActiveTransitionToFinish() {
         let navigationBridge = WorkflowBackNavigationBridge()
-        navigationBridge.workflowDidAppear()
+        navigationBridge.workflowDidAppear(onCompletion: {})
 
         XCTAssertTrue(navigationBridge.navigateBack())
         XCTAssertTrue(navigationBridge.hasPendingBackNavigationRequest)
@@ -815,6 +834,106 @@ final class WorkflowPresenterTests: TestCase {
 
         viewController.simulateOfferingBasedExitOfferPrefetchResult(exitOffering)
         XCTAssertNil(viewController.exitOfferOfferingForTesting)
+    }
+
+    private func assertRestoreWorkflowEvents(
+        initialActiveEntitlements: [String],
+        restoredEntitlements: [String],
+        shouldDismiss: Bool
+    ) async throws {
+        for usesDefaultPresenter in [false, true] {
+            let presentation = try Self.renderablePresentation(customVariables: [:])
+            let controller = self.makePaywallViewControllerForDismissalRecording()
+            let delegate = try Self.makeRestoreTrackingDelegate(
+                usesDefaultPresenter: usesDefaultPresenter,
+                workflow: presentation.workflow, initialActiveEntitlements: initialActiveEntitlements
+            )
+            let events: Atomic<[WorkflowEvent]> = .init([])
+            let tasks: Atomic<[Task<Void, Never>]> = .init([])
+            let handler = Self.makeWorkflowEventRecordingHandler(events: events, tasks: tasks)
+            let context = WorkflowContext(
+                workflow: presentation.workflow.workflow,
+                uiConfig: presentation.workflow.uiConfig,
+                offerings: .init(offerings: presentation.workflow.offerings, developerProvidedOffering: nil),
+                initialOffering: makeRestoreOffering(), presentedOfferingContext: nil
+            )
+            var workflowDismissalCount = 0
+            var dispose: (() -> Void)? = try WorkflowPaywallView(
+                context: context, purchaseHandler: handler,
+                introEligibilityChecker: .producing(eligibility: .eligible),
+                showZeroDecimalPlacePrices: false, displayCloseButton: false, promoOfferCache: nil,
+                onDismiss: {
+                    workflowDismissalCount += 1
+                    controller.dismiss(animated: true, completion: nil)
+                },
+                backNavigationBridge: controller.workflowBackNavigationBridgeForTesting
+            ).addToHierarchy()
+            defer { dispose?() }
+            XCTAssertTrue(controller.workflowBackNavigationBridgeForTesting.hasActiveWorkflow)
+            delegate.paywallViewController?(
+                controller, didFinishRestoringWith: try Self.customerInfo(activeEntitlements: restoredEntitlements)
+            )
+            XCTAssertEqual(controller.dismissCallCount, shouldDismiss ? 1 : 0)
+            XCTAssertEqual(workflowDismissalCount, shouldDismiss ? 1 : 0)
+            XCTAssertFalse(handler.hasPurchasedInSession)
+            dispose?()
+            dispose = nil
+            for task in tasks.value { await task.value }
+            let names = events.value.map { event in
+                switch event {
+                case .stepStarted: return "started"
+                case .stepCompleted: return "completed"
+                case .close: return "abandoned"
+                }
+            }
+            XCTAssertEqual(names.filter { $0 == "started" }.count, 1)
+            XCTAssertEqual(names.filter { $0 == "completed" }.count, 1)
+            XCTAssertEqual(names.filter { $0 == "abandoned" }.count, shouldDismiss ? 0 : 1,
+                           usesDefaultPresenter ? "Default paywall presenter" : "Workflow presenter")
+        }
+    }
+
+    private static func makeRestoreTrackingDelegate(
+        usesDefaultPresenter: Bool,
+        workflow: ResolvedCheckpointWorkflow,
+        initialActiveEntitlements: [String]
+    ) throws -> PaywallViewControllerDelegate {
+        if usesDefaultPresenter {
+            let initialCustomerInfo = try Self.customerInfo(activeEntitlements: initialActiveEntitlements)
+            let presenter = DefaultPaywallPresenter(
+                cachedCustomerInfoProvider: { initialCustomerInfo },
+                productEntitlementMappingProvider: { restoreProductEntitlementMapping }
+            )
+            presenter.prepareForPresentation(params: .init(
+                checkpointIdentifier: "test_checkpoint", offering: makeRestoreOffering()
+            ))
+            return presenter
+        }
+        let presenter = WorkflowPresenter(
+            productEntitlementMappingProvider: { restoreProductEntitlementMapping },
+            presentationStarter: { _ in true }
+        )
+        try presenter.startPresentation(Self.presentation(
+            workflow: workflow, initialActiveEntitlementIdentifiers: Set(initialActiveEntitlements)
+        ))
+        return presenter
+    }
+
+    private static func makeWorkflowEventRecordingHandler(
+        events: Atomic<[WorkflowEvent]>,
+        tasks: Atomic<[Task<Void, Never>]>
+    ) -> PurchaseHandler {
+        let purchases = MockPurchases(
+            purchase: { _, _, _ in (nil, TestData.customerInfo, false) },
+            restorePurchases: { TestData.customerInfo },
+            trackEvent: { _ in },
+            customerInfo: { TestData.customerInfo }
+        )
+        purchases.trackWorkflowEventBlock = { event in events.modify { $0.append(event) } }
+        return PurchaseHandler(purchases: purchases, eventTracker: .init(
+            purchases: purchases,
+            eventDispatcher: { work in tasks.modify { $0.append(Task { await work() }) } }
+        ))
     }
 
     private func makePaywallViewControllerForDismissalRecording() -> DismissRecordingPaywallViewController {

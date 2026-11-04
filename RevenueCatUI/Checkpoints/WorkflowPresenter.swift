@@ -328,7 +328,7 @@ extension WorkflowPresenter {
         ) else { return }
 
         self.stage(.outcome(.completed(customerInfo: customerInfo)))
-        controller.dismiss(animated: true)
+        controller.completeAndDismiss()
     }
 
     // `PaywallViewController` delivers these UI lifecycle and purchase callbacks

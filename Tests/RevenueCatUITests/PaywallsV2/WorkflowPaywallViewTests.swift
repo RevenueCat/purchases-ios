@@ -1278,6 +1278,64 @@ extension WorkflowPaywallViewTests {
 
     /// A routed step that cannot render reports against the routed step, not the fallback.
     @MainActor
+    func testCompletionDismissesFromADeeperStepInsteadOfNavigatingBack() async throws {
+        let nextOffering = Offering(
+            identifier: "next_offering", serverDescription: "Next", availablePackages: [], webCheckoutUrl: nil
+        )
+        let context = try Self.makeNavigationContext(nextOffering: nextOffering)
+        let bridge = WorkflowBackNavigationBridge()
+        let coordinator = NativePaywallCloseCoordinator()
+        let events: Atomic<[WorkflowEvent]> = .init([])
+        let (purchases, handler) = Self.makeEventRecordingPurchaseHandler(paywallEvents: .init([]))
+        purchases.trackWorkflowEventBlock = { event in events.modify { $0.append(event) } }
+        var dismissalCount = 0
+        let view = WorkflowPaywallView(
+            context: context, purchaseHandler: handler,
+            introEligibilityChecker: .producing(eligibility: .eligible),
+            showZeroDecimalPlacePrices: false, displayCloseButton: false, promoOfferCache: nil,
+            onDismiss: { dismissalCount += 1 }, backNavigationBridge: bridge
+        )
+        .environment(\.nativePaywallCloseEnabled, true)
+        .environment(\.nativePaywallCloseCoordinator, coordinator)
+        let dispose = try view.addToHierarchy()
+        defer { dispose() }
+        await expect(coordinator.action(for: .close)).toEventuallyNot(beNil())
+
+        let action = try XCTUnwrap(coordinator.action(for: .close))
+        try await action.perform()
+        await expect(events.value.contains { event in
+            if case .stepStarted = event { return event.data.stepId == "step_terminal" }
+            return false
+        }).toEventually(beTrue())
+
+        expect(bridge.completeAndDismiss()) == true
+
+        expect(dismissalCount) == 1
+    }
+
+    @MainActor
+    func testRebuildingEmbeddedWorkflowReleasesItsPurchaseHandlerAfterDismissal() async throws {
+        let context = try Self.makeContext(singleStepFallbackId: "step_terminal")
+        var handler: PurchaseHandler? = .mock()
+        weak var releasedHandler = handler
+        var didRestore = false
+        var dispose: (() -> Void)? = try WorkflowPurchaseObserver(
+            purchaseHandler: try XCTUnwrap(handler), context: context
+        )
+        .onRestoreCompleted { _ in didRestore = true }
+        .addToHierarchy()
+        defer { dispose?() }
+        handler = nil
+
+        releasedHandler?.setRestored(TestData.customerInfo, success: false)
+        await expect(didRestore).toEventually(beTrue())
+        dispose?()
+        dispose = nil
+
+        await expect(releasedHandler).toEventually(beNil())
+    }
+
+    @MainActor
     func testAnUnrenderableRoutedFirstStepReportsThatStep() async throws {
         let context = try Self.makeContext(
             singleStepFallbackId: "step_terminal",
@@ -1987,6 +2045,27 @@ private struct WorkflowPurchaseObserver: View {
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private extension WorkflowPaywallViewTests {
+
+    static func makeNavigationContext(nextOffering: Offering) throws -> WorkflowContext {
+        let buttonJSON = """
+        { "type": "button", "id": "continue_button",
+          "action": { "type": "close_workflow", "use_native_if_possible": true },
+          "stack": \(Self.stackJSON(components: "[]")) }
+        """
+        let screenJSON = Self.makeScreenJSON().replacingOccurrences(
+            of: Self.stackJSON(components: "[]"), with: Self.stackJSON(components: "[\(buttonJSON)]")
+        )
+        return try Self.makeContext(
+            singleStepFallbackId: "step_terminal",
+            initialScreenJSON: screenJSON,
+            initialStepJSON: Self.workflowStepJSON(
+                id: "step_initial", screenId: "screen_initial",
+                componentId: "continue_button", destinationStepId: "step_terminal"
+            ),
+            terminalScreenJSON: Self.makeScreenJSON(offeringId: nextOffering.identifier),
+            extraOfferings: [nextOffering]
+        )
+    }
 
     /// Creates a two-step workflow (step_a, step_b) with initial_step_id set to stepId.
     /// Use this to exercise callbacks from a non-initial step without requiring navigation.

@@ -179,6 +179,12 @@ public class PaywallViewController: UIViewController {
         return configuration.purchaseHandler
     }
 
+    func completeAndDismiss() {
+        if !self.configuration.workflowBackNavigationBridge.completeAndDismiss() {
+            self.dismiss(animated: true)
+        }
+    }
+
     /// The promo offer cache, shared with exit offer paywall to avoid race conditions.
     private var promoOfferCache: PaywallPromoOfferCache
 
