@@ -27,6 +27,7 @@ Carthage
 .ruby-version
 .bundle/
 .build/
+__pycache__/
 # Per-platform derived data written by the generate_swiftinterface lane.
 .build-*/
 vendor/

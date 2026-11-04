@@ -1,0 +1,150 @@
+//
+//  Copyright RevenueCat Inc. All Rights Reserved.
+//
+//  Licensed under the MIT License (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//      https://opensource.org/licenses/MIT
+//
+//  WorkflowPrewarmingWorkload.swift
+//
+
+import CryptoKit
+import Foundation
+@_spi(Internal) @testable import RevenueCat
+import XCTest
+
+final class WorkflowPrewarmingWorkload {
+
+    private let manager: RemoteConfigManager
+    private let rootURL: URL
+    private var offeringIDs: [String] = []
+    private var workflowIDs: Set<String> = []
+    private(set) var sha256 = ""
+
+    private init(manager: RemoteConfigManager, rootURL: URL) {
+        self.manager = manager
+        self.rootURL = rootURL
+    }
+
+    static func load() async throws -> WorkflowPrewarmingWorkload {
+        let apiKey = try XCTUnwrap(
+            ProcessInfo.processInfo.environment["REVENUECAT_PERFORMANCE_API_KEY"],
+            "Set REVENUECAT_PERFORMANCE_API_KEY to the benchmark project's SDK key."
+        )
+        let rootURL = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        let manager = try PerformanceBackend.makeManager(apiKey: apiKey, rootURL: rootURL)
+        let workload = WorkflowPrewarmingWorkload(manager: manager, rootURL: rootURL)
+        do {
+            try await workload.prepare()
+            return workload
+        } catch {
+            workload.close()
+            throw error
+        }
+    }
+
+    private func prepare() async throws {
+        let workflows = await self.manager.awaitTopicAndPrefetchBlobsReady(.workflows)
+        let topic = try XCTUnwrap(workflows)
+        self.offeringIDs = Set(topic.values.compactMap { item in
+            guard case let .string(identifier)? = item.content["offering_identifier"] else { return nil }
+            return identifier
+        }).sorted()
+        XCTAssertGreaterThan(self.offeringIDs.count, 1, "The benchmark needs multiple mapped workflows.")
+
+        let provider = WorkflowsConfigProvider(manager: self.manager)
+        var fingerprint = SHA256()
+        for offeringID in self.offeringIDs {
+            let mappedID = await provider.workflowId(forOfferingId: offeringID)
+            let workflowID = try XCTUnwrap(mappedID)
+            self.workflowIDs.insert(workflowID)
+            let body = await self.manager.blobData(for: .workflows, itemKey: workflowID)
+            let data = try XCTUnwrap(body)
+            fingerprint.update(data: Data(offeringID.utf8))
+            fingerprint.update(data: data)
+        }
+        let uiTopic = await self.manager.awaitTopicAndPrefetchBlobsReady(.uiConfig)
+        for key in try XCTUnwrap(uiTopic).keys.sorted() {
+            let body = await self.manager.blobData(for: .uiConfig, itemKey: key)
+            fingerprint.update(data: try XCTUnwrap(body))
+        }
+        self.sha256 = fingerprint.finalize().map { String(format: "%02x", $0) }.joined()
+    }
+
+    func close() {
+        self.manager.close()
+        try? FileManager.default.removeItem(at: self.rootURL)
+    }
+
+    func prepareIteration() async throws -> WorkflowPrewarmingIteration {
+        let decodedIDs = Atomic<Set<String>>([])
+        let uiConfigProvider = UiConfigProvider(manager: self.manager)
+        let provider = WorkflowsConfigProvider(
+            manager: self.manager,
+            uiConfigProvider: uiConfigProvider,
+            workflowDecoder: { data in
+                let workflow = try JSONDecoder.default.decode(PublishedWorkflow.self, from: data)
+                decodedIDs.modify { $0.insert(workflow.id) }
+                return workflow
+            }
+        )
+        for identifier in self.offeringIDs {
+            await provider.cachePrefetchedWorkflowBodyData(includingOfferingId: identifier)
+        }
+        let config = await uiConfigProvider.getUiConfig()
+        _ = try XCTUnwrap(config)
+        return WorkflowPrewarmingIteration(
+            manager: WorkflowManager(
+                workflowsConfigProvider: provider,
+                paywallCache: nil,
+                operationDispatcher: .default,
+                webBundleURLBatcher: WebBundleURLBatcher(eventBus: WebBundleEventBus())
+            ),
+            offerings: self.makeOfferings(),
+            decodedIDs: decodedIDs,
+            expectedIDs: self.workflowIDs
+        )
+    }
+
+    private func makeOfferings() -> Offerings {
+        let offerings = self.offeringIDs.map {
+            Offering(identifier: $0, serverDescription: $0, availablePackages: [], webCheckoutUrl: nil)
+        }
+        let response = OfferingsResponse(
+            currentOfferingId: self.offeringIDs.first,
+            offerings: [],
+            placements: nil,
+            targeting: nil,
+            uiConfig: nil
+        )
+        return Offerings(
+            offerings: Dictionary(uniqueKeysWithValues: offerings.map { ($0.identifier, $0) }),
+            currentOfferingID: self.offeringIDs.first,
+            placements: .init(
+                fallbackOfferingId: nil,
+                offeringIdsByPlacement: Dictionary(uniqueKeysWithValues: self.offeringIDs.map { ($0, $0) })
+            ),
+            targeting: nil,
+            contents: .init(response: response, httpResponseOriginalSource: .mainServer),
+            loadedFromDiskCache: false
+        )
+    }
+
+}
+
+struct WorkflowPrewarmingIteration {
+    let manager: WorkflowManager
+    let offerings: Offerings
+    let decodedIDs: Atomic<Set<String>>
+    let expectedIDs: Set<String>
+
+    func run() async {
+        await self.manager.publishWebBundleURLs(offerings: self.offerings)
+    }
+
+    func validate() {
+        XCTAssertEqual(self.decodedIDs.value, self.expectedIDs, "Every workflow must decode in every iteration.")
+    }
+}

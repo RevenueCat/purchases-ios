@@ -1,0 +1,15 @@
+{
+  "WorkflowPrewarmingMemoryTests/testPublishWebBundleURLsPeakMemory()": {
+    "environment": {
+      "architecture": "arm64",
+      "modelName": "iPhone 17 Pro",
+      "osBuildNumber": "23A343",
+      "osVersion": "26.0",
+      "platform": "iOS Simulator",
+      "xcode": "Xcode 26.0 / Build version 17A324"
+    },
+    "peakMemoryMiB": 30.96,
+    "tolerancePercent": 10,
+    "workloadSHA256": "2b2fc22a0d72d01bc28024672020eee716e5339040040b17714e022b1820266d"
+  }
+}

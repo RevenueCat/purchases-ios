@@ -130,6 +130,20 @@ Tests use **XCTest**, **Nimble**, **swift-snapshot-testing**, and **OHHTTPStubs*
 
 Before you add or change a test, read [Contributing/TESTING.md](Contributing/TESTING.md).
 
+### Performance tests
+
+- Add a test in `Tests/PerformanceTests/` for a measurable memory regression or a change to a memory-sensitive SDK path.
+- Use `PerformanceTestCase.measureMemory` and keep backend setup, asynchronous waits, and workload construction in shared helpers.
+- Keep setup outside the measurement interval unless setup is the behavior under test. Verify that every iteration completes the expected work.
+- Verify benchmark sensitivity against a known regression before you use it as evidence for a performance improvement.
+- Set `REVENUECAT_PERFORMANCE_API_KEY` and run `python3 scripts/performance_tests.py` to compare memory measurements with stored baselines.
+- Use `python3 scripts/performance_tests.py --record --test Class/testMethod` to create or update a selected baseline. Review the baseline diff.
+- Keep the workload, environment, and measurement interval consistent. Record a new baseline explicitly when these change.
+- Never update baselines automatically after a failure.
+- Use unit or integration tests for functional correctness. A performance baseline does not replace those tests.
+
+The command compares the mean of the iteration peaks with the baseline plus its tolerance. XCTest alone collects metrics without baseline enforcement.
+
 ## Development Workflow
 
 For environment setup, see **`Contributing/CONTRIBUTING.md`**. For code style, see **`Contributing/SwiftStyleGuide.swift`**.
