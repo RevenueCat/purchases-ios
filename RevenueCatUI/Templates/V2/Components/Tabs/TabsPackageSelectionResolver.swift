@@ -29,11 +29,13 @@ enum TabsPackageSelectionResolver {
         let tabUpdate: PackageContextUpdate?
     }
 
+    // swiftlint:disable:next function_parameter_count
     static func resolveTabSwitch(
         parentOwnedPackage: Package?,
         parentOwnedVariableContext: PackageContext.VariableContext,
         parentCurrentVariableContext: PackageContext.VariableContext,
         tabPackages: [Package],
+        rememberedPackage: Package?,
         tabDefaultPackage: Package?
     ) -> UpdatePlan {
         if tabPackages.isEmpty {
@@ -47,6 +49,18 @@ enum TabsPackageSelectionResolver {
         }
 
         let tabPackageIdentifiers = Set(tabPackages.map(\.identifier))
+
+        if let rememberedPackage,
+           tabPackageIdentifiers.contains(rememberedPackage.identifier) {
+            let update = PackageContextUpdate(
+                package: rememberedPackage,
+                variableContext: .init(
+                    packages: tabPackages,
+                    showZeroDecimalPlacePrices: parentCurrentVariableContext.showZeroDecimalPlacePrices
+                )
+            )
+            return .init(parentUpdate: update, tabUpdate: update)
+        }
 
         if let parentPackage = parentOwnedPackage,
            tabPackageIdentifiers.contains(parentPackage.identifier) {

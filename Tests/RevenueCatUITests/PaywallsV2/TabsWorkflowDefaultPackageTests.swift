@@ -284,3 +284,38 @@ private extension TabsWorkflowDefaultPackageTests {
 }
 
 #endif
+
+#if os(iOS)
+
+@available(iOS 15.0, *)
+extension TabsWorkflowDefaultPackageTests {
+
+    func testPW10RemembersBothManualChoicesAcrossRoundTripsAndRetaps() async throws {
+        let fixture = try PackageResolutionTestFixture()
+        let dispose = try fixture.view().addToHierarchy()
+        defer { dispose() }
+        try await PackageResolutionTestFixture.settlePresentation()
+        XCTAssertEqual(fixture.context.package?.identifier, "$rc_monthly")
+
+        try fixture.select("$rc_annual", tab: "tab-1")
+        fixture.tabs.tabControlContext.selectedTabId = "tab-2"
+        try await PackageResolutionTestFixture.settlePresentation()
+        XCTAssertEqual(fixture.context.package?.identifier, "monthly_xl", "First entry uses XL's default")
+        try fixture.select("annual_xl", tab: "tab-2")
+
+        for tab in ["tab-1", "tab-1", "tab-2", "tab-2", "tab-1"] {
+            fixture.tabs.tabControlContext.selectedTabId = tab
+            try await PackageResolutionTestFixture.settlePresentation()
+            let identifier = tab == "tab-1" ? "$rc_annual" : "annual_xl"
+            XCTAssertEqual(fixture.context.package?.identifier, identifier)
+            let packages = try XCTUnwrap(fixture.tabs.tabViewModels[tab]).packages
+            let expected = PackageContext.VariableContext(packages: packages, showZeroDecimalPlacePrices: false)
+            XCTAssertEqual(fixture.context.variableContext.exactMostExpensivePricePerMonth,
+                           expected.exactMostExpensivePricePerMonth)
+            XCTAssertFalse(fixture.context.variableContext.showZeroDecimalPlacePrices)
+        }
+    }
+
+}
+
+#endif
