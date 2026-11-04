@@ -32,6 +32,21 @@ final class IndependentPackageSelectionUITests: XCTestCase {
         self.assertSelectionAndPurchase("Monthly", packageID: "$rc_monthly", in: app)
     }
 
+    func testReopeningIndependentSheetRestoresItsDefaultTabAndPurchasePackage() {
+        let app = XCUIApplication()
+        app.launchEnvironment["PAYWALL_FIXTURE"] = "independent_sheet_tabs"
+        app.launch()
+        XCTAssertTrue(app.buttons["Root annual selected"].waitForExistence(timeout: 10))
+        app.buttons["Open plans"].tap()
+        XCTAssertTrue(app.buttons["Monthly selected"].waitForExistence(timeout: 5))
+        app.buttons["Annual tab"].tap()
+        XCTAssertTrue(app.buttons["Annual selected"].waitForExistence(timeout: 5))
+        app.buttons["Close plans"].tap()
+        XCTAssertTrue(app.buttons["Root annual selected"].waitForExistence(timeout: 5))
+        app.buttons["Open plans"].tap()
+        self.assertSelectionAndPurchase("Monthly", packageID: "$rc_monthly", in: app)
+    }
+
     private func assertSelectionAndPurchase(_ label: String, packageID: String, in app: XCUIApplication) {
         XCTAssertTrue(app.buttons["\(label) selected"].waitForExistence(timeout: 10))
         app.buttons["Purchase"].tap()

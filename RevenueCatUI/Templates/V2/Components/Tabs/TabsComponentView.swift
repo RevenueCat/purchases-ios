@@ -69,6 +69,9 @@ struct TabsComponentView: View {
     @Environment(\.workflowPackageContext)
     private var workflowPackageContext
 
+    @Environment(\.independentPurchaseContext)
+    private var independentPurchaseContext
+
     private let viewModel: TabsComponentViewModel
     private let onDismiss: () -> Void
 
@@ -82,6 +85,7 @@ struct TabsComponentView: View {
             viewModel: self.viewModel,
             parentPackageContext: self.packageContext,
             workflowDefaultPackage: self.workflowPackageContext?.selectedPackage,
+            independentPurchaseContext: self.independentPurchaseContext,
             onDismiss: self.onDismiss
         )
         // Nested tabs at the same parent index must initialize state for their own view model.
@@ -170,21 +174,21 @@ struct LoadedTabsComponentView: View {
         }
     }
 
-    /// `tabControlContext` is nil in production (the view reuses the shared instance owned by
-    /// `viewModel`); tests may pass an external instance to drive tab switches programmatically
-    /// without UI interaction.
+    /// Independent tab controls share the purchase context's lifetime; legacy controls keep their view-model state.
+    /// Tests may inject controls to drive tab switches without UI interaction.
     init(viewModel: TabsComponentViewModel,
          parentPackageContext: PackageContext,
          workflowDefaultPackage: Package? = nil,
+         independentPurchaseContext: Bool = false,
          onDismiss: @escaping () -> Void,
          tabControlContext: TabControlContext? = nil) {
         self.viewModel = viewModel
         self.workflowDefaultPackage = workflowDefaultPackage
         self.onDismiss = onDismiss
 
-        self.tabControlContext = tabControlContext ?? viewModel.tabControlContext
-
         self.selectionState = parentPackageContext.tabsState(for: viewModel)
+        self.tabControlContext = tabControlContext ?? (independentPurchaseContext
+            ? self.selectionState.independentTabControlContext : viewModel.tabControlContext)
         guard self.selectionState.contextsByTabId.isEmpty else { return }
 
         // MARK: - Package Context Inheritance for Tabs

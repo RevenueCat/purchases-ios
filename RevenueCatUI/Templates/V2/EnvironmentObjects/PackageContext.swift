@@ -76,6 +76,13 @@ class PackageContext: ObservableObject {
         var parentOwnedVariableContext: VariableContext
         var didUserSelectPackage = false
         var didSeedInitialState = false
+        lazy var independentTabControlContext = TabControlContext(
+            controlStackViewModel: self.viewModel.controlStackViewModel,
+            tabIds: self.viewModel.tabIds,
+            defaultTabId: self.viewModel.defaultTabId,
+            name: self.viewModel.name,
+            tabContextNamesById: self.viewModel.tabContextNamesById
+        )
 
         init(parent: PackageContext, viewModel: TabsComponentViewModel) {
             self.viewModel = viewModel
