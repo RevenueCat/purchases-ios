@@ -108,18 +108,12 @@ final class CheckpointsManager {
 
         switch resolution {
         case let .matchedWorkflow(workflow):
-            let presentation = WorkflowPresentationRequest(
-                checkpointIdentifier: identifier,
-                workflow: workflow,
-                customVariables: params.customVariables,
-                presentationMode: params.presentationMode,
-                initialActiveEntitlementIdentifiers: customerInfoBefore.activeEntitlementIdentifiers,
-                errorPresentationHandler: errorPresentationHandler,
-                presentationContext: params.presentationContext
-            )
-            return .init(
-                outcome: try await self.checkpointPresenter.presentWorkflow(presentation),
-                availableProducts: workflow.offerings.all.values.flatMap(\.availablePackages).map(\.storeProduct)
+            return try await self.presentWorkflow(
+                workflow,
+                identifier: identifier,
+                params: params,
+                customerInfoBefore: customerInfoBefore,
+                errorPresentationHandler: errorPresentationHandler
             )
         case let .matchedOffering(offering, _):
             return .init(
@@ -156,6 +150,28 @@ final class CheckpointsManager {
         case .noAction:
             return .init(outcome: .nothingPresented)
         }
+    }
+
+    private func presentWorkflow(
+        _ workflow: ResolvedCheckpointWorkflow,
+        identifier: String,
+        params: CheckpointCallParams,
+        customerInfoBefore: CustomerInfo,
+        errorPresentationHandler: @escaping ErrorPresentationHandler
+    ) async throws -> CheckpointExecutionResult {
+        let presentation = WorkflowPresentationRequest(
+            checkpointIdentifier: identifier,
+            workflow: workflow,
+            customVariables: params.customVariables,
+            presentationMode: params.presentationMode,
+            initialActiveEntitlementIdentifiers: customerInfoBefore.activeEntitlementIdentifiers,
+            errorPresentationHandler: errorPresentationHandler,
+            presentationContext: params.presentationContext
+        )
+        return .init(
+            outcome: try await self.checkpointPresenter.presentWorkflow(presentation),
+            availableProducts: workflow.offerings.all.values.flatMap(\.availablePackages).map(\.storeProduct)
+        )
     }
 
     func checkpointForCallback(

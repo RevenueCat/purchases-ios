@@ -150,6 +150,7 @@ public extension Purchases {
             presentationMode: presentationMode,
             paywallPresenter: paywallPresenter,
             errorPresenter: errorPresenter,
+            errorDialogFactory: nil,
             presentationContext: .init(scene: windowScene)
         )
         self.performCheckpoint(identifier, params: params, onPassed: onPassed)
