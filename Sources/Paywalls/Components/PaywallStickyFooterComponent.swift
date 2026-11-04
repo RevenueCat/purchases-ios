@@ -61,7 +61,7 @@ import Foundation
     final class PartialStickyFooterComponent: PaywallPartialComponent {
         public let layout: StickyFooterComponent.Layout?
 
-        public init(layout: StickyFooterComponent.Layout? = nil) {
+        @_spi(Internal) public init(layout: StickyFooterComponent.Layout? = nil) {
             self.layout = layout
         }
 
