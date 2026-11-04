@@ -51,9 +51,12 @@ enum PaywallFixture: String, CaseIterable {
     /// A button opening a bottom sheet, for checking what is reachable while it is up.
     case sheetOverContent = "sheet_over_content"
     case carouselTabs = "carousel_tabs"
+    case nestedBillingTabs = "nested_billing_tabs"
 
     var title: String {
         switch self {
+        case .nestedBillingTabs:
+            return "Nested billing tabs across tiers"
         case .carouselTabs:
             return "Carousel pages across tabs"
         case .iconOnlyButton:
@@ -79,6 +82,8 @@ enum PaywallFixture: String, CaseIterable {
 
     var componentsData: PaywallComponentsData {
         switch self {
+        case .nestedBillingTabs:
+            return Self.nestedBillingTabsComponentsData()
         case .carouselTabs:
             return Self.carouselTabsComponentsData()
         case .iconOnlyButton:
@@ -120,7 +125,7 @@ enum PaywallFixture: String, CaseIterable {
                 Self.weeklyPackage(offeringIdentifier: self.rawValue),
                 Self.lifetimePackage(offeringIdentifier: self.rawValue)
             ]
-        case .reportedTabs:
+        case .reportedTabs, .nestedBillingTabs:
             return Self.reportedTabsPackages(offeringIdentifier: self.rawValue)
         case .decorativeMedia:
             return [

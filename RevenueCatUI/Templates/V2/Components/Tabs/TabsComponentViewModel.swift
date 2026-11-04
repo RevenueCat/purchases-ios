@@ -11,6 +11,7 @@
 //
 //  Created by Josh Holtz on 1/9/25.
 
+import Foundation
 @_spi(Internal) import RevenueCat
 import SwiftUI
 
@@ -33,11 +34,25 @@ class TabsComponentViewModel: OfferEligibilityVisibilityDependency {
     let defaultTabId: String?
     let name: String?
 
-    /// Guards the one-time propagation of the initial tab's package into the parent
-    /// `PackageContext`. Lives here, not as per-view `@State`, so SwiftUI's duplicate
-    /// `LoadedTabsComponentView` instances (from `ViewThatFits` measuring both of its branches)
-    /// share the guard instead of each re-seeding and clobbering a real tab switch.
+    /// Seeds presentation state once, shared by duplicate `ViewThatFits` branches.
     var didSeedInitialState = false
+
+    @MainActor
+    private var appearedViewIDs: Set<UUID> = []
+
+    /// Only the first appearing copy restores the package. A later copy is a duplicate, while
+    /// appearing after every copy disappeared is a revisit that must restore the current tab.
+    @MainActor
+    func registerAppearance(id: UUID) -> Bool {
+        let isFirstAppearance = self.appearedViewIDs.isEmpty
+        self.appearedViewIDs.insert(id)
+        return isFirstAppearance
+    }
+
+    @MainActor
+    func unregisterAppearance(id: UUID) {
+        self.appearedViewIDs.remove(id)
+    }
 
     /// The `TabControlContext` shared by every `LoadedTabsComponentView` backed by this view
     /// model, so a `ViewThatFits` duplicate can't diverge from the tab the user actually selected.
