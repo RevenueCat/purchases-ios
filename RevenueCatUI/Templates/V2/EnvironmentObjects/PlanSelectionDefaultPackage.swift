@@ -40,7 +40,7 @@ extension EnvironmentValues {
     var selectedPackageIsVisible: Bool {
         get { self[SelectedPackageIsVisibleKey.self] }
         set { self[SelectedPackageIsVisibleKey.self] = newValue }
-}
+    }
 
     var independentPurchaseContext: Bool {
         get { self[IndependentPurchaseContextKey.self] }

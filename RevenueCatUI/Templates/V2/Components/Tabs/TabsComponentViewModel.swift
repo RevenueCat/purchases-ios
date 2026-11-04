@@ -51,7 +51,6 @@ class TabsComponentViewModel: OfferEligibilityVisibilityDependency {
         self.appearedViewIDs.remove(id)
     }
 
-
     /// The `TabControlContext` shared by every `LoadedTabsComponentView` backed by this view
     /// model, so a `ViewThatFits` duplicate can't diverge from the tab the user actually selected.
     lazy var tabControlContext = TabControlContext(

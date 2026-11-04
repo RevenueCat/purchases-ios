@@ -912,7 +912,8 @@ extension PaywallsV2View {
 //                throw PackageGroupValidationError.noAvailablePackages("No available packages found")
 //            }
 
-            let allPackageInfos = factory.packageValidator.allPackageInfos + factory.sheetPackageValidator.allPackageInfos
+            let allPackageInfos = factory.packageValidator.allPackageInfos +
+                factory.sheetPackageValidator.allPackageInfos
             let packageInfos = allPackageInfos.map { info in
                 return (package: info.package, promotionalOfferProductCode: info.promotionalOfferProductCode)
             }
