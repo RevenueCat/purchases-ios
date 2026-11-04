@@ -706,6 +706,38 @@ final class PaywallCacheWarmingTests: TestCase {
             .union(Self.localizedImageRequests("localized-es")))
     }
 
+    func testStartWorkflowAssetPrewarmingReturnsBeforeDownloadsComplete() async throws {
+        let fileRepository = BlockingCacheWarmingFileRepository()
+        let cache = PaywallCacheWarming(
+            introEligibiltyChecker: self.eligibilityChecker,
+            fileRepository: fileRepository
+        )
+        let workflow = PublishedWorkflow(
+            id: "workflow",
+            displayName: "Test",
+            initialStepId: "step",
+            singleStepFallbackId: nil,
+            steps: [:],
+            screens: ["screen": Self.workflowScreen(components: [
+                .image(.init(source: Self.cacheWarmingImage("image")))
+            ])]
+        )
+
+        let optionalTask = await cache.startWorkflowAssetPrewarming(
+            workflow: workflow,
+            uiConfig: Self.emptyUIConfig
+        )
+        let task = try XCTUnwrap(optionalTask)
+        await expect { await fileRepository.requestStarted }.toEventually(beTrue())
+
+        let completedBeforeRelease = await fileRepository.requestCompleted
+        expect(completedBeforeRelease) == false
+        await fileRepository.completeRequest()
+        await task.value
+        let completedAfterRelease = await fileRepository.requestCompleted
+        expect(completedAfterRelease) == true
+    }
+
     func testWorkflowAssetPrewarmingDownloadsLocalizedVideosForPreferredLocaleOnly() async {
         let requests = await self.localizedVideoPrewarmingRequests(preferredLocale: "es_ES")
 
@@ -1602,6 +1634,31 @@ private actor MockCacheWarmingFileRepository: FileRepositoryType {
     ) async throws -> OutputURL {
         self.requests.append(.init(url: url, checksum: checksum))
         return url
+    }
+
+}
+
+private actor BlockingCacheWarmingFileRepository: FileRepositoryType {
+
+    private(set) var requestStarted = false
+    private(set) var requestCompleted = false
+    private var continuation: CheckedContinuation<Void, Never>?
+
+    nonisolated func prefetch(urls: [InputURL]) {}
+
+    func generateOrGetCachedFileURL(
+        for url: InputURL,
+        withChecksum checksum: Checksum?
+    ) async throws -> OutputURL {
+        self.requestStarted = true
+        await withCheckedContinuation { self.continuation = $0 }
+        self.requestCompleted = true
+        return url
+    }
+
+    func completeRequest() {
+        self.continuation?.resume()
+        self.continuation = nil
     }
 
 }

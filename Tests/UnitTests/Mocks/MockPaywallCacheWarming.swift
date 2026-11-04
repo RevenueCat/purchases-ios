@@ -16,6 +16,18 @@ import Foundation
 
 final class MockPaywallCacheWarming: PaywallCacheWarmingType {
 
+    private let onPrewarmWorkflowAssets: (@Sendable (String) -> Void)?
+    private let workflowAssetPrewarmingHandler: (@Sendable (String) async -> Void)?
+    private let workflowAssetPrewarmingLimiter = AsyncConcurrencyLimiter(maxConcurrentOperations: 1)
+
+    init(
+        workflowAssetPrewarmingHandler: (@Sendable (String) async -> Void)? = nil,
+        onPrewarmWorkflowAssets: (@Sendable (String) -> Void)? = nil
+    ) {
+        self.workflowAssetPrewarmingHandler = workflowAssetPrewarmingHandler
+        self.onPrewarmWorkflowAssets = onPrewarmWorkflowAssets
+    }
+
     let eligibilityWarmupPriority: Atomic<TaskPriority?> = .init(nil)
     let assetsWarmupPriority: Atomic<TaskPriority?> = .init(nil)
     let fontsWarmupPriority: Atomic<TaskPriority?> = .init(nil)
@@ -104,6 +116,7 @@ final class MockPaywallCacheWarming: PaywallCacheWarmingType {
     private let _invokedPrewarmWorkflowAssetIDs: Atomic<[String]> = .init([])
     private let _invokedPrewarmWorkflowAssetsWorkflow: Atomic<PublishedWorkflow?> = nil
     private let _invokedPrewarmWorkflowAssetsUiConfig: Atomic<UIConfig?> = nil
+    private let _preparedWorkflowAssetIDs: Atomic<Set<String>> = .init([])
 
     var invokedPrewarmWorkflowAssets: Bool {
         get { return self._invokedPrewarmWorkflowAssets.value }
@@ -125,16 +138,29 @@ final class MockPaywallCacheWarming: PaywallCacheWarmingType {
         set { self._invokedPrewarmWorkflowAssetsUiConfig.value = newValue }
     }
 
-    func prewarmWorkflowAssets(workflow: PublishedWorkflow, uiConfig: UIConfig) async {
+    func startWorkflowAssetPrewarming(
+        workflow: PublishedWorkflow,
+        uiConfig: UIConfig
+    ) async -> Task<Void, Never>? {
+        guard self._preparedWorkflowAssetIDs.modify({ $0.insert(workflow.id).inserted }) else { return nil }
+        self.invokedPrewarmWorkflowAssetsWorkflow = workflow
+        self.invokedPrewarmWorkflowAssetsUiConfig = uiConfig
+        self.onPrewarmWorkflowAssets?(workflow.id)
         self.invokedPrewarmWorkflowAssets = true
         self._invokedPrewarmWorkflowAssetsCount.modify { $0 += 1 }
         self._invokedPrewarmWorkflowAssetIDs.modify { $0.append(workflow.id) }
-        self.invokedPrewarmWorkflowAssetsWorkflow = workflow
-        self.invokedPrewarmWorkflowAssetsUiConfig = uiConfig
+        let handler = self.workflowAssetPrewarmingHandler
+        let limiter = self.workflowAssetPrewarmingLimiter
+        return Task {
+            await limiter.perform {
+                _ = await handler?(workflow.id)
+            }
+        }
     }
 
     func hasStartedWorkflowAssetPrewarming(for workflowID: String) async -> Bool {
-        return self.invokedPrewarmWorkflowAssetIDs.contains(workflowID)
+        return self._preparedWorkflowAssetIDs.value.contains(workflowID)
+            || self.invokedPrewarmWorkflowAssetIDs.contains(workflowID)
     }
 
 #if !os(tvOS)

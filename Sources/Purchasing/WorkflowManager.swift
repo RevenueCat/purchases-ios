@@ -11,15 +11,12 @@
 //
 //  Created by RevenueCat.
 
-import Foundation
-
 /// Starts asset prewarming for workflows selected by remote config without making offerings delivery wait for
 /// workflow decoding, asset downloads, or web-bundle URL publish. Implementations may await the workflow body
 /// data needed to enqueue that work; image/font/video warming and URL publish are fire-and-forget.
 protocol WorkflowAssetPrewarmingType: Sendable {
 
-    func scheduleAssetPrewarmingForPrefetchedWorkflows(includingOfferingId: String?) async
-    func publishWebBundleURLs(offerings: Offerings) async
+    func schedulePrewarming(offerings: Offerings) async
 
 }
 
@@ -37,20 +34,16 @@ protocol WorkflowAssetPrewarmingType: Sendable {
 ///
 /// - **Read path:** `getWorkflow` and `cachedWorkflow` already have a decoded workflow. They schedule its asset
 ///   prewarming while returning that same decoded value to the caller.
-/// - **Body-data path:** ``scheduleAssetPrewarmingForPrefetchedWorkflows(includingOfferingId:)`` first caches raw body
+/// - **Body-data path:** ``schedulePrewarming(offerings:)`` first caches raw body
 ///   data for workflows marked `prefetch` plus the current offering's workflow. It then transiently decodes those
-///   workflows on a background worker solely to discover their assets. That decode is never retained in
-///   `LazyPublishedWorkflow`; the graph is released after the asset-prewarming task finishes.
+///   workflows on a background worker to discover their web bundles and assets. That decode is never retained in
+///   `LazyPublishedWorkflow`; the graph is released after those lightweight references are extracted.
 ///
 /// Both paths use the same `PaywallCacheWarming` entry point, which deduplicates asset prewarming by workflow ID.
 class WorkflowManager: WorkflowAssetPrewarmingType {
 
     private let workflowsConfigProvider: WorkflowsConfigProviderType
-    private let paywallCache: PaywallCacheWarmingType?
-    private let operationDispatcher: OperationDispatcher
-    private let webBundleURLBatcher: WebBundleURLBatcherType
-    private let workflowPrewarmingDecodeCoordinator: WorkflowPrewarmingDecodeCoordinator
-    private let webBundlePublicationTracker = WorkflowWebBundlePublicationTracker()
+    private let prewarmingCoordinator: WorkflowPrewarmingCoordinator
 
     init(
         workflowsConfigProvider: WorkflowsConfigProviderType,
@@ -60,10 +53,13 @@ class WorkflowManager: WorkflowAssetPrewarmingType {
         workflowPrewarmingDecodeCoordinator: WorkflowPrewarmingDecodeCoordinator = .init()
     ) {
         self.workflowsConfigProvider = workflowsConfigProvider
-        self.paywallCache = paywallCache
-        self.operationDispatcher = operationDispatcher
-        self.webBundleURLBatcher = webBundleURLBatcher
-        self.workflowPrewarmingDecodeCoordinator = workflowPrewarmingDecodeCoordinator
+        self.prewarmingCoordinator = .init(
+            workflowsConfigProvider: workflowsConfigProvider,
+            paywallCache: paywallCache,
+            operationDispatcher: operationDispatcher,
+            webBundleURLBatcher: webBundleURLBatcher,
+            decodeCoordinator: workflowPrewarmingDecodeCoordinator
+        )
     }
 
     /// Resolves `workflowId`, or throws the error explaining why it couldn't be resolved: genuinely
@@ -126,108 +122,19 @@ class WorkflowManager: WorkflowAssetPrewarmingType {
         return try await self.getWorkflow(workflowId: workflowId)
     }
 
-    /// Caches the prefetched and current-offering workflow body data before scheduling its decode and asset
-    /// prewarming in the background.
+    /// Ensures the provider has cached the selected workflows' raw body data before scheduling web-bundle publication
+    /// and asset prewarming in the background.
     ///
     /// The returned body IDs belong to the current config generation and are decoded transiently: the decoded
-    /// graphs are passed to the shared asset-prewarming path without replacing their cached raw body data. A later
-    /// presentation therefore performs the normal retained decode. Individual failures are ignored so one malformed
-    /// workflow cannot prevent sibling workflows from prewarming or delay offerings delivery. The included
-    /// offering's workflow is warmed first, then the remaining prefetched workflows are warmed sequentially.
+    /// graphs are reduced to lightweight URL/font requests without replacing their cached raw body data. A later
+    /// presentation therefore performs the normal retained decode. Web-bundle and asset extraction share that one
+    /// transient decode. Individual failures are ignored so one malformed workflow cannot prevent sibling workflows
+    /// from prewarming or delay offerings delivery. The included offering's workflow is processed first, followed by
+    /// other targeted and prefetched workflows.
     ///
     /// Only body-data readiness is awaited; decoding and downloads never delay offerings.
-    func scheduleAssetPrewarmingForPrefetchedWorkflows(includingOfferingId: String?) async {
-        let workflowIDsWithCachedBodyData = await self.workflowsConfigProvider.cachePrefetchedWorkflowBodyData(
-            includingOfferingId: includingOfferingId
-        )
-        guard !workflowIDsWithCachedBodyData.isEmpty else { return }
-
-        self.operationDispatcher.dispatchOnWorkerThread { [weak self] in
-            guard let self else { return }
-            guard #available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *), let paywallCache else { return }
-
-            for workflowId in workflowIDsWithCachedBodyData {
-                let hasStartedAssetPrewarming = await paywallCache.hasStartedWorkflowAssetPrewarming(
-                    for: workflowId
-                )
-                guard !hasStartedAssetPrewarming else { continue }
-
-                let resolution = await self.workflowPrewarmingDecodeCoordinator.decode(
-                    workflowId: workflowId,
-                    using: self.workflowsConfigProvider
-                )
-                switch resolution {
-                case let .success(result):
-                    await paywallCache.prewarmWorkflowAssets(workflow: result.workflow, uiConfig: result.uiConfig)
-                case let .failure(error):
-                    Logger.debug(Strings.paywalls.workflow_resolution_for_asset_prewarming_failed(
-                        workflowId: workflowId,
-                        error: error
-                    ))
-                }
-            }
-        }
-    }
-
-    /// Publishes cached workflows for target offerings (current, placements, fallback) in visit order.
-    /// Each workflow is converted to its small screen URL batches before the next workflow is decoded, avoiding
-    /// simultaneous retention of their decoded graphs. Workflows publish once per config generation; failed decodes
-    /// are retried. Cache-only: no blob fetch.
-    func publishWebBundleURLs(offerings: Offerings) async {
-        guard #available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *) else { return }
-
-        // Contains URL batches extracted from workflows resolved for this publication. Offerings without a workflow
-        // mapping are skipped because only workflow-backed web bundles are prewarmed.
-        var screenURLBatches: [WebBundleScreenURLBatch] = []
-        var resolvedWorkflowIDs: Set<String> = []
-        var claimedWorkflowIDs: Set<String> = []
-        var workflowIDsToMarkPublished: Set<String> = []
-        let configGeneration = self.workflowsConfigProvider.configGeneration
-        for offeringId in WebBundleURLBatcher.targetOfferingIds(from: offerings) {
-            guard let workflowId = await self.workflowsConfigProvider.workflowId(forOfferingId: offeringId) else {
-                continue
-            }
-            guard resolvedWorkflowIDs.insert(workflowId).inserted else { continue }
-            guard await self.webBundlePublicationTracker.claimIfNeeded(
-                workflowId,
-                configGeneration: configGeneration
-            ) else { continue }
-
-            claimedWorkflowIDs.insert(workflowId)
-            let batchResult = await self.webBundleScreenURLBatches(for: workflowId)
-            if case let .success(batches) = batchResult {
-                screenURLBatches.append(contentsOf: batches)
-                workflowIDsToMarkPublished.insert(workflowId)
-            }
-        }
-
-        guard !claimedWorkflowIDs.isEmpty else { return }
-        await webBundleURLBatcher.publish(screenURLBatches)
-        await self.webBundlePublicationTracker.completeClaims(
-            claimedWorkflowIDs,
-            publishedWorkflowIDs: workflowIDsToMarkPublished,
-            configGeneration: configGeneration
-        )
-    }
-
-}
-
-private extension WorkflowManager {
-
-    /// Extracts the small value needed by the URL publisher before releasing the decoded workflow graph.
-    @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
-    func webBundleScreenURLBatches(
-        for workflowId: String
-    ) async -> Result<[WebBundleScreenURLBatch], WorkflowResolutionError> {
-        switch await self.workflowPrewarmingDecodeCoordinator.decode(
-            workflowId: workflowId,
-            using: self.workflowsConfigProvider
-        ) {
-        case let .success(result):
-            return .success(WebBundleURLBatcher.screenURLBatches(in: result.workflow))
-        case let .failure(error):
-            return .failure(error)
-        }
+    func schedulePrewarming(offerings: Offerings) async {
+        await self.prewarmingCoordinator.schedulePrewarming(offerings: offerings)
     }
 
 }
@@ -238,13 +145,7 @@ extension WorkflowManager {
     /// present-path cache warming does not wait on downloads when this is the first time the workflow is seen.
     /// Remote config's own blob prefetch only covers the workflow's JSON body, not the assets it references.
     func scheduleAssetPrewarming(for result: WorkflowDataResult) {
-        guard #available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *), let paywallCache else { return }
-
-        let webBundleURLBatcher = self.webBundleURLBatcher
-        self.operationDispatcher.dispatchOnWorkerThread {
-            await webBundleURLBatcher.publish(WebBundleURLBatcher.screenURLBatches(in: result.workflow))
-            await paywallCache.prewarmWorkflowAssets(workflow: result.workflow, uiConfig: result.uiConfig)
-        }
+        self.prewarmingCoordinator.scheduleAssetPrewarming(for: result)
     }
 
 }
@@ -252,46 +153,6 @@ extension WorkflowManager {
 // @unchecked because:
 // - Class is not `final` (it's mocked). This implicitly makes subclasses `Sendable` even if they're not thread-safe.
 extension WorkflowManager: @unchecked Sendable {}
-
-/// Remembers which workflows already had their web-bundle URLs published for the current config.
-private actor WorkflowWebBundlePublicationTracker {
-
-    private var configGeneration: Int?
-    private var claimedWorkflowIDs: Set<String> = []
-    private var publishedWorkflowIDs: Set<String> = []
-
-    func claimIfNeeded(_ workflowId: String, configGeneration: Int) -> Bool {
-        guard self.prepareForConfigGeneration(configGeneration),
-              !self.claimedWorkflowIDs.contains(workflowId),
-              !self.publishedWorkflowIDs.contains(workflowId) else {
-            return false
-        }
-
-        self.claimedWorkflowIDs.insert(workflowId)
-        return true
-    }
-
-    func completeClaims(
-        _ claimedWorkflowIDs: Set<String>,
-        publishedWorkflowIDs: Set<String>,
-        configGeneration: Int
-    ) {
-        guard self.configGeneration == configGeneration else { return }
-        self.claimedWorkflowIDs.subtract(claimedWorkflowIDs)
-        self.publishedWorkflowIDs.formUnion(publishedWorkflowIDs)
-    }
-
-    private func prepareForConfigGeneration(_ configGeneration: Int) -> Bool {
-        guard self.configGeneration.map({ configGeneration >= $0 }) ?? true else { return false }
-        guard self.configGeneration != configGeneration else { return true }
-
-        self.configGeneration = configGeneration
-        self.claimedWorkflowIDs.removeAll()
-        self.publishedWorkflowIDs.removeAll()
-        return true
-    }
-
-}
 
 extension WorkflowStep {
 
