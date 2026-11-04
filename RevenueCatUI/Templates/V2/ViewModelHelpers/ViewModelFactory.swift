@@ -29,6 +29,8 @@ class PurchaseButtonCollector {
 struct ViewModelFactory {
 
     let packageValidator = PackageValidator()
+    /// Sheet inventory is still needed for offer loading, but never for page or tab selection.
+    let sheetPackageValidator = PackageValidator()
 
     /// When true, all rule-based overrides are discarded globally across all components.
     /// Set when any component in the paywall contains unsupported conditions.
@@ -169,17 +171,21 @@ struct ViewModelFactory {
             )
 
             var sheetStackViewModel: StackComponentViewModel?
+            var sheetPackageValidator: PackageValidator?
 
             if case let .navigateTo(.sheet(sheet)) = component.action, let sheet {
+                let validator = PackageValidator()
+                sheetPackageValidator = validator
                 sheetStackViewModel = try toStackViewModel(
                     component: sheet.stack,
-                    packageValidator: packageValidator,
+                    packageValidator: validator,
                     purchaseButtonCollector: purchaseButtonCollector,
                     localizationProvider: localizationProvider,
                     uiConfigProvider: uiConfigProvider,
                     offering: offering,
                     colorScheme: colorScheme
                 )
+                validator.packageInfos.forEach { self.sheetPackageValidator.add($0) }
             }
 
             return .button(
@@ -189,6 +195,7 @@ struct ViewModelFactory {
                     offering: offering,
                     stackViewModel: stackViewModel,
                     sheetStackViewModel: sheetStackViewModel,
+                    sheetPackageValidator: sheetPackageValidator,
                     uiConfigProvider: uiConfigProvider,
                     discardRules: discardRules
                 )
@@ -316,6 +323,7 @@ struct ViewModelFactory {
                 )
             )
         case .tabs(let component):
+            let firstControlPackageIndex = packageValidator.packageInfos.count
             let controlStackViewModel = try toStackViewModel(
                 component: component.control.stack,
                 packageValidator: packageValidator,
@@ -373,6 +381,14 @@ struct ViewModelFactory {
                 colorScheme: colorScheme
             )
 
+            // The synthetic stack renders the Tabs component's visibility rules. Its packages
+            // must use the same ancestor visibility, both in the control and in each tab.
+            packageValidator.addAncestorStack(
+                tabsStackComponent,
+                startingAt: firstControlPackageIndex,
+                discardRules: discardRules
+            )
+
             let tabViewModels: [TabViewModel] = try component.tabs.map { tab in
                 let tabPackageValidator = PackageValidator()
 
@@ -384,6 +400,12 @@ struct ViewModelFactory {
                     uiConfigProvider: uiConfigProvider,
                     offering: offering,
                     colorScheme: colorScheme
+                )
+
+                tabPackageValidator.addAncestorStack(
+                    tabsStackComponent,
+                    startingAt: 0,
+                    discardRules: discardRules
                 )
 
                 // Merging into entire paywall package validator
@@ -540,6 +562,7 @@ struct ViewModelFactory {
         offering: Offering,
         colorScheme: ColorScheme
     ) throws -> StackComponentViewModel {
+        let firstPackageIndex = packageValidator.packageInfos.count
         let viewModels = try component.components.filter {
             // fallback_header is injected by the dashboard for old SDK compatibility.
             // New SDKs render the header from PaywallComponentsConfig.header instead.
@@ -584,6 +607,10 @@ struct ViewModelFactory {
         for override in component.overrides ?? [] {
             try appendBadge(override.properties.badge)
         }
+
+        packageValidator.addAncestorStack(
+            component, startingAt: firstPackageIndex, discardRules: self.discardRules
+        )
 
         return StackComponentViewModel(
             component: component,

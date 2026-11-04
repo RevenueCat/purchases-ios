@@ -11,6 +11,7 @@
 //
 //  Created by Josh Holtz on 11/14/24.
 
+import Foundation
 @_spi(Internal) import RevenueCat
 import SwiftUI
 
@@ -66,6 +67,80 @@ class PackageContext: ObservableObject {
 
     }
 
+    /// Selection state shared by duplicate renderings, but isolated to this presentation context.
+    final class TabsState {
+
+        // Retain the identity used as the cache key for this presentation's lifetime.
+        let viewModel: TabsComponentViewModel
+        var contextsByTabId: [String: PackageContext] = [:]
+        var parentOwnedPackage: Package?
+        var parentOwnedVariableContext: VariableContext
+        var didUserSelectPackage = false
+        var didSeedInitialState = false
+
+        @MainActor
+        private var appearedViewIDs: Set<UUID> = []
+
+        init(parent: PackageContext, viewModel: TabsComponentViewModel) {
+            self.viewModel = viewModel
+            self.parentOwnedPackage = parent.package
+            self.parentOwnedVariableContext = parent.variableContext
+        }
+
+        /// Duplicate renderings share appearance tracking within this presentation context.
+        /// Returning after every copy disappeared must restore the selected tab's package.
+        @MainActor
+        func registerAppearance(id: UUID) -> Bool {
+            let isFirstAppearance = self.appearedViewIDs.isEmpty
+            self.appearedViewIDs.insert(id)
+            return isFirstAppearance
+        }
+
+        @MainActor
+        func unregisterAppearance(id: UUID) {
+            self.appearedViewIDs.remove(id)
+        }
+
+    }
+
+    private var tabsStatesByIdentifier: [ObjectIdentifier: TabsState] = [:]
+
+    func tabsState(for viewModel: TabsComponentViewModel) -> TabsState {
+        let identifier = ObjectIdentifier(viewModel)
+        if let state = self.tabsStatesByIdentifier[identifier] { return state }
+        let state = TabsState(parent: self, viewModel: viewModel)
+        self.tabsStatesByIdentifier[identifier] = state
+        return state
+    }
+
+    /// A sheet mirrors its selection here for page-level consumers, while owning its own context.
+    weak var presentedSheetContext: PackageContext? {
+        willSet { self.objectWillChange.send() }
+    }
+
+    var isPresentingSheet: Bool { self.presentedSheetContext != nil }
+
+    @MainActor
+    func activateSheet(validator: PackageValidator?, selectionContext: PackageSelectionContext) -> PackageContext {
+        let packages = validator?.packages ?? []
+        let context = PackageContext(
+            package: packages.isEmpty ? self.package : validator?.defaultSelectedPackage(in: selectionContext),
+            variableContext: packages.isEmpty ? self.variableContext : .init(
+                packages: packages,
+                showZeroDecimalPlacePrices: self.variableContext.showZeroDecimalPlacePrices
+            )
+        )
+        self.presentedSheetContext = context
+        self.update(package: context.package, variableContext: context.variableContext, isReconcile: true)
+        return context
+    }
+
+    func clearManualSelection() {
+        self.manuallySelectedPackage = nil
+    }
+
+    private(set) var manuallySelectedPackage: Package?
+
     @Published var package: Package?
     @Published var variableContext: VariableContext
 
@@ -91,6 +166,9 @@ class PackageContext: ObservableObject {
     func update(package: Package?, variableContext: VariableContext, isReconcile: Bool = false) {
         // Set before the published properties so observers see it while handling the change.
         self.lastUpdateWasReconcile = isReconcile
+        if !isReconcile {
+            self.manuallySelectedPackage = package
+        }
         self.package = package
         self.variableContext = variableContext
     }
