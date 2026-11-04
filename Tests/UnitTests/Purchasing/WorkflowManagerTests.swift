@@ -211,6 +211,34 @@ class WorkflowManagerTests: TestCase {
         expect(self.mockPaywallCache.invokedPrewarmWorkflowAssetsCount) == 1
     }
 
+    func testScheduleAssetPrewarmingDecodesAgainOnlyForNewPreferredLocales() async throws {
+        guard #available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *) else {
+            throw XCTSkip("prewarmWorkflowAssets requires iOS 15+")
+        }
+        let locales: Atomic<[String]> = .init(["en_US"])
+        let cache = PaywallCacheWarming(
+            introEligibiltyChecker: MockTrialOrIntroPriceEligibilityChecker(),
+            webBundleURLBatcher: self.mockWebBundleURLBatcher,
+            preferredLocalesProvider: { locales.value }
+        )
+        let manager = WorkflowManager(
+            workflowsConfigProvider: self.mockProvider,
+            paywallCache: cache,
+            operationDispatcher: self.mockOperationDispatcher,
+            webBundleURLBatcher: self.mockWebBundleURLBatcher
+        )
+        self.mockProvider.stubbedWorkflowIDsWithCachedBodyData = ["wf_1"]
+        self.mockProvider.stubbedGetWorkflowResult = ["wf_1": try Self.workflowDataResult(id: "wf_1")]
+
+        for locale in ["en_US", "en_US", "es_ES", "es_ES", "en_US"] {
+            locales.value = [locale]
+            await manager.scheduleAssetPrewarmingForPrefetchedWorkflows(includingOfferingId: nil)
+            await self.mockOperationDispatcher.invokeAllDispatchedAsyncWorkerThreadBlocks()
+        }
+
+        expect(self.mockProvider.invokedDecodeCachedWorkflowForAssetPrewarmingParameters) == ["wf_1", "wf_1"]
+    }
+
     func testScheduleAssetPrewarmingDoesNotDecodeInline() async {
         self.mockProvider.stubbedWorkflowIDsWithCachedBodyData = ["wf_1"]
         await self.manager.scheduleAssetPrewarmingForPrefetchedWorkflows(includingOfferingId: "current")
