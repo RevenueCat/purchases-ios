@@ -233,7 +233,7 @@ struct RootPackageSelectionSheetModifier: ViewModifier {
                 self.packageSelectionSheetComponentName = newValue.sheet.name
             } else {
                 // Reset package selection when sheet is dismissed; snapshot sheet name before clear for analytics.
-                let selectionInSheetContext = self.packageContext.package
+                let selectionInSheetContext = self.sheetPackageContext?.package
                 let restoredPackage = RootView.restoredPackageAfterSheetDismissal(
                     packageBeforeOpeningSheet: self.packageBeforeOpeningSheet,
                     defaultPackage: self.defaultPackage

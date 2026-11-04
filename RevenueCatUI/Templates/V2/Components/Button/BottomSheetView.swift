@@ -119,15 +119,6 @@ private struct SheetPackageSelectionModifier: ViewModifier {
         .onChangeOf(self.paywallWindowSize) { _ in self.reconcileSelection() }
         .onChangeOf(self.customVariables) { _ in self.reconcileSelection() }
         .onChangeOf(self.screenCondition) { _ in self.reconcileSelection() }
-        .onReceive(self.packageContext.$variableContext.dropFirst()) { variableContext in
-            // A dismissed sheet can remain mounted during its removal animation.
-            guard self.parentPackageContext.presentedSheetContext === self.packageContext else { return }
-            self.parentPackageContext.update(
-                package: self.packageContext.package,
-                variableContext: variableContext,
-                isReconcile: true
-            )
-        }
     }
 
 }
