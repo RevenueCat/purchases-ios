@@ -311,7 +311,9 @@ extension PurchasesRewardVerificationTests {
         let entitlement = try XCTUnwrap(EntitlementReward(identifier: "pro", expiresAt: Date()))
         let before = self.backend.getCustomerInfoCallCount
         let poller = self.makeStubPoller(statuses: [
-            .verified(reward: .virtualCurrency(virtualCurrency), moreRewards: [.entitlement(entitlement)])
+            .verified(reward: .virtualCurrency(virtualCurrency),
+                      moreRewards: [.entitlement(entitlement)],
+                      customerInfo: nil)
         ])
 
         let result = await self.purchases.pollRewardVerification(clientTransactionID: "tx-1", poller: poller)
@@ -455,7 +457,9 @@ extension PurchasesRewardVerificationTests {
         let virtualCurrency = try XCTUnwrap(VirtualCurrencyReward(code: "coins", amount: 5))
         let entitlement = try XCTUnwrap(EntitlementReward(identifier: "pro", expiresAt: Date()))
         let poller = self.makeStubPoller(statuses: [
-            .verified(reward: .virtualCurrency(virtualCurrency), moreRewards: [.entitlement(entitlement)])
+            .verified(reward: .virtualCurrency(virtualCurrency),
+                      moreRewards: [.entitlement(entitlement)],
+                      customerInfo: nil)
         ])
 
         _ = await self.purchases.pollRewardVerification(

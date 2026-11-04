@@ -199,7 +199,7 @@ func makeTerminalBackendError() -> BackendError {
 
 extension RewardVerificationPollStatus {
     static func verified(_ reward: AdReward) -> Self {
-        .verified(reward: reward, moreRewards: [])
+        .verified(reward: reward, moreRewards: [], customerInfo: nil)
     }
 }
 
