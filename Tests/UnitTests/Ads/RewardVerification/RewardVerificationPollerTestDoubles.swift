@@ -205,7 +205,7 @@ extension RewardVerificationPollStatus {
 
 extension RewardVerification.Outcome {
     static func verified(_ reward: AdReward) -> Self {
-        .verified(reward: reward, moreRewards: [])
+        .verified(reward: reward, moreRewards: [], customerInfo: nil)
     }
 }
 

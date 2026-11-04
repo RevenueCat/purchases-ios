@@ -64,7 +64,8 @@ final class RewardVerificationOutcomeTests: TestCase {
         let entitlement = try XCTUnwrap(EntitlementReward(identifier: "pro", expiresAt: Date()))
         let outcome = RewardVerification.Outcome.verified(
             reward: .virtualCurrency(primary),
-            moreRewards: [.entitlement(entitlement)]
+            moreRewards: [.entitlement(entitlement)],
+            customerInfo: nil
         )
 
         guard case let .verified(adReward, moreRewards, _) = outcome else {
