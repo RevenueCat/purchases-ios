@@ -27,7 +27,7 @@ import Foundation
     public static func configure(with configuration: AdsConfiguration = AdsConfiguration()) throws {
         try Self.configure(
             with: configuration,
-            makeModule: { PrebidAdModule() },
+            module: PrebidAdModule(),
             purchasesAPIKey: Purchases.isConfigured ? Purchases.shared.apiKey : nil,
             purchasesProxyURL: Purchases.proxyURL
         )
@@ -35,7 +35,7 @@ import Foundation
 
     static func configure(
         with configuration: AdsConfiguration,
-        makeModule: () -> AdModule,
+        module: AdModule,
         purchasesAPIKey: String?,
         purchasesProxyURL: URL?
     ) throws {
@@ -48,7 +48,6 @@ import Foundation
             purchasesAPIKey: purchasesAPIKey,
             purchasesProxyURL: purchasesProxyURL
         )
-        let module = makeModule()
         try module.initialize(with: resolved)
         Self.module = module
     }

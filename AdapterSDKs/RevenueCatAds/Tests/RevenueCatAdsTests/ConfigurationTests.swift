@@ -150,11 +150,9 @@ final class AdsConfigureTests: TestCase {
     }
 
     func testConfigureWithoutPurchasesThrowsNotConfigured() {
-        let module: FakeAdModule = self.module
-
         XCTAssertThrowsError(try RCAds.configure(
             with: AdsConfiguration(apiKey: "appl_key"),
-            makeModule: { module },
+            module: self.module,
             purchasesAPIKey: nil,
             purchasesProxyURL: nil
         )) {
@@ -184,10 +182,9 @@ final class AdsConfigureTests: TestCase {
     }
 
     private func configure(_ configuration: AdsConfiguration) throws {
-        let module: FakeAdModule = self.module
         try RCAds.configure(
             with: configuration,
-            makeModule: { module },
+            module: self.module,
             purchasesAPIKey: "appl_purchases",
             purchasesProxyURL: nil
         )
