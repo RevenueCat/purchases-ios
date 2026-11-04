@@ -27,6 +27,8 @@ enum PaywallFixture: String, CaseIterable {
     /// Packages outside and inside tabs, authored default hidden. Cards rename themselves when
     /// selected, so a UI test can read the selection.
     case mixedTabsPageDefault = "mixed_tabs_page_default"
+    case hiddenTabs = "hidden_tabs"
+    case responsiveTabsVisibility = "responsive_tabs_visibility"
 
     /// One badge rule per offer type, each with its own rule for its copy.
     case badgeRulesPerOffer = "badge_rules_per_offer"
@@ -67,6 +69,10 @@ enum PaywallFixture: String, CaseIterable {
             return "Icon-only button"
         case .mixedTabsPageDefault:
             return "Mixed page and tab packages"
+        case .hiddenTabs:
+            return "Hidden tabs with a visible page package"
+        case .responsiveTabsVisibility:
+            return "Tabs hidden in a wide window"
         case .badgeRulesPerOffer:
             return "Badge rules per offer type"
         case .decorativeMedia:
@@ -98,6 +104,15 @@ enum PaywallFixture: String, CaseIterable {
             return Self.iconOnlyButtonComponentsData()
         case .mixedTabsPageDefault:
             return Self.mixedTabsPageDefaultComponentsData()
+        case .hiddenTabs:
+            return Self.mixedTabsPageDefaultComponentsData(tabsVisible: false)
+        case .responsiveTabsVisibility:
+            return Self.mixedTabsPageDefaultComponentsData(tabsOverrides: [
+                .init(
+                    extendedConditions: [.windowWidth(operator: .greaterThanOrEqual, value: 700)],
+                    properties: .init(visible: false)
+                )
+            ])
         case .badgeRulesPerOffer:
             return Self.badgeRulesPerOfferComponentsData()
         case .decorativeMedia:
@@ -130,7 +145,7 @@ enum PaywallFixture: String, CaseIterable {
             return [Self.annualPackageWithPromoOffer(offeringIdentifier: self.rawValue)]
         case .offerPriceWithZero:
             return [Self.annualPackageWithFreeTrial(offeringIdentifier: self.rawValue)]
-        case .mixedTabsPageDefault:
+        case .mixedTabsPageDefault, .hiddenTabs, .responsiveTabsVisibility:
             return [
                 Self.annualPackage(offeringIdentifier: self.rawValue),
                 Self.monthlyPackage(offeringIdentifier: self.rawValue),
@@ -520,8 +535,12 @@ private extension PaywallFixture {
     }
 
     /// Two page packages with the default among them hidden, plus two tabs declaring their own.
-    static func mixedTabsPageDefaultComponentsData() -> PaywallComponentsData {
+    static func mixedTabsPageDefaultComponentsData(
+        tabsVisible: Bool? = nil,
+        tabsOverrides: [PaywallComponent.ComponentOverride<PaywallComponent.PartialTabsComponent>]? = nil
+    ) -> PaywallComponentsData {
         let tabs: PaywallComponent = .tabs(.init(
+            visible: tabsVisible,
             control: .init(
                 type: .buttons,
                 stack: .init(components: [
@@ -543,7 +562,8 @@ private extension PaywallFixture {
                     Self.packageCard(packageID: "$rc_lifetime", label: "lifetime", isSelectedByDefault: true)
                 ]))
             ],
-            defaultTabId: "tab_weekly"
+            defaultTabId: "tab_weekly",
+            overrides: tabsOverrides
         ))
 
         return .init(

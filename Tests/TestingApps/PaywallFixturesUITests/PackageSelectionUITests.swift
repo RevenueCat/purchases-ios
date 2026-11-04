@@ -84,6 +84,31 @@ final class PackageSelectionUITests: XCTestCase {
         )
     }
 
+    func testHiddenTabsSelectsVisiblePagePackage() throws {
+        let app = XCUIApplication()
+        app.launchEnvironment["PAYWALL_FIXTURE"] = "hidden_tabs"
+        app.launch()
+
+        XCTAssertTrue(app.buttons["Monthly selected"].waitForExistence(timeout: 10))
+        XCTAssertFalse(app.buttons["Weekly selected"].exists)
+    }
+
+    func testHidingTabsOnResizeRestoresVisiblePageSelection() throws {
+        XCUIDevice.shared.orientation = .portrait
+        defer { XCUIDevice.shared.orientation = .portrait }
+        let app = XCUIApplication()
+        app.launchEnvironment["PAYWALL_FIXTURE"] = "responsive_tabs_visibility"
+        app.launch()
+        XCTAssertTrue(app.buttons["Weekly selected"].waitForExistence(timeout: 10))
+
+        XCUIDevice.shared.orientation = .landscapeLeft
+        XCTAssertTrue(app.buttons["Monthly selected"].waitForExistence(timeout: 10))
+        XCTAssertFalse(app.buttons["Weekly selected"].exists)
+
+        XCUIDevice.shared.orientation = .portrait
+        XCTAssertTrue(app.buttons["Weekly selected"].waitForExistence(timeout: 10))
+    }
+
     private func launchMixedTabs() -> XCUIApplication {
         let app = XCUIApplication()
         app.launchEnvironment["PAYWALL_FIXTURE"] = "mixed_tabs_page_default"
