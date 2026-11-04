@@ -1283,7 +1283,7 @@ extension WorkflowPaywallViewTests {
             identifier: "next_offering", serverDescription: "Next", availablePackages: [], webCheckoutUrl: nil
         )
         let context = try Self.makeNavigationContext(nextOffering: nextOffering)
-        let bridge = WorkflowBackNavigationBridge()
+        let bridge = PaywallPresentationBridge()
         let coordinator = NativePaywallCloseCoordinator()
         let events: Atomic<[WorkflowEvent]> = .init([])
         let (purchases, handler) = Self.makeEventRecordingPurchaseHandler(paywallEvents: .init([]))
@@ -1293,7 +1293,7 @@ extension WorkflowPaywallViewTests {
             context: context, purchaseHandler: handler,
             introEligibilityChecker: .producing(eligibility: .eligible),
             showZeroDecimalPlacePrices: false, displayCloseButton: false, promoOfferCache: nil,
-            onDismiss: { dismissalCount += 1 }, backNavigationBridge: bridge
+            onDismiss: { dismissalCount += 1 }, presentationBridge: bridge
         )
         .environment(\.nativePaywallCloseEnabled, true)
         .environment(\.nativePaywallCloseCoordinator, coordinator)

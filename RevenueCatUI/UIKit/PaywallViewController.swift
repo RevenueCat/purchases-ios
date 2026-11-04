@@ -136,8 +136,8 @@ public class PaywallViewController: UIViewController {
 
     var workflowContextForTesting: WorkflowContext? { self.configuration.injectedWorkflowContext }
 
-    var workflowBackNavigationBridgeForTesting: WorkflowBackNavigationBridge {
-        return self.configuration.workflowBackNavigationBridge
+    var presentationBridgeForTesting: PaywallPresentationBridge {
+        return self.configuration.presentationBridge
     }
 
     func simulateWorkflowExitOfferUpdate(_ offering: Offering?) {
@@ -180,7 +180,7 @@ public class PaywallViewController: UIViewController {
     }
 
     func completeAndDismiss() {
-        if !self.configuration.workflowBackNavigationBridge.completeAndDismiss() {
+        if !self.configuration.presentationBridge.completeAndDismiss() {
             self.dismiss(animated: true)
         }
     }

@@ -58,7 +58,7 @@ public struct PaywallView: View {
 
     private var workflowPresentationErrorHandler: WorkflowPresentationErrorHandler?
 
-    private var workflowBackNavigationBridge: WorkflowBackNavigationBridge
+    private var presentationBridge: PaywallPresentationBridge
 
     private var initializationError: NSError?
 
@@ -222,7 +222,7 @@ public struct PaywallView: View {
         self.promoOfferCache = configuration.promoOfferCache
         self.displaysPurchaseAndRestoreErrors = configuration.displaysPurchaseAndRestoreErrors
         self.workflowPresentationErrorHandler = configuration.workflowPresentationErrorHandler
-        self.workflowBackNavigationBridge = configuration.workflowBackNavigationBridge
+        self.presentationBridge = configuration.presentationBridge
 
         self.initializationError = Self.checkForConfigurationConsistency(purchaseHandler: configuration.purchaseHandler)
     }
@@ -402,7 +402,7 @@ public struct PaywallView: View {
                         displayCloseButton: self.displayCloseButton,
                         promoOfferCache: self.promoOfferCache,
                         onDismiss: self.dismissRequested,
-                        backNavigationBridge: self.workflowBackNavigationBridge,
+                        presentationBridge: self.presentationBridge,
                         onPresentationError: self.workflowPresentationErrorHandler
                     )
                     .modifier(NativePaywallNavigationModifier(

@@ -171,12 +171,12 @@ extension CustomerInfo {
 
 // MARK: - Restore eligibility
 
-extension Array where Element == Offering {
+extension Offering {
 
     /// Returns one complete, nonempty entitlement set per offered product.
     func entitlementsGrantedBy(_ mapping: [String: [String]]?) -> [Set<String>] {
         guard let mapping else { return [] }
-        return self.flatMap(\.availablePackages).compactMap { package in
+        return self.availablePackages.compactMap { package in
             let product = package.storeProduct
             let entitlements = Set(mapping[product.id] ?? mapping[product.productIdentifier] ?? [])
             return entitlements.isEmpty ? nil : entitlements

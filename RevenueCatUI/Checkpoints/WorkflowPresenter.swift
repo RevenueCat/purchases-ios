@@ -321,7 +321,8 @@ extension WorkflowPresenter {
     ) {
         guard let state = self.presentationState else { return }
         // Read the mapping when restoring so a late cache fill is picked up. Missing mapping leaves the paywall open.
-        let entitlements = state.presentedOfferings.entitlementsGrantedBy(self.productEntitlementMappingProvider())
+        let mapping = self.productEntitlementMappingProvider()
+        let entitlements = state.presentedOfferings.flatMap { $0.entitlementsGrantedBy(mapping) }
         guard customerInfo.grantsPresentedEntitlement(
             comparedTo: state.initialActiveEntitlementIdentifiers,
             presentedEntitlements: entitlements
