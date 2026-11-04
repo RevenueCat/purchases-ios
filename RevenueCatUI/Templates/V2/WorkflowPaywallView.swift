@@ -291,7 +291,7 @@ struct WorkflowPaywallView: View {
     private let onDismiss: () -> Void
     private let onPresentationError: WorkflowPresentationErrorHandler?
 
-    @StateObject private var backNavigationBridge: WorkflowBackNavigationBridge
+    @StateObject private var presentationBridge: PaywallPresentationBridge
 
     @Environment(\.nativePaywallCloseCoordinator) private var nativeButtonCoordinator
 
@@ -332,7 +332,7 @@ struct WorkflowPaywallView: View {
         displayCloseButton: Bool,
         promoOfferCache: PaywallPromoOfferCache?,
         onDismiss: @escaping () -> Void,
-        backNavigationBridge: WorkflowBackNavigationBridge = WorkflowBackNavigationBridge(),
+        presentationBridge: PaywallPresentationBridge = PaywallPresentationBridge(),
         onPresentationError: WorkflowPresentationErrorHandler? = nil
     ) {
         self.context = context
@@ -341,7 +341,7 @@ struct WorkflowPaywallView: View {
         self.showZeroDecimalPlacePrices = showZeroDecimalPlacePrices
         self.displayCloseButton = displayCloseButton
         self.onDismiss = onDismiss
-        self._backNavigationBridge = .init(wrappedValue: backNavigationBridge)
+        self._presentationBridge = .init(wrappedValue: presentationBridge)
         self.onPresentationError = onPresentationError
         self._navigator = .init(wrappedValue: WorkflowNavigator(
             workflow: context.workflow,
@@ -480,7 +480,7 @@ struct WorkflowPaywallView: View {
         // Must use exitOfferContext(for:currentStepId:), not context.exitOfferOffering, because
         // exitOfferOffering is not step-aware — it is non-nil for any step whenever configured.
         .onAppear {
-            self.backNavigationBridge.workflowDidAppear(onCompletion: self.completeAndDismiss)
+            self.presentationBridge.workflowDidAppear(onCompletion: self.completeAndDismiss)
             switch self.presentationState {
             case .displayingError(_, .endFlow):
                 self.exitOfferOfferingBinding.wrappedValue = nil
@@ -511,10 +511,10 @@ struct WorkflowPaywallView: View {
         }
         .onDisappear {
             self.nativeButtonCoordinator?.activatePage(nil)
-            self.backNavigationBridge.workflowDidDisappear()
+            self.presentationBridge.workflowDidDisappear()
             self.trackCurrentWorkflowLeft()
         }
-        .onChangeOf(self.backNavigationBridge.hasPendingBackNavigationRequest) { isPending in
+        .onChangeOf(self.presentationBridge.hasPendingBackNavigationRequest) { isPending in
             guard isPending else { return }
             self.handlePendingBackNavigationRequest()
         }
@@ -768,7 +768,7 @@ struct WorkflowPaywallView: View {
     }
 
     private func handlePendingBackNavigationRequest() {
-        guard self.backNavigationBridge.takePendingBackNavigationRequest(
+        guard self.presentationBridge.takePendingBackNavigationRequest(
             isTransitioning: self.transitionState.isTransitioning
         ) else {
             return

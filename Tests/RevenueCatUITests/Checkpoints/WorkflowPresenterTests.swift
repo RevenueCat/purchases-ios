@@ -278,8 +278,8 @@ final class WorkflowPresenterTests: TestCase {
         }
     }
 
-    func testWorkflowBackNavigationBridgeWaitsForActiveTransitionToFinish() {
-        let navigationBridge = WorkflowBackNavigationBridge()
+    func testPaywallPresentationBridgeWaitsForActiveTransitionToFinish() {
+        let navigationBridge = PaywallPresentationBridge()
         navigationBridge.workflowDidAppear(onCompletion: {})
 
         XCTAssertTrue(navigationBridge.navigateBack())
@@ -551,14 +551,14 @@ final class WorkflowPresenterTests: TestCase {
         let offering = makeRestoreOffering(productIdentifier: "annual", installmentsInfo: restoreMonthlyInstallments)
 
         XCTAssertEqual(offering.availablePackages.first?.storeProduct.id, "annual:monthly")
-        XCTAssertEqual([offering].entitlementsGrantedBy(["annual:monthly": ["pro"]]), [Set(["pro"])])
+        XCTAssertEqual(offering.entitlementsGrantedBy(["annual:monthly": ["pro"]]), [Set(["pro"])])
     }
 
     func testEntitlementsGrantedByPrefersCompoundMappingOverPlainMapping() {
         let offering = makeRestoreOffering(productIdentifier: "annual", installmentsInfo: restoreMonthlyInstallments)
 
         XCTAssertEqual(
-            [offering].entitlementsGrantedBy(["annual:monthly": ["pro"], "annual": ["other"]]),
+            offering.entitlementsGrantedBy(["annual:monthly": ["pro"], "annual": ["other"]]),
             [Set(["pro"])]
         )
     }
@@ -566,13 +566,13 @@ final class WorkflowPresenterTests: TestCase {
     func testEntitlementsGrantedByFallsBackToPlainIdentifier() {
         let offering = makeRestoreOffering(productIdentifier: "annual", installmentsInfo: restoreMonthlyInstallments)
 
-        XCTAssertEqual([offering].entitlementsGrantedBy(["annual": ["pro"]]), [Set(["pro"])])
+        XCTAssertEqual(offering.entitlementsGrantedBy(["annual": ["pro"]]), [Set(["pro"])])
     }
 
     func testEntitlementsGrantedByDoesNotFallBackForExplicitlyEmptyCompoundMapping() {
         let offering = makeRestoreOffering(productIdentifier: "annual", installmentsInfo: restoreMonthlyInstallments)
 
-        XCTAssertEqual([offering].entitlementsGrantedBy(["annual:monthly": [], "annual": ["other"]]), [])
+        XCTAssertEqual(offering.entitlementsGrantedBy(["annual:monthly": [], "annual": ["other"]]), [])
     }
 
     func testWorkflowRestoreDismissesForAnOfferedBillingPlanEntitlement() throws {
@@ -866,10 +866,10 @@ final class WorkflowPresenterTests: TestCase {
                     workflowDismissalCount += 1
                     controller.dismiss(animated: true, completion: nil)
                 },
-                backNavigationBridge: controller.workflowBackNavigationBridgeForTesting
+                presentationBridge: controller.presentationBridgeForTesting
             ).addToHierarchy()
             defer { dispose?() }
-            XCTAssertTrue(controller.workflowBackNavigationBridgeForTesting.hasActiveWorkflow)
+            XCTAssertTrue(controller.presentationBridgeForTesting.hasActiveWorkflow)
             delegate.paywallViewController?(
                 controller, didFinishRestoringWith: try Self.customerInfo(activeEntitlements: restoredEntitlements)
             )

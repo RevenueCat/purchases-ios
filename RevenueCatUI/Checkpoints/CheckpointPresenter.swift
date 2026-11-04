@@ -429,22 +429,6 @@ final class DefaultPaywallPresenter: NSObject, PaywallPresenter, PaywallViewCont
         onCompletion?()
     }
 
-    private func didCompleteRestore(
-        controller: PaywallViewController,
-        customerInfo: CustomerInfo
-    ) {
-        guard let session = self.session else { return }
-        // Read the mapping when restoring so a late cache fill is picked up. Missing mapping leaves the paywall open.
-        guard customerInfo.grantsPresentedEntitlement(
-            comparedTo: session.initialActiveEntitlementIdentifiers,
-            presentedEntitlements: [session.params.offering].entitlementsGrantedBy(self.mappingProvider())
-        ) else { return }
-
-        session.activeErrorPresentationID = nil
-        session.didPurchaseOrRestoreAccess = true
-        controller.completeAndDismiss()
-    }
-
     private func dismissAfterTerminalError() {
         guard let session = self.session else { return }
         session.hasTerminalError = true
@@ -575,6 +559,27 @@ final class DefaultPaywallPresenter: NSObject, PaywallPresenter, PaywallViewCont
         )
     }
     #endif
+
+}
+
+@available(iOS 15.0, macOS 12.0, *)
+private extension DefaultPaywallPresenter {
+
+    func didCompleteRestore(
+        controller: PaywallViewController,
+        customerInfo: CustomerInfo
+    ) {
+        guard let session = self.session else { return }
+        // Read the mapping when restoring so a late cache fill is picked up. Missing mapping leaves the paywall open.
+        guard customerInfo.grantsPresentedEntitlement(
+            comparedTo: session.initialActiveEntitlementIdentifiers,
+            presentedEntitlements: session.params.offering.entitlementsGrantedBy(self.mappingProvider())
+        ) else { return }
+
+        session.activeErrorPresentationID = nil
+        session.didPurchaseOrRestoreAccess = true
+        controller.completeAndDismiss()
+    }
 
 }
 

@@ -35,7 +35,7 @@ struct PaywallViewConfiguration {
     /// Whether the paywall presents purchase and restore errors instead of delegating presentation to its host.
     var displaysPurchaseAndRestoreErrors: Bool
     #if !os(tvOS)
-    var workflowBackNavigationBridge = WorkflowBackNavigationBridge()
+    var presentationBridge = PaywallPresentationBridge()
     /// Receives a workflow configuration error and whether the current presentation can remain active.
     var workflowPresentationErrorHandler: WorkflowPresentationErrorHandler?
     /// A pre-built workflow context to seed directly (injection/preview path), bypassing the
@@ -73,7 +73,9 @@ struct PaywallViewConfiguration {
 }
 
 #if !os(tvOS)
-final class WorkflowBackNavigationBridge: ObservableObject {
+/// Shares presentation state between the UIKit controller and its SwiftUI paywall.
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+final class PaywallPresentationBridge: ObservableObject {
 
     @Published private(set) var hasPendingBackNavigationRequest = false
     private(set) var hasActiveWorkflow = false
