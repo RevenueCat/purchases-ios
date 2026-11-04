@@ -256,6 +256,22 @@ let project = Project(
             metadata: .metadata(tags: ["RevenueCatTests"])
         ),
 
+        .target(
+            name: "PerformanceTests",
+            destinations: .iOS,
+            product: .unitTests,
+            bundleId: "com.revenuecat.PerformanceTests",
+            deploymentTargets: .iOS("15.0"),
+            infoPlist: .default,
+            sources: [
+                "../../Tests/PerformanceTests/**/*.swift"
+            ],
+            dependencies: [
+                .revenueCat
+            ],
+            metadata: .metadata(tags: ["RevenueCatTests"])
+        ),
+
         // MARK: – RevenueCatAdMobTests
         .target(
             name: "RevenueCatAdMobTests",
@@ -326,6 +342,18 @@ let project = Project(
             archiveAction: .archiveAction(configuration: "Release"),
             profileAction: .profileAction(configuration: "Release"),
             analyzeAction: .analyzeAction(configuration: "Debug")
+        ),
+
+        .scheme(
+            name: "PerformanceTests",
+            shared: true,
+            buildAction: .buildAction(targets: ["PerformanceTests"]),
+            testAction: .targets(
+                [.testableTarget(target: "PerformanceTests", parallelization: .disabled)],
+                configuration: "Release",
+                attachDebugger: false,
+                options: .options(coverage: false)
+            )
         ),
 
         .scheme(
