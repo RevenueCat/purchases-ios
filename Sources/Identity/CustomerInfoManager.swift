@@ -259,7 +259,8 @@ class CustomerInfoManager {
         guard let customerInfoData = cachedCustomerInfoData else { return nil }
 
         do {
-            let info: CustomerInfo = try JSONDecoder.default.decode(jsonData: customerInfoData)
+            let info: CustomerInfo = try CustomerInfo.decoder(dateProvider: self.dateProvider)
+                .decode(jsonData: customerInfoData)
 
             if info.schemaVersionIsCompatible {
                 return info.loadedFromCache()

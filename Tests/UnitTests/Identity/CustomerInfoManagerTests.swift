@@ -101,7 +101,6 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
         super.tearDown()
 
         self.customerInfoMonitorDisposable?()
-        CustomerInfo.dateProvider = .init()
     }
 
     func testConcurrentCacheWriteAndReadDoesNotDeadlock() throws {
@@ -1045,8 +1044,8 @@ private extension CustomerInfoManagerTests {
         )
     }
 
-    /// Returns a `CustomerInfo` decoded while its promotional entitlement is active, then moves
-    /// `CustomerInfo.dateProvider` past the expiration so any later decoding sees it expired.
+    /// Returns a `CustomerInfo` decoded while its promotional entitlement is active.
+    /// A manager created with `afterExpiration` decodes it again as expired.
     static func promotionalCustomerInfoThenExpire() throws -> (
         info: CustomerInfo, beforeExpiration: Date, afterExpiration: Date
     ) {
@@ -1054,19 +1053,19 @@ private extension CustomerInfoManagerTests {
         let beforeExpiration = expirationDate.addingTimeInterval(-60 * 60)
         let afterExpiration = expirationDate.addingTimeInterval(1)
 
-        CustomerInfo.dateProvider = MockDateProvider(stubbedNow: beforeExpiration)
         let info = try Self.customerInfo(requestDate: beforeExpiration,
                                          expirationDate: expirationDate,
-                                         store: "promotional")
+                                         store: "promotional",
+                                         dateProvider: MockDateProvider(stubbedNow: beforeExpiration))
         expect(info.entitlements.active.keys).to(contain("pro"))
-        CustomerInfo.dateProvider = MockDateProvider(stubbedNow: afterExpiration)
 
         return (info, beforeExpiration, afterExpiration)
     }
 
     static func customerInfo(requestDate: Date,
                              expirationDate: Date,
-                             store: String = "app_store") throws -> CustomerInfo {
+                             store: String = "app_store",
+                             dateProvider: DateProvider = .init()) throws -> CustomerInfo {
         let expiration = ISO8601DateFormatter.default.string(from: expirationDate)
 
         return try CustomerInfo(data: [
@@ -1090,7 +1089,7 @@ private extension CustomerInfoManagerTests {
                     ] as [String: Any]
                 ]
             ] as [String: Any]
-        ])
+        ], dateProvider: dateProvider)
     }
 
     static func customerInfo(dimensions: [String: Any]) throws -> CustomerInfo {

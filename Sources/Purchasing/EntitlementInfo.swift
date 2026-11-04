@@ -249,13 +249,15 @@ extension PeriodType: DefaultValueProvider {
         subscription: CustomerInfoResponse.Subscription,
         sandboxEnvironmentDetector: SandboxEnvironmentDetector,
         verification: VerificationResult,
-        requestDate: Date
+        requestDate: Date,
+        dateProvider: DateProvider
     ) {
         self.contents = .init(
             identifier: identifier,
             isActive: CustomerInfo.isDateActive(expirationDate: entitlement.expiresDate,
                                                 for: requestDate,
-                                                store: subscription.store),
+                                                store: subscription.store,
+                                                dateProvider: dateProvider),
             willRenew: Self.willRenewWithExpirationDate(expirationDate: subscription.expiresDate,
                                                         store: subscription.store,
                                                         unsubscribeDetectedAt: subscription.unsubscribeDetectedAt,

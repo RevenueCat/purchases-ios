@@ -22,23 +22,19 @@ extension CustomerInfo {
     /// since that would allow a user to get a free trial, then go offline and keep the entitlement with no time limit.
     static let requestDateGracePeriod: DispatchTimeInterval = .days(3)
 
-    #if DEBUG
-    // Mutable in tests so it can be overriden
-    static var dateProvider: DateProvider = .init()
-    #else
-    static let dateProvider: DateProvider = .init()
-    #endif
-
-    static func isDateActive(expirationDate: Date?, for requestDate: Date, store: Store) -> Bool {
+    static func isDateActive(expirationDate: Date?,
+                             for requestDate: Date,
+                             store: Store,
+                             dateProvider: DateProvider) -> Bool {
         guard let expirationDate = expirationDate else {
             return true
         }
 
         if store == .promotional {
-            return expirationDate >= max(requestDate, Self.dateProvider.now())
+            return expirationDate >= max(requestDate, dateProvider.now())
         }
 
-        let (referenceDate, inGracePeriod) = Self.referenceDate(for: requestDate)
+        let (referenceDate, inGracePeriod) = Self.referenceDate(for: requestDate, dateProvider: dateProvider)
         let isActive = expirationDate.timeIntervalSince(referenceDate) >= 0
 
         if !inGracePeriod && !isActive {
@@ -158,8 +154,8 @@ private extension CustomerInfo {
                 )
     }
 
-    static func referenceDate(for requestDate: Date) -> (Date, inGracePeriod: Bool) {
-        let now = Self.dateProvider.now()
+    static func referenceDate(for requestDate: Date, dateProvider: DateProvider) -> (Date, inGracePeriod: Bool) {
+        let now = dateProvider.now()
         if now.timeIntervalSince(requestDate) <= Self.requestDateGracePeriod.seconds {
             return (requestDate, true)
         } else {
@@ -168,7 +164,10 @@ private extension CustomerInfo {
     }
 
     func isDateActive(_ date: Date?, store: Store) -> Bool {
-        return Self.isDateActive(expirationDate: date, for: self.requestDate, store: store)
+        return Self.isDateActive(expirationDate: date,
+                                 for: self.requestDate,
+                                 store: store,
+                                 dateProvider: self.dateProvider)
     }
 
 }

@@ -106,6 +106,7 @@ import Foundation
          storeTransactionId: String?,
          autoResumeDate: Date?,
          requestDate: Date,
+         dateProvider: DateProvider,
          price: ProductPaidPrice?,
          managementURL: URL?,
          displayName: String?,
@@ -124,7 +125,10 @@ import Foundation
         self.periodType = periodType
         self.refundedAt = refundedAt
         self.storeTransactionId = storeTransactionId
-        self.isActive = CustomerInfo.isDateActive(expirationDate: expiresDate, for: requestDate, store: store)
+        self.isActive = CustomerInfo.isDateActive(expirationDate: expiresDate,
+                                                  for: requestDate,
+                                                  store: store,
+                                                  dateProvider: dateProvider)
         self.willRenew = EntitlementInfo.willRenewWithExpirationDate(expirationDate: expiresDate,
                                                                      store: store,
                                                                      unsubscribeDetectedAt: unsubscribeDetectedAt,

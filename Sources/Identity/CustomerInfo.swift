@@ -302,6 +302,7 @@ public typealias ProductIdentifier = String
                 storeTransactionId: subscriptionData.storeTransactionId,
                 autoResumeDate: subscriptionData.autoResumeDate,
                 requestDate: response.requestDate,
+                dateProvider: data.dateProvider,
                 price: subscriptionData.price.map { ProductPaidPrice(currency: $0.currency, amount: $0.amount) },
                 managementURL: subscriptionData.managementUrl,
                 displayName: subscriptionData.displayName,
@@ -315,6 +316,7 @@ public typealias ProductIdentifier = String
                 entitlements: subscriber.entitlements,
                 purchases: subscriber.allPurchasesByProductId,
                 requestDate: response.requestDate,
+                dateProvider: data.dateProvider,
                 sandboxEnvironmentDetector: sandboxEnvironmentDetector,
                 verification: data.entitlementVerification
             ),
@@ -380,6 +382,18 @@ extension CustomerInfo {
 
     var schemaVersion: String? {
         return self.data.schemaVersion
+    }
+
+    var dateProvider: DateProvider {
+        return self.data.dateProvider
+    }
+
+    /// Returns a decoder whose decoded ``CustomerInfo`` determine active entitlements and subscriptions
+    /// with `dateProvider`.
+    static func decoder(dateProvider: DateProvider) -> JSONDecoder {
+        let decoder = JSONDecoder.makeDefault()
+        decoder.userInfo[Self.dateProviderUserInfoKey] = dateProvider
+        return decoder
     }
 
     /// Product identifiers of purchases the backend has not been told about yet.
@@ -501,6 +515,9 @@ extension CustomerInfo: Identifiable {
 
 private extension CustomerInfo {
 
+    // swiftlint:disable:next force_unwrapping
+    static let dateProviderUserInfoKey = CodingUserInfoKey(rawValue: "dateProvider")!
+
     /// The actual contents of a ``CustomerInfo``: the response with the associated version and other metadata.
     struct Contents {
 
@@ -511,6 +528,8 @@ private extension CustomerInfo {
         var loadedFromCache: Bool = false
         /// In-memory only: offline `CustomerInfo` is never persisted, so this is intentionally not encoded.
         var unsyncedProductIdentifiers: Set<String> = []
+        /// In-memory only: the clock to compute the active state with, kept so copies compute it the same way.
+        var dateProvider: DateProvider = .init()
 
         init(response: CustomerInfoResponse,
              entitlementVerification: VerificationResult,
@@ -562,6 +581,9 @@ extension CustomerInfo.Contents: Codable {
         self.schemaVersion = try container.decodeIfPresent(String.self, forKey: .schemaVersion)
         self.originalSource = try container.decodeIfPresent(CustomerInfo.OriginalSource.self,
                                                             forKey: .originalSource) ?? .main
+        if let dateProvider = decoder.userInfo[CustomerInfo.dateProviderUserInfoKey] as? DateProvider {
+            self.dateProvider = dateProvider
+        }
     }
 
 }
