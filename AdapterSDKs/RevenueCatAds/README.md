@@ -36,7 +36,7 @@ a stable string. When no ad is available, loading fails with `AdsError.Code.noFi
 | `AdsConfiguration` | `apiKey: String?`, `serverURL: URL?` |
 | `AdsInterstitial` | `init(placementID:)`, `load() async throws`, `load(completion:)`, `present(from:)`, `isReady`, `delegate` |
 | `AdsInterstitialDelegate` | loaded, failed(`AdsError`), presented, impression, click, dismissed (all optional) |
-| `AdsError` | `code` (`notConfigured`, `invalidConfiguration`, `invalidState`, `notReady`, `noFill`, `loadFailed`), `message`, `underlyingError` |
+| `AdsError` | `code` (`notConfigured`, `invalidConfiguration`, `invalidState`, `notReady`, `presentFailed`, `noFill`, `loadFailed`), `message`, `underlyingError` |
 
 `AdsError.Code` is a struct with static constants rather than an enum, so codes can be added without
 breaking clients' exhaustive `switch` statements.
