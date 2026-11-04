@@ -19,7 +19,19 @@ extension PaywallComponentsData {
     var allCacheAssets: CacheAssetCollection {
         return cacheAssets(
             from: self.componentsConfig,
-            localizations: self.componentsLocalizations
+            localizations: Array(self.componentsLocalizations.values)
+        )
+    }
+
+    /// Collects base assets and images for the locale that will be displayed.
+    func localizedCacheAssets(preferredLocales: [Locale]) -> CacheAssetCollection {
+        let displayedLocale = self.componentsLocalizations.displayedLocale(
+            preferredLocales: preferredLocales,
+            defaultLocale: self.defaultLocale
+        )
+        return cacheAssets(
+            from: self.componentsConfig,
+            localizations: [self.componentsLocalizations.findLocale(displayedLocale) ?? [:]]
         )
     }
 
@@ -39,12 +51,11 @@ extension WorkflowScreen {
     var allCacheAssets: CacheAssetCollection {
         return cacheAssets(
             from: self.componentsConfig,
-            localizations: self.componentsLocalizations
+            localizations: Array(self.componentsLocalizations.values)
         )
     }
 
-    /// Like ``allCacheAssets``, but resolves localized videos for the locale that will be displayed only,
-    /// since they are costly to download.
+    /// Collects base assets and localized images and videos for the locale that will be displayed.
     func localizedCacheAssets(preferredLocales: [Locale]) -> CacheAssetCollection {
         let displayedLocale = self.componentsLocalizations.displayedLocale(
             preferredLocales: preferredLocales,
@@ -52,7 +63,7 @@ extension WorkflowScreen {
         )
         return cacheAssets(
             from: self.componentsConfig,
-            localizations: self.componentsLocalizations,
+            localizations: [self.componentsLocalizations.findLocale(displayedLocale) ?? [:]],
             localizedVideos: self.componentsVideoLocalizations.findLocale(displayedLocale) ?? [:]
         )
     }
@@ -70,11 +81,11 @@ extension WorkflowScreen {
 @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
 private func cacheAssets(
     from componentsConfig: PaywallComponentsData.ComponentsConfig,
-    localizations: [PaywallComponent.LocaleID: PaywallComponent.LocalizationDictionary],
+    localizations: [PaywallComponent.LocalizationDictionary],
     localizedVideos: PaywallComponent.VideoLocalizationDictionary? = nil
 ) -> CacheAssetCollection {
     let componentAssets = componentsConfig.base.cacheAssets(localizedVideos: localizedVideos)
-    let localizedImages = localizations.values.flatMap { localeValues in
+    let localizedImages = localizations.flatMap { localeValues in
         localeValues.values.flatMap { value -> [CacheAssetCollection.Media] in
             switch value {
             case .string:

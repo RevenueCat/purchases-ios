@@ -42,7 +42,8 @@ protocol WorkflowAssetPrewarmingType: Sendable {
 ///   workflows on a background worker solely to discover their assets. That decode is never retained in
 ///   `LazyPublishedWorkflow`; the graph is released after the asset-prewarming task finishes.
 ///
-/// Both paths use the same `PaywallCacheWarming` entry point, which deduplicates asset prewarming by workflow ID.
+/// Both paths use the same `PaywallCacheWarming` entry point, which deduplicates asset prewarming by workflow ID
+/// and locale preferences.
 class WorkflowManager: WorkflowAssetPrewarmingType {
 
     private let workflowsConfigProvider: WorkflowsConfigProviderType
