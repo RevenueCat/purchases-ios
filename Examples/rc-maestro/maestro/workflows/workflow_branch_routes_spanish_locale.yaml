@@ -1,13 +1,5 @@
-# Opens the `with-branch` offering with a Spanish device locale and asserts Branch 1 routes to
-# Testimonials 3 instead of its fallback (Testimonials 1, see workflow_progresses_through_branch.yaml):
-#   Welcome Screen 1 -> Branch 1 -> Testimonials 3
-# Launch arguments set the app's locale for this run (no simulator reboot needed).
-#
-# The Continue buttons are matched with a regex so the flow works whether or not the workflow has
-# Spanish localizations for them ("Continue" / "Continuar").
-#
-# TODO: Testimonials 3 is asserted by its English headline. If the workflow has Spanish localizations
-# for that screen, replace it with the Spanish text.
+# Opens the `with-branch` workflow with an es-ES locale and asserts its branch routes to Testimonials 3
+# instead of the default Testimonials 1.
 #
 # Run locally against the test store:
 #   maestro test -e MAESTRO_STORE=test_store Examples/rc-maestro/maestro/workflows/workflow_branch_routes_spanish_locale.yaml

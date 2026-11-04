@@ -1,10 +1,5 @@
-# Opens the workflow whose offering is `with-branch`:
-#   Welcome Screen 1 -> Branch 1 -> Testimonials 1 -> Paywall screen 1
-# Branch 1 can also route to Testimonials 3, which has no outgoing edge to the paywall. Reaching the
-# "Limited time offer" paywall therefore proves the branch resolved and routed to Testimonials 1.
-#
-# TODO: confirm the user lands on Testimonials 1 by default. If it depends on the audience, set the
-# matching launch argument (see workflow_initial_branch_routes_audience.yaml for `app_user_id`).
+# Opens the `with-branch` workflow and progresses through its branch node (default locale) to the
+# "Limited time offer" paywall via Testimonials 1.
 #
 # Run locally against the test store:
 #   maestro test -e MAESTRO_STORE=test_store Examples/rc-maestro/maestro/workflows/workflow_progresses_through_branch.yaml
