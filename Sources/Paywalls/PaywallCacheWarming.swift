@@ -34,6 +34,12 @@ protocol PaywallCacheWarmingType: Sendable {
     func prewarmWorkflowAssets(workflow: PublishedWorkflow, uiConfig: UIConfig) async
 
     @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
+    func startWorkflowAssetPrewarming(
+        workflow: PublishedWorkflow,
+        uiConfig: UIConfig
+    ) async -> Task<Void, Never>?
+
+    @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
     func hasStartedWorkflowAssetPrewarming(for workflowID: String) async -> Bool
 
 #if !os(tvOS) // For Paywalls
@@ -41,6 +47,39 @@ protocol PaywallCacheWarmingType: Sendable {
     @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
     func triggerFontDownloadIfNeeded(fontsConfig: UIConfig.FontsConfig) async
 
+#endif
+
+}
+
+extension PaywallCacheWarmingType {
+
+    /// Pre-downloads every screen's images and low-resolution videos plus downloadable `ui_config` fonts.
+    ///
+    /// The workflow ID and locale preferences are recorded before downloads start so the presentation and background
+    /// body-data paths cannot enqueue duplicate work for the same locale preferences. Individual downloads are
+    /// best-effort and do not fail workflow delivery.
+    @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
+    func prewarmWorkflowAssets(workflow: PublishedWorkflow, uiConfig: UIConfig) async {
+        guard let task = await self.startWorkflowAssetPrewarming(
+            workflow: workflow,
+            uiConfig: uiConfig
+        ) else { return }
+        await withTaskCancellationHandler {
+            await task.value
+        } onCancel: {
+            task.cancel()
+        }
+    }
+
+}
+
+/// The lightweight asset references retained after a workflow's transient prewarming decode is released.
+private struct WorkflowAssetPrewarmingRequest: Sendable {
+
+    let imageURLs: Set<URLWithValidation>
+    let videoURLs: Set<URLWithValidation>
+#if !os(tvOS)
+    let fonts: [DownloadableFont]
 #endif
 
 }
@@ -61,6 +100,7 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
     private let fontsManager: PaywallFontManagerType
     private let fileRepository: FileRepositoryType
     private let preferredLocalesProvider: @Sendable () -> [String]
+    private let workflowAssetPrewarmingLimiter = AsyncConcurrencyLimiter(maxConcurrentOperations: 1)
 
     private var warmedEligibilityProductIdentifiers: Set<String> = []
     private var pendingCurrentOfferingProductIdentifiers: Set<String> = []
@@ -190,15 +230,16 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
         }
     }
 
-    /// Pre-downloads every screen's images and low-resolution videos plus downloadable `ui_config` fonts.
-    ///
-    /// The workflow ID and locale preferences are recorded before downloads start so the presentation and background
-    /// body-data paths cannot enqueue duplicate work for the same locale preferences. Individual downloads are
-    /// best-effort and do not fail workflow delivery.
-    func prewarmWorkflowAssets(workflow: PublishedWorkflow, uiConfig: UIConfig) async {
+    /// Extracts the asset references needed for prewarming, allowing the decoded workflow graph to be released
+    /// before downloads begin. Returns `nil` when prewarming has already started for this workflow and locale
+    /// preference list.
+    private func prepareWorkflowAssetPrewarming(
+        workflow: PublishedWorkflow,
+        uiConfig: UIConfig
+    ) -> WorkflowAssetPrewarmingRequest? {
         let preferredLocaleIdentifiers = self.preferredLocalesProvider()
         guard self.assetPrewarmingLocalesByWorkflowID[workflow.id, default: []]
-            .insert(preferredLocaleIdentifiers).inserted else { return }
+            .insert(preferredLocaleIdentifiers).inserted else { return nil }
 
         // Intentionally prewarming all screens, not just those reachable from
         // `initialStepId`. This trades off potentially downloading assets for
@@ -222,19 +263,69 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
         }
         #endif
 
+        #if !os(tvOS)
+        return WorkflowAssetPrewarmingRequest(
+            imageURLs: imageURLs,
+            videoURLs: videoURLs,
+            fonts: fonts
+        )
+        #else
+        return WorkflowAssetPrewarmingRequest(
+            imageURLs: imageURLs,
+            videoURLs: videoURLs
+        )
+        #endif
+    }
+
+    /// Extracts lightweight asset references, then schedules their download in background cache-priority order.
+    func startWorkflowAssetPrewarming(
+        workflow: PublishedWorkflow,
+        uiConfig: UIConfig
+    ) -> Task<Void, Never>? {
+        guard let request = self.prepareWorkflowAssetPrewarming(
+            workflow: workflow,
+            uiConfig: uiConfig
+        ) else { return nil }
+
+        let limiter = self.workflowAssetPrewarmingLimiter
+        return Task { [weak self] in
+            await limiter.perform {
+                _ = await self?.executeWorkflowAssetPrewarming(request)
+            }
+        }
+    }
+
+    /// Immediately pre-downloads assets from an already presented workflow.
+    func prewarmWorkflowAssets(workflow: PublishedWorkflow, uiConfig: UIConfig) async {
+        guard let request = self.prepareWorkflowAssetPrewarming(
+            workflow: workflow,
+            uiConfig: uiConfig
+        ) else { return }
+
+        let task = Task { [weak self] in
+            await self?.executeWorkflowAssetPrewarming(request)
+        }
+        await withTaskCancellationHandler {
+            await task.value
+        } onCancel: {
+            task.cancel()
+        }
+    }
+
+    private func executeWorkflowAssetPrewarming(_ request: WorkflowAssetPrewarmingRequest) async {
         await withTaskGroup(of: Void.self) { group in
-            for source in imageURLs {
+            for source in request.imageURLs {
                 group.addTask { [weak self] in
                     await self?.download(source)
                 }
             }
-            for source in videoURLs {
+            for source in request.videoURLs {
                 group.addTask { [weak self] in
                     await self?.download(source)
                 }
             }
             #if !os(tvOS)
-            for font in fonts {
+            for font in request.fonts {
                 group.addTask { [weak self] in
                     guard let self = self else { return }
                     await self.installFont(from: font)

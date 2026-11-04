@@ -335,6 +335,7 @@
 		2DAC5F7B26F13D1400C5258F /* UnitTestsConfiguration.storekit in Resources */ = {isa = PBXBuildFile; fileRef = 2D43017726EBFD7100BAB891 /* UnitTestsConfiguration.storekit */; };
 		2DC19195255F36D10039389A /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DC19194255F36D10039389A /* Logger.swift */; };
 		2DC5623024EC63730031F69B /* OperationDispatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DDA3E4624DB0B5400EDFE5B /* OperationDispatcher.swift */; };
+		AC1C0A112F00000000000002 /* AsyncConcurrencyLimiter.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC1C0A112F00000000000001 /* AsyncConcurrencyLimiter.swift */; };
 		2DC5623224EC63730031F69B /* TransactionsFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3597020F24BF6A710010506E /* TransactionsFactory.swift */; };
 		2DD58DD827F240EB000FDFE3 /* EmptyFile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DD58DD727F240EB000FDFE3 /* EmptyFile.swift */; };
 		2DD9F4BE274EADC20031AE2C /* Purchases+async.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DD9F4BD274EADC20031AE2C /* Purchases+async.swift */; };
@@ -1039,6 +1040,8 @@
 		66EAEED2B259D54A9E789F4A /* PaywallWebViewComponent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14C1ACED1916C08B0E8E2776 /* PaywallWebViewComponent.swift */; };
 		678DA8034D806EABC46A0960 /* WorkflowManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E52F908EB90930822406495 /* WorkflowManager.swift */; };
 		A17C34D12FABCDEF00000002 /* WorkflowPrewarmingDecodeCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A17C34D12FABCDEF00000001 /* WorkflowPrewarmingDecodeCoordinator.swift */; };
+		A17C34D12FABCDEF00000004 /* WorkflowPrewarmingCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A17C34D12FABCDEF00000003 /* WorkflowPrewarmingCoordinator.swift */; };
+		A17C34D12FABCDEF00000006 /* WorkflowPrewarmingCoordinatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A17C34D12FABCDEF00000005 /* WorkflowPrewarmingCoordinatorTests.swift */; };
 		BR0000000000000000000101 /* BranchResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = BR0000000000000000000201 /* BranchResolver.swift */; };
 		67EE4555B6BBB641EDCC4E7F /* Value.swift in Sources */ = {isa = PBXBuildFile; fileRef = BDE6FC116D66BBEFEE662547 /* Value.swift */; };
 		6A24585F01C6C2310AECC0B0 /* Evaluator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A07B6040B4AB4332DB547725 /* Evaluator.swift */; };
@@ -2220,6 +2223,7 @@
 		2DD6E58B2C544D2D0068E695 /* PurchaseTesterStoreKitConfiguration.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = PurchaseTesterStoreKitConfiguration.storekit; sourceTree = "<group>"; };
 		2DD9F4BD274EADC20031AE2C /* Purchases+async.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Purchases+async.swift"; sourceTree = "<group>"; };
 		2DDA3E4624DB0B5400EDFE5B /* OperationDispatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OperationDispatcher.swift; sourceTree = "<group>"; };
+		AC1C0A112F00000000000001 /* AsyncConcurrencyLimiter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AsyncConcurrencyLimiter.swift; sourceTree = "<group>"; };
 		2DDE559A24C8B5E300DCB087 /* verifyReceiptSample1.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = verifyReceiptSample1.txt; sourceTree = "<group>"; };
 		2DDE559B24C8B5E300DCB087 /* base64encodedreceiptsample1.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = base64encodedreceiptsample1.txt; sourceTree = "<group>"; };
 		2DDF41A724F6F37C005BC22D /* AppleReceipt.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppleReceipt.swift; sourceTree = "<group>"; };
@@ -2921,6 +2925,8 @@
 		6A10AD61D82EB73FC5338DA2 /* WorkflowNavigator.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WorkflowNavigator.swift; sourceTree = "<group>"; };
 		6E52F908EB90930822406495 /* WorkflowManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WorkflowManager.swift; sourceTree = "<group>"; };
 		A17C34D12FABCDEF00000001 /* WorkflowPrewarmingDecodeCoordinator.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WorkflowPrewarmingDecodeCoordinator.swift; sourceTree = "<group>"; };
+		A17C34D12FABCDEF00000003 /* WorkflowPrewarmingCoordinator.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WorkflowPrewarmingCoordinator.swift; sourceTree = "<group>"; };
+		A17C34D12FABCDEF00000005 /* WorkflowPrewarmingCoordinatorTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WorkflowPrewarmingCoordinatorTests.swift; sourceTree = "<group>"; };
 		BR0000000000000000000201 /* BranchResolver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BranchResolver.swift; sourceTree = "<group>"; };
 		6EFD5F7BD8404B6E828C4E10 /* WorkflowPaywallViewTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WorkflowPaywallViewTests.swift; sourceTree = "<group>"; };
 		6F6E5F9ABE99E8F2BC1DE237 /* WebViewComponentViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebViewComponentViewModel.swift; sourceTree = "<group>"; };
@@ -5281,6 +5287,7 @@
 				35549322269E298B005F9AE9 /* OfferingsFactory.swift */,
 				F575858C26C088FE00C12B97 /* OfferingsManager.swift */,
 				6E52F908EB90930822406495 /* WorkflowManager.swift */,
+				A17C34D12FABCDEF00000003 /* WorkflowPrewarmingCoordinator.swift */,
 				A17C34D12FABCDEF00000001 /* WorkflowPrewarmingDecodeCoordinator.swift */,
 				BR0000000000000000000201 /* BranchResolver.swift */,
 				B3D3C4712685784800CB3C21 /* Package.swift */,
@@ -5368,6 +5375,7 @@
 				37E354B18710B488B8B0D443 /* IntroEligibilityCalculatorTests.swift */,
 				F575859126C08E3F00C12B97 /* OfferingsManagerTests.swift */,
 				1DA47C656406D58B636FD82D /* WorkflowManagerTests.swift */,
+				A17C34D12FABCDEF00000005 /* WorkflowPrewarmingCoordinatorTests.swift */,
 				37E357C2D977BBB081216B5F /* OfferingsTests.swift */,
 				FE5151005B0000000000A002 /* OfferingStringsTests.swift */,
 				FE5151005B0000000000B002 /* ConfigureStringsTests.swift */,
@@ -6343,6 +6351,7 @@
 		57F3C0CB29B7A0B10004FD7E /* Concurrency */ = {
 			isa = PBXGroup;
 			children = (
+				AC1C0A112F00000000000001 /* AsyncConcurrencyLimiter.swift */,
 				167D67082EA151C400B4503F /* SynchronizedLargeItemCache.swift */,
 				4487A0C02E9000000000000C /* AsyncSleeper.swift */,
 				57A0FBEF2749C0C2009E2FC3 /* Atomic.swift */,
@@ -8531,7 +8540,9 @@
 				574A2F4B282D7AEA00150D40 /* PostOfferResponse.swift in Sources */,
 				F575858D26C088FE00C12B97 /* OfferingsManager.swift in Sources */,
 				678DA8034D806EABC46A0960 /* WorkflowManager.swift in Sources */,
+				A17C34D12FABCDEF00000004 /* WorkflowPrewarmingCoordinator.swift in Sources */,
 				A17C34D12FABCDEF00000002 /* WorkflowPrewarmingDecodeCoordinator.swift in Sources */,
+				AC1C0A112F00000000000002 /* AsyncConcurrencyLimiter.swift in Sources */,
 				BR0000000000000000000101 /* BranchResolver.swift in Sources */,
 				B34605CB279A6E380031CA74 /* PostReceiptDataOperation.swift in Sources */,
 				4FFCED882AA941D200118EF4 /* FeatureEventsRequest.swift in Sources */,
@@ -9097,6 +9108,7 @@
 				579D2E3A28F0BF5A0094B36F /* BackendInternalTests.swift in Sources */,
 				351B51C126D450E800BD2BD7 /* OfferingsManagerTests.swift in Sources */,
 				0882A0238A0B15DCAA63DCA5 /* WorkflowManagerTests.swift in Sources */,
+				A17C34D12FABCDEF00000006 /* WorkflowPrewarmingCoordinatorTests.swift in Sources */,
 				5796A39927D6C1E000653165 /* BackendPostSubscriberAttributesTests.swift in Sources */,
 				35D8330A262FBA9A00E60AC5 /* MockUserDefaults.swift in Sources */,
 				E1C0A004BEEF0001CCDD0001 /* HeaderComponentTests.swift in Sources */,
