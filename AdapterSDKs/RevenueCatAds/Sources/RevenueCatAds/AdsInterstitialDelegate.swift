@@ -16,7 +16,8 @@ import Foundation
     /// The ad finished loading and can be presented.
     func interstitialDidLoad(_ interstitial: AdsInterstitial)
 
-    /// Called when loading fails, or when `present(from:)` is called on an ad that is not ready.
+    /// Called when loading fails, when `present(from:)` is called on an ad that is not ready,
+    /// or when presenting fails (``AdsError/Code/presentFailed``).
     func interstitial(_ interstitial: AdsInterstitial, didFailWithError error: AdsError)
 
     /// The ad is being presented.

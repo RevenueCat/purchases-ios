@@ -109,7 +109,8 @@ import UIKit
     }
 
     /// Presents the loaded ad. If the ad is not ready, the delegate receives
-    /// ``AdsInterstitialDelegate/interstitial(_:didFailWithError:)`` with ``AdsError/Code/notReady``.
+    /// ``AdsInterstitialDelegate/interstitial(_:didFailWithError:)`` with ``AdsError/Code/notReady``;
+    /// if presenting fails, with ``AdsError/Code/presentFailed``, and the ad can be loaded again.
     public func present(from viewController: UIViewController) {
         guard self.isReady, let unit = self.unit else {
             self.delegate?.interstitial(
@@ -125,6 +126,8 @@ import UIKit
 
     private func handle(_ event: AdModuleEvent) {
         switch event {
+        case let .failedToLoad(error) where self.state == .presenting || self.state == .presented:
+            self.handlePresentFailure(error)
         case .loaded, .failedToLoad:
             self.handleLoadEvent(event)
         case .presented, .impression, .clicked, .dismissed:
@@ -174,6 +177,20 @@ import UIKit
         default:
             break
         }
+    }
+
+    // The underlying SDK reports display failures through its load-failure callback.
+    private func handlePresentFailure(_ error: AdsError) {
+        self.state = .idle
+        self.unit = nil
+        self.delegate?.interstitial(
+            self,
+            didFailWithError: AdsError(
+                code: .presentFailed,
+                message: error.message,
+                underlyingError: error.underlyingError
+            )
+        )
     }
 
     private func resumeLoad(with result: Result<Void, Error>) {
