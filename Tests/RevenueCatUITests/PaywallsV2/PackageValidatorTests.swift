@@ -66,7 +66,7 @@ final class PackageValidatorTests: TestCase {
         )
     }
 
-    func testDefaultSelectedPackageReturnsNilWhenAllPackagesAreStaticallyHidden() {
+    func testDefaultSelectedPackageUsesAuthoredDefaultWhenAllPackagesAreStaticallyHidden() {
         let validator = PackageValidator()
 
         validator.add(Self.makePackageInfo(
@@ -76,6 +76,21 @@ final class PackageValidatorTests: TestCase {
         ))
         validator.add(Self.makePackageInfo(
             package: TestData.annualPackage,
+            isSelectedByDefault: false,
+            visible: false
+        ))
+
+        XCTAssertEqual(
+            validator.defaultSelectedPackage(in: Self.context())?.identifier,
+            TestData.monthlyPackage.identifier
+        )
+        XCTAssertTrue(validator.visiblePackages(in: Self.context()).isEmpty)
+    }
+
+    func testDefaultSelectedPackageReturnsNilWhenAllPackagesAreHiddenAndNoneIsDefault() {
+        let validator = PackageValidator()
+        validator.add(Self.makePackageInfo(
+            package: TestData.monthlyPackage,
             isSelectedByDefault: false,
             visible: false
         ))
@@ -173,7 +188,7 @@ final class PackageValidatorTests: TestCase {
         )
     }
 
-    func testDefaultSelectedPackageReturnsNilWhenEveryPackageIsHiddenByRule() {
+    func testDefaultSelectedPackageUsesAuthoredDefaultWhenEveryPackageIsHiddenByRule() {
         let validator = PackageValidator()
 
         validator.add(Self.makePackageInfo(
@@ -189,10 +204,11 @@ final class PackageValidatorTests: TestCase {
             overrides: [Self.visibilityOverride(whenCanTrial: false, visible: false)]
         ))
 
-        XCTAssertNil(
+        XCTAssertEqual(
             validator.defaultSelectedPackage(
                 in: Self.context(customVariables: ["can_trial": .bool(false)])
-            )
+            )?.identifier,
+            TestData.annualPackage.identifier
         )
     }
 
@@ -407,7 +423,7 @@ final class PackageValidatorTests: TestCase {
         )?.identifier, fallback.identifier)
     }
 
-    func testReconcileReturnsNilWhenNothingIsVisible() {
+    func testReconcileKeepsHiddenDefaultWhenNothingIsVisible() {
         let validator = PackageValidator()
         validator.add(Self.makePackageInfo(
             package: TestData.annualPackage,
@@ -424,6 +440,103 @@ final class PackageValidatorTests: TestCase {
                 offerEligibilityAvailability: .unknown
             )
         )
+    }
+
+    func testReconcileSelectsHiddenDefaultWhenNothingIsVisible() {
+        let validator = PackageValidator()
+        validator.add(Self.makePackageInfo(
+            package: TestData.annualPackage,
+            isSelectedByDefault: true,
+            visible: false
+        ))
+
+        XCTAssertEqual(
+            validator.reconciledSelection(
+                current: TestData.monthlyPackage,
+                in: Self.context(),
+                offerEligibilityLoading: [],
+                offerEligibilityAvailability: .unknown
+            )?.identifier,
+            TestData.annualPackage.identifier
+        )
+    }
+
+    func testReconcileDoesNotUseHiddenPageDefaultWhenTabPackageIsVisible() {
+        let validator = PackageValidator()
+        validator.add(Self.makePackageInfo(
+            package: TestData.annualPackage,
+            isSelectedByDefault: true,
+            visible: false
+        ))
+        validator.addTabScoped(Self.makePackageInfo(
+            package: TestData.monthlyPackage,
+            isSelectedByDefault: false,
+            visible: true
+        ))
+
+        XCTAssertNil(validator.reconciledSelection(
+            current: nil,
+            in: Self.context(),
+            offerEligibilityLoading: [],
+            offerEligibilityAvailability: .unknown
+        ))
+    }
+
+    func testHiddenFooterDefaultDoesNotOverrideVisibleBodyPackage() throws {
+        let validator = try Self.footerValidator(layout: .hidden, overrides: nil, bodyVisible: true)
+
+        XCTAssertEqual(validator.visiblePackages(in: Self.context()).map(\.identifier),
+                       [TestData.monthlyPackage.identifier])
+        XCTAssertEqual(validator.defaultSelectedPackage(in: Self.context())?.identifier,
+                       TestData.monthlyPackage.identifier)
+    }
+
+    func testHiddenFooterDefaultIsUsedWhenBodyPackagesAreAlsoHidden() throws {
+        let validator = try Self.footerValidator(layout: .hidden, overrides: nil, bodyVisible: false)
+
+        XCTAssertTrue(validator.visiblePackages(in: Self.context()).isEmpty)
+        XCTAssertEqual(validator.defaultSelectedPackage(in: Self.context())?.identifier,
+                       TestData.annualPackage.identifier)
+    }
+
+    func testFooterLayoutOverrideReconcilesSelectionOnResize() throws {
+        let validator = try Self.footerValidator(
+            layout: .normal,
+            overrides: [.init(
+                extendedConditions: [.windowWidth(operator: .greaterThanOrEqual, value: 700)],
+                properties: .init(layout: .hidden)
+            )],
+            bodyVisible: true
+        )
+        for width: CGFloat in [390, 800, 390] {
+            let context = Self.context(windowSize: CGSize(width: width, height: 600))
+            XCTAssertEqual(validator.defaultSelectedPackage(in: context)?.identifier,
+                           width >= 700 ? TestData.monthlyPackage.identifier : TestData.annualPackage.identifier)
+        }
+        XCTAssertEqual(validator.reconciledSelection(
+            current: TestData.annualPackage,
+            in: Self.context(windowSize: CGSize(width: 800, height: 600)),
+            offerEligibilityLoading: [],
+            offerEligibilityAvailability: .unknown
+        )?.identifier, TestData.monthlyPackage.identifier)
+    }
+
+    func testUnsupportedFooterRuleDoesNotHideDefaultPackage() throws {
+        let validator = try Self.footerValidator(
+            layout: .normal,
+            overrides: [
+                .init(
+                    extendedConditions: [.windowWidth(operator: .greaterThanOrEqual, value: 0)],
+                    properties: .init(layout: .hidden)
+                ),
+                .init(extendedConditions: [.unsupported], properties: .init(layout: .hidden))
+            ],
+            bodyVisible: true
+        )
+
+        XCTAssertEqual(validator.defaultSelectedPackage(
+            in: Self.context(windowSize: CGSize(width: 390, height: 600))
+        )?.identifier, TestData.annualPackage.identifier)
     }
 
     /// A paywall that swaps groups but reuses the same package identifier on both sides does NOT hit this
@@ -818,15 +931,54 @@ private extension PackageValidatorTests {
 
     static func context(
         customVariables: [String: CustomVariableValue] = [:],
+        windowSize: CGSize? = nil,
         isEligibleForIntroOffer: @escaping (Package) -> Bool = { _ in false },
         isEligibleForPromoOffer: @escaping (Package) -> Bool = { _ in false }
     ) -> PackageSelectionContext {
         return PackageSelectionContext(
             condition: .compact,
             customVariables: customVariables,
+            windowSize: windowSize,
             isEligibleForIntroOffer: isEligibleForIntroOffer,
             isEligibleForPromoOffer: isEligibleForPromoOffer
         )
+    }
+
+    static func footerValidator(
+        layout: PaywallComponent.StickyFooterComponent.Layout,
+        overrides: PaywallComponent.ComponentOverrides<PaywallComponent.PartialStickyFooterComponent>?,
+        bodyVisible: Bool
+    ) throws -> PackageValidator {
+        var factory = ViewModelFactory()
+        _ = try factory.toRootViewModel(
+            componentsConfig: .init(
+                stack: .init(components: [.package(Self.makePackageComponent(
+                    packageID: TestData.monthlyPackage.identifier,
+                    isSelectedByDefault: false,
+                    visible: bodyVisible
+                ))]),
+                stickyFooter: .init(
+                    stack: .init(components: [.package(Self.makePackageComponent(
+                        packageID: TestData.annualPackage.identifier,
+                        isSelectedByDefault: true,
+                        visible: true
+                    ))]),
+                    layout: layout,
+                    overrides: overrides
+                ),
+                background: .color(.init(light: .hex("#FFFFFF")))
+            ),
+            offering: .init(
+                identifier: "default",
+                serverDescription: "",
+                availablePackages: [TestData.monthlyPackage, TestData.annualPackage],
+                webCheckoutUrl: nil
+            ),
+            localizationProvider: .init(locale: .current, localizedStrings: ["package_label": .string("Package")]),
+            uiConfigProvider: UIConfigProvider(uiConfig: PreviewUIConfig.make()),
+            colorScheme: .light
+        )
+        return factory.packageValidator
     }
 
     static func visibilityOverride(

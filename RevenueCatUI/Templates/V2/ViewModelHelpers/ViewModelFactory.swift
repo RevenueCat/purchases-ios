@@ -86,6 +86,7 @@ struct ViewModelFactory {
         )
 
         let stickyFooterViewModel = try componentsConfig.stickyFooter.flatMap {
+            let firstPackageIndex = self.packageValidator.packageInfos.count
             let stackViewModel = try toStackViewModel(
                 component: $0.stack,
                 packageValidator: self.packageValidator,
@@ -94,6 +95,9 @@ struct ViewModelFactory {
                 uiConfigProvider: uiConfigProvider,
                 offering: offering,
                 colorScheme: colorScheme
+            )
+            self.packageValidator.addAncestorFooter(
+                $0, startingAt: firstPackageIndex, discardRules: self.discardRules
             )
 
             return StickyFooterComponentViewModel(

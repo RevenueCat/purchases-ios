@@ -29,6 +29,10 @@ struct PackageVisibilityResolver {
     private let uiConfigProvider: UIConfigProvider
     private let presentedOverrides: PresentedOverrides<PresentedPackagePartial>?
     private var ancestorStacks: [(visible: Bool?, overrides: PresentedOverrides<PresentedStackPartial>?)] = []
+    private var ancestorFooter: (
+        layout: PaywallComponent.StickyFooterComponent.Layout?,
+        overrides: PresentedOverrides<PaywallComponent.PartialStickyFooterComponent>?
+    )?
     private(set) var dependsOnOfferEligibility: Bool
 
     init(
@@ -46,6 +50,13 @@ struct PackageVisibilityResolver {
     mutating func addAncestorStack(_ component: PaywallComponent.StackComponent, discardRules: Bool) {
         let overrides = component.overrides?.toPresentedOverrides(discardRules: discardRules)
         self.ancestorStacks.append((component.visible, overrides))
+        self.dependsOnOfferEligibility = self.dependsOnOfferEligibility
+            || overrides?.contains(where: \.dependsOnOfferEligibility) == true
+    }
+
+    mutating func addAncestorFooter(_ component: PaywallComponent.StickyFooterComponent, discardRules: Bool) {
+        let overrides = component.overrides?.toPresentedOverrides(discardRules: discardRules)
+        self.ancestorFooter = (component.layout, overrides)
         self.dependsOnOfferEligibility = self.dependsOnOfferEligibility
             || overrides?.contains(where: \.dependsOnOfferEligibility) == true
     }
@@ -76,6 +87,17 @@ struct PackageVisibilityResolver {
         )
 
         guard partial?.visible ?? self.componentVisible ?? true else { return false }
+        if let ancestorFooter = self.ancestorFooter {
+            let partial = PaywallComponent.PartialStickyFooterComponent.buildPartial(
+                state: state,
+                condition: condition,
+                isEligibleForIntroOffer: isEligibleForIntroOffer,
+                isEligibleForPromoOffer: isEligibleForPromoOffer,
+                conditionContext: conditionContext,
+                with: ancestorFooter.overrides
+            )
+            guard (partial?.layout ?? ancestorFooter.layout ?? .normal) != .hidden else { return false }
+        }
         return self.ancestorStacks.allSatisfy { ancestor in
             let partial = PresentedStackPartial.buildPartial(
                 state: state,
