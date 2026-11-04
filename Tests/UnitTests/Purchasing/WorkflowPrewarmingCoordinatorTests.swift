@@ -131,7 +131,7 @@ class WorkflowPrewarmingCoordinatorTests: TestCase {
         expect(paywallCache.invokedPrewarmWorkflowAssetIDs) == ["wf_target", "wf_prefetched"]
     }
 
-    func testSchedulePrewarmingPreservesTargetAssetPriorityWithoutDelayingWebBundlePublishing() async throws {
+    func testSchedulePrewarmingProcessesTargetAssetsSequentially() async throws {
         try requireWorkflowPrewarmingAvailability()
         let first = try Self.workflowDataResult(
             id: "wf_first",
@@ -173,13 +173,15 @@ class WorkflowPrewarmingCoordinatorTests: TestCase {
             await self.mockOperationDispatcher.invokeAllDispatchedAsyncWorkerThreadBlocks()
         }
 
-        await expect(webBundleURLBatcher.invokedPublishCount).toEventually(equal(2))
+        await expect(webBundleURLBatcher.invokedPublishCount).toEventually(equal(1))
         await expect(startedAssetWorkflowIDs.value).toEventually(equal(["wf_first"]))
+        expect(provider.decodedWorkflowIDs) == ["wf_first"]
 
         await firstAssetDownloadGate.open()
         await prewarming.value
 
         expect(provider.decodedWorkflowIDs) == ["wf_first", "wf_second"]
+        expect(webBundleURLBatcher.invokedPublishCount) == 2
         expect(paywallCache.invokedPrewarmWorkflowAssetIDs) == ["wf_first", "wf_second"]
         expect(startedAssetWorkflowIDs.value) == ["wf_first", "wf_second"]
         expect(Self.webBundleURLStrings(in: webBundleURLBatcher.invokedPublishScreenURLBatches)) == [

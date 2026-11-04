@@ -9,7 +9,7 @@
 
 import Foundation
 
-protocol WorkflowsConfigProviderType {
+protocol WorkflowsConfigProviderType: Sendable {
 
     var configGeneration: Int { get }
 
@@ -55,7 +55,7 @@ enum WorkflowResolutionError: Error, Equatable {
 /// cached as raw body `Data`.
 /// Normal reads decode and retain their result lazily. Asset prewarming instead uses a transient decode so it can
 /// discover referenced assets without keeping every prefetched workflow's component graph in memory.
-final class WorkflowsConfigProvider: WorkflowsConfigProviderType {
+final class WorkflowsConfigProvider: WorkflowsConfigProviderType, @unchecked Sendable {
 
     typealias WorkflowDecoder = (Data) throws -> PublishedWorkflow
 
