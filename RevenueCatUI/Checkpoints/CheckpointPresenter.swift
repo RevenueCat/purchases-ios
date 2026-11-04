@@ -439,7 +439,7 @@ final class DefaultPaywallPresenter: NSObject, PaywallPresenter, PaywallViewCont
 
         session.activeErrorPresentationID = nil
         session.didPurchaseOrRestoreAccess = true
-        controller.dismiss(animated: true)
+        controller.completeAndDismiss()
     }
 
     private func dismissAfterTerminalError() {

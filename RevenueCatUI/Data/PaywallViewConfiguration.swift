@@ -77,13 +77,24 @@ final class WorkflowBackNavigationBridge: ObservableObject {
 
     @Published private(set) var hasPendingBackNavigationRequest = false
     private(set) var hasActiveWorkflow = false
+    private var workflowCompletionHandler: (@MainActor () -> Void)?
 
-    func workflowDidAppear() {
+    func workflowDidAppear(onCompletion: @escaping @MainActor () -> Void) {
         self.hasActiveWorkflow = true
+        self.workflowCompletionHandler = onCompletion
+    }
+
+    @MainActor
+    @discardableResult
+    func completeAndDismiss() -> Bool {
+        guard let handler = self.workflowCompletionHandler else { return false }
+        handler()
+        return true
     }
 
     func workflowDidDisappear() {
         self.hasActiveWorkflow = false
+        self.workflowCompletionHandler = nil
         self.hasPendingBackNavigationRequest = false
     }
 
