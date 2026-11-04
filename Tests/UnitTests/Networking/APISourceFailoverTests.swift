@@ -24,13 +24,6 @@ final class APISourceFailoverTests: TestCase {
         expect(source?.handle.url) == "https://a.revenuecat.com/"
     }
 
-    func testCurrentSourceIsNilWhenTheDangerousSettingIsDisabled() {
-        let provider = RecordingSourceProvider(urls: ["https://a.revenuecat.com/"])
-        let failover = Self.failover(provider, usesRemoteConfigAPISources: false)
-
-        expect(failover.currentSource(for: Self.eligiblePath, isFallbackAttempt: false)).to(beNil())
-    }
-
     func testCurrentSourceIsNilForEndpointFallbackAttempts() {
         let provider = RecordingSourceProvider(urls: ["https://a.revenuecat.com/"])
 
@@ -165,11 +158,9 @@ final class APISourceFailoverTests: TestCase {
 
     private static func failover(
         _ provider: RemoteConfigSourceProviderType,
-        usesRemoteConfigAPISources: Bool = true,
         healthChecker: SourceHealthCheckerType = MockSourceHealthChecker()
     ) -> APISourceFailover {
         return APISourceFailover(
-            usesRemoteConfigAPISources: usesRemoteConfigAPISources,
             sourceProvider: provider,
             healthChecker: healthChecker
         )

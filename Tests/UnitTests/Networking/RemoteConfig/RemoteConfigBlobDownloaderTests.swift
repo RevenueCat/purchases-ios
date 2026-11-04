@@ -166,9 +166,7 @@ final class RemoteConfigBlobDownloaderTests: TestCase {
         expect(manager.timeout(host: nil,
                                isFallbackHostRequest: false,
                                endpointSupportsFallbackURLs: false,
-                               isProxied: false,
-                               reTieredTimeoutsEnabled: true)) == HTTPRequestTimeoutManager.Timeout
-            .mainSourceNoFallback
+                               isProxied: false)) == HTTPRequestTimeoutManager.Timeout.mainSourceNoFallback
     }
 
     func testSessionCeilingHonorsACustomNetworkTimeout() {
@@ -177,8 +175,7 @@ final class RemoteConfigBlobDownloaderTests: TestCase {
         expect(manager.timeout(host: nil,
                                isFallbackHostRequest: false,
                                endpointSupportsFallbackURLs: false,
-                               isProxied: false,
-                               reTieredTimeoutsEnabled: true)) == 42
+                               isProxied: false)) == 42
     }
 
     // MARK: - Per-source memory (shared no-fallback tier)

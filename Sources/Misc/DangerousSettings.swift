@@ -16,7 +16,6 @@ import Foundation
     internal struct Internal: InternalDangerousSettingsType {
 
         let enableReceiptFetchRetry: Bool
-        let usesRemoteConfigAPISources: Bool
 
         #if DEBUG
         let forceServerErrorStrategy: ForceServerErrorStrategy?
@@ -26,26 +25,20 @@ import Foundation
 
         init(
             enableReceiptFetchRetry: Bool = false,
-            usesRemoteConfigAPISources: Bool = false,
             forceServerErrorStrategy: ForceServerErrorStrategy? = nil,
             forceSignatureFailures: Bool = false,
             disableHeaderSignatureVerification: Bool = false,
             testReceiptIdentifier: String? = nil
         ) {
             self.enableReceiptFetchRetry = enableReceiptFetchRetry
-            self.usesRemoteConfigAPISources = usesRemoteConfigAPISources
             self.forceServerErrorStrategy = forceServerErrorStrategy
             self.forceSignatureFailures = forceSignatureFailures
             self.disableHeaderSignatureVerification = disableHeaderSignatureVerification
             self.testReceiptIdentifier = testReceiptIdentifier
         }
         #else
-        init(
-            enableReceiptFetchRetry: Bool = false,
-            usesRemoteConfigAPISources: Bool = false
-        ) {
+        init(enableReceiptFetchRetry: Bool = false) {
             self.enableReceiptFetchRetry = enableReceiptFetchRetry
-            self.usesRemoteConfigAPISources = usesRemoteConfigAPISources
         }
 
         #endif
@@ -192,11 +185,6 @@ internal protocol InternalDangerousSettingsType: Sendable {
 
     /// Whether `ReceiptFetcher` can retry fetching receipts.
     var enableReceiptFetchRetry: Bool { get }
-
-    /// Whether main-API requests resolve their base host from the remote-config API sources
-    /// instead of the static `SystemInfo.apiBaseURL`. Disabled by default; enabled in tests while
-    /// remote-config-driven host resolution is being validated.
-    var usesRemoteConfigAPISources: Bool { get }
 
     #if DEBUG
     /// The strategy for the `HTTPClient` to fake server errors, and for `SourceHealthChecker` to fake
