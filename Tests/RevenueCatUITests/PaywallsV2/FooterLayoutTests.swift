@@ -84,16 +84,8 @@ final class FooterLayoutTests: TestCase {
                 stickyFooter: .init(stack: footer, layout: layout),
                 background: .color(.init(light: .hex("#0000FF")))
             ))
-            let view = PaywallsV2LayoutFixtures.makeRootView(viewModel: viewModel, size: size).ignoresSafeArea()
-            let controller = UIHostingController(rootView: view)
-            let window = UIWindow(frame: CGRect(origin: .zero, size: size))
-            window.rootViewController = controller
-            window.makeKeyAndVisible()
+            let window = self.makeWindow(viewModel: viewModel, size: size)
             defer { window.isHidden = true }
-            controller.view.frame = window.bounds
-            window.layoutIfNeeded()
-            controller.beginAppearanceTransition(true, animated: false)
-            controller.endAppearanceTransition()
             let format = UIGraphicsImageRendererFormat.default()
             format.scale = 1
             let image = UIGraphicsImageRenderer(bounds: window.bounds, format: format).image { context in
@@ -103,6 +95,59 @@ final class FooterLayoutTests: TestCase {
             try assertRedPixel(image, column: columnX, row: 4)
             try assertRedPixel(image, column: columnX, row: 596)
         }
+    }
+
+    @MainActor
+    func testHorizontalSplitFooterScrollAxisHonorsOverflow() throws {
+        let size = CGSize(width: 800, height: 600)
+        let cases: [(PaywallComponent.StackComponent.Overflow?, Axis?)] = [
+            (nil, .vertical), (.scroll, .horizontal), (.default, nil)
+        ]
+        for (overflow, expectedAxis) in cases {
+            let footer = PaywallComponent.StackComponent(
+                components: [.stack(.init(
+                    components: [], size: .init(width: .fixed(1200), height: .fixed(1200))
+                ))],
+                dimension: .horizontal(.top, .start),
+                overflow: overflow
+            )
+            let viewModel = try PaywallsV2LayoutFixtures.makeRootViewModel(componentsConfig: .init(
+                stack: .init(components: []),
+                stickyFooter: .init(stack: footer, layout: .splitTrailing),
+                background: .color(.init(light: .hex("#FFFFFF")))
+            ))
+            let window = self.makeWindow(viewModel: viewModel, size: size)
+            defer { window.isHidden = true }
+            let scrollViews = self.scrollViews(in: window).filter {
+                $0.convert($0.bounds, to: window).midX > size.width / 2
+            }
+            if let expectedAxis {
+                let scrollView = try XCTUnwrap(scrollViews.first)
+                XCTAssertEqual(scrollView.contentSize.height > scrollView.bounds.height, expectedAxis == .vertical)
+                XCTAssertEqual(scrollView.contentSize.width > scrollView.bounds.width, expectedAxis == .horizontal)
+            } else {
+                XCTAssertTrue(scrollViews.isEmpty)
+            }
+        }
+    }
+
+    @MainActor
+    private func makeWindow(viewModel: RootViewModel, size: CGSize) -> UIWindow {
+        let view = PaywallsV2LayoutFixtures.makeRootView(viewModel: viewModel, size: size).ignoresSafeArea()
+        let controller = UIHostingController(rootView: view)
+        let window = UIWindow(frame: CGRect(origin: .zero, size: size))
+        window.rootViewController = controller
+        window.makeKeyAndVisible()
+        controller.view.frame = window.bounds
+        window.layoutIfNeeded()
+        controller.beginAppearanceTransition(true, animated: false)
+        controller.endAppearanceTransition()
+        return window
+    }
+
+    @MainActor
+    private func scrollViews(in view: UIView) -> [UIScrollView] {
+        return (view as? UIScrollView).map { [$0] } ?? view.subviews.flatMap { self.scrollViews(in: $0) }
     }
 
     private func assertRedPixel(_ image: UIImage, column: Int, row: Int) throws {

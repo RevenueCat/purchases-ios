@@ -343,6 +343,18 @@ struct StackComponentStyle {
         return copy
     }
 
+    /// A server-provided overflow setting takes precedence over the container's default scroll axis.
+    func scrollAxis(default defaultAxis: Axis?) -> Axis? {
+        guard self.scrollable != false else { return nil }
+        if self.scrollable == nil, let defaultAxis {
+            return defaultAxis
+        }
+        switch self.dimension {
+        case .horizontal: return .horizontal
+        case .vertical, .zlayer: return .vertical
+        }
+    }
+
     var vstackStrategy: StackStrategy {
         // Ensure vertical
         guard case let .vertical(_, distribution) = self.dimension else {
