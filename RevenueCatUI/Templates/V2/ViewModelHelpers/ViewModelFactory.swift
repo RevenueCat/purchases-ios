@@ -323,6 +323,7 @@ struct ViewModelFactory {
                 )
             )
         case .tabs(let component):
+            let firstControlPackageIndex = packageValidator.packageInfos.count
             let controlStackViewModel = try toStackViewModel(
                 component: component.control.stack,
                 packageValidator: packageValidator,
@@ -380,6 +381,14 @@ struct ViewModelFactory {
                 colorScheme: colorScheme
             )
 
+            // The synthetic stack renders the Tabs component's visibility rules. Its packages
+            // must use the same ancestor visibility, both in the control and in each tab.
+            packageValidator.addAncestorStack(
+                tabsStackComponent,
+                startingAt: firstControlPackageIndex,
+                discardRules: discardRules
+            )
+
             let tabViewModels: [TabViewModel] = try component.tabs.map { tab in
                 let tabPackageValidator = PackageValidator()
 
@@ -391,6 +400,12 @@ struct ViewModelFactory {
                     uiConfigProvider: uiConfigProvider,
                     offering: offering,
                     colorScheme: colorScheme
+                )
+
+                tabPackageValidator.addAncestorStack(
+                    tabsStackComponent,
+                    startingAt: 0,
+                    discardRules: discardRules
                 )
 
                 // Merging into entire paywall package validator
