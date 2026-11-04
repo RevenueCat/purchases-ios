@@ -118,6 +118,15 @@ extension Product.PurchaseError: PurchasesErrorConvertible {
             // paymentMethodBindingConfigurationRequired introduced in Xcode 26.5
             return ErrorUtils.storeProblemError(error: self)
         #endif
+
+        // These errors first became available in Xcode/iOS 27.3. Xcode 27.3 ships with Swift 6.4.2,
+        // which is also included with Xcode 27.2, so we can't use the standard #if compiler(>=X.Y.Z)
+        // check. Xcode 27.3 ships StoreKit module version 816.2.10, so we gate on that instead.
+        #if canImport(StoreKit, _version: 816.2.10)
+        case .multiSeatPurchaseDisabled,
+             .seatReductionNotAllowed:
+            return ErrorUtils.purchaseNotAllowedError(error: self)
+        #endif
         @unknown default:
             return ErrorUtils.unknownError(error: self)
         }
@@ -145,6 +154,12 @@ extension Product.PurchaseError: PurchasesErrorConvertible {
         case .paymentMethodBindingConfigurationRequired:
             // paymentMethodBindingConfigurationRequired introduced in Xcode 26.5
             return "payment_method_binding_configuration_required"
+        #endif
+        #if canImport(StoreKit, _version: 816.2.10)
+        case .multiSeatPurchaseDisabled:
+            return "multi_seat_purchase_disabled"
+        case .seatReductionNotAllowed:
+            return "seat_reduction_not_allowed"
         #endif
         @unknown default:
             return "unknown_store_kit_error"
