@@ -140,6 +140,10 @@ extension PrebidInterstitial: InterstitialAdUnitDelegate {
         self.deliver(.presented, .impression)
     }
 
+    nonisolated func interstitialDidExpireAd(_ interstitial: InterstitialRenderingAdUnit) {
+        self.deliver(.expired)
+    }
+
     nonisolated func interstitialDidClickAd(_ interstitial: InterstitialRenderingAdUnit) {
         self.deliver(.clicked)
     }
