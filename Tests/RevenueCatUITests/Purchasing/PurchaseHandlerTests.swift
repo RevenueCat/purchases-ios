@@ -94,6 +94,35 @@ class PurchaseHandlerTests: TestCase {
         XCTAssertNil(handler.presentationWindow)
     }
 
+    func testPresentationContextModifierDoesNotClearNewerHostingWindow() {
+        let handler: PurchaseHandler = .mock()
+        let firstController = UIHostingController(
+            rootView: Color.clear.modifier(PresentationContextModifier(purchaseHandler: handler))
+        )
+        let secondController = UIHostingController(
+            rootView: Color.clear.modifier(PresentationContextModifier(purchaseHandler: handler))
+        )
+        let firstWindow = UIWindow(frame: CGRect(x: 0, y: 0, width: 320, height: 480))
+        let secondWindow = UIWindow(frame: CGRect(x: 0, y: 0, width: 320, height: 480))
+
+        firstWindow.rootViewController = firstController
+        firstWindow.makeKeyAndVisible()
+        firstController.view.layoutIfNeeded()
+        RunLoop.main.run(until: Date().addingTimeInterval(0.1))
+
+        secondWindow.rootViewController = secondController
+        secondWindow.makeKeyAndVisible()
+        secondController.view.layoutIfNeeded()
+        RunLoop.main.run(until: Date().addingTimeInterval(0.1))
+
+        XCTAssertTrue(handler.presentationWindow === secondWindow)
+
+        firstWindow.rootViewController = nil
+        RunLoop.main.run(until: Date().addingTimeInterval(0.1))
+
+        XCTAssertTrue(handler.presentationWindow === secondWindow)
+    }
+
     func testPurchasePassesPresentationContext() async throws {
         let sceneClass = try XCTUnwrap(NSClassFromString("UIWindowScene") as? NSObject.Type)
         let scene = try XCTUnwrap(sceneClass.init() as? UIWindowScene)

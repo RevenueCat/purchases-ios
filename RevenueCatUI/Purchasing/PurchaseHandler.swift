@@ -23,6 +23,12 @@ import UIKit
 import AppKit
 #endif
 
+#if canImport(UIKit) && !os(watchOS)
+typealias PurchasePresentationWindow = UIWindow
+#elseif canImport(AppKit)
+typealias PurchasePresentationWindow = NSWindow
+#endif
+
 // swiftlint:disable file_length
 
 private struct TerminalOfferingWorkflowError: Error {}
@@ -53,10 +59,9 @@ final class PurchaseHandler: ObservableObject {
 
     // Keep the host weak because its view hierarchy owns this handler. A strong
     // PresentationContext here would retain that hierarchy through its scene or window.
-    #if canImport(UIKit) && !os(watchOS)
-    weak var presentationWindow: UIWindow?
-    #elseif canImport(AppKit)
-    weak var presentationWindow: NSWindow?
+    #if (canImport(UIKit) && !os(watchOS)) || canImport(AppKit)
+    weak var presentationWindow: PurchasePresentationWindow?
+    private weak var presentationWindowOwner: AnyObject?
     #endif
 
     /// Side-by-side paywalls should use separate `PurchaseHandler` instances so each keeps its own session.
@@ -379,6 +384,24 @@ final class PurchaseHandler: ObservableObject {
     }
 
 }
+
+#if (canImport(UIKit) && !os(watchOS)) || canImport(AppKit)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension PurchaseHandler {
+
+    @MainActor
+    func updatePresentationWindow(_ window: PurchasePresentationWindow?, reportedBy owner: AnyObject) {
+        if let window {
+            self.presentationWindow = window
+            self.presentationWindowOwner = owner
+        } else if self.presentationWindowOwner === owner {
+            self.presentationWindow = nil
+            self.presentationWindowOwner = nil
+        }
+    }
+
+}
+#endif
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension PurchaseHandler {

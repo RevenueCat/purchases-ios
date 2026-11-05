@@ -27,8 +27,8 @@ struct PresentationContextModifier: ViewModifier {
     func body(content: Content) -> some View {
         #if (canImport(UIKit) && !os(watchOS)) || canImport(AppKit)
         content.background {
-            PresentationContextReader { window in
-                self.purchaseHandler.presentationWindow = window
+            PresentationContextReader { window, owner in
+                self.purchaseHandler.updatePresentationWindow(window, reportedBy: owner)
             }
             .frame(width: 0, height: 0)
         }
@@ -43,7 +43,7 @@ struct PresentationContextModifier: ViewModifier {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private struct PresentationContextReader: UIViewRepresentable {
 
-    let onWindowChange: @MainActor (UIWindow?) -> Void
+    let onWindowChange: @MainActor (UIWindow?, AnyObject) -> Void
 
     func makeUIView(context: Context) -> WindowReaderView {
         let view = WindowReaderView()
@@ -59,7 +59,7 @@ private struct PresentationContextReader: UIViewRepresentable {
     @MainActor
     final class WindowReaderView: UIView {
 
-        var onWindowChange: (@MainActor (UIWindow?) -> Void)?
+        var onWindowChange: (@MainActor (UIWindow?, AnyObject) -> Void)?
 
         override func didMoveToWindow() {
             super.didMoveToWindow()
@@ -67,7 +67,7 @@ private struct PresentationContextReader: UIViewRepresentable {
         }
 
         func notifyWindowChange() {
-            self.onWindowChange?(self.window)
+            self.onWindowChange?(self.window, self)
         }
 
     }
@@ -77,7 +77,7 @@ private struct PresentationContextReader: UIViewRepresentable {
 @available(macOS 12.0, *)
 private struct PresentationContextReader: NSViewRepresentable {
 
-    let onWindowChange: @MainActor (NSWindow?) -> Void
+    let onWindowChange: @MainActor (NSWindow?, AnyObject) -> Void
 
     func makeNSView(context: Context) -> WindowReaderView {
         let view = WindowReaderView()
@@ -93,7 +93,7 @@ private struct PresentationContextReader: NSViewRepresentable {
     @MainActor
     final class WindowReaderView: NSView {
 
-        var onWindowChange: (@MainActor (NSWindow?) -> Void)?
+        var onWindowChange: (@MainActor (NSWindow?, AnyObject) -> Void)?
 
         override func viewDidMoveToWindow() {
             super.viewDidMoveToWindow()
@@ -101,7 +101,7 @@ private struct PresentationContextReader: NSViewRepresentable {
         }
 
         func notifyWindowChange() {
-            self.onWindowChange?(self.window)
+            self.onWindowChange?(self.window, self)
         }
 
     }
