@@ -66,7 +66,7 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
     private var pendingCurrentOfferingProductIdentifiers: Set<String> = []
     private var pendingEligibilityProductIdentifiers: Set<String> = []
     private var eligibilityWarmupTask: Task<Void, Never>?
-    private var hasLoadedPaywallAssets = false
+    private var hasStartedPaywallAssetPrewarming = false
     private var assetPrewarmingLocalesByWorkflowID: [String: Set<[String]>] = [:]
     private var workflowFontAssetsWithPrewarmingAttempted: Set<DownloadableFont> = []
     private var ongoingFontDownloads: [URL: Task<Void, Never>] = [:]
@@ -162,8 +162,9 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
     /// Workflow assets and web bundles are prewarmed from decoded workflows. Assets stored in an offering's
     /// `internalPaywallComponents` are intentionally excluded from offerings prewarming.
     func warmUpPaywallAssetsCache(offerings: Offerings) async {
-        guard !self.hasLoadedPaywallAssets else { return }
-        self.hasLoadedPaywallAssets = true
+        guard !self.hasStartedPaywallAssetPrewarming else { return }
+        // Claim this work before suspending so actor reentrancy cannot start duplicate downloads.
+        self.hasStartedPaywallAssetPrewarming = true
 
         let imageSources = Set(offerings.allImagesInPaywallsV1.map {
             URLWithValidation(url: $0, checksum: nil)
