@@ -13,6 +13,8 @@ tracked in RevenueCat automatically.
 
   > **Note:** If your project depends on RevenueCat via SPM, use the [`purchases-ios-spm`](https://github.com/RevenueCat/purchases-ios-spm) package (not `purchases-ios`). The published package already declares this dependency correctly, but if you add RevenueCat separately, make sure both resolve from the same `purchases-ios-spm` repository to avoid duplicate package errors.
 
+  > **Note:** The package depends on [Prebid Mobile](https://github.com/prebid/prebid-mobile-ios) and configures its shared instance for you. Using Prebid Mobile directly in the same app is not supported.
+
 ## Setup
 
 The API is experimental, so import it with SPI. Configure `Purchases` first, then `RCAds`:
