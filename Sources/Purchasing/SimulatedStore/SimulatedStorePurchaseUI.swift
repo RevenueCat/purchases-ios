@@ -68,11 +68,11 @@ struct DefaultSimulatedStorePurchaseUI: SimulatedStorePurchaseUI {
 
     @MainActor
     func resolvedPresentationContext(_ context: PresentationContext?) -> PresentationContext? {
-        guard let context, context.isValidForPresentation else {
+        guard let context else {
             return self.defaultPresentationContextProvider()
         }
 
-        return context
+        return context.isValidForPresentation ? context : nil
     }
 
     #endif

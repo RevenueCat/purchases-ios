@@ -98,7 +98,7 @@ class SimulatedStorePurchaseHandlerTests: TestCase {
     }
 
     @MainActor
-    func testPurchaseUIFallsBackToApplicationForNonWindowScene() throws {
+    func testPurchaseUIDoesNotFallBackForNonWindowScene() throws {
         let scene = try XCTUnwrap(UIScene.mock())
         let fallbackScene = try XCTUnwrap(UIWindowScene.mockWindowScene())
         let purchaseUI = DefaultSimulatedStorePurchaseUI(
@@ -108,7 +108,7 @@ class SimulatedStorePurchaseHandlerTests: TestCase {
 
         let resolvedContext = purchaseUI.resolvedPresentationContext(context)
 
-        XCTAssertTrue(resolvedContext?.scene === fallbackScene)
+        XCTAssertNil(resolvedContext)
     }
     #endif
 
