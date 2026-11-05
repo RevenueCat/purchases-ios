@@ -2833,14 +2833,17 @@ workflows:
 
   danger:
     when:
-      or:
+      and:
         - not:
-            matches:
-              pattern: "^generated_(snapshots|swiftinterface)/.*"
-              value: << pipeline.git.branch >>
-        - matches:
-            pattern: "^generated_(snapshots|swiftinterface)/main-.*"
-            value: << pipeline.git.branch >>
+            equal: ["rickvdl/fix-flaky-test-918020", << pipeline.git.branch >>]
+        - or:
+            - not:
+                matches:
+                  pattern: "^generated_(snapshots|swiftinterface)/.*"
+                  value: << pipeline.git.branch >>
+            - matches:
+                pattern: "^generated_(snapshots|swiftinterface)/main-.*"
+                value: << pipeline.git.branch >>
     jobs:
       - danger:
           filters:
