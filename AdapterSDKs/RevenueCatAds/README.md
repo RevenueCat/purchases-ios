@@ -1,34 +1,59 @@
-# RevenueCatAds
+# RevenueCat Ads (iOS)
 
-RevenueCat-owned interface for serving ads. Apps talk only to `RevenueCatAds`; the third-party SDK
-that requests and renders ads is an internal detail that can be swapped without changing the public
-API. The v1 implementation uses [Prebid Mobile](https://github.com/prebid/prebid-mobile-ios) 3.x
-(rendering API), pointed at RevenueCat's ad serving API. No AdMob or other mediation SDK is involved.
+Show full-screen interstitial ads served by RevenueCat. Loads, impressions, clicks, and revenue are
+tracked in RevenueCat automatically.
 
-Apps do **not** `import PrebidMobile`, and no Prebid type appears in any public signature.
+## Installation
 
-## Usage
+- **Swift Package Manager:** Add the `purchases-ios-ads` package to your project:
+  ```swift
+  .package(url: "https://github.com/RevenueCat/purchases-ios-ads", from: "5.0.0")
+  ```
+  Then add the `RevenueCatAds` product to your target.
 
-Import the package with SPI to access the experimental API surface:
+  > **Note:** If your project depends on RevenueCat via SPM, use the [`purchases-ios-spm`](https://github.com/RevenueCat/purchases-ios-spm) package (not `purchases-ios`). The published package already declares this dependency correctly, but if you add RevenueCat separately, make sure both resolve from the same `purchases-ios-spm` repository to avoid duplicate package errors.
+
+## Setup
+
+The API is experimental, so import it with SPI. Configure `Purchases` first, then `RCAds`:
 
 ```swift
 import RevenueCat
 @_spi(Experimental) import RevenueCatAds
 
 Purchases.configure(withAPIKey: "appl_...")
-try RCAds.configure()  // API key and host are taken from Purchases
-
-let interstitial = AdsInterstitial(placementID: "interstitial")
-interstitial.delegate = self          // AdsInterstitialDelegate
-try await interstitial.load()         // or load(completion:)
-interstitial.present(from: viewController)
+try RCAds.configure()
 ```
 
-`RCAds.configure(with: AdsConfiguration(apiKey:serverURL:))` overrides either value. `serverURL`
-defaults to `Purchases.proxyURL`, then `https://api.revenuecat.com`. The placement ID only needs to be
-a stable string. When no ad is available, loading fails with `AdsError.Code.noFill`.
+`RCAds.configure()` uses the API key and server of your `Purchases` instance and throws
+`AdsError.Code.notConfigured` if `Purchases` has not been configured yet. To use different values,
+pass `AdsConfiguration(apiKey:serverURL:)`.
 
-### Public API
+## Interstitial ads
+
+Create an interstitial for a placement, load it ahead of time, and present it when your UI is ready:
+
+```swift
+let interstitial = AdsInterstitial(placementID: "level_complete")
+interstitial.delegate = self          // AdsInterstitialDelegate, all methods optional
+try await interstitial.load()         // or load(completion:)
+
+// Later:
+if interstitial.isReady {
+    interstitial.present(from: viewController)
+}
+```
+
+**Placement:** `placementID` is a stable string that identifies where the ad is shown in your app.
+RevenueCat uses it for reporting and segmentation, so use consistent values across your app.
+
+An instance shows one ad per load. After the ad is dismissed, or loading fails, load it again.
+When no ad is available, `load()` throws `AdsError.Code.noFill`; treat it as normal and continue
+without an ad.
+
+All APIs are `@MainActor` and available on iOS 15.0+.
+
+## API reference
 
 | Type | Purpose |
 | --- | --- |
@@ -39,9 +64,7 @@ a stable string. When no ad is available, loading fails with `AdsError.Code.noFi
 | `AdsError` | `code` (`notConfigured`, `invalidConfiguration`, `invalidState`, `notReady`, `presentFailed`, `noFill`, `loadFailed`), `message`, `underlyingError` |
 
 `AdsError.Code` is a struct with static constants rather than an enum, so codes can be added without
-breaking clients' exhaustive `switch` statements.
-
-Everything is `@MainActor` and iOS 15+.
+breaking your exhaustive `switch` statements.
 
 ## Experimental API
 
@@ -49,53 +72,3 @@ This package exposes its Swift API as experimental via `@_spi(Experimental)`.
 
 - Swift usage requires `@_spi(Experimental) import RevenueCatAds`.
 - Treat the API shape as experimental and review release notes when upgrading.
-
-## Architecture
-
-```text
- App
-  │  RCAds.configure / AdsInterstitial / AdsInterstitialDelegate      (public, RC-owned)
-  ▼
-┌──────────────────────────────────────────────────────────────┐
-│ RevenueCatAds                                                │
-│   AdsInterstitial ── state machine, error + event mapping    │
-│        │                                                     │
-│        ▼  AdModule / AdModuleInterstitial  (internal seam)   │
-│   PrebidAdModule ── the only file that imports PrebidMobile  │
-└────────┬─────────────────────────────────────────────────────┘
-         │ InterstitialRenderingAdUnit (Prebid rendering API)
-         ▼
-  RevenueCat ad serving API
-```
-
-To swap the ad SDK, add another `AdModule` implementation and create it in `RCAds.configure(with:)`.
-
-### Ad event tracking
-
-`AdsInterstitial` reports its lifecycle to `Purchases.shared.adTracker` through the internal `AdTracking`
-seam (`Tracking/`), with mediator `MediatorName.revenueCat` (`"RevenueCat"`), format `interstitial`, the
-placement ID as both placement and ad unit ID, and a new impression ID per load:
-
-| `AdsInterstitial` event | Tracked event |
-| --- | --- |
-| loaded | `trackAdLoaded` |
-| failed to load (module failures only) | `trackAdFailedToLoad`, `mediatorErrorCode` = underlying error code |
-| presented | `trackAdDisplayed` |
-| clicked | `trackAdOpened` |
-| impression | `trackAdRevenue`, when the winning bid has a price |
-
-Revenue is the winning bid's CPM / 1000 in USD, with precision `exact`. Prebid's rendering ad unit does
-not expose the bid response, so `PrebidAdModule` installs an event handler that behaves like Prebid's
-standalone one and keeps the response. The network name is currently always `Equativ`. Tracking is
-skipped (with a debug log) while `Purchases` is not configured and never affects the ad flow.
-
-## Development
-
-```bash
-cd AdapterSDKs/RevenueCatAds
-xcodebuild test -scheme RevenueCatAds -destination 'platform=iOS Simulator,name=iPhone 17'
-```
-
-Unit tests drive `AdsInterstitial` through a fake `AdModule`, so they need no network or ad SDK
-runtime. Resolving the package also downloads Google Mobile Ads and AppLovin MAX, because
-`prebid-mobile-ios` declares them as package dependencies; neither is linked.
