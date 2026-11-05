@@ -72,6 +72,38 @@ class SystemInfoTests: TestCase {
         expect(SystemInfo.withReceiptResult(.appStoreReceipt, sandboxDetector).isSandbox) == false
     }
 
+    func testIsSandboxIsComputedOnlyOnceWhenAccessedConcurrently() {
+        let sandboxDetector = SynchronizingSandboxEnvironmentDetector()
+        let systemInfo = SystemInfo(
+            platformInfo: nil,
+            finishTransactions: false,
+            sandboxEnvironmentDetector: sandboxDetector,
+            apiKey: "api_key",
+            preferredLocalesProvider: .mock()
+        )
+        let workersReady = DispatchSemaphore(value: 0)
+        let startWorkers = DispatchSemaphore(value: 0)
+        let workersFinished = DispatchGroup()
+
+        for _ in 0..<2 {
+            workersFinished.enter()
+            DispatchQueue.global().async {
+                workersReady.signal()
+                startWorkers.wait()
+                _ = systemInfo.isSandbox
+                workersFinished.leave()
+            }
+        }
+
+        workersReady.wait()
+        workersReady.wait()
+        startWorkers.signal()
+        startWorkers.signal()
+        workersFinished.wait()
+
+        expect(sandboxDetector.callCount) == 1
+    }
+
     func testIsAppleSubscriptionURLWithAnotherURL() {
         expect(SystemInfo.isAppleSubscription(managementURL: URL(string: "www.google.com")!)) == false
     }
@@ -288,6 +320,27 @@ class SystemInfoTests: TestCase {
                                     dangerousSettings: dangerousSettings,
                                     preferredLocalesProvider: .mock())
         expect(systemInfo.remoteConfigEnabled) == false
+    }
+
+}
+
+private final class SynchronizingSandboxEnvironmentDetector: SandboxEnvironmentDetector, @unchecked Sendable {
+
+    private let calls: Atomic<Int> = .init(0)
+    private let secondCallStarted = DispatchSemaphore(value: 0)
+
+    var callCount: Int { self.calls.value }
+
+    var isSandbox: Bool {
+        let callCount = self.calls.increment()
+
+        if callCount == 1 {
+            _ = self.secondCallStarted.wait(timeout: .now() + 0.25)
+        } else {
+            self.secondCallStarted.signal()
+        }
+
+        return true
     }
 
 }

@@ -6,7 +6,11 @@
 //
 
 import Foundation
+#if DEBUG
+@testable import RevenueCat
+#else
 import RevenueCat
+#endif
 
 enum Configuration {
 
@@ -23,12 +27,30 @@ enum Configuration {
         Purchases.logLevel = .verbose
         Purchases.proxyURL = Constants.proxyURL.flatMap { URL(string: $0) }
 
-        Purchases.configure(
-            with: .init(withAPIKey: Constants.apiKey)
-                .with(entitlementVerificationMode: .informational)
-                .with(diagnosticsEnabled: true)
-                .with(purchasesAreCompletedBy: .revenueCat, storeKitVersion: .storeKit2)
-        )
+        var builder = RevenueCat.Configuration.Builder(withAPIKey: Constants.apiKey)
+            .with(entitlementVerificationMode: .informational)
+            .with(diagnosticsEnabled: true)
+            .with(purchasesAreCompletedBy: .revenueCat, storeKitVersion: .storeKit2)
+        #if DEBUG
+        builder = builder.with(dangerousSettings: Self.simulatingAPIFailuresDangerousSettings)
+        #endif
+        Purchases.configure(with: builder)
     }
+
+    #if DEBUG
+    /// The `UserDefaults` key of the `SimulatedHostFailures.Mode` the SDK simulates.
+    static let simulatedFailuresModeKey = "com.revenuecat.paywallstester.simulated_failures_mode"
+
+    /// Reads the stored mode on every request, so picking another one applies without relaunching.
+    private static var simulatingAPIFailuresDangerousSettings: DangerousSettings {
+        let strategy = ForceServerErrorStrategy.simulating {
+            let mode = UserDefaults.standard.string(forKey: Self.simulatedFailuresModeKey)
+                .flatMap(SimulatedHostFailures.Mode.init(rawValue:))
+            return (mode ?? SimulatedHostFailures.Mode.none).hostFailures
+        }
+        return DangerousSettings(autoSyncPurchases: true,
+                                 internalSettings: DangerousSettings.Internal(forceServerErrorStrategy: strategy))
+    }
+    #endif
 
 }

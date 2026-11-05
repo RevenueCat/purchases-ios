@@ -185,21 +185,6 @@ final class BackendAPISourceFailoverIntegrationTests: TestCase {
         expect(sourceB.value).to(beEmpty())
     }
 
-    func testGetCustomerInfoIgnoresSourcesWhenTheDangerousSettingIsDisabled() {
-        let sourceA = self.stubSource(host: Self.sourceAHost, endpoint: Self.customerInfoResponse)
-        let sourceB = self.stubSource(host: Self.sourceBHost, endpoint: Self.customerInfoResponse)
-        let defaultHost = self.stubSource(host: "api.revenuecat.com", endpoint: Self.customerInfoResponse)
-        let backend = Self.createBackend(sources: [Self.sourceAHost, Self.sourceBHost],
-                                         usesRemoteConfigAPISources: false)
-
-        let result = self.fetchCustomerInfo(backend)
-
-        expect(result).to(beSuccess())
-        expect(defaultHost.value) == [Self.customerInfoPath]
-        expect(sourceA.value).to(beEmpty())
-        expect(sourceB.value).to(beEmpty())
-    }
-
     func testBothHTTPClientLanesShareTheSameFailover() {
         // Backend builds one APISourceFailover for both the main HTTPClient and the dedicated
         // remote-config lane: a failover triggered by one lane must advance the source list (and
@@ -264,19 +249,15 @@ final class BackendAPISourceFailoverIntegrationTests: TestCase {
     /// Wires the production stack: the `Backend` convenience init builds the real `HTTPClient`s, the
     /// shared `APISourceFailover` and the real `SourceHealthChecker`; sources come from an in-memory
     /// `sources` topic pointing at `sources` in order.
-    private static func createBackend(sources: [String], usesRemoteConfigAPISources: Bool = true) -> Backend {
-        return Self.createBackend(
-            sources: sources,
-            internalSettings: DangerousSettings.Internal(usesRemoteConfigAPISources: usesRemoteConfigAPISources)
-        )
+    private static func createBackend(sources: [String]) -> Backend {
+        return Self.createBackend(sources: sources, internalSettings: .default)
     }
 
     private static func createBackend(sources: [String],
                                       forceServerErrorStrategy: ForceServerErrorStrategy) -> Backend {
         return Self.createBackend(
             sources: sources,
-            internalSettings: DangerousSettings.Internal(usesRemoteConfigAPISources: true,
-                                                         forceServerErrorStrategy: forceServerErrorStrategy)
+            internalSettings: DangerousSettings.Internal(forceServerErrorStrategy: forceServerErrorStrategy)
         )
     }
 
