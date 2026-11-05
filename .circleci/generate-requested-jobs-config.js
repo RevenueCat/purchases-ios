@@ -33,6 +33,7 @@ const JOBS = {
   "lint": ["slack-secrets"],
   "pod-lib-lint": ["slack-secrets"],
   "performance-tests": [],
+  "performance-automation-tests": [],
   "record-performance": [],
   "remote-config-production-tests": ["config-endpoint-tests", "slack-secrets"],
   "revenuecat-admob-tests": ["slack-secrets"],

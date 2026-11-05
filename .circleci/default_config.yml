@@ -1113,6 +1113,19 @@ jobs:
           path: fastlane/test_output/xctest
           destination: scan-test-output-macos
 
+  performance-automation-tests:
+    docker:
+      - image: cimg/ruby:3.3.0-node
+    resource_class: small
+    steps:
+      - checkout
+      - run:
+          name: Install Minitest
+          command: gem install minitest --version 5.27.0 --no-document
+      - run:
+          name: Test performance baseline automation
+          command: ruby fastlane/performance_baseline_helper_test.rb
+
   performance-tests:
     parameters:
       push_baselines:
@@ -1123,7 +1136,7 @@ jobs:
         default: false
     executor:
       name: macos-executor
-      xcode_version: "26.0.1"
+      xcode_version: "27.0.0"
     steps:
       - checkout
       - tuist-generate-workspace:
@@ -1141,7 +1154,7 @@ jobs:
             xcodebuild test \
               -workspace RevenueCat-Tuist.xcworkspace \
               -scheme PerformanceTests \
-              -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=26.0' \
+              -destination 'platform=iOS Simulator,name=iPhone 17,OS=27.0' \
               -parallel-testing-enabled NO \
               -resultBundlePath /tmp/performance-tests.xcresult \
               ENABLE_TESTABILITY=YES CODE_SIGNING_ALLOWED=NO ONLY_ACTIVE_ARCH=YES
@@ -1152,10 +1165,13 @@ jobs:
       - when:
           condition: << parameters.push_baselines >>
           steps:
+            - revenuecat/install-mise-tools:
+                tools: ruby
+            - install-bundle-dependencies
             - revenuecat/setup-git-credentials
             - run:
                 name: Push performance baselines to PR branch
-                command: bash ci_scripts/push-performance-baselines.sh
+                command: bundle exec fastlane ios push_performance_baselines
 
   run-test-ios-27:
     executor:
@@ -2527,6 +2543,7 @@ workflows:
       # Reduced Test Suite: Auto-run on every push
       # =============================================================
       - performance-tests
+      - performance-automation-tests
       - lint:
           context:
             - slack-secrets
@@ -2731,6 +2748,7 @@ workflows:
       - all-tasks-passed:
           requires:
             # Reduced Test Suite
+            - performance-automation-tests
             - lint
             - check-api-changes
             - run-test-ios-27

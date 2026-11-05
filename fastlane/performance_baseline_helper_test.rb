@@ -3,8 +3,9 @@ require 'tmpdir'
 require 'fileutils'
 require 'open3'
 require 'yaml'
+require 'rbconfig'
 
-class RecordPerformanceTest < Minitest::Test
+class PerformanceBaselineHelperTest < Minitest::Test
   ROOT = File.expand_path('..', __dir__)
   BASELINE = 'Tests/PerformanceTests/Baselines.json'
 
@@ -38,7 +39,8 @@ class RecordPerformanceTest < Minitest::Test
 
   def publish
     Open3.capture2e({'CIRCLE_BRANCH' => 'test-pr', 'CIRCLE_SHA1' => @head},
-                   'bash', File.join(ROOT, 'ci_scripts/push-performance-baselines.sh'), chdir: @checkout)
+                   RbConfig.ruby, '-r', File.join(ROOT, 'fastlane/performance_baseline_helper.rb'),
+                   '-e', 'PerformanceBaselineHelper.push', chdir: @checkout)
   end
 
   def test_pushes_only_baseline_and_skips_unchanged_result

@@ -139,7 +139,7 @@ Before you add or change a test, read [Contributing/TESTING.md](Contributing/TES
 - Keep the Xcode version, simulator, and workload consistent with the baseline.
 - Never record a new baseline automatically after a failure.
 
-The `performance-tests` CI job runs on each PR branch push. It uses Xcode 26.0.1, an iPhone 17 Pro simulator with iOS 26.0, and Release configuration. It does not need an API key.
+The `performance-tests` CI job runs on each PR branch push. It uses Xcode 27.0.0, an iPhone 17 simulator with iOS 27.0, and Release configuration. It does not need an API key.
 
 The workflow fixture is the published revision 24 of `[performance-benchmark-1]` (`wff675a07c6c8b4540`) in [project 6627e5bc](https://app.revenuecat.com/projects/6627e5bc/paywalls). It contains seven screens and its UI configuration. The benchmark loads `Tests/PerformanceTests/Fixtures/performance-benchmark-1-revision-24.json` without duplicate workflows or screens.
 
@@ -156,7 +156,7 @@ For a local comparison:
 
 ```sh
 xcodebuild test -workspace RevenueCat-Tuist.xcworkspace -scheme PerformanceTests \
-  -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=26.0' \
+  -destination 'platform=iOS Simulator,name=iPhone 17,OS=27.0' \
   -parallel-testing-enabled NO ENABLE_TESTABILITY=YES CODE_SIGNING_ALLOWED=NO
 ```
 
