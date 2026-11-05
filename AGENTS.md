@@ -160,6 +160,8 @@ xcodebuild test -workspace RevenueCat-Tuist.xcworkspace -scheme PerformanceTests
   -parallel-testing-enabled NO ENABLE_TESTABILITY=YES CODE_SIGNING_ALLOWED=NO
 ```
 
+To update the baseline on a PR, comment `@RCGitBot please test record-performance`. The job records the measurements and pushes only `Baselines.json` to the PR branch. It stops if the branch changed during the run. Review the baseline diff before you merge.
+
 To record a candidate baseline, start a CircleCI pipeline with `action=record_performance_baselines`. Download the `Baselines.json` artifact. Review its measurements and workload hash before you update the checked-in file. The job does not commit the file.
 
 For local record mode, prefix the command with `TEST_RUNNER_RECORD_PERFORMANCE_BASELINES=1`. Use the same test selection for record and comparison runs. CI runs the full `PerformanceTests` target. Disable record mode before you compare results.

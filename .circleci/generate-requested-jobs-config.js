@@ -33,6 +33,7 @@ const JOBS = {
   "lint": ["slack-secrets"],
   "pod-lib-lint": ["slack-secrets"],
   "performance-tests": [],
+  "record-performance": [],
   "remote-config-production-tests": ["config-endpoint-tests", "slack-secrets"],
   "revenuecat-admob-tests": ["slack-secrets"],
   "run-all-maestro-e2e-tests": ["e2e-tests", "slack-secrets"],
@@ -58,6 +59,10 @@ const JOBS = {
 // than standalone jobs. They map to the real job name plus the parameters to pass,
 // matching how they're invoked in default_config.yml's workflows.
 const PARAMETERIZED_JOBS = {
+  "record-performance": {
+    job: "performance-tests",
+    parameters: { record_baselines: true, push_baselines: true },
+  },
   "installation-tests-carthage-xcode-27": {
     job: "installation-tests-carthage",
     parameters: { xcode_version: "27.0.0" },
@@ -103,7 +108,7 @@ const workflow = requestedJobs
     if (variant) {
       lines.push(`          name: ${job}`);
       for (const [key, value] of Object.entries(variant.parameters)) {
-        lines.push(`          ${key}: "${value}"`);
+        lines.push(`          ${key}: ${JSON.stringify(value)}`);
       }
     }
     if (contexts.length > 0) {
