@@ -95,9 +95,9 @@ private struct SheetPackageSelectionModifier: ViewModifier {
         )
     }
 
-    private var selectedPackageIsVisible: Bool {
+    private func selectedPackageIsVisible() -> Bool {
         guard let validator = self.viewModel.packageValidator,
-              !validator.packages.isEmpty else { return self.inheritedSelectionIsVisible }
+              !validator.packages.isEmpty else { return self.inheritedSelectionIsVisible() }
         guard let package = self.packageContext.package else { return false }
         return validator.couldBeRendering(
             package,
