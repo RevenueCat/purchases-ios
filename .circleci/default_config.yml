@@ -2439,6 +2439,52 @@ workflows:
       - run-revenuecat-ui-ios-26
       - spm-revenuecat-ui-watchos
 
+  # Temporary workflow for validating the offline integration test flake.
+  flaky-test-reproduction:
+    when:
+      equal: ["rickvdl/fix-flaky-test-918020", << pipeline.git.branch >>]
+    jobs:
+      - backend-integration-tests-offline:
+          name: backend-integration-tests-offline-01
+          context:
+            - slack-secrets
+      - backend-integration-tests-offline:
+          name: backend-integration-tests-offline-02
+          context:
+            - slack-secrets
+      - backend-integration-tests-offline:
+          name: backend-integration-tests-offline-03
+          context:
+            - slack-secrets
+      - backend-integration-tests-offline:
+          name: backend-integration-tests-offline-04
+          context:
+            - slack-secrets
+      - backend-integration-tests-offline:
+          name: backend-integration-tests-offline-05
+          context:
+            - slack-secrets
+      - backend-integration-tests-offline:
+          name: backend-integration-tests-offline-06
+          context:
+            - slack-secrets
+      - backend-integration-tests-offline:
+          name: backend-integration-tests-offline-07
+          context:
+            - slack-secrets
+      - backend-integration-tests-offline:
+          name: backend-integration-tests-offline-08
+          context:
+            - slack-secrets
+      - backend-integration-tests-offline:
+          name: backend-integration-tests-offline-09
+          context:
+            - slack-secrets
+      - backend-integration-tests-offline:
+          name: backend-integration-tests-offline-10
+          context:
+            - slack-secrets
+
   # Runs on every PR branch push. The reduced test suite runs automatically;
   # approve the "approve-full-tests" hold job to run the full suite.
   #
@@ -2456,6 +2502,8 @@ workflows:
         - not: << pipeline.parameters.generate_snapshots >>
         - not: << pipeline.parameters.generate_revenuecatui_snapshots >>
         - not: << pipeline.parameters.generate_swiftinterface >>
+        - not:
+            equal: ["rickvdl/fix-flaky-test-918020", << pipeline.git.branch >>]
         - not:
             matches:
               pattern: "^(main|release/.*)$"
@@ -2785,14 +2833,17 @@ workflows:
 
   danger:
     when:
-      or:
+      and:
         - not:
-            matches:
-              pattern: "^generated_(snapshots|swiftinterface)/.*"
-              value: << pipeline.git.branch >>
-        - matches:
-            pattern: "^generated_(snapshots|swiftinterface)/main-.*"
-            value: << pipeline.git.branch >>
+            equal: ["rickvdl/fix-flaky-test-918020", << pipeline.git.branch >>]
+        - or:
+            - not:
+                matches:
+                  pattern: "^generated_(snapshots|swiftinterface)/.*"
+                  value: << pipeline.git.branch >>
+            - matches:
+                pattern: "^generated_(snapshots|swiftinterface)/main-.*"
+                value: << pipeline.git.branch >>
     jobs:
       - danger:
           filters:
