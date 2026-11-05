@@ -175,7 +175,7 @@ class WorkflowManager: WorkflowAssetPrewarmingType {
     func publishWebBundleURLs(offerings: Offerings) async {
         guard #available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *) else { return }
 
-        // Contains workflows resolved for this publication. Offerings without a workflow mapping are skipped
+        // Contains workflows resolved for this call. Offerings without a workflow mapping are skipped
         // because only workflow-backed web bundles are prewarmed.
         var workflowsByOfferingId: [String: PublishedWorkflow] = [:]
         var resolutionsByWorkflowId: [String: Result<WorkflowDataResult, WorkflowResolutionError>] = [:]
