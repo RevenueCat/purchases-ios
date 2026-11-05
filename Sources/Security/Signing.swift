@@ -285,15 +285,19 @@ extension Signing.SignatureParameters {
         return salt + auth.asData + self.asData
     }
 
-    var asData: Data {
-        let nonce: Data = self.nonce ?? .init()
+    var signedPath: String {
         let relativePath: String
         if useFallbackPath, let fallbackRelativePath = self.path.fallbackRelativePath {
             relativePath = fallbackRelativePath
         } else {
             relativePath = self.iamEnabled ? self.path.relativeIAMPath : self.path.relativePath
         }
-        let path: Data = relativePath.asData
+        return relativePath.removingPercentEncoding ?? relativePath
+    }
+
+    var asData: Data {
+        let nonce: Data = self.nonce ?? .init()
+        let path: Data = self.signedPath.asData
         let postParameterHash: Data = self.requestBody?.postParameterHeader?.asData ?? .init()
         let headerParametersHash: Data = HTTPRequest.headerParametersForSignatureHeader(
             headers: self.requestHeaders,
@@ -314,7 +318,7 @@ extension Signing.SignatureParameters: CustomDebugStringConvertible {
     var debugDescription: String {
         return """
         SignatureParameters(" +
-            path: '\(self.iamEnabled ? self.path.relativeIAMPath : self.path.relativePath)'
+            path: '\(self.signedPath)'
             message: '\(self.messageString.trimmingWhitespacesAndNewLines)'
             headerParametersHash: '\(HTTPRequest.headerParametersForSignatureHeader(
                 headers: self.requestHeaders,
