@@ -65,6 +65,10 @@ private func checkFlowResultAPI(_ result: FlowResult) {
     let _: Bool = result.didObtainEntitlement("pro")
     let _: ObtainedProduct? = result.obtainedProduct("monthly")
     let _: Bool = result.didObtainProduct("monthly")
+
+    let unverifiedAdReward: UnverifiedAdReward? = result.unverifiedAdReward
+    let _: String? = unverifiedAdReward?.type
+    let _: Decimal? = unverifiedAdReward?.amount
 }
 
 @MainActor
@@ -172,6 +176,7 @@ private final class CheckpointAPIAdPresenter: AdPresenter {
         let _: String = params.adIdentifier
         let _: MediatorName = params.mediator
         let _: AdFormat = params.adFormat
+        let _: Bool = params.rewardVerificationEnabled
         completion(.shown)
     }
 

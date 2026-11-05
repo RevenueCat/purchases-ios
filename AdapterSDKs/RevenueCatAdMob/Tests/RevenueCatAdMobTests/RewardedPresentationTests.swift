@@ -1,13 +1,15 @@
+// swiftlint:disable file_length
 import XCTest
 
 #if os(iOS) && canImport(GoogleMobileAds)
 import GoogleMobileAds
 @_spi(Internal) import RevenueCat
 @testable import RevenueCatAdMob
-@_spi(InviteOnlyCheckpointsApi) import RevenueCatUI
+@_spi(InviteOnlyCheckpointsApi) @_spi(Internal) import RevenueCatUI
 
 @available(iOS 15.0, *)
 @MainActor
+// swiftlint:disable:next type_body_length
 final class RewardedPresentationTests: AdapterTestCase {
 
     private static let adUnitID = "ca-app-pub-test/rewarded"
@@ -99,6 +101,72 @@ final class RewardedPresentationTests: AdapterTestCase {
         }
     }
 
+    func testClientReportedRewardsNeverEnableRewardVerification() {
+        for format in Self.formats {
+            let fakeAd = FakeRewardedAd()
+            let presentation = self.makePresentation(format: format, loadResult: .success(fakeAd))
+
+            self.start(presentation, rewardVerificationEnabled: false) { _ in }
+            self.waitForPresentation(of: fakeAd)
+            fakeAd.earnReward()
+            presentation.adDidDismissFullScreenContent(PresentingAdStub())
+
+            XCTAssertEqual(fakeAd.events, [.presentWithoutRewardVerification], "\(format)")
+        }
+    }
+
+    func testClientReportedEarnedRewardThenDismissalCompletesWithShownAndTheReward() throws {
+        for format in Self.formats {
+            let fakeAd = FakeRewardedAd()
+            let presentation = self.makePresentation(format: format, loadResult: .success(fakeAd))
+            let recorder = OutcomeRecorder()
+
+            self.start(presentation, rewardVerificationEnabled: false, completion: recorder.record)
+            self.waitForPresentation(of: fakeAd)
+
+            fakeAd.earnReward()
+            presentation.adDidDismissFullScreenContent(PresentingAdStub())
+
+            XCTAssertEqual(recorder.outcomes.count, 1, "\(format)")
+            let outcome = try XCTUnwrap(recorder.outcomes.first)
+            XCTAssertTrue(outcome.isShown, "\(format)")
+            XCTAssertEqual(outcome.unverifiedReward, FakeRewardedAd.reward, "\(format)")
+        }
+    }
+
+    func testClientReportedDismissalWithoutEarningRewardCompletesWithShownAndNoReward() throws {
+        for format in Self.formats {
+            let fakeAd = FakeRewardedAd()
+            let presentation = self.makePresentation(format: format, loadResult: .success(fakeAd))
+            let recorder = OutcomeRecorder()
+
+            self.start(presentation, rewardVerificationEnabled: false, completion: recorder.record)
+            self.waitForPresentation(of: fakeAd)
+
+            presentation.adDidDismissFullScreenContent(PresentingAdStub())
+
+            XCTAssertEqual(recorder.outcomes.count, 1, "\(format)")
+            let outcome = try XCTUnwrap(recorder.outcomes.first)
+            XCTAssertTrue(outcome.isShown, "\(format)")
+            XCTAssertNil(outcome.unverifiedReward, "\(format)")
+        }
+    }
+
+    func testClientReportedEarnedRewardWaitsForDismissal() {
+        for format in Self.formats {
+            let fakeAd = FakeRewardedAd()
+            let presentation = self.makePresentation(format: format, loadResult: .success(fakeAd))
+            let recorder = OutcomeRecorder()
+
+            self.start(presentation, rewardVerificationEnabled: false, completion: recorder.record)
+            self.waitForPresentation(of: fakeAd)
+
+            fakeAd.earnReward()
+
+            XCTAssertTrue(recorder.outcomes.isEmpty, "Must not complete while the ad is still on screen (\(format))")
+        }
+    }
+
     func testPresentationFailureCompletesWithFailed() throws {
         let fakeAd = FakeRewardedAd()
         let presentation = self.makePresentation(loadResult: .success(fakeAd))
@@ -176,6 +244,7 @@ final class RewardedPresentationTests: AdapterTestCase {
                 adUnitID: Self.adUnitID,
                 mediator: .appLovin,
                 placement: "checkpoint",
+                rewardVerificationEnabled: true,
                 completion: recorder.record
             )
 
@@ -237,7 +306,11 @@ final class RewardedPresentationTests: AdapterTestCase {
     }
 
     func testOutcomeMapsToAdPresentationResult() {
-        XCTAssertEqual(RewardedPresentation.Outcome.shown.presentationResult, AdPresentationResult.shown)
+        XCTAssertEqual(RewardedPresentation.Outcome.shown(nil).presentationResult, AdPresentationResult.shown)
+        XCTAssertEqual(
+            RewardedPresentation.Outcome.shown(FakeRewardedAd.reward).presentationResult,
+            AdPresentationResult.shown(unverifiedReward: FakeRewardedAd.reward)
+        )
 
         let error = NSError(domain: "gma", code: 1)
         XCTAssertEqual(
@@ -265,12 +338,14 @@ final class RewardedPresentationTests: AdapterTestCase {
     private func start(
         _ presentation: RewardedPresentation,
         placement: String = "checkpoint",
+        rewardVerificationEnabled: Bool = true,
         completion: @escaping @MainActor (RewardedPresentation.Outcome) -> Void
     ) {
         presentation.start(
             adUnitID: Self.adUnitID,
             mediator: .adMob,
             placement: placement,
+            rewardVerificationEnabled: rewardVerificationEnabled,
             completion: completion
         )
     }
@@ -279,7 +354,7 @@ final class RewardedPresentationTests: AdapterTestCase {
         let presented = self.expectation(description: "presented")
         fakeAd.onPresent = { presented.fulfill() }
         self.wait(for: [presented], timeout: 2.0)
-        XCTAssertEqual(fakeAd.events.filter { $0 == .present }.count, 1)
+        XCTAssertEqual(fakeAd.events.filter(\.isPresentation).count, 1)
     }
 
 }
@@ -293,13 +368,19 @@ private final class FakeRewardedAd: RewardedPresentableAd {
     enum Event: Equatable {
         case enableRewardVerification
         case present
+        case presentWithoutRewardVerification
+
+        var isPresentation: Bool { self != .enableRewardVerification }
     }
+
+    static let reward = UnverifiedAdReward(type: "coins", amount: 5)
 
     private(set) var events: [Event] = []
     var onPresent: (() -> Void)?
 
     private var rewardVerificationStarted: (@MainActor () -> Void)?
     private var rewardVerificationCompleted: (@MainActor (RewardVerificationResult) -> Void)?
+    private var userDidEarnReward: (@MainActor (UnverifiedAdReward) -> Void)?
 
     func enableRewardVerification() {
         self.events.append(.enableRewardVerification)
@@ -316,9 +397,19 @@ private final class FakeRewardedAd: RewardedPresentableAd {
         self.onPresent?()
     }
 
-    /// Simulates AdMob's `userDidEarnRewardHandler` firing, which starts verification.
+    func presentWithoutRewardVerification(
+        from viewController: UIViewController,
+        userDidEarnReward: @escaping @MainActor (UnverifiedAdReward) -> Void
+    ) {
+        self.events.append(.presentWithoutRewardVerification)
+        self.userDidEarnReward = userDidEarnReward
+        self.onPresent?()
+    }
+
+    /// Simulates AdMob's `userDidEarnRewardHandler` firing, which starts verification when it is enabled.
     func earnReward() {
         self.rewardVerificationStarted?()
+        self.userDidEarnReward?(Self.reward)
     }
 
     func completeVerification(_ result: RewardVerificationResult) {
@@ -349,6 +440,11 @@ private extension RewardedPresentation.Outcome {
 
     var error: NSError? {
         if case let .failed(error) = self { return error }
+        return nil
+    }
+
+    var unverifiedReward: UnverifiedAdReward? {
+        if case let .shown(reward) = self { return reward }
         return nil
     }
 

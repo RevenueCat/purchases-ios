@@ -79,7 +79,7 @@ final class ObtainedProductsTests: TestCase {
         let installments = Self.storeProduct(identifier: "monthly", installmentsInfo: Self.monthlyInstallments)
         let obtained = try Self.customerInfo(purchaseDatesByProductId: ["monthly:monthly": Self.date(10)])
             .obtainedProducts(comparedTo: Self.customerInfo(), from: [installments])
-        let flowResult = FlowResult(obtainedEntitlements: [], obtainedProducts: Set(obtained))
+        let flowResult = FlowResult(obtainedEntitlements: [], obtainedProducts: Set(obtained), unverifiedAdReward: nil)
 
         XCTAssertEqual(obtained.map(\.product.id), ["monthly:monthly"])
         XCTAssertEqual(flowResult.obtainedProduct("monthly:monthly")?.product.id, "monthly:monthly")
@@ -92,7 +92,8 @@ final class ObtainedProductsTests: TestCase {
         let installments = Self.storeProduct(identifier: "monthly", installmentsInfo: Self.monthlyInstallments)
         let flowResult = FlowResult(
             obtainedEntitlements: [],
-            obtainedProducts: [ObtainedProduct(product: installments), ObtainedProduct(product: Self.monthly)]
+            obtainedProducts: [ObtainedProduct(product: installments), ObtainedProduct(product: Self.monthly)],
+            unverifiedAdReward: nil
         )
 
         XCTAssertEqual(flowResult.obtainedProduct("monthly")?.product.id, "monthly")

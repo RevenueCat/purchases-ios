@@ -58,6 +58,14 @@ public struct AdPresentationParams {
     /// The ad format ``adIdentifier`` was created for, which decides how the presenter loads and shows it.
     public let adFormat: AdFormat
 
+    /// Whether RevenueCat verifies the reward of a rewarded ad. Interstitial ads ignore it.
+    ///
+    /// When `false`, the presenter must not enable RevenueCat reward verification, and RevenueCat grants nothing for
+    /// the ad. RevenueCat's ad adapters then report the reward the ad network gives on the device, so that the app
+    /// receives it unverified as ``FlowResult/unverifiedAdReward``. A custom presenter can't report this reward, so
+    /// ``FlowResult/unverifiedAdReward`` is `nil` for the ads it presents.
+    public let rewardVerificationEnabled: Bool
+
     /// Creates presentation context for an ad step selected by a checkpoint.
     ///
     /// - Parameters:
@@ -65,16 +73,19 @@ public struct AdPresentationParams {
     ///   - adIdentifier: The identifier of the ad configured for the ad step.
     ///   - mediator: The mediation network configured to serve `adIdentifier`.
     ///   - adFormat: The ad format `adIdentifier` was created for.
+    ///   - rewardVerificationEnabled: Whether RevenueCat verifies the reward of a rewarded ad.
     @_spi(Internal) public init(
         checkpointIdentifier: String,
         adIdentifier: String,
         mediator: MediatorName,
-        adFormat: AdFormat
+        adFormat: AdFormat,
+        rewardVerificationEnabled: Bool
     ) {
         self.checkpointIdentifier = checkpointIdentifier
         self.adIdentifier = adIdentifier
         self.mediator = mediator
         self.adFormat = adFormat
+        self.rewardVerificationEnabled = rewardVerificationEnabled
     }
 
 }
@@ -88,17 +99,25 @@ public struct AdPresentationParams {
 public struct AdPresentationResult: Equatable, Sendable {
 
     /// The ad was shown and dismissed.
-    public static let shown = AdPresentationResult(error: nil)
+    public static let shown = AdPresentationResult(error: nil, unverifiedReward: nil)
+
+    /// The ad was shown and dismissed, and the customer earned `unverifiedReward`, which the ad network reported on
+    /// the device without RevenueCat verifying it.
+    @_spi(Internal) public static func shown(unverifiedReward: UnverifiedAdReward) -> AdPresentationResult {
+        return AdPresentationResult(error: nil, unverifiedReward: unverifiedReward)
+    }
 
     /// The ad could not be shown, for example because it failed to load or the mediator had no fill.
     public static func failed(error: PublicError) -> AdPresentationResult {
-        return AdPresentationResult(error: error)
+        return AdPresentationResult(error: error, unverifiedReward: nil)
     }
 
     let error: PublicError?
+    let unverifiedReward: UnverifiedAdReward?
 
-    private init(error: PublicError?) {
+    private init(error: PublicError?, unverifiedReward: UnverifiedAdReward?) {
         self.error = error
+        self.unverifiedReward = unverifiedReward
     }
 
 }
