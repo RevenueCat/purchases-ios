@@ -92,10 +92,12 @@ final class PrebidInterstitial: NSObject, AdModuleInterstitial {
     nonisolated static func revenue(fromCPM cpm: Float) -> AdModuleRevenue? {
         guard cpm > 0 else { return nil }
         // CPM is per thousand impressions: one impression earns cpm / 1_000 units, i.e. cpm * 1_000 micros.
+        // Estimated: this is the auction price recorded when the ad is about to show, not what the
+        // network ends up billing.
         return AdModuleRevenue(
             micros: Int((Double(cpm) * 1_000).rounded()),
             currency: Self.currency,
-            precision: .exact
+            precision: .estimated
         )
     }
 
