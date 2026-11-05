@@ -1,0 +1,453 @@
+{
+  "schema_version": 1,
+  "cases": [
+    {
+      "id": "locale/is/en_US/new",
+      "field": "locale",
+      "operator": "is",
+      "profile": "new",
+      "predicate": "{\"==\": [{\"var\": \"locale\"}, \"en_us\"]}",
+      "expected": false
+    },
+    {
+      "id": "locale/is/en_US/renewed",
+      "field": "locale",
+      "operator": "is",
+      "profile": "renewed",
+      "predicate": "{\"==\": [{\"var\": \"locale\"}, \"en_us\"]}",
+      "expected": true
+    },
+    {
+      "id": "locale/is/en_US/first_purchase",
+      "field": "locale",
+      "operator": "is",
+      "profile": "first_purchase",
+      "predicate": "{\"==\": [{\"var\": \"locale\"}, \"en_us\"]}",
+      "expected": true
+    },
+    {
+      "id": "locale/is/en_US/unavailable",
+      "field": "locale",
+      "operator": "is",
+      "profile": "unavailable",
+      "predicate": "{\"==\": [{\"var\": \"locale\"}, \"en_us\"]}",
+      "expected": false
+    },
+    {
+      "id": "locale/is/fr_FR/new",
+      "field": "locale",
+      "operator": "is",
+      "profile": "new",
+      "predicate": "{\"==\": [{\"var\": \"locale\"}, \"fr_fr\"]}",
+      "expected": true
+    },
+    {
+      "id": "locale/is/fr_FR/renewed",
+      "field": "locale",
+      "operator": "is",
+      "profile": "renewed",
+      "predicate": "{\"==\": [{\"var\": \"locale\"}, \"fr_fr\"]}",
+      "expected": false
+    },
+    {
+      "id": "locale/is/fr_FR/first_purchase",
+      "field": "locale",
+      "operator": "is",
+      "profile": "first_purchase",
+      "predicate": "{\"==\": [{\"var\": \"locale\"}, \"fr_fr\"]}",
+      "expected": false
+    },
+    {
+      "id": "locale/is/fr_FR/unavailable",
+      "field": "locale",
+      "operator": "is",
+      "profile": "unavailable",
+      "predicate": "{\"==\": [{\"var\": \"locale\"}, \"fr_fr\"]}",
+      "expected": false
+    },
+    {
+      "id": "locale/is/de_DE/new",
+      "field": "locale",
+      "operator": "is",
+      "profile": "new",
+      "predicate": "{\"==\": [{\"var\": \"locale\"}, \"de_de\"]}",
+      "expected": false
+    },
+    {
+      "id": "locale/is/de_DE/renewed",
+      "field": "locale",
+      "operator": "is",
+      "profile": "renewed",
+      "predicate": "{\"==\": [{\"var\": \"locale\"}, \"de_de\"]}",
+      "expected": false
+    },
+    {
+      "id": "locale/is/de_DE/first_purchase",
+      "field": "locale",
+      "operator": "is",
+      "profile": "first_purchase",
+      "predicate": "{\"==\": [{\"var\": \"locale\"}, \"de_de\"]}",
+      "expected": false
+    },
+    {
+      "id": "locale/is/de_DE/unavailable",
+      "field": "locale",
+      "operator": "is",
+      "profile": "unavailable",
+      "predicate": "{\"==\": [{\"var\": \"locale\"}, \"de_de\"]}",
+      "expected": false
+    },
+    {
+      "id": "locale/isNot/en_US/new",
+      "field": "locale",
+      "operator": "isNot",
+      "profile": "new",
+      "predicate": "{\"!=\": [{\"var\": [\"locale\", null]}, \"en_us\"]}",
+      "expected": true
+    },
+    {
+      "id": "locale/isNot/en_US/renewed",
+      "field": "locale",
+      "operator": "isNot",
+      "profile": "renewed",
+      "predicate": "{\"!=\": [{\"var\": [\"locale\", null]}, \"en_us\"]}",
+      "expected": false
+    },
+    {
+      "id": "locale/isNot/en_US/first_purchase",
+      "field": "locale",
+      "operator": "isNot",
+      "profile": "first_purchase",
+      "predicate": "{\"!=\": [{\"var\": [\"locale\", null]}, \"en_us\"]}",
+      "expected": false
+    },
+    {
+      "id": "locale/isNot/en_US/unavailable",
+      "field": "locale",
+      "operator": "isNot",
+      "profile": "unavailable",
+      "predicate": "{\"!=\": [{\"var\": [\"locale\", null]}, \"en_us\"]}",
+      "expected": true
+    },
+    {
+      "id": "locale/isNot/fr_FR/new",
+      "field": "locale",
+      "operator": "isNot",
+      "profile": "new",
+      "predicate": "{\"!=\": [{\"var\": [\"locale\", null]}, \"fr_fr\"]}",
+      "expected": false
+    },
+    {
+      "id": "locale/isNot/fr_FR/renewed",
+      "field": "locale",
+      "operator": "isNot",
+      "profile": "renewed",
+      "predicate": "{\"!=\": [{\"var\": [\"locale\", null]}, \"fr_fr\"]}",
+      "expected": true
+    },
+    {
+      "id": "locale/isNot/fr_FR/first_purchase",
+      "field": "locale",
+      "operator": "isNot",
+      "profile": "first_purchase",
+      "predicate": "{\"!=\": [{\"var\": [\"locale\", null]}, \"fr_fr\"]}",
+      "expected": true
+    },
+    {
+      "id": "locale/isNot/fr_FR/unavailable",
+      "field": "locale",
+      "operator": "isNot",
+      "profile": "unavailable",
+      "predicate": "{\"!=\": [{\"var\": [\"locale\", null]}, \"fr_fr\"]}",
+      "expected": true
+    },
+    {
+      "id": "locale/isNot/de_DE/new",
+      "field": "locale",
+      "operator": "isNot",
+      "profile": "new",
+      "predicate": "{\"!=\": [{\"var\": [\"locale\", null]}, \"de_de\"]}",
+      "expected": true
+    },
+    {
+      "id": "locale/isNot/de_DE/renewed",
+      "field": "locale",
+      "operator": "isNot",
+      "profile": "renewed",
+      "predicate": "{\"!=\": [{\"var\": [\"locale\", null]}, \"de_de\"]}",
+      "expected": true
+    },
+    {
+      "id": "locale/isNot/de_DE/first_purchase",
+      "field": "locale",
+      "operator": "isNot",
+      "profile": "first_purchase",
+      "predicate": "{\"!=\": [{\"var\": [\"locale\", null]}, \"de_de\"]}",
+      "expected": true
+    },
+    {
+      "id": "locale/isNot/de_DE/unavailable",
+      "field": "locale",
+      "operator": "isNot",
+      "profile": "unavailable",
+      "predicate": "{\"!=\": [{\"var\": [\"locale\", null]}, \"de_de\"]}",
+      "expected": true
+    },
+    {
+      "id": "locale/contains/en_US/new",
+      "field": "locale",
+      "operator": "contains",
+      "profile": "new",
+      "predicate": "{\"in\": [{\"rc.lower\": \"en_us\"}, {\"rc.lower\": {\"var\": \"locale\"}}]}",
+      "expected": false
+    },
+    {
+      "id": "locale/contains/en_US/renewed",
+      "field": "locale",
+      "operator": "contains",
+      "profile": "renewed",
+      "predicate": "{\"in\": [{\"rc.lower\": \"en_us\"}, {\"rc.lower\": {\"var\": \"locale\"}}]}",
+      "expected": true
+    },
+    {
+      "id": "locale/contains/en_US/first_purchase",
+      "field": "locale",
+      "operator": "contains",
+      "profile": "first_purchase",
+      "predicate": "{\"in\": [{\"rc.lower\": \"en_us\"}, {\"rc.lower\": {\"var\": \"locale\"}}]}",
+      "expected": true
+    },
+    {
+      "id": "locale/contains/en_US/unavailable",
+      "field": "locale",
+      "operator": "contains",
+      "profile": "unavailable",
+      "predicate": "{\"in\": [{\"rc.lower\": \"en_us\"}, {\"rc.lower\": {\"var\": \"locale\"}}]}",
+      "expected": false
+    },
+    {
+      "id": "locale/contains/fr_FR/new",
+      "field": "locale",
+      "operator": "contains",
+      "profile": "new",
+      "predicate": "{\"in\": [{\"rc.lower\": \"fr_fr\"}, {\"rc.lower\": {\"var\": \"locale\"}}]}",
+      "expected": true
+    },
+    {
+      "id": "locale/contains/fr_FR/renewed",
+      "field": "locale",
+      "operator": "contains",
+      "profile": "renewed",
+      "predicate": "{\"in\": [{\"rc.lower\": \"fr_fr\"}, {\"rc.lower\": {\"var\": \"locale\"}}]}",
+      "expected": false
+    },
+    {
+      "id": "locale/contains/fr_FR/first_purchase",
+      "field": "locale",
+      "operator": "contains",
+      "profile": "first_purchase",
+      "predicate": "{\"in\": [{\"rc.lower\": \"fr_fr\"}, {\"rc.lower\": {\"var\": \"locale\"}}]}",
+      "expected": false
+    },
+    {
+      "id": "locale/contains/fr_FR/unavailable",
+      "field": "locale",
+      "operator": "contains",
+      "profile": "unavailable",
+      "predicate": "{\"in\": [{\"rc.lower\": \"fr_fr\"}, {\"rc.lower\": {\"var\": \"locale\"}}]}",
+      "expected": false
+    },
+    {
+      "id": "locale/contains/de_DE/new",
+      "field": "locale",
+      "operator": "contains",
+      "profile": "new",
+      "predicate": "{\"in\": [{\"rc.lower\": \"de_de\"}, {\"rc.lower\": {\"var\": \"locale\"}}]}",
+      "expected": false
+    },
+    {
+      "id": "locale/contains/de_DE/renewed",
+      "field": "locale",
+      "operator": "contains",
+      "profile": "renewed",
+      "predicate": "{\"in\": [{\"rc.lower\": \"de_de\"}, {\"rc.lower\": {\"var\": \"locale\"}}]}",
+      "expected": false
+    },
+    {
+      "id": "locale/contains/de_DE/first_purchase",
+      "field": "locale",
+      "operator": "contains",
+      "profile": "first_purchase",
+      "predicate": "{\"in\": [{\"rc.lower\": \"de_de\"}, {\"rc.lower\": {\"var\": \"locale\"}}]}",
+      "expected": false
+    },
+    {
+      "id": "locale/contains/de_DE/unavailable",
+      "field": "locale",
+      "operator": "contains",
+      "profile": "unavailable",
+      "predicate": "{\"in\": [{\"rc.lower\": \"de_de\"}, {\"rc.lower\": {\"var\": \"locale\"}}]}",
+      "expected": false
+    },
+    {
+      "id": "locale/doesNotContain/en_US/new",
+      "field": "locale",
+      "operator": "doesNotContain",
+      "profile": "new",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": \"locale\"}, null]}, {\"!\": [{\"in\": [{\"rc.lower\": \"en_us\"}, {\"rc.lower\": {\"var\": \"locale\"}}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "locale/doesNotContain/en_US/renewed",
+      "field": "locale",
+      "operator": "doesNotContain",
+      "profile": "renewed",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": \"locale\"}, null]}, {\"!\": [{\"in\": [{\"rc.lower\": \"en_us\"}, {\"rc.lower\": {\"var\": \"locale\"}}]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "locale/doesNotContain/en_US/first_purchase",
+      "field": "locale",
+      "operator": "doesNotContain",
+      "profile": "first_purchase",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": \"locale\"}, null]}, {\"!\": [{\"in\": [{\"rc.lower\": \"en_us\"}, {\"rc.lower\": {\"var\": \"locale\"}}]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "locale/doesNotContain/en_US/unavailable",
+      "field": "locale",
+      "operator": "doesNotContain",
+      "profile": "unavailable",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": \"locale\"}, null]}, {\"!\": [{\"in\": [{\"rc.lower\": \"en_us\"}, {\"rc.lower\": {\"var\": \"locale\"}}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "locale/doesNotContain/fr_FR/new",
+      "field": "locale",
+      "operator": "doesNotContain",
+      "profile": "new",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": \"locale\"}, null]}, {\"!\": [{\"in\": [{\"rc.lower\": \"fr_fr\"}, {\"rc.lower\": {\"var\": \"locale\"}}]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "locale/doesNotContain/fr_FR/renewed",
+      "field": "locale",
+      "operator": "doesNotContain",
+      "profile": "renewed",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": \"locale\"}, null]}, {\"!\": [{\"in\": [{\"rc.lower\": \"fr_fr\"}, {\"rc.lower\": {\"var\": \"locale\"}}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "locale/doesNotContain/fr_FR/first_purchase",
+      "field": "locale",
+      "operator": "doesNotContain",
+      "profile": "first_purchase",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": \"locale\"}, null]}, {\"!\": [{\"in\": [{\"rc.lower\": \"fr_fr\"}, {\"rc.lower\": {\"var\": \"locale\"}}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "locale/doesNotContain/fr_FR/unavailable",
+      "field": "locale",
+      "operator": "doesNotContain",
+      "profile": "unavailable",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": \"locale\"}, null]}, {\"!\": [{\"in\": [{\"rc.lower\": \"fr_fr\"}, {\"rc.lower\": {\"var\": \"locale\"}}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "locale/doesNotContain/de_DE/new",
+      "field": "locale",
+      "operator": "doesNotContain",
+      "profile": "new",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": \"locale\"}, null]}, {\"!\": [{\"in\": [{\"rc.lower\": \"de_de\"}, {\"rc.lower\": {\"var\": \"locale\"}}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "locale/doesNotContain/de_DE/renewed",
+      "field": "locale",
+      "operator": "doesNotContain",
+      "profile": "renewed",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": \"locale\"}, null]}, {\"!\": [{\"in\": [{\"rc.lower\": \"de_de\"}, {\"rc.lower\": {\"var\": \"locale\"}}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "locale/doesNotContain/de_DE/first_purchase",
+      "field": "locale",
+      "operator": "doesNotContain",
+      "profile": "first_purchase",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": \"locale\"}, null]}, {\"!\": [{\"in\": [{\"rc.lower\": \"de_de\"}, {\"rc.lower\": {\"var\": \"locale\"}}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "locale/doesNotContain/de_DE/unavailable",
+      "field": "locale",
+      "operator": "doesNotContain",
+      "profile": "unavailable",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": \"locale\"}, null]}, {\"!\": [{\"in\": [{\"rc.lower\": \"de_de\"}, {\"rc.lower\": {\"var\": \"locale\"}}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "locale/isEmpty//new",
+      "field": "locale",
+      "operator": "isEmpty",
+      "profile": "new",
+      "predicate": "{\"==\": [{\"var\": \"locale\"}, null]}",
+      "expected": false
+    },
+    {
+      "id": "locale/isEmpty//renewed",
+      "field": "locale",
+      "operator": "isEmpty",
+      "profile": "renewed",
+      "predicate": "{\"==\": [{\"var\": \"locale\"}, null]}",
+      "expected": false
+    },
+    {
+      "id": "locale/isEmpty//first_purchase",
+      "field": "locale",
+      "operator": "isEmpty",
+      "profile": "first_purchase",
+      "predicate": "{\"==\": [{\"var\": \"locale\"}, null]}",
+      "expected": false
+    },
+    {
+      "id": "locale/isEmpty//unavailable",
+      "field": "locale",
+      "operator": "isEmpty",
+      "profile": "unavailable",
+      "predicate": "{\"==\": [{\"var\": \"locale\"}, null]}",
+      "expected": true
+    },
+    {
+      "id": "locale/isNotEmpty//new",
+      "field": "locale",
+      "operator": "isNotEmpty",
+      "profile": "new",
+      "predicate": "{\"!=\": [{\"var\": \"locale\"}, null]}",
+      "expected": true
+    },
+    {
+      "id": "locale/isNotEmpty//renewed",
+      "field": "locale",
+      "operator": "isNotEmpty",
+      "profile": "renewed",
+      "predicate": "{\"!=\": [{\"var\": \"locale\"}, null]}",
+      "expected": true
+    },
+    {
+      "id": "locale/isNotEmpty//first_purchase",
+      "field": "locale",
+      "operator": "isNotEmpty",
+      "profile": "first_purchase",
+      "predicate": "{\"!=\": [{\"var\": \"locale\"}, null]}",
+      "expected": true
+    },
+    {
+      "id": "locale/isNotEmpty//unavailable",
+      "field": "locale",
+      "operator": "isNotEmpty",
+      "profile": "unavailable",
+      "predicate": "{\"!=\": [{\"var\": \"locale\"}, null]}",
+      "expected": false
+    }
+  ]
+}

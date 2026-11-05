@@ -1,0 +1,645 @@
+{
+  "schema_version": 1,
+  "cases": [
+    {
+      "id": "totalRenewals/greaterThan/0/new",
+      "field": "totalRenewals",
+      "operator": "greaterThan",
+      "profile": "new",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"total_renewals\"}, null]}, {\">\": [{\"var\": \"total_renewals\"}, 0]}]}",
+      "expected": false
+    },
+    {
+      "id": "totalRenewals/greaterThan/0/renewed",
+      "field": "totalRenewals",
+      "operator": "greaterThan",
+      "profile": "renewed",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"total_renewals\"}, null]}, {\">\": [{\"var\": \"total_renewals\"}, 0]}]}",
+      "expected": true
+    },
+    {
+      "id": "totalRenewals/greaterThan/0/first_purchase",
+      "field": "totalRenewals",
+      "operator": "greaterThan",
+      "profile": "first_purchase",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"total_renewals\"}, null]}, {\">\": [{\"var\": \"total_renewals\"}, 0]}]}",
+      "expected": false
+    },
+    {
+      "id": "totalRenewals/greaterThan/0/unavailable",
+      "field": "totalRenewals",
+      "operator": "greaterThan",
+      "profile": "unavailable",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"total_renewals\"}, null]}, {\">\": [{\"var\": \"total_renewals\"}, 0]}]}",
+      "expected": false
+    },
+    {
+      "id": "totalRenewals/greaterThan/1/new",
+      "field": "totalRenewals",
+      "operator": "greaterThan",
+      "profile": "new",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"total_renewals\"}, null]}, {\">\": [{\"var\": \"total_renewals\"}, 1]}]}",
+      "expected": false
+    },
+    {
+      "id": "totalRenewals/greaterThan/1/renewed",
+      "field": "totalRenewals",
+      "operator": "greaterThan",
+      "profile": "renewed",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"total_renewals\"}, null]}, {\">\": [{\"var\": \"total_renewals\"}, 1]}]}",
+      "expected": false
+    },
+    {
+      "id": "totalRenewals/greaterThan/1/first_purchase",
+      "field": "totalRenewals",
+      "operator": "greaterThan",
+      "profile": "first_purchase",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"total_renewals\"}, null]}, {\">\": [{\"var\": \"total_renewals\"}, 1]}]}",
+      "expected": false
+    },
+    {
+      "id": "totalRenewals/greaterThan/1/unavailable",
+      "field": "totalRenewals",
+      "operator": "greaterThan",
+      "profile": "unavailable",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"total_renewals\"}, null]}, {\">\": [{\"var\": \"total_renewals\"}, 1]}]}",
+      "expected": false
+    },
+    {
+      "id": "totalRenewals/greaterThan/2/new",
+      "field": "totalRenewals",
+      "operator": "greaterThan",
+      "profile": "new",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"total_renewals\"}, null]}, {\">\": [{\"var\": \"total_renewals\"}, 2]}]}",
+      "expected": false
+    },
+    {
+      "id": "totalRenewals/greaterThan/2/renewed",
+      "field": "totalRenewals",
+      "operator": "greaterThan",
+      "profile": "renewed",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"total_renewals\"}, null]}, {\">\": [{\"var\": \"total_renewals\"}, 2]}]}",
+      "expected": false
+    },
+    {
+      "id": "totalRenewals/greaterThan/2/first_purchase",
+      "field": "totalRenewals",
+      "operator": "greaterThan",
+      "profile": "first_purchase",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"total_renewals\"}, null]}, {\">\": [{\"var\": \"total_renewals\"}, 2]}]}",
+      "expected": false
+    },
+    {
+      "id": "totalRenewals/greaterThan/2/unavailable",
+      "field": "totalRenewals",
+      "operator": "greaterThan",
+      "profile": "unavailable",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"total_renewals\"}, null]}, {\">\": [{\"var\": \"total_renewals\"}, 2]}]}",
+      "expected": false
+    },
+    {
+      "id": "totalRenewals/greaterThanOrEqual/0/new",
+      "field": "totalRenewals",
+      "operator": "greaterThanOrEqual",
+      "profile": "new",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"total_renewals\"}, null]}, {\">=\": [{\"var\": \"total_renewals\"}, 0]}]}",
+      "expected": false
+    },
+    {
+      "id": "totalRenewals/greaterThanOrEqual/0/renewed",
+      "field": "totalRenewals",
+      "operator": "greaterThanOrEqual",
+      "profile": "renewed",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"total_renewals\"}, null]}, {\">=\": [{\"var\": \"total_renewals\"}, 0]}]}",
+      "expected": true
+    },
+    {
+      "id": "totalRenewals/greaterThanOrEqual/0/first_purchase",
+      "field": "totalRenewals",
+      "operator": "greaterThanOrEqual",
+      "profile": "first_purchase",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"total_renewals\"}, null]}, {\">=\": [{\"var\": \"total_renewals\"}, 0]}]}",
+      "expected": true
+    },
+    {
+      "id": "totalRenewals/greaterThanOrEqual/0/unavailable",
+      "field": "totalRenewals",
+      "operator": "greaterThanOrEqual",
+      "profile": "unavailable",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"total_renewals\"}, null]}, {\">=\": [{\"var\": \"total_renewals\"}, 0]}]}",
+      "expected": false
+    },
+    {
+      "id": "totalRenewals/greaterThanOrEqual/1/new",
+      "field": "totalRenewals",
+      "operator": "greaterThanOrEqual",
+      "profile": "new",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"total_renewals\"}, null]}, {\">=\": [{\"var\": \"total_renewals\"}, 1]}]}",
+      "expected": false
+    },
+    {
+      "id": "totalRenewals/greaterThanOrEqual/1/renewed",
+      "field": "totalRenewals",
+      "operator": "greaterThanOrEqual",
+      "profile": "renewed",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"total_renewals\"}, null]}, {\">=\": [{\"var\": \"total_renewals\"}, 1]}]}",
+      "expected": true
+    },
+    {
+      "id": "totalRenewals/greaterThanOrEqual/1/first_purchase",
+      "field": "totalRenewals",
+      "operator": "greaterThanOrEqual",
+      "profile": "first_purchase",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"total_renewals\"}, null]}, {\">=\": [{\"var\": \"total_renewals\"}, 1]}]}",
+      "expected": false
+    },
+    {
+      "id": "totalRenewals/greaterThanOrEqual/1/unavailable",
+      "field": "totalRenewals",
+      "operator": "greaterThanOrEqual",
+      "profile": "unavailable",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"total_renewals\"}, null]}, {\">=\": [{\"var\": \"total_renewals\"}, 1]}]}",
+      "expected": false
+    },
+    {
+      "id": "totalRenewals/greaterThanOrEqual/2/new",
+      "field": "totalRenewals",
+      "operator": "greaterThanOrEqual",
+      "profile": "new",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"total_renewals\"}, null]}, {\">=\": [{\"var\": \"total_renewals\"}, 2]}]}",
+      "expected": false
+    },
+    {
+      "id": "totalRenewals/greaterThanOrEqual/2/renewed",
+      "field": "totalRenewals",
+      "operator": "greaterThanOrEqual",
+      "profile": "renewed",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"total_renewals\"}, null]}, {\">=\": [{\"var\": \"total_renewals\"}, 2]}]}",
+      "expected": false
+    },
+    {
+      "id": "totalRenewals/greaterThanOrEqual/2/first_purchase",
+      "field": "totalRenewals",
+      "operator": "greaterThanOrEqual",
+      "profile": "first_purchase",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"total_renewals\"}, null]}, {\">=\": [{\"var\": \"total_renewals\"}, 2]}]}",
+      "expected": false
+    },
+    {
+      "id": "totalRenewals/greaterThanOrEqual/2/unavailable",
+      "field": "totalRenewals",
+      "operator": "greaterThanOrEqual",
+      "profile": "unavailable",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"total_renewals\"}, null]}, {\">=\": [{\"var\": \"total_renewals\"}, 2]}]}",
+      "expected": false
+    },
+    {
+      "id": "totalRenewals/lessThan/0/new",
+      "field": "totalRenewals",
+      "operator": "lessThan",
+      "profile": "new",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"total_renewals\"}, null]}, {\"<\": [{\"var\": \"total_renewals\"}, 0]}]}",
+      "expected": false
+    },
+    {
+      "id": "totalRenewals/lessThan/0/renewed",
+      "field": "totalRenewals",
+      "operator": "lessThan",
+      "profile": "renewed",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"total_renewals\"}, null]}, {\"<\": [{\"var\": \"total_renewals\"}, 0]}]}",
+      "expected": false
+    },
+    {
+      "id": "totalRenewals/lessThan/0/first_purchase",
+      "field": "totalRenewals",
+      "operator": "lessThan",
+      "profile": "first_purchase",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"total_renewals\"}, null]}, {\"<\": [{\"var\": \"total_renewals\"}, 0]}]}",
+      "expected": false
+    },
+    {
+      "id": "totalRenewals/lessThan/0/unavailable",
+      "field": "totalRenewals",
+      "operator": "lessThan",
+      "profile": "unavailable",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"total_renewals\"}, null]}, {\"<\": [{\"var\": \"total_renewals\"}, 0]}]}",
+      "expected": false
+    },
+    {
+      "id": "totalRenewals/lessThan/1/new",
+      "field": "totalRenewals",
+      "operator": "lessThan",
+      "profile": "new",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"total_renewals\"}, null]}, {\"<\": [{\"var\": \"total_renewals\"}, 1]}]}",
+      "expected": false
+    },
+    {
+      "id": "totalRenewals/lessThan/1/renewed",
+      "field": "totalRenewals",
+      "operator": "lessThan",
+      "profile": "renewed",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"total_renewals\"}, null]}, {\"<\": [{\"var\": \"total_renewals\"}, 1]}]}",
+      "expected": false
+    },
+    {
+      "id": "totalRenewals/lessThan/1/first_purchase",
+      "field": "totalRenewals",
+      "operator": "lessThan",
+      "profile": "first_purchase",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"total_renewals\"}, null]}, {\"<\": [{\"var\": \"total_renewals\"}, 1]}]}",
+      "expected": true
+    },
+    {
+      "id": "totalRenewals/lessThan/1/unavailable",
+      "field": "totalRenewals",
+      "operator": "lessThan",
+      "profile": "unavailable",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"total_renewals\"}, null]}, {\"<\": [{\"var\": \"total_renewals\"}, 1]}]}",
+      "expected": false
+    },
+    {
+      "id": "totalRenewals/lessThan/2/new",
+      "field": "totalRenewals",
+      "operator": "lessThan",
+      "profile": "new",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"total_renewals\"}, null]}, {\"<\": [{\"var\": \"total_renewals\"}, 2]}]}",
+      "expected": false
+    },
+    {
+      "id": "totalRenewals/lessThan/2/renewed",
+      "field": "totalRenewals",
+      "operator": "lessThan",
+      "profile": "renewed",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"total_renewals\"}, null]}, {\"<\": [{\"var\": \"total_renewals\"}, 2]}]}",
+      "expected": true
+    },
+    {
+      "id": "totalRenewals/lessThan/2/first_purchase",
+      "field": "totalRenewals",
+      "operator": "lessThan",
+      "profile": "first_purchase",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"total_renewals\"}, null]}, {\"<\": [{\"var\": \"total_renewals\"}, 2]}]}",
+      "expected": true
+    },
+    {
+      "id": "totalRenewals/lessThan/2/unavailable",
+      "field": "totalRenewals",
+      "operator": "lessThan",
+      "profile": "unavailable",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"total_renewals\"}, null]}, {\"<\": [{\"var\": \"total_renewals\"}, 2]}]}",
+      "expected": false
+    },
+    {
+      "id": "totalRenewals/lessThanOrEqual/0/new",
+      "field": "totalRenewals",
+      "operator": "lessThanOrEqual",
+      "profile": "new",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"total_renewals\"}, null]}, {\"<=\": [{\"var\": \"total_renewals\"}, 0]}]}",
+      "expected": false
+    },
+    {
+      "id": "totalRenewals/lessThanOrEqual/0/renewed",
+      "field": "totalRenewals",
+      "operator": "lessThanOrEqual",
+      "profile": "renewed",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"total_renewals\"}, null]}, {\"<=\": [{\"var\": \"total_renewals\"}, 0]}]}",
+      "expected": false
+    },
+    {
+      "id": "totalRenewals/lessThanOrEqual/0/first_purchase",
+      "field": "totalRenewals",
+      "operator": "lessThanOrEqual",
+      "profile": "first_purchase",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"total_renewals\"}, null]}, {\"<=\": [{\"var\": \"total_renewals\"}, 0]}]}",
+      "expected": true
+    },
+    {
+      "id": "totalRenewals/lessThanOrEqual/0/unavailable",
+      "field": "totalRenewals",
+      "operator": "lessThanOrEqual",
+      "profile": "unavailable",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"total_renewals\"}, null]}, {\"<=\": [{\"var\": \"total_renewals\"}, 0]}]}",
+      "expected": false
+    },
+    {
+      "id": "totalRenewals/lessThanOrEqual/1/new",
+      "field": "totalRenewals",
+      "operator": "lessThanOrEqual",
+      "profile": "new",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"total_renewals\"}, null]}, {\"<=\": [{\"var\": \"total_renewals\"}, 1]}]}",
+      "expected": false
+    },
+    {
+      "id": "totalRenewals/lessThanOrEqual/1/renewed",
+      "field": "totalRenewals",
+      "operator": "lessThanOrEqual",
+      "profile": "renewed",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"total_renewals\"}, null]}, {\"<=\": [{\"var\": \"total_renewals\"}, 1]}]}",
+      "expected": true
+    },
+    {
+      "id": "totalRenewals/lessThanOrEqual/1/first_purchase",
+      "field": "totalRenewals",
+      "operator": "lessThanOrEqual",
+      "profile": "first_purchase",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"total_renewals\"}, null]}, {\"<=\": [{\"var\": \"total_renewals\"}, 1]}]}",
+      "expected": true
+    },
+    {
+      "id": "totalRenewals/lessThanOrEqual/1/unavailable",
+      "field": "totalRenewals",
+      "operator": "lessThanOrEqual",
+      "profile": "unavailable",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"total_renewals\"}, null]}, {\"<=\": [{\"var\": \"total_renewals\"}, 1]}]}",
+      "expected": false
+    },
+    {
+      "id": "totalRenewals/lessThanOrEqual/2/new",
+      "field": "totalRenewals",
+      "operator": "lessThanOrEqual",
+      "profile": "new",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"total_renewals\"}, null]}, {\"<=\": [{\"var\": \"total_renewals\"}, 2]}]}",
+      "expected": false
+    },
+    {
+      "id": "totalRenewals/lessThanOrEqual/2/renewed",
+      "field": "totalRenewals",
+      "operator": "lessThanOrEqual",
+      "profile": "renewed",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"total_renewals\"}, null]}, {\"<=\": [{\"var\": \"total_renewals\"}, 2]}]}",
+      "expected": true
+    },
+    {
+      "id": "totalRenewals/lessThanOrEqual/2/first_purchase",
+      "field": "totalRenewals",
+      "operator": "lessThanOrEqual",
+      "profile": "first_purchase",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"total_renewals\"}, null]}, {\"<=\": [{\"var\": \"total_renewals\"}, 2]}]}",
+      "expected": true
+    },
+    {
+      "id": "totalRenewals/lessThanOrEqual/2/unavailable",
+      "field": "totalRenewals",
+      "operator": "lessThanOrEqual",
+      "profile": "unavailable",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"total_renewals\"}, null]}, {\"<=\": [{\"var\": \"total_renewals\"}, 2]}]}",
+      "expected": false
+    },
+    {
+      "id": "totalRenewals/equal/0/new",
+      "field": "totalRenewals",
+      "operator": "equal",
+      "profile": "new",
+      "predicate": "{\"==\": [{\"var\": \"total_renewals\"}, 0]}",
+      "expected": false
+    },
+    {
+      "id": "totalRenewals/equal/0/renewed",
+      "field": "totalRenewals",
+      "operator": "equal",
+      "profile": "renewed",
+      "predicate": "{\"==\": [{\"var\": \"total_renewals\"}, 0]}",
+      "expected": false
+    },
+    {
+      "id": "totalRenewals/equal/0/first_purchase",
+      "field": "totalRenewals",
+      "operator": "equal",
+      "profile": "first_purchase",
+      "predicate": "{\"==\": [{\"var\": \"total_renewals\"}, 0]}",
+      "expected": true
+    },
+    {
+      "id": "totalRenewals/equal/0/unavailable",
+      "field": "totalRenewals",
+      "operator": "equal",
+      "profile": "unavailable",
+      "predicate": "{\"==\": [{\"var\": \"total_renewals\"}, 0]}",
+      "expected": false
+    },
+    {
+      "id": "totalRenewals/equal/1/new",
+      "field": "totalRenewals",
+      "operator": "equal",
+      "profile": "new",
+      "predicate": "{\"==\": [{\"var\": \"total_renewals\"}, 1]}",
+      "expected": false
+    },
+    {
+      "id": "totalRenewals/equal/1/renewed",
+      "field": "totalRenewals",
+      "operator": "equal",
+      "profile": "renewed",
+      "predicate": "{\"==\": [{\"var\": \"total_renewals\"}, 1]}",
+      "expected": true
+    },
+    {
+      "id": "totalRenewals/equal/1/first_purchase",
+      "field": "totalRenewals",
+      "operator": "equal",
+      "profile": "first_purchase",
+      "predicate": "{\"==\": [{\"var\": \"total_renewals\"}, 1]}",
+      "expected": false
+    },
+    {
+      "id": "totalRenewals/equal/1/unavailable",
+      "field": "totalRenewals",
+      "operator": "equal",
+      "profile": "unavailable",
+      "predicate": "{\"==\": [{\"var\": \"total_renewals\"}, 1]}",
+      "expected": false
+    },
+    {
+      "id": "totalRenewals/equal/2/new",
+      "field": "totalRenewals",
+      "operator": "equal",
+      "profile": "new",
+      "predicate": "{\"==\": [{\"var\": \"total_renewals\"}, 2]}",
+      "expected": false
+    },
+    {
+      "id": "totalRenewals/equal/2/renewed",
+      "field": "totalRenewals",
+      "operator": "equal",
+      "profile": "renewed",
+      "predicate": "{\"==\": [{\"var\": \"total_renewals\"}, 2]}",
+      "expected": false
+    },
+    {
+      "id": "totalRenewals/equal/2/first_purchase",
+      "field": "totalRenewals",
+      "operator": "equal",
+      "profile": "first_purchase",
+      "predicate": "{\"==\": [{\"var\": \"total_renewals\"}, 2]}",
+      "expected": false
+    },
+    {
+      "id": "totalRenewals/equal/2/unavailable",
+      "field": "totalRenewals",
+      "operator": "equal",
+      "profile": "unavailable",
+      "predicate": "{\"==\": [{\"var\": \"total_renewals\"}, 2]}",
+      "expected": false
+    },
+    {
+      "id": "totalRenewals/notEqual/0/new",
+      "field": "totalRenewals",
+      "operator": "notEqual",
+      "profile": "new",
+      "predicate": "{\"!=\": [{\"var\": \"total_renewals\"}, 0]}",
+      "expected": false
+    },
+    {
+      "id": "totalRenewals/notEqual/0/renewed",
+      "field": "totalRenewals",
+      "operator": "notEqual",
+      "profile": "renewed",
+      "predicate": "{\"!=\": [{\"var\": \"total_renewals\"}, 0]}",
+      "expected": true
+    },
+    {
+      "id": "totalRenewals/notEqual/0/first_purchase",
+      "field": "totalRenewals",
+      "operator": "notEqual",
+      "profile": "first_purchase",
+      "predicate": "{\"!=\": [{\"var\": \"total_renewals\"}, 0]}",
+      "expected": false
+    },
+    {
+      "id": "totalRenewals/notEqual/0/unavailable",
+      "field": "totalRenewals",
+      "operator": "notEqual",
+      "profile": "unavailable",
+      "predicate": "{\"!=\": [{\"var\": \"total_renewals\"}, 0]}",
+      "expected": false
+    },
+    {
+      "id": "totalRenewals/notEqual/1/new",
+      "field": "totalRenewals",
+      "operator": "notEqual",
+      "profile": "new",
+      "predicate": "{\"!=\": [{\"var\": \"total_renewals\"}, 1]}",
+      "expected": false
+    },
+    {
+      "id": "totalRenewals/notEqual/1/renewed",
+      "field": "totalRenewals",
+      "operator": "notEqual",
+      "profile": "renewed",
+      "predicate": "{\"!=\": [{\"var\": \"total_renewals\"}, 1]}",
+      "expected": false
+    },
+    {
+      "id": "totalRenewals/notEqual/1/first_purchase",
+      "field": "totalRenewals",
+      "operator": "notEqual",
+      "profile": "first_purchase",
+      "predicate": "{\"!=\": [{\"var\": \"total_renewals\"}, 1]}",
+      "expected": true
+    },
+    {
+      "id": "totalRenewals/notEqual/1/unavailable",
+      "field": "totalRenewals",
+      "operator": "notEqual",
+      "profile": "unavailable",
+      "predicate": "{\"!=\": [{\"var\": \"total_renewals\"}, 1]}",
+      "expected": false
+    },
+    {
+      "id": "totalRenewals/notEqual/2/new",
+      "field": "totalRenewals",
+      "operator": "notEqual",
+      "profile": "new",
+      "predicate": "{\"!=\": [{\"var\": \"total_renewals\"}, 2]}",
+      "expected": false
+    },
+    {
+      "id": "totalRenewals/notEqual/2/renewed",
+      "field": "totalRenewals",
+      "operator": "notEqual",
+      "profile": "renewed",
+      "predicate": "{\"!=\": [{\"var\": \"total_renewals\"}, 2]}",
+      "expected": true
+    },
+    {
+      "id": "totalRenewals/notEqual/2/first_purchase",
+      "field": "totalRenewals",
+      "operator": "notEqual",
+      "profile": "first_purchase",
+      "predicate": "{\"!=\": [{\"var\": \"total_renewals\"}, 2]}",
+      "expected": true
+    },
+    {
+      "id": "totalRenewals/notEqual/2/unavailable",
+      "field": "totalRenewals",
+      "operator": "notEqual",
+      "profile": "unavailable",
+      "predicate": "{\"!=\": [{\"var\": \"total_renewals\"}, 2]}",
+      "expected": false
+    },
+    {
+      "id": "totalRenewals/isEmpty//new",
+      "field": "totalRenewals",
+      "operator": "isEmpty",
+      "profile": "new",
+      "predicate": "{\"==\": [{\"var\": \"total_renewals\"}, null]}",
+      "expected": true
+    },
+    {
+      "id": "totalRenewals/isEmpty//renewed",
+      "field": "totalRenewals",
+      "operator": "isEmpty",
+      "profile": "renewed",
+      "predicate": "{\"==\": [{\"var\": \"total_renewals\"}, null]}",
+      "expected": false
+    },
+    {
+      "id": "totalRenewals/isEmpty//first_purchase",
+      "field": "totalRenewals",
+      "operator": "isEmpty",
+      "profile": "first_purchase",
+      "predicate": "{\"==\": [{\"var\": \"total_renewals\"}, null]}",
+      "expected": false
+    },
+    {
+      "id": "totalRenewals/isEmpty//unavailable",
+      "field": "totalRenewals",
+      "operator": "isEmpty",
+      "profile": "unavailable",
+      "predicate": "{\"==\": [{\"var\": \"total_renewals\"}, null]}",
+      "expected": true
+    },
+    {
+      "id": "totalRenewals/isNotEmpty//new",
+      "field": "totalRenewals",
+      "operator": "isNotEmpty",
+      "profile": "new",
+      "predicate": "{\"!=\": [{\"var\": \"total_renewals\"}, null]}",
+      "expected": false
+    },
+    {
+      "id": "totalRenewals/isNotEmpty//renewed",
+      "field": "totalRenewals",
+      "operator": "isNotEmpty",
+      "profile": "renewed",
+      "predicate": "{\"!=\": [{\"var\": \"total_renewals\"}, null]}",
+      "expected": true
+    },
+    {
+      "id": "totalRenewals/isNotEmpty//first_purchase",
+      "field": "totalRenewals",
+      "operator": "isNotEmpty",
+      "profile": "first_purchase",
+      "predicate": "{\"!=\": [{\"var\": \"total_renewals\"}, null]}",
+      "expected": true
+    },
+    {
+      "id": "totalRenewals/isNotEmpty//unavailable",
+      "field": "totalRenewals",
+      "operator": "isNotEmpty",
+      "profile": "unavailable",
+      "predicate": "{\"!=\": [{\"var\": \"total_renewals\"}, null]}",
+      "expected": false
+    }
+  ]
+}

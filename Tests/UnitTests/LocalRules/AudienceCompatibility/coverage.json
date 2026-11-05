@@ -1,0 +1,2861 @@
+{
+  "schema_version": 1,
+  "condition_files": [
+    "conditions/country.json",
+    "conditions/locale.json",
+    "conditions/storefront.json",
+    "conditions/total_renewals.json"
+  ],
+  "coverage": [
+    {
+      "field": "country",
+      "operator": "is",
+      "status": "covered",
+      "errors": []
+    },
+    {
+      "field": "country",
+      "operator": "isNot",
+      "status": "covered",
+      "errors": []
+    },
+    {
+      "field": "country",
+      "operator": "isAnyOf",
+      "status": "covered",
+      "errors": []
+    },
+    {
+      "field": "country",
+      "operator": "isNotAnyOf",
+      "status": "covered",
+      "errors": []
+    },
+    {
+      "field": "country",
+      "operator": "isEmpty",
+      "status": "covered",
+      "errors": []
+    },
+    {
+      "field": "country",
+      "operator": "isNotEmpty",
+      "status": "covered",
+      "errors": []
+    },
+    {
+      "field": "customerId",
+      "operator": "is",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "customerId",
+      "operator": "isNot",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "customerId",
+      "operator": "contains",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "customerId",
+      "operator": "doesNotContain",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "customerId",
+      "operator": "isEmpty",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "customerId",
+      "operator": "isNotEmpty",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "status",
+      "operator": "is",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "status",
+      "operator": "isNot",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "status",
+      "operator": "isAnyOf",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "status",
+      "operator": "isNotAnyOf",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "status",
+      "operator": "isEmpty",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "status",
+      "operator": "isNotEmpty",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "customerListExportStatus",
+      "operator": "is",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "customerListExportStatus",
+      "operator": "isNot",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "customerListExportStatus",
+      "operator": "isAnyOf",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "customerListExportStatus",
+      "operator": "isNotAnyOf",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "customerListExportStatus",
+      "operator": "isEmpty",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "customerListExportStatus",
+      "operator": "isNotEmpty",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "originalAppUserId",
+      "operator": "is",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "originalAppUserId",
+      "operator": "isNot",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "originalAppUserId",
+      "operator": "contains",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "originalAppUserId",
+      "operator": "doesNotContain",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "originalAppUserId",
+      "operator": "isEmpty",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "originalAppUserId",
+      "operator": "isNotEmpty",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "platform",
+      "operator": "is",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "platform",
+      "operator": "isNot",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "platform",
+      "operator": "isAnyOf",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "platform",
+      "operator": "isNotAnyOf",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "platform",
+      "operator": "isEmpty",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "platform",
+      "operator": "isNotEmpty",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "platform",
+      "operator": "contains",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "platform",
+      "operator": "doesNotContain",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "sdkFlavor",
+      "operator": "is",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "sdkFlavor",
+      "operator": "isNot",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "sdkFlavor",
+      "operator": "isAnyOf",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "sdkFlavor",
+      "operator": "isNotAnyOf",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "sdkFlavor",
+      "operator": "isEmpty",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "sdkFlavor",
+      "operator": "isNotEmpty",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "storefront",
+      "operator": "is",
+      "status": "covered",
+      "errors": []
+    },
+    {
+      "field": "storefront",
+      "operator": "isNot",
+      "status": "covered",
+      "errors": []
+    },
+    {
+      "field": "storefront",
+      "operator": "isAnyOf",
+      "status": "covered",
+      "errors": []
+    },
+    {
+      "field": "storefront",
+      "operator": "isNotAnyOf",
+      "status": "covered",
+      "errors": []
+    },
+    {
+      "field": "storefront",
+      "operator": "isEmpty",
+      "status": "covered",
+      "errors": []
+    },
+    {
+      "field": "storefront",
+      "operator": "isNotEmpty",
+      "status": "covered",
+      "errors": []
+    },
+    {
+      "field": "locale",
+      "operator": "is",
+      "status": "covered",
+      "errors": []
+    },
+    {
+      "field": "locale",
+      "operator": "isNot",
+      "status": "covered",
+      "errors": []
+    },
+    {
+      "field": "locale",
+      "operator": "contains",
+      "status": "covered",
+      "errors": []
+    },
+    {
+      "field": "locale",
+      "operator": "doesNotContain",
+      "status": "covered",
+      "errors": []
+    },
+    {
+      "field": "locale",
+      "operator": "isEmpty",
+      "status": "covered",
+      "errors": []
+    },
+    {
+      "field": "locale",
+      "operator": "isNotEmpty",
+      "status": "covered",
+      "errors": []
+    },
+    {
+      "field": "appVersion",
+      "operator": "equal",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "appVersion",
+      "operator": "notEqual",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "appVersion",
+      "operator": "greaterThan",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "appVersion",
+      "operator": "greaterThanOrEqual",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "appVersion",
+      "operator": "lessThan",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "appVersion",
+      "operator": "lessThanOrEqual",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "appVersion",
+      "operator": "contains",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "appVersion",
+      "operator": "doesNotContain",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "appVersion",
+      "operator": "isEmpty",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "appVersion",
+      "operator": "isNotEmpty",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "appVersion",
+      "operator": "is",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "appVersion",
+      "operator": "isNot",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "sdkVersion",
+      "operator": "equal",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "sdkVersion",
+      "operator": "notEqual",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "sdkVersion",
+      "operator": "greaterThan",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "sdkVersion",
+      "operator": "greaterThanOrEqual",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "sdkVersion",
+      "operator": "lessThan",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "sdkVersion",
+      "operator": "lessThanOrEqual",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "sdkVersion",
+      "operator": "contains",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "sdkVersion",
+      "operator": "doesNotContain",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "sdkVersion",
+      "operator": "isEmpty",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "sdkVersion",
+      "operator": "isNotEmpty",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "sdkVersion",
+      "operator": "is",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "sdkVersion",
+      "operator": "isNot",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "platformVersion",
+      "operator": "is",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "platformVersion",
+      "operator": "isNot",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "platformVersion",
+      "operator": "contains",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "platformVersion",
+      "operator": "doesNotContain",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "platformVersion",
+      "operator": "isEmpty",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "platformVersion",
+      "operator": "isNotEmpty",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "lastSeenAt",
+      "operator": "before",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "lastSeenAt",
+      "operator": "beforeOrOn",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "lastSeenAt",
+      "operator": "on",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "lastSeenAt",
+      "operator": "after",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "lastSeenAt",
+      "operator": "afterOrOn",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "lastSeenAt",
+      "operator": "within",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "lastSeenAt",
+      "operator": "notWithin",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "lastSeenAt",
+      "operator": "between",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "lastSeenAt",
+      "operator": "notBetween",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "lastSeenAt",
+      "operator": "isEmpty",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "lastSeenAt",
+      "operator": "isNotEmpty",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "firstSeenAt",
+      "operator": "before",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "firstSeenAt",
+      "operator": "beforeOrOn",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "firstSeenAt",
+      "operator": "on",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "firstSeenAt",
+      "operator": "after",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "firstSeenAt",
+      "operator": "afterOrOn",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "firstSeenAt",
+      "operator": "within",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "firstSeenAt",
+      "operator": "notWithin",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "firstSeenAt",
+      "operator": "between",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "firstSeenAt",
+      "operator": "notBetween",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "firstSeenAt",
+      "operator": "isEmpty",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "firstSeenAt",
+      "operator": "isNotEmpty",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "firstPurchaseAt",
+      "operator": "before",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "firstPurchaseAt",
+      "operator": "beforeOrOn",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "firstPurchaseAt",
+      "operator": "on",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "firstPurchaseAt",
+      "operator": "after",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "firstPurchaseAt",
+      "operator": "afterOrOn",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "firstPurchaseAt",
+      "operator": "within",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "firstPurchaseAt",
+      "operator": "notWithin",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "firstPurchaseAt",
+      "operator": "between",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "firstPurchaseAt",
+      "operator": "notBetween",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "firstPurchaseAt",
+      "operator": "isEmpty",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "firstPurchaseAt",
+      "operator": "isNotEmpty",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "mostRecentPurchaseAt",
+      "operator": "before",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "mostRecentPurchaseAt",
+      "operator": "beforeOrOn",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "mostRecentPurchaseAt",
+      "operator": "on",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "mostRecentPurchaseAt",
+      "operator": "after",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "mostRecentPurchaseAt",
+      "operator": "afterOrOn",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "mostRecentPurchaseAt",
+      "operator": "within",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "mostRecentPurchaseAt",
+      "operator": "notWithin",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "mostRecentPurchaseAt",
+      "operator": "between",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "mostRecentPurchaseAt",
+      "operator": "notBetween",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "mostRecentPurchaseAt",
+      "operator": "isEmpty",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "mostRecentPurchaseAt",
+      "operator": "isNotEmpty",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "mostRecentRenewalAt",
+      "operator": "before",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "mostRecentRenewalAt",
+      "operator": "beforeOrOn",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "mostRecentRenewalAt",
+      "operator": "on",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "mostRecentRenewalAt",
+      "operator": "after",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "mostRecentRenewalAt",
+      "operator": "afterOrOn",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "mostRecentRenewalAt",
+      "operator": "within",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "mostRecentRenewalAt",
+      "operator": "notWithin",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "mostRecentRenewalAt",
+      "operator": "between",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "mostRecentRenewalAt",
+      "operator": "notBetween",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "mostRecentRenewalAt",
+      "operator": "isEmpty",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "mostRecentRenewalAt",
+      "operator": "isNotEmpty",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "latestExpirationAt",
+      "operator": "before",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "latestExpirationAt",
+      "operator": "beforeOrOn",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "latestExpirationAt",
+      "operator": "on",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "latestExpirationAt",
+      "operator": "after",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "latestExpirationAt",
+      "operator": "afterOrOn",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "latestExpirationAt",
+      "operator": "within",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "latestExpirationAt",
+      "operator": "notWithin",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "latestExpirationAt",
+      "operator": "between",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "latestExpirationAt",
+      "operator": "notBetween",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "latestExpirationAt",
+      "operator": "isEmpty",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "latestExpirationAt",
+      "operator": "isNotEmpty",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "trialStartAt",
+      "operator": "before",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "trialStartAt",
+      "operator": "beforeOrOn",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "trialStartAt",
+      "operator": "on",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "trialStartAt",
+      "operator": "after",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "trialStartAt",
+      "operator": "afterOrOn",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "trialStartAt",
+      "operator": "within",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "trialStartAt",
+      "operator": "notWithin",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "trialStartAt",
+      "operator": "between",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "trialStartAt",
+      "operator": "notBetween",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "trialStartAt",
+      "operator": "isEmpty",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "trialStartAt",
+      "operator": "isNotEmpty",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "trialEndAt",
+      "operator": "before",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "trialEndAt",
+      "operator": "beforeOrOn",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "trialEndAt",
+      "operator": "on",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "trialEndAt",
+      "operator": "after",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "trialEndAt",
+      "operator": "afterOrOn",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "trialEndAt",
+      "operator": "within",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "trialEndAt",
+      "operator": "notWithin",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "trialEndAt",
+      "operator": "between",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "trialEndAt",
+      "operator": "notBetween",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "trialEndAt",
+      "operator": "isEmpty",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "trialEndAt",
+      "operator": "isNotEmpty",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "subscriptionOptOutAt",
+      "operator": "before",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "subscriptionOptOutAt",
+      "operator": "beforeOrOn",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "subscriptionOptOutAt",
+      "operator": "on",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "subscriptionOptOutAt",
+      "operator": "after",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "subscriptionOptOutAt",
+      "operator": "afterOrOn",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "subscriptionOptOutAt",
+      "operator": "within",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "subscriptionOptOutAt",
+      "operator": "notWithin",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "subscriptionOptOutAt",
+      "operator": "between",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "subscriptionOptOutAt",
+      "operator": "notBetween",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "subscriptionOptOutAt",
+      "operator": "isEmpty",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "subscriptionOptOutAt",
+      "operator": "isNotEmpty",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "trialOptOutAt",
+      "operator": "before",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "trialOptOutAt",
+      "operator": "beforeOrOn",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "trialOptOutAt",
+      "operator": "on",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "trialOptOutAt",
+      "operator": "after",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "trialOptOutAt",
+      "operator": "afterOrOn",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "trialOptOutAt",
+      "operator": "within",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "trialOptOutAt",
+      "operator": "notWithin",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "trialOptOutAt",
+      "operator": "between",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "trialOptOutAt",
+      "operator": "notBetween",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "trialOptOutAt",
+      "operator": "isEmpty",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "trialOptOutAt",
+      "operator": "isNotEmpty",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "totalRenewals",
+      "operator": "greaterThan",
+      "status": "covered",
+      "errors": []
+    },
+    {
+      "field": "totalRenewals",
+      "operator": "greaterThanOrEqual",
+      "status": "covered",
+      "errors": []
+    },
+    {
+      "field": "totalRenewals",
+      "operator": "lessThan",
+      "status": "covered",
+      "errors": []
+    },
+    {
+      "field": "totalRenewals",
+      "operator": "lessThanOrEqual",
+      "status": "covered",
+      "errors": []
+    },
+    {
+      "field": "totalRenewals",
+      "operator": "equal",
+      "status": "covered",
+      "errors": []
+    },
+    {
+      "field": "totalRenewals",
+      "operator": "notEqual",
+      "status": "covered",
+      "errors": []
+    },
+    {
+      "field": "totalRenewals",
+      "operator": "isEmpty",
+      "status": "covered",
+      "errors": []
+    },
+    {
+      "field": "totalRenewals",
+      "operator": "isNotEmpty",
+      "status": "covered",
+      "errors": []
+    },
+    {
+      "field": "totalSpent",
+      "operator": "greaterThan",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "totalSpent",
+      "operator": "greaterThanOrEqual",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "totalSpent",
+      "operator": "lessThan",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "totalSpent",
+      "operator": "lessThanOrEqual",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "totalSpent",
+      "operator": "equal",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "totalSpent",
+      "operator": "notEqual",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "totalSpent",
+      "operator": "isEmpty",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "totalSpent",
+      "operator": "isNotEmpty",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "totalAdImpressions",
+      "operator": "greaterThan",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "totalAdImpressions",
+      "operator": "greaterThanOrEqual",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "totalAdImpressions",
+      "operator": "lessThan",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "totalAdImpressions",
+      "operator": "lessThanOrEqual",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "totalAdImpressions",
+      "operator": "equal",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "totalAdImpressions",
+      "operator": "notEqual",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "totalAdImpressions",
+      "operator": "isEmpty",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "totalAdImpressions",
+      "operator": "isNotEmpty",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "totalAdRevenue",
+      "operator": "greaterThan",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "totalAdRevenue",
+      "operator": "greaterThanOrEqual",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "totalAdRevenue",
+      "operator": "lessThan",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "totalAdRevenue",
+      "operator": "lessThanOrEqual",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "totalAdRevenue",
+      "operator": "equal",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "totalAdRevenue",
+      "operator": "notEqual",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "totalAdRevenue",
+      "operator": "isEmpty",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "totalAdRevenue",
+      "operator": "isNotEmpty",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "totalRewardedAdCompletions",
+      "operator": "greaterThan",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "totalRewardedAdCompletions",
+      "operator": "greaterThanOrEqual",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "totalRewardedAdCompletions",
+      "operator": "lessThan",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "totalRewardedAdCompletions",
+      "operator": "lessThanOrEqual",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "totalRewardedAdCompletions",
+      "operator": "equal",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "totalRewardedAdCompletions",
+      "operator": "notEqual",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "totalRewardedAdCompletions",
+      "operator": "isEmpty",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "totalRewardedAdCompletions",
+      "operator": "isNotEmpty",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "lastAdImpressionAt",
+      "operator": "before",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "lastAdImpressionAt",
+      "operator": "beforeOrOn",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "lastAdImpressionAt",
+      "operator": "on",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "lastAdImpressionAt",
+      "operator": "after",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "lastAdImpressionAt",
+      "operator": "afterOrOn",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "lastAdImpressionAt",
+      "operator": "within",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "lastAdImpressionAt",
+      "operator": "notWithin",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "lastAdImpressionAt",
+      "operator": "between",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "lastAdImpressionAt",
+      "operator": "notBetween",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "lastAdImpressionAt",
+      "operator": "isEmpty",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "lastAdImpressionAt",
+      "operator": "isNotEmpty",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "lastRewardedAdCompletionAt",
+      "operator": "before",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "lastRewardedAdCompletionAt",
+      "operator": "beforeOrOn",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "lastRewardedAdCompletionAt",
+      "operator": "on",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "lastRewardedAdCompletionAt",
+      "operator": "after",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "lastRewardedAdCompletionAt",
+      "operator": "afterOrOn",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "lastRewardedAdCompletionAt",
+      "operator": "within",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "lastRewardedAdCompletionAt",
+      "operator": "notWithin",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "lastRewardedAdCompletionAt",
+      "operator": "between",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "lastRewardedAdCompletionAt",
+      "operator": "notBetween",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "lastRewardedAdCompletionAt",
+      "operator": "isEmpty",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "lastRewardedAdCompletionAt",
+      "operator": "isNotEmpty",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "latestProduct",
+      "operator": "is",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "latestProduct",
+      "operator": "isNot",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "latestProduct",
+      "operator": "isAnyOf",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "latestProduct",
+      "operator": "isNotAnyOf",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "latestProduct",
+      "operator": "isEmpty",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "latestProduct",
+      "operator": "isNotEmpty",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "latestProduct",
+      "operator": "contains",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "latestProduct",
+      "operator": "doesNotContain",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "latestOffer",
+      "operator": "is",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "latestOffer",
+      "operator": "isNot",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "latestOffer",
+      "operator": "contains",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "latestOffer",
+      "operator": "doesNotContain",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "latestOffer",
+      "operator": "isEmpty",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "latestOffer",
+      "operator": "isNotEmpty",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "latestOfferType",
+      "operator": "is",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "latestOfferType",
+      "operator": "isNot",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "latestOfferType",
+      "operator": "isAnyOf",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "latestOfferType",
+      "operator": "isNotAnyOf",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "latestOfferType",
+      "operator": "isEmpty",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "latestOfferType",
+      "operator": "isNotEmpty",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "email",
+      "operator": "is",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "email",
+      "operator": "isNot",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "email",
+      "operator": "contains",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "email",
+      "operator": "doesNotContain",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "email",
+      "operator": "isEmpty",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "email",
+      "operator": "isNotEmpty",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "displayName",
+      "operator": "is",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "displayName",
+      "operator": "isNot",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "displayName",
+      "operator": "contains",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "displayName",
+      "operator": "doesNotContain",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "displayName",
+      "operator": "isEmpty",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "displayName",
+      "operator": "isNotEmpty",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "phoneNumber",
+      "operator": "is",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "phoneNumber",
+      "operator": "isNot",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "phoneNumber",
+      "operator": "contains",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "phoneNumber",
+      "operator": "doesNotContain",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "phoneNumber",
+      "operator": "isEmpty",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "phoneNumber",
+      "operator": "isNotEmpty",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "mediaSource",
+      "operator": "is",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "mediaSource",
+      "operator": "isNot",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "mediaSource",
+      "operator": "isAnyOf",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "mediaSource",
+      "operator": "isNotAnyOf",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "mediaSource",
+      "operator": "isEmpty",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "mediaSource",
+      "operator": "isNotEmpty",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "mediaSource",
+      "operator": "contains",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "mediaSource",
+      "operator": "doesNotContain",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "campaign",
+      "operator": "is",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "campaign",
+      "operator": "isNot",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "campaign",
+      "operator": "isAnyOf",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "campaign",
+      "operator": "isNotAnyOf",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "campaign",
+      "operator": "isEmpty",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "campaign",
+      "operator": "isNotEmpty",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "campaign",
+      "operator": "contains",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "campaign",
+      "operator": "doesNotContain",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "adGroup",
+      "operator": "is",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "adGroup",
+      "operator": "isNot",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "adGroup",
+      "operator": "isAnyOf",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "adGroup",
+      "operator": "isNotAnyOf",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "adGroup",
+      "operator": "isEmpty",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "adGroup",
+      "operator": "isNotEmpty",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "adGroup",
+      "operator": "contains",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "adGroup",
+      "operator": "doesNotContain",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "ad",
+      "operator": "is",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "ad",
+      "operator": "isNot",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "ad",
+      "operator": "isAnyOf",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "ad",
+      "operator": "isNotAnyOf",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "ad",
+      "operator": "isEmpty",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "ad",
+      "operator": "isNotEmpty",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "ad",
+      "operator": "contains",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "ad",
+      "operator": "doesNotContain",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "keyword",
+      "operator": "is",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "keyword",
+      "operator": "isNot",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "keyword",
+      "operator": "isAnyOf",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "keyword",
+      "operator": "isNotAnyOf",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "keyword",
+      "operator": "isEmpty",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "keyword",
+      "operator": "isNotEmpty",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "keyword",
+      "operator": "contains",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "keyword",
+      "operator": "doesNotContain",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "creative",
+      "operator": "is",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "creative",
+      "operator": "isNot",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "creative",
+      "operator": "isAnyOf",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "creative",
+      "operator": "isNotAnyOf",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "creative",
+      "operator": "isEmpty",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "creative",
+      "operator": "isNotEmpty",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "creative",
+      "operator": "contains",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "creative",
+      "operator": "doesNotContain",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "idfa",
+      "operator": "is",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "idfa",
+      "operator": "isNot",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "idfa",
+      "operator": "contains",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "idfa",
+      "operator": "doesNotContain",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "idfa",
+      "operator": "isEmpty",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "idfa",
+      "operator": "isNotEmpty",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "idfv",
+      "operator": "is",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "idfv",
+      "operator": "isNot",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "idfv",
+      "operator": "contains",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "idfv",
+      "operator": "doesNotContain",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "idfv",
+      "operator": "isEmpty",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "idfv",
+      "operator": "isNotEmpty",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "gpsAdId",
+      "operator": "is",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "gpsAdId",
+      "operator": "isNot",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "gpsAdId",
+      "operator": "contains",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "gpsAdId",
+      "operator": "doesNotContain",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "gpsAdId",
+      "operator": "isEmpty",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "gpsAdId",
+      "operator": "isNotEmpty",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "priceExperimentId",
+      "operator": "is",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "priceExperimentId",
+      "operator": "isNot",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "priceExperimentId",
+      "operator": "isAnyOf",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "priceExperimentId",
+      "operator": "isNotAnyOf",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "priceExperimentId",
+      "operator": "isEmpty",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "priceExperimentId",
+      "operator": "isNotEmpty",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "priceExperimentId",
+      "operator": "contains",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "priceExperimentId",
+      "operator": "doesNotContain",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "priceExperimentVariant",
+      "operator": "is",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "priceExperimentVariant",
+      "operator": "isNot",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "priceExperimentVariant",
+      "operator": "isAnyOf",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "priceExperimentVariant",
+      "operator": "isNotAnyOf",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "priceExperimentVariant",
+      "operator": "isEmpty",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "priceExperimentVariant",
+      "operator": "isNotEmpty",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "hasMadeSandboxPurchase",
+      "operator": "is",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "hasMadeSandboxPurchase",
+      "operator": "isNot",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "hasActiveEntitlement",
+      "operator": "is",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "hasActiveEntitlement",
+      "operator": "isNot",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "activeEntitlements",
+      "operator": "is",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "activeEntitlements",
+      "operator": "isNot",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "activeEntitlements",
+      "operator": "contains",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "activeEntitlements",
+      "operator": "doesNotContain",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "activeEntitlements",
+      "operator": "containsAnyOf",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "activeEntitlements",
+      "operator": "isEmpty",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "activeEntitlements",
+      "operator": "isNotEmpty",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "hasMadeNonSubscriptionPurchase",
+      "operator": "is",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "hasMadeNonSubscriptionPurchase",
+      "operator": "isNot",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "isRcPromo",
+      "operator": "is",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "isRcPromo",
+      "operator": "isNot",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "latestStore",
+      "operator": "is",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "latestStore",
+      "operator": "isNot",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "latestStore",
+      "operator": "isAnyOf",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "latestStore",
+      "operator": "isNotAnyOf",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "latestStore",
+      "operator": "isEmpty",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "latestStore",
+      "operator": "isNotEmpty",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "anyActiveStore",
+      "operator": "is",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "anyActiveStore",
+      "operator": "isNot",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "anyActiveStore",
+      "operator": "isAnyOf",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "anyActiveStore",
+      "operator": "isNotAnyOf",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "anyActiveStore",
+      "operator": "isEmpty",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "anyActiveStore",
+      "operator": "isNotEmpty",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "latestStoreCountry",
+      "operator": "is",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "latestStoreCountry",
+      "operator": "isNot",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "latestStoreCountry",
+      "operator": "isAnyOf",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "latestStoreCountry",
+      "operator": "isNotAnyOf",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "latestStoreCountry",
+      "operator": "isEmpty",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "latestStoreCountry",
+      "operator": "isNotEmpty",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "latestOwnershipType",
+      "operator": "is",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "latestOwnershipType",
+      "operator": "isNot",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "latestOwnershipType",
+      "operator": "isAnyOf",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "latestOwnershipType",
+      "operator": "isNotAnyOf",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "latestOwnershipType",
+      "operator": "isEmpty",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "latestOwnershipType",
+      "operator": "isNotEmpty",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "latestPurchasedOffering",
+      "operator": "is",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "latestPurchasedOffering",
+      "operator": "isNot",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "latestPurchasedOffering",
+      "operator": "contains",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "latestPurchasedOffering",
+      "operator": "doesNotContain",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "latestPurchasedOffering",
+      "operator": "isEmpty",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "latestPurchasedOffering",
+      "operator": "isNotEmpty",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "latestAutoRenewIntent",
+      "operator": "is",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "latestAutoRenewIntent",
+      "operator": "isNot",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "isCurrentlyTrialing",
+      "operator": "is",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "isCurrentlyTrialing",
+      "operator": "isNot",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "latestEntitlements",
+      "operator": "is",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "latestEntitlements",
+      "operator": "isNot",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "latestEntitlements",
+      "operator": "contains",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "latestEntitlements",
+      "operator": "doesNotContain",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "latestEntitlements",
+      "operator": "containsAnyOf",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "latestEntitlements",
+      "operator": "isEmpty",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "latestEntitlements",
+      "operator": "isNotEmpty",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "allPurchasedProductIds",
+      "operator": "is",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "allPurchasedProductIds",
+      "operator": "isNot",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "allPurchasedProductIds",
+      "operator": "contains",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "allPurchasedProductIds",
+      "operator": "doesNotContain",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "allPurchasedProductIds",
+      "operator": "containsAnyOf",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "allPurchasedProductIds",
+      "operator": "isEmpty",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "allPurchasedProductIds",
+      "operator": "isNotEmpty",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "projectId",
+      "operator": "is",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "projectId",
+      "operator": "isNot",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "projectId",
+      "operator": "contains",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "projectId",
+      "operator": "doesNotContain",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "projectId",
+      "operator": "isEmpty",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "projectId",
+      "operator": "isNotEmpty",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "projectName",
+      "operator": "is",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "projectName",
+      "operator": "isNot",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "projectName",
+      "operator": "contains",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "projectName",
+      "operator": "doesNotContain",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "projectName",
+      "operator": "isEmpty",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "projectName",
+      "operator": "isNotEmpty",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "appConfigId",
+      "operator": "is",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "appConfigId",
+      "operator": "isNot",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "appConfigId",
+      "operator": "contains",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "appConfigId",
+      "operator": "doesNotContain",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "appConfigId",
+      "operator": "isEmpty",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "appConfigId",
+      "operator": "isNotEmpty",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "lastSeenAppConfigId",
+      "operator": "is",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "lastSeenAppConfigId",
+      "operator": "isNot",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "lastSeenAppConfigId",
+      "operator": "isAnyOf",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "lastSeenAppConfigId",
+      "operator": "isNotAnyOf",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "lastSeenAppConfigId",
+      "operator": "isEmpty",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "lastSeenAppConfigId",
+      "operator": "isNotEmpty",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "appConfigName",
+      "operator": "is",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "appConfigName",
+      "operator": "isNot",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "appConfigName",
+      "operator": "contains",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "appConfigName",
+      "operator": "doesNotContain",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "appConfigName",
+      "operator": "isEmpty",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "appConfigName",
+      "operator": "isNotEmpty",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "appConfigStore",
+      "operator": "is",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "appConfigStore",
+      "operator": "isNot",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "appConfigStore",
+      "operator": "isAnyOf",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "appConfigStore",
+      "operator": "isNotAnyOf",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "appConfigStore",
+      "operator": "isEmpty",
+      "status": "unverified",
+      "errors": []
+    },
+    {
+      "field": "appConfigStore",
+      "operator": "isNotEmpty",
+      "status": "unverified",
+      "errors": []
+    }
+  ]
+}
