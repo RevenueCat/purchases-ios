@@ -115,8 +115,7 @@ final class RecordingDelegate: AdsInterstitialDelegate {
 
     enum Event: Equatable {
 
-        case loaded
-        case failed(AdsError.Code)
+        case failedToPresent(AdsError.Code)
         case expired
         case presented
         case impression
@@ -127,10 +126,8 @@ final class RecordingDelegate: AdsInterstitialDelegate {
 
     private(set) var events: [Event] = []
 
-    func interstitialDidLoad(_ interstitial: AdsInterstitial) { self.events.append(.loaded) }
-
-    func interstitial(_ interstitial: AdsInterstitial, didFailWithError error: AdsError) {
-        self.events.append(.failed(error.code))
+    func interstitial(_ interstitial: AdsInterstitial, didFailToPresentWithError error: AdsError) {
+        self.events.append(.failedToPresent(error.code))
     }
 
     func interstitialDidExpire(_ interstitial: AdsInterstitial) { self.events.append(.expired) }
