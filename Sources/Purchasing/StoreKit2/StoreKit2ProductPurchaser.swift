@@ -20,7 +20,7 @@ internal protocol StoreKit2ProductPurchaserType {
     func purchase(
         product: PurchasableSK2Product,
         options: Set<StoreKit.Product.PurchaseOption>,
-        storeKit2ConfirmInOptions: StoreKit2ConfirmInOptions?
+        presentationContext: PresentationContext?
     ) async throws -> StoreKit.Product.PurchaseResult
 }
 
@@ -38,11 +38,11 @@ internal class StoreKit2ProductPurchaser: StoreKit2ProductPurchaserType {
     func purchase(
         product: PurchasableSK2Product,
         options: Set<StoreKit.Product.PurchaseOption>,
-        storeKit2ConfirmInOptions: StoreKit2ConfirmInOptions?
+        presentationContext: PresentationContext?
     ) async throws -> StoreKit.Product.PurchaseResult {
 #if VISION_OS
         let scene: UIScene
-        if let confirmInScene = storeKit2ConfirmInOptions?.confirmInScene {
+        if let confirmInScene = presentationContext?.scene {
             scene = confirmInScene
         } else {
             scene = try await self.systemInfo.currentWindowScene
@@ -56,7 +56,7 @@ internal class StoreKit2ProductPurchaser: StoreKit2ProductPurchaserType {
         // watchOS is excluded here since purchase(confirmIn:options:) isn't supported on watchOS.
 #elseif canImport(UIKit) && compiler(>=5.9.0) && !os(watchOS)
 
-        if let confirmInScene = storeKit2ConfirmInOptions?.confirmInScene,
+        if let confirmInScene = presentationContext?.scene,
            #available(iOS 17.0, iOSApplicationExtension 17.0, macCatalyst 17.0, tvOS 17.0, *) {
             return try await product.purchase(confirmIn: confirmInScene, options: options)
         } else {
@@ -67,7 +67,7 @@ internal class StoreKit2ProductPurchaser: StoreKit2ProductPurchaserType {
         // which shipped with Xcode 16.2 and the Swift 6.0.2 compiler.
 #elseif canImport(AppKit) && compiler(>=6.0.2) && !targetEnvironment(macCatalyst)
 
-        if let confirmInWindow = storeKit2ConfirmInOptions?.confirmInWindow,
+        if let confirmInWindow = presentationContext?.window,
            #available(macOS 15.2, *) {
             return try await product.purchase(confirmIn: confirmInWindow, options: options)
         } else {
