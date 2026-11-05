@@ -27,13 +27,13 @@ final class AdsInterstitialTests: TestCase {
 
     // MARK: - Load
 
-    func testLoadSucceedsAndNotifiesDelegate() async throws {
+    func testLoadSucceedsWithoutInvolvingTheDelegate() async throws {
         try await self.loadSuccessfully()
 
         XCTAssertEqual(self.interstitial.state, .loaded)
         XCTAssertTrue(self.interstitial.isReady)
         XCTAssertEqual(self.module.lastInterstitial?.placementID, "placement")
-        XCTAssertEqual(self.delegate.events, [.loaded])
+        XCTAssertEqual(self.delegate.events, [])
     }
 
     func testLoadWaitsForAsynchronousModuleCallback() async throws {
@@ -47,7 +47,7 @@ final class AdsInterstitialTests: TestCase {
         XCTAssertEqual(self.interstitial.state, .loaded)
     }
 
-    func testLoadFailureThrowsAndNotifiesDelegate() async {
+    func testLoadFailureThrowsWithoutInvolvingTheDelegate() async {
         self.module.interstitialEvent = .failedToLoad(AdsError(code: .noFill, message: "none"))
 
         do {
@@ -61,7 +61,7 @@ final class AdsInterstitialTests: TestCase {
 
         XCTAssertEqual(self.interstitial.state, .idle)
         XCTAssertFalse(self.interstitial.isReady)
-        XCTAssertEqual(self.delegate.events, [.failed(.noFill)])
+        XCTAssertEqual(self.delegate.events, [])
     }
 
     func testLoadWithoutConfiguredModuleFailsWithNotConfigured() async {
@@ -69,7 +69,7 @@ final class AdsInterstitialTests: TestCase {
         interstitial.delegate = self.delegate
 
         await XCTAssertThrowsAdsError(.notConfigured) { try await interstitial.load() }
-        XCTAssertEqual(self.delegate.events, [.failed(.notConfigured)])
+        XCTAssertEqual(self.delegate.events, [])
     }
 
     func testLoadWhileLoadingFailsWithInvalidState() async throws {
@@ -80,7 +80,7 @@ final class AdsInterstitialTests: TestCase {
 
         self.module.lastInterstitial?.emit(.loaded)
         try await task.value
-        XCTAssertEqual(self.delegate.events, [.failed(.invalidState), .loaded])
+        XCTAssertEqual(self.delegate.events, [])
     }
 
     func testCanReloadAfterFailure() async throws {
@@ -119,7 +119,7 @@ final class AdsInterstitialTests: TestCase {
     func testPresentBeforeLoadFailsWithNotReady() {
         self.interstitial.present(from: UIViewController())
 
-        XCTAssertEqual(self.delegate.events, [.failed(.notReady)])
+        XCTAssertEqual(self.delegate.events, [.failedToPresent(.notReady)])
         XCTAssertEqual(self.interstitial.state, .idle)
     }
 
@@ -130,7 +130,7 @@ final class AdsInterstitialTests: TestCase {
         self.interstitial.present(from: UIViewController())
 
         XCTAssertEqual(self.module.lastInterstitial?.showCallCount, 0)
-        XCTAssertEqual(self.delegate.events, [.loaded, .failed(.notReady)])
+        XCTAssertEqual(self.delegate.events, [.failedToPresent(.notReady)])
     }
 
     func testFullLifecycleDeliversEventsInOrder() async throws {
@@ -146,7 +146,7 @@ final class AdsInterstitialTests: TestCase {
         unit.emit(.clicked)
         unit.emit(.dismissed)
 
-        XCTAssertEqual(self.delegate.events, [.loaded, .presented, .impression, .clicked, .dismissed])
+        XCTAssertEqual(self.delegate.events, [.presented, .impression, .clicked, .dismissed])
         XCTAssertEqual(self.interstitial.state, .idle)
         XCTAssertFalse(self.interstitial.isReady)
     }
@@ -159,7 +159,7 @@ final class AdsInterstitialTests: TestCase {
         self.interstitial.present(from: UIViewController())
 
         XCTAssertEqual(unit.showCallCount, 1)
-        XCTAssertEqual(self.delegate.events, [.loaded, .failed(.notReady)])
+        XCTAssertEqual(self.delegate.events, [.failedToPresent(.notReady)])
     }
 
     func testImpressionIsRecordedOnce() async throws {
@@ -169,7 +169,7 @@ final class AdsInterstitialTests: TestCase {
         unit.emit(.impression)
         unit.emit(.impression)
 
-        XCTAssertEqual(self.delegate.events, [.loaded, .presented, .impression])
+        XCTAssertEqual(self.delegate.events, [.presented, .impression])
     }
 
     func testEventsOutsideTheirStateAreIgnored() async throws {
@@ -183,7 +183,7 @@ final class AdsInterstitialTests: TestCase {
         unit.emit(.clicked)
         unit.emit(.dismissed)
 
-        XCTAssertEqual(self.delegate.events, [.loaded])
+        XCTAssertEqual(self.delegate.events, [])
         XCTAssertEqual(self.interstitial.state, .loaded)
     }
 
@@ -194,7 +194,7 @@ final class AdsInterstitialTests: TestCase {
 
         unit.emit(.failedToLoad(AdsError(code: .loadFailed, message: "no view controller")))
 
-        XCTAssertEqual(self.delegate.events, [.loaded, .failed(.presentFailed)])
+        XCTAssertEqual(self.delegate.events, [.failedToPresent(.presentFailed)])
         XCTAssertEqual(self.interstitial.state, .idle)
         XCTAssertFalse(self.interstitial.isReady)
     }
@@ -205,7 +205,7 @@ final class AdsInterstitialTests: TestCase {
         self.module.lastInterstitial?.emit(.failedToLoad(AdsError(code: .loadFailed, message: "creative")))
         try await self.loadSuccessfully()
 
-        XCTAssertEqual(self.delegate.events, [.loaded, .presented, .failed(.presentFailed), .loaded])
+        XCTAssertEqual(self.delegate.events, [.presented, .failedToPresent(.presentFailed)])
         XCTAssertEqual(self.module.interstitials.count, 2)
         XCTAssertEqual(self.interstitial.state, .loaded)
     }
@@ -219,7 +219,7 @@ final class AdsInterstitialTests: TestCase {
 
         try await self.loadSuccessfully()
 
-        XCTAssertEqual(self.delegate.events, [.loaded, .expired, .loaded])
+        XCTAssertEqual(self.delegate.events, [.expired])
         XCTAssertEqual(self.module.interstitials.count, 2)
     }
 
@@ -228,7 +228,7 @@ final class AdsInterstitialTests: TestCase {
 
         self.module.lastInterstitial?.emit(.expired)
 
-        XCTAssertEqual(self.delegate.events, [.loaded, .presented])
+        XCTAssertEqual(self.delegate.events, [.presented])
         XCTAssertEqual(self.interstitial.state, .presented)
     }
 

@@ -37,7 +37,7 @@ Create an interstitial for a placement, load it ahead of time, and present it wh
 
 ```swift
 let interstitial = AdsInterstitial(placementID: "level_complete")
-interstitial.delegate = self          // AdsInterstitialDelegate, all methods optional
+interstitial.delegate = self          // AdsInterstitialDelegate: presentation events, all optional
 try await interstitial.load()         // or load(completion:)
 
 // Later:
@@ -65,7 +65,7 @@ All APIs are `@MainActor` and available on iOS 15.0+.
 | `RCAds` | `static func configure(with: AdsConfiguration = .init()) throws` |
 | `AdsConfiguration` | `apiKey: String?`, `serverURL: URL?` |
 | `AdsInterstitial` | `init(placementID:)`, `load() async throws`, `load(completion:)`, `present(from:)`, `isReady`, `delegate` |
-| `AdsInterstitialDelegate` | loaded, failed(`AdsError`), expired, presented, impression, click, dismissed (all optional) |
+| `AdsInterstitialDelegate` | failed to present(`AdsError`), expired, presented, impression, click, dismissed (all optional) |
 | `AdsError` | `code` (`notConfigured`, `invalidConfiguration`, `invalidState`, `notReady`, `presentFailed`, `noFill`, `loadFailed`), `message`, `underlyingError` |
 
 `AdsError.Code` is a struct with static constants rather than an enum, so codes can be added without

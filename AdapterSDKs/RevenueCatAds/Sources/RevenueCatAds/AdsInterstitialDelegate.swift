@@ -8,17 +8,15 @@ import Foundation
 
 #if os(iOS) && canImport(PrebidMobile)
 
-/// Receives lifecycle events from an ``AdsInterstitial``. All methods are optional and called on the main thread.
+/// Receives presentation events from an ``AdsInterstitial``. Load results are reported by ``AdsInterstitial/load()``
+/// itself. All methods are optional and called on the main thread.
 @available(iOS 15.0, *)
 @MainActor
 @_spi(Experimental) public protocol AdsInterstitialDelegate: AnyObject {
 
-    /// The ad finished loading and can be presented.
-    func interstitialDidLoad(_ interstitial: AdsInterstitial)
-
-    /// Called when loading fails, when `present(from:)` is called on an ad that is not ready,
-    /// or when presenting fails (``AdsError/Code/presentFailed``).
-    func interstitial(_ interstitial: AdsInterstitial, didFailWithError error: AdsError)
+    /// `present(from:)` was called on an ad that is not ready (``AdsError/Code/notReady``), or the ad
+    /// failed while being presented (``AdsError/Code/presentFailed``).
+    func interstitial(_ interstitial: AdsInterstitial, didFailToPresentWithError error: AdsError)
 
     /// The loaded ad expired before being presented. Load again to get a new one.
     func interstitialDidExpire(_ interstitial: AdsInterstitial)
@@ -42,9 +40,7 @@ import Foundation
 @available(iOS 15.0, *)
 @_spi(Experimental) public extension AdsInterstitialDelegate {
 
-    func interstitialDidLoad(_ interstitial: AdsInterstitial) {}
-
-    func interstitial(_ interstitial: AdsInterstitial, didFailWithError error: AdsError) {}
+    func interstitial(_ interstitial: AdsInterstitial, didFailToPresentWithError error: AdsError) {}
 
     func interstitialDidExpire(_ interstitial: AdsInterstitial) {}
 
