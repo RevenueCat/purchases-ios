@@ -742,10 +742,12 @@ final class PaywallCacheWarmingTests: TestCase {
         await cache.warmUpPaywallAssetsCache(offerings: offerings)
 
         let requests = await fileRepository.requests
-        XCTAssertEqual(Set(requests), Set(paywall.allImageURLs.map {
-            URLWithValidation(url: $0, checksum: nil)
-        }))
-        XCTAssertEqual(requests.count, paywall.allImageURLs.count)
+        XCTAssertEqual(Set(requests), [
+            .init(url: Self.url("https://rc-paywalls.s3.amazonaws.com/header.heic"), checksum: nil),
+            .init(url: Self.url("https://rc-paywalls.s3.amazonaws.com/background.jpg"), checksum: nil),
+            .init(url: Self.url("https://rc-paywalls.s3.amazonaws.com/icon.heic"), checksum: nil)
+        ])
+        XCTAssertEqual(requests.count, 3)
     }
 
     func testTriggerFontDownload_DeduplicatesConcurrentDownloads() async throws {
