@@ -100,7 +100,6 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
     private let fontsManager: PaywallFontManagerType
     private let fileRepository: FileRepositoryType
     private let preferredLocalesProvider: @Sendable () -> [String]
-    private let workflowAssetPrewarmingLimiter = AsyncConcurrencyLimiter(maxConcurrentOperations: 1)
 
     private var warmedEligibilityProductIdentifiers: Set<String> = []
     private var pendingCurrentOfferingProductIdentifiers: Set<String> = []
@@ -277,7 +276,7 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
         #endif
     }
 
-    /// Extracts lightweight asset references, then schedules their download in background cache-priority order.
+    /// Extracts lightweight asset references, then starts their download immediately.
     func startWorkflowAssetPrewarming(
         workflow: PublishedWorkflow,
         uiConfig: UIConfig
@@ -287,12 +286,8 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
             uiConfig: uiConfig
         ) else { return nil }
 
-        let limiter = self.workflowAssetPrewarmingLimiter
-        let operation: @Sendable () async -> Void = { [weak self] in
-            _ = await self?.executeWorkflowAssetPrewarming(request)
-        }
-        return Task {
-            await limiter.perform(operation)
+        return Task { [weak self] in
+            await self?.executeWorkflowAssetPrewarming(request)
         }
     }
 

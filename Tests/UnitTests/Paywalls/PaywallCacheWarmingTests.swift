@@ -738,6 +738,50 @@ final class PaywallCacheWarmingTests: TestCase {
         expect(completedAfterRelease) == true
     }
 
+    func testStartWorkflowAssetPrewarmingDoesNotQueueDifferentWorkflows() async throws {
+        let fileRepository = BlockingCacheWarmingFileRepository()
+        let cache = PaywallCacheWarming(
+            introEligibiltyChecker: self.eligibilityChecker,
+            fileRepository: fileRepository
+        )
+        let workflow = { (id: String) in
+            PublishedWorkflow(
+                id: id,
+                displayName: "Test",
+                initialStepId: "step",
+                singleStepFallbackId: nil,
+                steps: [:],
+                screens: ["screen": Self.workflowScreen(components: [
+                    .image(.init(source: Self.cacheWarmingImage(id)))
+                ])]
+            )
+        }
+        let firstWorkflow = workflow("first")
+        let secondWorkflow = workflow("second")
+
+        let optionalFirstTask = await cache.startWorkflowAssetPrewarming(
+            workflow: firstWorkflow,
+            uiConfig: Self.emptyUIConfig
+        )
+        let firstTask = try XCTUnwrap(optionalFirstTask)
+        await expect { await fileRepository.requestCount }.toEventually(equal(1))
+
+        let optionalSecondTask = await cache.startWorkflowAssetPrewarming(
+            workflow: secondWorkflow,
+            uiConfig: Self.emptyUIConfig
+        )
+        let secondTask = try XCTUnwrap(optionalSecondTask)
+        await expect { await fileRepository.requestCount }.toEventually(equal(2))
+
+        await cache.prewarmWorkflowAssets(workflow: secondWorkflow, uiConfig: Self.emptyUIConfig)
+        let requestCount = await fileRepository.requestCount
+        expect(requestCount) == 2
+
+        await fileRepository.completeRequests()
+        await firstTask.value
+        await secondTask.value
+    }
+
     func testWorkflowAssetPrewarmingDownloadsLocalizedVideosForPreferredLocaleOnly() async {
         let requests = await self.localizedVideoPrewarmingRequests(preferredLocale: "es_ES")
 
@@ -1640,9 +1684,10 @@ private actor MockCacheWarmingFileRepository: FileRepositoryType {
 
 private actor BlockingCacheWarmingFileRepository: FileRepositoryType {
 
-    private(set) var requestStarted = false
+    var requestStarted: Bool { return self.requestCount > 0 }
+    private(set) var requestCount = 0
     private(set) var requestCompleted = false
-    private var continuation: CheckedContinuation<Void, Never>?
+    private var continuations: [CheckedContinuation<Void, Never>] = []
 
     nonisolated func prefetch(urls: [InputURL]) {}
 
@@ -1650,15 +1695,20 @@ private actor BlockingCacheWarmingFileRepository: FileRepositoryType {
         for url: InputURL,
         withChecksum checksum: Checksum?
     ) async throws -> OutputURL {
-        self.requestStarted = true
-        await withCheckedContinuation { self.continuation = $0 }
+        self.requestCount += 1
+        await withCheckedContinuation { self.continuations.append($0) }
         self.requestCompleted = true
         return url
     }
 
     func completeRequest() {
-        self.continuation?.resume()
-        self.continuation = nil
+        guard !self.continuations.isEmpty else { return }
+        self.continuations.removeFirst().resume()
+    }
+
+    func completeRequests() {
+        self.continuations.forEach { $0.resume() }
+        self.continuations.removeAll()
     }
 
 }

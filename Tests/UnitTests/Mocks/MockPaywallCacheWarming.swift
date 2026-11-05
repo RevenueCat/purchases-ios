@@ -18,7 +18,6 @@ final class MockPaywallCacheWarming: PaywallCacheWarmingType {
 
     private let onPrewarmWorkflowAssets: (@Sendable (String) -> Void)?
     private let workflowAssetPrewarmingHandler: (@Sendable (String) async -> Void)?
-    private let workflowAssetPrewarmingLimiter = AsyncConcurrencyLimiter(maxConcurrentOperations: 1)
 
     init(
         workflowAssetPrewarmingHandler: (@Sendable (String) async -> Void)? = nil,
@@ -150,11 +149,8 @@ final class MockPaywallCacheWarming: PaywallCacheWarmingType {
         self._invokedPrewarmWorkflowAssetsCount.modify { $0 += 1 }
         self._invokedPrewarmWorkflowAssetIDs.modify { $0.append(workflow.id) }
         let handler = self.workflowAssetPrewarmingHandler
-        let limiter = self.workflowAssetPrewarmingLimiter
         return Task {
-            await limiter.perform {
-                _ = await handler?(workflow.id)
-            }
+            _ = await handler?(workflow.id)
         }
     }
 
