@@ -175,6 +175,17 @@ extension TargetDependency {
         }
     }
 
+    /// Returns the PrebidMobile dependency based on the dependency mode
+    /// - Returns: A TargetDependency for PrebidMobile
+    public static var prebidMobile: TargetDependency {
+        switch Environment.dependencyMode {
+        case .localSwiftPackage, .remoteSwiftPackage:
+            return .package(product: "PrebidMobile", type: .runtime)
+        case .localXcodeProject, .remoteXcodeProject:
+            return .external(name: "PrebidMobile")
+        }
+    }
+
     // MARK: - Receipt Parser
 
     /// ReceiptParser as a native Xcode SPM package dependency

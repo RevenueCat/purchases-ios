@@ -6,7 +6,7 @@ import ProjectDescriptionHelpers
 let project = Project(
     name: "RevenueCatTests",
     organizationName: .revenueCatOrgName,
-    packages: .projectPackages + .adMobPackage,
+    packages: .projectPackages + .adMobPackage + .adsPackage,
     settings: .framework,
     targets: [
 
@@ -276,6 +276,25 @@ let project = Project(
             metadata: .metadata(tags: ["RevenueCatTests"])
         ),
 
+        // MARK: – RevenueCatAdsTests
+        .target(
+            name: "RevenueCatAdsTests",
+            destinations: .iOS,
+            product: .unitTests,
+            bundleId: "com.revenuecat.RevenueCatAdsTests",
+            deploymentTargets: .iOS("15.0"),
+            infoPlist: .default,
+            sources: [
+                "../../AdapterSDKs/RevenueCatAds/Tests/RevenueCatAdsTests/**/*.swift"
+            ],
+            dependencies: [
+                .revenueCat,
+                .revenueCatAds,
+                .prebidMobile
+            ],
+            metadata: .metadata(tags: ["RevenueCatTests"])
+        ),
+
         // MARK: – RevenueCatUITests
         .target(
             name: "RevenueCatUITests",
@@ -344,6 +363,16 @@ let project = Project(
             buildAction: .buildAction(targets: ["RevenueCatAdMobTests"]),
             testAction: .targets([
                 .testableTarget(target: .init(stringLiteral: "RevenueCatAdMobTests"))
+            ]),
+            runAction: .runAction(configuration: "Debug")
+        ),
+
+        .scheme(
+            name: "RevenueCatAdsTests",
+            shared: true,
+            buildAction: .buildAction(targets: ["RevenueCatAdsTests"]),
+            testAction: .targets([
+                .testableTarget(target: .init(stringLiteral: "RevenueCatAdsTests"))
             ]),
             runAction: .runAction(configuration: "Debug")
         ),
