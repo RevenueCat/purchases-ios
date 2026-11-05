@@ -42,8 +42,9 @@ extension Environment {
         }
     }
 
-    /// Returns whether to include external test/dev dependencies (Nimble, SnapshotTesting, OHHTTPStubs, GoogleMobileAds, etc.)
-    /// and the projects that depend on them (RevenueCatTests, RevenueCatAdMob, AdMobIntegrationSample).
+    /// Returns whether to include external test/dev dependencies (Nimble, SnapshotTesting, OHHTTPStubs, GoogleMobileAds,
+    /// PrebidMobile, etc.) and the projects that depend on them (RevenueCatTests, RevenueCatAdMob, AdMobIntegrationSample,
+    /// RevenueCatAds, AdsIntegrationSample).
     /// Defaults to `true`. Set `TUIST_INCLUDE_TEST_DEPENDENCIES=false` to skip them and speed up `tuist install` on CI.
     public static var includeTestDependencies: Bool {
         let envValue = ProcessInfo.processInfo.environment["TUIST_INCLUDE_TEST_DEPENDENCIES"] ?? "true"

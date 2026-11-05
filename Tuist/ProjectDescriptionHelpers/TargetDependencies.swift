@@ -52,6 +52,18 @@ extension TargetDependency {
         }
     }
 
+    /// Returns the RevenueCatAds dependency based on the dependency mode.
+    /// Only supports local modes.
+    /// - Returns: A TargetDependency for RevenueCatAds
+    public static var revenueCatAds: TargetDependency {
+        switch Environment.dependencyMode {
+        case .localSwiftPackage, .remoteSwiftPackage:
+            return .revenueCatAdsSwiftPackageDependency
+        case .localXcodeProject, .remoteXcodeProject:
+            return .revenueCatAdsXcodeProjectDependency
+        }
+    }
+
     /// Returns the ReceiptParser dependency based on the dependency mode
     /// - Returns: A TargetDependency for ReceiptParser
     public static var receiptParser: TargetDependency {
@@ -134,6 +146,20 @@ extension TargetDependency {
         .project(
             target: "RevenueCatAdMob",
             path: .relativeToRoot("Projects/RevenueCatAdMob"))
+    }
+
+    // MARK: - RevenueCatAds
+
+    /// RevenueCatAds as a native Xcode SPM package dependency
+    static var revenueCatAdsSwiftPackageDependency: TargetDependency {
+        .package(product: "RevenueCatAds", type: .runtime)
+    }
+
+    /// RevenueCatAds as a local Tuist project target dependency
+    static var revenueCatAdsXcodeProjectDependency: TargetDependency {
+        .project(
+            target: "RevenueCatAds",
+            path: .relativeToRoot("Projects/RevenueCatAds"))
     }
 
     // MARK: - GoogleMobileAds

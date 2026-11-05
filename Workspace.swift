@@ -17,13 +17,15 @@ var projects: [Path] = [
     "./Projects/RCTTester"
 ]
 
-// These projects depend on external packages (Nimble, SnapshotTesting, OHHTTPStubs, GoogleMobileAds).
+// These projects depend on external packages (Nimble, SnapshotTesting, OHHTTPStubs, GoogleMobileAds, PrebidMobile).
 // Exclude them when TUIST_INCLUDE_TEST_DEPENDENCIES=false to allow skipping those downloads on CI.
 if Environment.includeTestDependencies {
     projects.append("./Projects/RevenueCatTests")
     projects.append("./Projects/PaywallScreenshotTests")
     projects.append("./Projects/RevenueCatAdMob")
     projects.append("./Projects/AdMobIntegrationSample")
+    projects.append("./Projects/RevenueCatAds")
+    projects.append("./Projects/AdsIntegrationSample")
 }
 
 // `RevenueCat` and `RevenueCatUI` ARE exposed as SPM library products consumed via

@@ -43,7 +43,9 @@
 /Tests/UnitTests/Ads/ @RevenueCat/ads
 /AdapterSDKs/ @RevenueCat/ads
 /Projects/AdMobIntegrationSample/ @RevenueCat/ads
+/Projects/AdsIntegrationSample/ @RevenueCat/ads
 /Projects/RevenueCatAdMob/ @RevenueCat/ads
+/Projects/RevenueCatAds/ @RevenueCat/ads
 /Examples/VanillaAdTrackingSample/ @RevenueCat/ads
 
 # Customer Center code and related UI tests
