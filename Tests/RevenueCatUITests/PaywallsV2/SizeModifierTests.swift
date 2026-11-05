@@ -181,41 +181,31 @@ final class SizeModifierTests: TestCase {
     }
 
     func testNestedFillStacksInsideScrollViewPlaceContentOnce() throws {
-        guard #available(iOS 16.0, *) else {
-            throw XCTSkip("PlacementRecorder is a Layout, available on iOS 16 and later")
-        }
-        let recorder = PlacementRecorder.Log()
-        var content = AnyView(PlacementRecorder(log: recorder) { Color.clear.frame(width: 10, height: 10) })
+        guard #available(iOS 16.0, *) else { throw XCTSkip("PlacementRecorder needs iOS 16") }
+        let log = PlacementRecorder.Log()
+        var content = AnyView(PlacementRecorder(log: log) { Color.clear.frame(width: 10, height: 10) })
         for _ in 0..<10 {
-            content = AnyView(
-                VStack { content }
-                    .size(.init(width: .fill, height: .fit(nil)))
-            )
+            content = AnyView(VStack { content }.size(.init(width: .fill, height: .fit(nil))))
         }
 
         Self.layOut(ScrollView { content }, in: .init(width: 100, height: 600))
 
-        // Laid out under a scroll view's unbounded height, iOS 17 used to place each level's content three
-        // times per placement of that level: 2 * 3^10 placements of the leaf for this tree.
-        XCTAssertGreaterThan(recorder.placements.count, 0)
-        XCTAssertLessThan(recorder.placements.count, 20)
+        // iOS 17 used to place each level's content three times: 2 * 3^10 placements of this leaf.
+        XCTAssertGreaterThan(log.placements.count, 0)
+        XCTAssertLessThan(log.placements.count, 20)
     }
 
     func testFillAlignsContentLikeAFrame() throws {
-        guard #available(iOS 16.0, *) else {
-            throw XCTSkip("PlacementRecorder is a Layout, available on iOS 16 and later")
-        }
-        let expectedMinX: [(HorizontalAlignment, CGFloat)] = [(.leading, 0), (.center, 45), (.trailing, 90)]
-        for (alignment, minX) in expectedMinX {
-            let recorder = PlacementRecorder.Log()
-            let view = PlacementRecorder(log: recorder) { Color.clear.frame(width: 10, height: 10) }
+        guard #available(iOS 16.0, *) else { throw XCTSkip("PlacementRecorder needs iOS 16") }
+        for (alignment, minX) in [(HorizontalAlignment.leading, 0.0), (.center, 45), (.trailing, 90)] {
+            let log = PlacementRecorder.Log()
+            let view = PlacementRecorder(log: log) { Color.clear.frame(width: 10, height: 10) }
                 .size(.init(width: .fill, height: .fixed(10)),
                       horizontalAlignment: Alignment(horizontal: alignment, vertical: .center))
-                .frame(width: 100, height: 10)
 
-            Self.layOut(view, in: .init(width: 100, height: 10))
+            Self.layOut(view.frame(width: 100, height: 10), in: .init(width: 100, height: 10))
 
-            XCTAssertEqual(recorder.placements.last?.minX, minX)
+            XCTAssertEqual(log.placements.last?.minX, CGFloat(minX))
         }
     }
 

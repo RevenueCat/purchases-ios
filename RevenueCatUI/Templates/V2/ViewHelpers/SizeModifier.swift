@@ -78,9 +78,7 @@ extension View {
         if #available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, *) {
             self.fillFrame(axis, alignment: alignment)
         } else if #available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *) {
-            FillLayout(axis: axis, alignment: alignment) {
-                self
-            }
+            FillLayout(axis: axis, alignment: alignment) { self }
         } else {
             self.fillFrame(axis, alignment: alignment)
         }
@@ -132,60 +130,24 @@ private struct FillLayout: Layout {
     let alignment: Alignment
 
     func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
-        guard let subview = subviews.first else {
-            return .zero
-        }
-
-        let subviewProposal = self.subviewProposal(for: proposal)
-        let subviewSize = subview.sizeThatFits(subviewProposal)
-        switch self.axis {
-        case .horizontal:
-            return CGSize(width: subviewProposal.width ?? subviewSize.width, height: subviewSize.height)
-        case .vertical:
-            return CGSize(width: subviewSize.width, height: subviewProposal.height ?? subviewSize.height)
-        }
+        let size = subviews.first?.sizeThatFits(proposal) ?? .zero
+        return self.axis == .horizontal
+            ? CGSize(width: proposal.width ?? size.width, height: size.height)
+            : CGSize(width: size.width, height: proposal.height ?? size.height)
     }
 
+    // By size, not `dimensions(in:)`: a stack's alignment guides lay out its whole subtree again.
     func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
-        guard let subview = subviews.first else {
-            return
-        }
-
-        // By size, not `dimensions(in:)`: a stack's alignment guides lay out its whole subtree again.
-        let subviewProposal = self.subviewProposal(for: proposal)
-        let size = subview.sizeThatFits(subviewProposal)
-        let origin = CGPoint(
-            x: bounds.minX + Self.fraction(of: self.alignment.horizontal) * (bounds.width - size.width),
-            y: bounds.minY + Self.fraction(of: self.alignment.vertical) * (bounds.height - size.height)
-        )
-        subview.place(at: origin, anchor: .topLeading, proposal: subviewProposal)
-    }
-
-    /// The proposal clamped to `minWidth: 0` (or `minHeight: 0`) along the filled axis.
-    private func subviewProposal(for proposal: ProposedViewSize) -> ProposedViewSize {
-        switch self.axis {
-        case .horizontal:
-            return ProposedViewSize(width: proposal.width.map { max($0, 0) }, height: proposal.height)
-        case .vertical:
-            return ProposedViewSize(width: proposal.width, height: proposal.height.map { max($0, 0) })
-        }
-    }
-
-    /// Where a frame puts its own alignment guide, as a fraction of its length.
-    private static func fraction(of alignment: HorizontalAlignment) -> CGFloat {
-        switch alignment {
-        case .leading: return 0
-        case .trailing: return 1
-        default: return 0.5
-        }
-    }
-
-    private static func fraction(of alignment: VerticalAlignment) -> CGFloat {
-        switch alignment {
-        case .top: return 0
-        case .bottom: return 1
-        default: return 0.5
-        }
+        guard let subview = subviews.first else { return }
+        let size = subview.sizeThatFits(proposal)
+        let horizontal = self.alignment.horizontal
+        let vertical = self.alignment.vertical
+        let xFraction: CGFloat = horizontal == .leading ? 0 : horizontal == .trailing ? 1 : 0.5
+        let yFraction: CGFloat = vertical == .top ? 0 : vertical == .bottom ? 1 : 0.5
+        subview.place(at: CGPoint(x: bounds.minX + xFraction * (bounds.width - size.width),
+                                  y: bounds.minY + yFraction * (bounds.height - size.height)),
+                      anchor: .topLeading,
+                      proposal: proposal)
     }
 
 }
