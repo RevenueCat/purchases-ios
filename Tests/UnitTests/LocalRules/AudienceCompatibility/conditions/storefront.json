@@ -1,0 +1,453 @@
+{
+  "schema_version": 1,
+  "cases": [
+    {
+      "id": "storefront/is/USA/new",
+      "field": "storefront",
+      "operator": "is",
+      "profile": "new",
+      "predicate": "{\"in\": [{\"var\": \"storefront\"}, [\"US\", \"USA\"]]}",
+      "expected": false
+    },
+    {
+      "id": "storefront/is/USA/renewed",
+      "field": "storefront",
+      "operator": "is",
+      "profile": "renewed",
+      "predicate": "{\"in\": [{\"var\": \"storefront\"}, [\"US\", \"USA\"]]}",
+      "expected": true
+    },
+    {
+      "id": "storefront/is/USA/first_purchase",
+      "field": "storefront",
+      "operator": "is",
+      "profile": "first_purchase",
+      "predicate": "{\"in\": [{\"var\": \"storefront\"}, [\"US\", \"USA\"]]}",
+      "expected": true
+    },
+    {
+      "id": "storefront/is/USA/unavailable",
+      "field": "storefront",
+      "operator": "is",
+      "profile": "unavailable",
+      "predicate": "{\"in\": [{\"var\": \"storefront\"}, [\"US\", \"USA\"]]}",
+      "expected": false
+    },
+    {
+      "id": "storefront/is/CAN/new",
+      "field": "storefront",
+      "operator": "is",
+      "profile": "new",
+      "predicate": "{\"in\": [{\"var\": \"storefront\"}, [\"CA\", \"CAN\"]]}",
+      "expected": true
+    },
+    {
+      "id": "storefront/is/CAN/renewed",
+      "field": "storefront",
+      "operator": "is",
+      "profile": "renewed",
+      "predicate": "{\"in\": [{\"var\": \"storefront\"}, [\"CA\", \"CAN\"]]}",
+      "expected": false
+    },
+    {
+      "id": "storefront/is/CAN/first_purchase",
+      "field": "storefront",
+      "operator": "is",
+      "profile": "first_purchase",
+      "predicate": "{\"in\": [{\"var\": \"storefront\"}, [\"CA\", \"CAN\"]]}",
+      "expected": false
+    },
+    {
+      "id": "storefront/is/CAN/unavailable",
+      "field": "storefront",
+      "operator": "is",
+      "profile": "unavailable",
+      "predicate": "{\"in\": [{\"var\": \"storefront\"}, [\"CA\", \"CAN\"]]}",
+      "expected": false
+    },
+    {
+      "id": "storefront/is/GBR/new",
+      "field": "storefront",
+      "operator": "is",
+      "profile": "new",
+      "predicate": "{\"in\": [{\"var\": \"storefront\"}, [\"GB\", \"GBR\"]]}",
+      "expected": false
+    },
+    {
+      "id": "storefront/is/GBR/renewed",
+      "field": "storefront",
+      "operator": "is",
+      "profile": "renewed",
+      "predicate": "{\"in\": [{\"var\": \"storefront\"}, [\"GB\", \"GBR\"]]}",
+      "expected": false
+    },
+    {
+      "id": "storefront/is/GBR/first_purchase",
+      "field": "storefront",
+      "operator": "is",
+      "profile": "first_purchase",
+      "predicate": "{\"in\": [{\"var\": \"storefront\"}, [\"GB\", \"GBR\"]]}",
+      "expected": false
+    },
+    {
+      "id": "storefront/is/GBR/unavailable",
+      "field": "storefront",
+      "operator": "is",
+      "profile": "unavailable",
+      "predicate": "{\"in\": [{\"var\": \"storefront\"}, [\"GB\", \"GBR\"]]}",
+      "expected": false
+    },
+    {
+      "id": "storefront/isNot/USA/new",
+      "field": "storefront",
+      "operator": "isNot",
+      "profile": "new",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"storefront\", null]}, \"US\"]}, {\"!=\": [{\"var\": [\"storefront\", null]}, \"USA\"]}]}",
+      "expected": true
+    },
+    {
+      "id": "storefront/isNot/USA/renewed",
+      "field": "storefront",
+      "operator": "isNot",
+      "profile": "renewed",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"storefront\", null]}, \"US\"]}, {\"!=\": [{\"var\": [\"storefront\", null]}, \"USA\"]}]}",
+      "expected": false
+    },
+    {
+      "id": "storefront/isNot/USA/first_purchase",
+      "field": "storefront",
+      "operator": "isNot",
+      "profile": "first_purchase",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"storefront\", null]}, \"US\"]}, {\"!=\": [{\"var\": [\"storefront\", null]}, \"USA\"]}]}",
+      "expected": false
+    },
+    {
+      "id": "storefront/isNot/USA/unavailable",
+      "field": "storefront",
+      "operator": "isNot",
+      "profile": "unavailable",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"storefront\", null]}, \"US\"]}, {\"!=\": [{\"var\": [\"storefront\", null]}, \"USA\"]}]}",
+      "expected": true
+    },
+    {
+      "id": "storefront/isNot/CAN/new",
+      "field": "storefront",
+      "operator": "isNot",
+      "profile": "new",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"storefront\", null]}, \"CA\"]}, {\"!=\": [{\"var\": [\"storefront\", null]}, \"CAN\"]}]}",
+      "expected": false
+    },
+    {
+      "id": "storefront/isNot/CAN/renewed",
+      "field": "storefront",
+      "operator": "isNot",
+      "profile": "renewed",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"storefront\", null]}, \"CA\"]}, {\"!=\": [{\"var\": [\"storefront\", null]}, \"CAN\"]}]}",
+      "expected": true
+    },
+    {
+      "id": "storefront/isNot/CAN/first_purchase",
+      "field": "storefront",
+      "operator": "isNot",
+      "profile": "first_purchase",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"storefront\", null]}, \"CA\"]}, {\"!=\": [{\"var\": [\"storefront\", null]}, \"CAN\"]}]}",
+      "expected": true
+    },
+    {
+      "id": "storefront/isNot/CAN/unavailable",
+      "field": "storefront",
+      "operator": "isNot",
+      "profile": "unavailable",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"storefront\", null]}, \"CA\"]}, {\"!=\": [{\"var\": [\"storefront\", null]}, \"CAN\"]}]}",
+      "expected": true
+    },
+    {
+      "id": "storefront/isNot/GBR/new",
+      "field": "storefront",
+      "operator": "isNot",
+      "profile": "new",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"storefront\", null]}, \"GB\"]}, {\"!=\": [{\"var\": [\"storefront\", null]}, \"GBR\"]}]}",
+      "expected": true
+    },
+    {
+      "id": "storefront/isNot/GBR/renewed",
+      "field": "storefront",
+      "operator": "isNot",
+      "profile": "renewed",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"storefront\", null]}, \"GB\"]}, {\"!=\": [{\"var\": [\"storefront\", null]}, \"GBR\"]}]}",
+      "expected": true
+    },
+    {
+      "id": "storefront/isNot/GBR/first_purchase",
+      "field": "storefront",
+      "operator": "isNot",
+      "profile": "first_purchase",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"storefront\", null]}, \"GB\"]}, {\"!=\": [{\"var\": [\"storefront\", null]}, \"GBR\"]}]}",
+      "expected": true
+    },
+    {
+      "id": "storefront/isNot/GBR/unavailable",
+      "field": "storefront",
+      "operator": "isNot",
+      "profile": "unavailable",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"storefront\", null]}, \"GB\"]}, {\"!=\": [{\"var\": [\"storefront\", null]}, \"GBR\"]}]}",
+      "expected": true
+    },
+    {
+      "id": "storefront/isAnyOf/USA/new",
+      "field": "storefront",
+      "operator": "isAnyOf",
+      "profile": "new",
+      "predicate": "{\"in\": [{\"var\": \"storefront\"}, [\"US\", \"USA\"]]}",
+      "expected": false
+    },
+    {
+      "id": "storefront/isAnyOf/USA/renewed",
+      "field": "storefront",
+      "operator": "isAnyOf",
+      "profile": "renewed",
+      "predicate": "{\"in\": [{\"var\": \"storefront\"}, [\"US\", \"USA\"]]}",
+      "expected": true
+    },
+    {
+      "id": "storefront/isAnyOf/USA/first_purchase",
+      "field": "storefront",
+      "operator": "isAnyOf",
+      "profile": "first_purchase",
+      "predicate": "{\"in\": [{\"var\": \"storefront\"}, [\"US\", \"USA\"]]}",
+      "expected": true
+    },
+    {
+      "id": "storefront/isAnyOf/USA/unavailable",
+      "field": "storefront",
+      "operator": "isAnyOf",
+      "profile": "unavailable",
+      "predicate": "{\"in\": [{\"var\": \"storefront\"}, [\"US\", \"USA\"]]}",
+      "expected": false
+    },
+    {
+      "id": "storefront/isAnyOf/CAN/new",
+      "field": "storefront",
+      "operator": "isAnyOf",
+      "profile": "new",
+      "predicate": "{\"in\": [{\"var\": \"storefront\"}, [\"CA\", \"CAN\"]]}",
+      "expected": true
+    },
+    {
+      "id": "storefront/isAnyOf/CAN/renewed",
+      "field": "storefront",
+      "operator": "isAnyOf",
+      "profile": "renewed",
+      "predicate": "{\"in\": [{\"var\": \"storefront\"}, [\"CA\", \"CAN\"]]}",
+      "expected": false
+    },
+    {
+      "id": "storefront/isAnyOf/CAN/first_purchase",
+      "field": "storefront",
+      "operator": "isAnyOf",
+      "profile": "first_purchase",
+      "predicate": "{\"in\": [{\"var\": \"storefront\"}, [\"CA\", \"CAN\"]]}",
+      "expected": false
+    },
+    {
+      "id": "storefront/isAnyOf/CAN/unavailable",
+      "field": "storefront",
+      "operator": "isAnyOf",
+      "profile": "unavailable",
+      "predicate": "{\"in\": [{\"var\": \"storefront\"}, [\"CA\", \"CAN\"]]}",
+      "expected": false
+    },
+    {
+      "id": "storefront/isAnyOf/GBR/new",
+      "field": "storefront",
+      "operator": "isAnyOf",
+      "profile": "new",
+      "predicate": "{\"in\": [{\"var\": \"storefront\"}, [\"GB\", \"GBR\"]]}",
+      "expected": false
+    },
+    {
+      "id": "storefront/isAnyOf/GBR/renewed",
+      "field": "storefront",
+      "operator": "isAnyOf",
+      "profile": "renewed",
+      "predicate": "{\"in\": [{\"var\": \"storefront\"}, [\"GB\", \"GBR\"]]}",
+      "expected": false
+    },
+    {
+      "id": "storefront/isAnyOf/GBR/first_purchase",
+      "field": "storefront",
+      "operator": "isAnyOf",
+      "profile": "first_purchase",
+      "predicate": "{\"in\": [{\"var\": \"storefront\"}, [\"GB\", \"GBR\"]]}",
+      "expected": false
+    },
+    {
+      "id": "storefront/isAnyOf/GBR/unavailable",
+      "field": "storefront",
+      "operator": "isAnyOf",
+      "profile": "unavailable",
+      "predicate": "{\"in\": [{\"var\": \"storefront\"}, [\"GB\", \"GBR\"]]}",
+      "expected": false
+    },
+    {
+      "id": "storefront/isNotAnyOf/USA/new",
+      "field": "storefront",
+      "operator": "isNotAnyOf",
+      "profile": "new",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": \"storefront\"}, null]}, {\"!\": [{\"in\": [{\"var\": \"storefront\"}, [\"US\", \"USA\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "storefront/isNotAnyOf/USA/renewed",
+      "field": "storefront",
+      "operator": "isNotAnyOf",
+      "profile": "renewed",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": \"storefront\"}, null]}, {\"!\": [{\"in\": [{\"var\": \"storefront\"}, [\"US\", \"USA\"]]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "storefront/isNotAnyOf/USA/first_purchase",
+      "field": "storefront",
+      "operator": "isNotAnyOf",
+      "profile": "first_purchase",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": \"storefront\"}, null]}, {\"!\": [{\"in\": [{\"var\": \"storefront\"}, [\"US\", \"USA\"]]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "storefront/isNotAnyOf/USA/unavailable",
+      "field": "storefront",
+      "operator": "isNotAnyOf",
+      "profile": "unavailable",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": \"storefront\"}, null]}, {\"!\": [{\"in\": [{\"var\": \"storefront\"}, [\"US\", \"USA\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "storefront/isNotAnyOf/CAN/new",
+      "field": "storefront",
+      "operator": "isNotAnyOf",
+      "profile": "new",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": \"storefront\"}, null]}, {\"!\": [{\"in\": [{\"var\": \"storefront\"}, [\"CA\", \"CAN\"]]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "storefront/isNotAnyOf/CAN/renewed",
+      "field": "storefront",
+      "operator": "isNotAnyOf",
+      "profile": "renewed",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": \"storefront\"}, null]}, {\"!\": [{\"in\": [{\"var\": \"storefront\"}, [\"CA\", \"CAN\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "storefront/isNotAnyOf/CAN/first_purchase",
+      "field": "storefront",
+      "operator": "isNotAnyOf",
+      "profile": "first_purchase",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": \"storefront\"}, null]}, {\"!\": [{\"in\": [{\"var\": \"storefront\"}, [\"CA\", \"CAN\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "storefront/isNotAnyOf/CAN/unavailable",
+      "field": "storefront",
+      "operator": "isNotAnyOf",
+      "profile": "unavailable",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": \"storefront\"}, null]}, {\"!\": [{\"in\": [{\"var\": \"storefront\"}, [\"CA\", \"CAN\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "storefront/isNotAnyOf/GBR/new",
+      "field": "storefront",
+      "operator": "isNotAnyOf",
+      "profile": "new",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": \"storefront\"}, null]}, {\"!\": [{\"in\": [{\"var\": \"storefront\"}, [\"GB\", \"GBR\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "storefront/isNotAnyOf/GBR/renewed",
+      "field": "storefront",
+      "operator": "isNotAnyOf",
+      "profile": "renewed",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": \"storefront\"}, null]}, {\"!\": [{\"in\": [{\"var\": \"storefront\"}, [\"GB\", \"GBR\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "storefront/isNotAnyOf/GBR/first_purchase",
+      "field": "storefront",
+      "operator": "isNotAnyOf",
+      "profile": "first_purchase",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": \"storefront\"}, null]}, {\"!\": [{\"in\": [{\"var\": \"storefront\"}, [\"GB\", \"GBR\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "storefront/isNotAnyOf/GBR/unavailable",
+      "field": "storefront",
+      "operator": "isNotAnyOf",
+      "profile": "unavailable",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": \"storefront\"}, null]}, {\"!\": [{\"in\": [{\"var\": \"storefront\"}, [\"GB\", \"GBR\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "storefront/isEmpty//new",
+      "field": "storefront",
+      "operator": "isEmpty",
+      "profile": "new",
+      "predicate": "{\"==\": [{\"var\": \"storefront\"}, null]}",
+      "expected": false
+    },
+    {
+      "id": "storefront/isEmpty//renewed",
+      "field": "storefront",
+      "operator": "isEmpty",
+      "profile": "renewed",
+      "predicate": "{\"==\": [{\"var\": \"storefront\"}, null]}",
+      "expected": false
+    },
+    {
+      "id": "storefront/isEmpty//first_purchase",
+      "field": "storefront",
+      "operator": "isEmpty",
+      "profile": "first_purchase",
+      "predicate": "{\"==\": [{\"var\": \"storefront\"}, null]}",
+      "expected": false
+    },
+    {
+      "id": "storefront/isEmpty//unavailable",
+      "field": "storefront",
+      "operator": "isEmpty",
+      "profile": "unavailable",
+      "predicate": "{\"==\": [{\"var\": \"storefront\"}, null]}",
+      "expected": true
+    },
+    {
+      "id": "storefront/isNotEmpty//new",
+      "field": "storefront",
+      "operator": "isNotEmpty",
+      "profile": "new",
+      "predicate": "{\"!=\": [{\"var\": \"storefront\"}, null]}",
+      "expected": true
+    },
+    {
+      "id": "storefront/isNotEmpty//renewed",
+      "field": "storefront",
+      "operator": "isNotEmpty",
+      "profile": "renewed",
+      "predicate": "{\"!=\": [{\"var\": \"storefront\"}, null]}",
+      "expected": true
+    },
+    {
+      "id": "storefront/isNotEmpty//first_purchase",
+      "field": "storefront",
+      "operator": "isNotEmpty",
+      "profile": "first_purchase",
+      "predicate": "{\"!=\": [{\"var\": \"storefront\"}, null]}",
+      "expected": true
+    },
+    {
+      "id": "storefront/isNotEmpty//unavailable",
+      "field": "storefront",
+      "operator": "isNotEmpty",
+      "profile": "unavailable",
+      "predicate": "{\"!=\": [{\"var\": \"storefront\"}, null]}",
+      "expected": false
+    }
+  ]
+}

@@ -1,0 +1,453 @@
+{
+  "schema_version": 1,
+  "cases": [
+    {
+      "id": "country/is/US/new",
+      "field": "country",
+      "operator": "is",
+      "profile": "new",
+      "predicate": "{\"==\": [{\"var\": \"country\"}, \"US\"]}",
+      "expected": false
+    },
+    {
+      "id": "country/is/US/renewed",
+      "field": "country",
+      "operator": "is",
+      "profile": "renewed",
+      "predicate": "{\"==\": [{\"var\": \"country\"}, \"US\"]}",
+      "expected": true
+    },
+    {
+      "id": "country/is/US/first_purchase",
+      "field": "country",
+      "operator": "is",
+      "profile": "first_purchase",
+      "predicate": "{\"==\": [{\"var\": \"country\"}, \"US\"]}",
+      "expected": true
+    },
+    {
+      "id": "country/is/US/unavailable",
+      "field": "country",
+      "operator": "is",
+      "profile": "unavailable",
+      "predicate": "{\"==\": [{\"var\": \"country\"}, \"US\"]}",
+      "expected": false
+    },
+    {
+      "id": "country/is/CA/new",
+      "field": "country",
+      "operator": "is",
+      "profile": "new",
+      "predicate": "{\"==\": [{\"var\": \"country\"}, \"CA\"]}",
+      "expected": true
+    },
+    {
+      "id": "country/is/CA/renewed",
+      "field": "country",
+      "operator": "is",
+      "profile": "renewed",
+      "predicate": "{\"==\": [{\"var\": \"country\"}, \"CA\"]}",
+      "expected": false
+    },
+    {
+      "id": "country/is/CA/first_purchase",
+      "field": "country",
+      "operator": "is",
+      "profile": "first_purchase",
+      "predicate": "{\"==\": [{\"var\": \"country\"}, \"CA\"]}",
+      "expected": false
+    },
+    {
+      "id": "country/is/CA/unavailable",
+      "field": "country",
+      "operator": "is",
+      "profile": "unavailable",
+      "predicate": "{\"==\": [{\"var\": \"country\"}, \"CA\"]}",
+      "expected": false
+    },
+    {
+      "id": "country/is/ZZ/new",
+      "field": "country",
+      "operator": "is",
+      "profile": "new",
+      "predicate": "{\"==\": [{\"var\": \"country\"}, \"ZZ\"]}",
+      "expected": false
+    },
+    {
+      "id": "country/is/ZZ/renewed",
+      "field": "country",
+      "operator": "is",
+      "profile": "renewed",
+      "predicate": "{\"==\": [{\"var\": \"country\"}, \"ZZ\"]}",
+      "expected": false
+    },
+    {
+      "id": "country/is/ZZ/first_purchase",
+      "field": "country",
+      "operator": "is",
+      "profile": "first_purchase",
+      "predicate": "{\"==\": [{\"var\": \"country\"}, \"ZZ\"]}",
+      "expected": false
+    },
+    {
+      "id": "country/is/ZZ/unavailable",
+      "field": "country",
+      "operator": "is",
+      "profile": "unavailable",
+      "predicate": "{\"==\": [{\"var\": \"country\"}, \"ZZ\"]}",
+      "expected": false
+    },
+    {
+      "id": "country/isNot/US/new",
+      "field": "country",
+      "operator": "isNot",
+      "profile": "new",
+      "predicate": "{\"!=\": [{\"var\": [\"country\", null]}, \"US\"]}",
+      "expected": true
+    },
+    {
+      "id": "country/isNot/US/renewed",
+      "field": "country",
+      "operator": "isNot",
+      "profile": "renewed",
+      "predicate": "{\"!=\": [{\"var\": [\"country\", null]}, \"US\"]}",
+      "expected": false
+    },
+    {
+      "id": "country/isNot/US/first_purchase",
+      "field": "country",
+      "operator": "isNot",
+      "profile": "first_purchase",
+      "predicate": "{\"!=\": [{\"var\": [\"country\", null]}, \"US\"]}",
+      "expected": false
+    },
+    {
+      "id": "country/isNot/US/unavailable",
+      "field": "country",
+      "operator": "isNot",
+      "profile": "unavailable",
+      "predicate": "{\"!=\": [{\"var\": [\"country\", null]}, \"US\"]}",
+      "expected": true
+    },
+    {
+      "id": "country/isNot/CA/new",
+      "field": "country",
+      "operator": "isNot",
+      "profile": "new",
+      "predicate": "{\"!=\": [{\"var\": [\"country\", null]}, \"CA\"]}",
+      "expected": false
+    },
+    {
+      "id": "country/isNot/CA/renewed",
+      "field": "country",
+      "operator": "isNot",
+      "profile": "renewed",
+      "predicate": "{\"!=\": [{\"var\": [\"country\", null]}, \"CA\"]}",
+      "expected": true
+    },
+    {
+      "id": "country/isNot/CA/first_purchase",
+      "field": "country",
+      "operator": "isNot",
+      "profile": "first_purchase",
+      "predicate": "{\"!=\": [{\"var\": [\"country\", null]}, \"CA\"]}",
+      "expected": true
+    },
+    {
+      "id": "country/isNot/CA/unavailable",
+      "field": "country",
+      "operator": "isNot",
+      "profile": "unavailable",
+      "predicate": "{\"!=\": [{\"var\": [\"country\", null]}, \"CA\"]}",
+      "expected": true
+    },
+    {
+      "id": "country/isNot/ZZ/new",
+      "field": "country",
+      "operator": "isNot",
+      "profile": "new",
+      "predicate": "{\"!=\": [{\"var\": [\"country\", null]}, \"ZZ\"]}",
+      "expected": true
+    },
+    {
+      "id": "country/isNot/ZZ/renewed",
+      "field": "country",
+      "operator": "isNot",
+      "profile": "renewed",
+      "predicate": "{\"!=\": [{\"var\": [\"country\", null]}, \"ZZ\"]}",
+      "expected": true
+    },
+    {
+      "id": "country/isNot/ZZ/first_purchase",
+      "field": "country",
+      "operator": "isNot",
+      "profile": "first_purchase",
+      "predicate": "{\"!=\": [{\"var\": [\"country\", null]}, \"ZZ\"]}",
+      "expected": true
+    },
+    {
+      "id": "country/isNot/ZZ/unavailable",
+      "field": "country",
+      "operator": "isNot",
+      "profile": "unavailable",
+      "predicate": "{\"!=\": [{\"var\": [\"country\", null]}, \"ZZ\"]}",
+      "expected": true
+    },
+    {
+      "id": "country/isAnyOf/US/new",
+      "field": "country",
+      "operator": "isAnyOf",
+      "profile": "new",
+      "predicate": "{\"in\": [{\"var\": \"country\"}, [\"US\"]]}",
+      "expected": false
+    },
+    {
+      "id": "country/isAnyOf/US/renewed",
+      "field": "country",
+      "operator": "isAnyOf",
+      "profile": "renewed",
+      "predicate": "{\"in\": [{\"var\": \"country\"}, [\"US\"]]}",
+      "expected": true
+    },
+    {
+      "id": "country/isAnyOf/US/first_purchase",
+      "field": "country",
+      "operator": "isAnyOf",
+      "profile": "first_purchase",
+      "predicate": "{\"in\": [{\"var\": \"country\"}, [\"US\"]]}",
+      "expected": true
+    },
+    {
+      "id": "country/isAnyOf/US/unavailable",
+      "field": "country",
+      "operator": "isAnyOf",
+      "profile": "unavailable",
+      "predicate": "{\"in\": [{\"var\": \"country\"}, [\"US\"]]}",
+      "expected": false
+    },
+    {
+      "id": "country/isAnyOf/CA/new",
+      "field": "country",
+      "operator": "isAnyOf",
+      "profile": "new",
+      "predicate": "{\"in\": [{\"var\": \"country\"}, [\"CA\"]]}",
+      "expected": true
+    },
+    {
+      "id": "country/isAnyOf/CA/renewed",
+      "field": "country",
+      "operator": "isAnyOf",
+      "profile": "renewed",
+      "predicate": "{\"in\": [{\"var\": \"country\"}, [\"CA\"]]}",
+      "expected": false
+    },
+    {
+      "id": "country/isAnyOf/CA/first_purchase",
+      "field": "country",
+      "operator": "isAnyOf",
+      "profile": "first_purchase",
+      "predicate": "{\"in\": [{\"var\": \"country\"}, [\"CA\"]]}",
+      "expected": false
+    },
+    {
+      "id": "country/isAnyOf/CA/unavailable",
+      "field": "country",
+      "operator": "isAnyOf",
+      "profile": "unavailable",
+      "predicate": "{\"in\": [{\"var\": \"country\"}, [\"CA\"]]}",
+      "expected": false
+    },
+    {
+      "id": "country/isAnyOf/ZZ/new",
+      "field": "country",
+      "operator": "isAnyOf",
+      "profile": "new",
+      "predicate": "{\"in\": [{\"var\": \"country\"}, [\"ZZ\"]]}",
+      "expected": false
+    },
+    {
+      "id": "country/isAnyOf/ZZ/renewed",
+      "field": "country",
+      "operator": "isAnyOf",
+      "profile": "renewed",
+      "predicate": "{\"in\": [{\"var\": \"country\"}, [\"ZZ\"]]}",
+      "expected": false
+    },
+    {
+      "id": "country/isAnyOf/ZZ/first_purchase",
+      "field": "country",
+      "operator": "isAnyOf",
+      "profile": "first_purchase",
+      "predicate": "{\"in\": [{\"var\": \"country\"}, [\"ZZ\"]]}",
+      "expected": false
+    },
+    {
+      "id": "country/isAnyOf/ZZ/unavailable",
+      "field": "country",
+      "operator": "isAnyOf",
+      "profile": "unavailable",
+      "predicate": "{\"in\": [{\"var\": \"country\"}, [\"ZZ\"]]}",
+      "expected": false
+    },
+    {
+      "id": "country/isNotAnyOf/US/new",
+      "field": "country",
+      "operator": "isNotAnyOf",
+      "profile": "new",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": \"country\"}, null]}, {\"!\": [{\"in\": [{\"var\": \"country\"}, [\"US\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "country/isNotAnyOf/US/renewed",
+      "field": "country",
+      "operator": "isNotAnyOf",
+      "profile": "renewed",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": \"country\"}, null]}, {\"!\": [{\"in\": [{\"var\": \"country\"}, [\"US\"]]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "country/isNotAnyOf/US/first_purchase",
+      "field": "country",
+      "operator": "isNotAnyOf",
+      "profile": "first_purchase",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": \"country\"}, null]}, {\"!\": [{\"in\": [{\"var\": \"country\"}, [\"US\"]]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "country/isNotAnyOf/US/unavailable",
+      "field": "country",
+      "operator": "isNotAnyOf",
+      "profile": "unavailable",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": \"country\"}, null]}, {\"!\": [{\"in\": [{\"var\": \"country\"}, [\"US\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "country/isNotAnyOf/CA/new",
+      "field": "country",
+      "operator": "isNotAnyOf",
+      "profile": "new",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": \"country\"}, null]}, {\"!\": [{\"in\": [{\"var\": \"country\"}, [\"CA\"]]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "country/isNotAnyOf/CA/renewed",
+      "field": "country",
+      "operator": "isNotAnyOf",
+      "profile": "renewed",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": \"country\"}, null]}, {\"!\": [{\"in\": [{\"var\": \"country\"}, [\"CA\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "country/isNotAnyOf/CA/first_purchase",
+      "field": "country",
+      "operator": "isNotAnyOf",
+      "profile": "first_purchase",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": \"country\"}, null]}, {\"!\": [{\"in\": [{\"var\": \"country\"}, [\"CA\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "country/isNotAnyOf/CA/unavailable",
+      "field": "country",
+      "operator": "isNotAnyOf",
+      "profile": "unavailable",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": \"country\"}, null]}, {\"!\": [{\"in\": [{\"var\": \"country\"}, [\"CA\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "country/isNotAnyOf/ZZ/new",
+      "field": "country",
+      "operator": "isNotAnyOf",
+      "profile": "new",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": \"country\"}, null]}, {\"!\": [{\"in\": [{\"var\": \"country\"}, [\"ZZ\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "country/isNotAnyOf/ZZ/renewed",
+      "field": "country",
+      "operator": "isNotAnyOf",
+      "profile": "renewed",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": \"country\"}, null]}, {\"!\": [{\"in\": [{\"var\": \"country\"}, [\"ZZ\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "country/isNotAnyOf/ZZ/first_purchase",
+      "field": "country",
+      "operator": "isNotAnyOf",
+      "profile": "first_purchase",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": \"country\"}, null]}, {\"!\": [{\"in\": [{\"var\": \"country\"}, [\"ZZ\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "country/isNotAnyOf/ZZ/unavailable",
+      "field": "country",
+      "operator": "isNotAnyOf",
+      "profile": "unavailable",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": \"country\"}, null]}, {\"!\": [{\"in\": [{\"var\": \"country\"}, [\"ZZ\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "country/isEmpty//new",
+      "field": "country",
+      "operator": "isEmpty",
+      "profile": "new",
+      "predicate": "{\"==\": [{\"var\": \"country\"}, null]}",
+      "expected": false
+    },
+    {
+      "id": "country/isEmpty//renewed",
+      "field": "country",
+      "operator": "isEmpty",
+      "profile": "renewed",
+      "predicate": "{\"==\": [{\"var\": \"country\"}, null]}",
+      "expected": false
+    },
+    {
+      "id": "country/isEmpty//first_purchase",
+      "field": "country",
+      "operator": "isEmpty",
+      "profile": "first_purchase",
+      "predicate": "{\"==\": [{\"var\": \"country\"}, null]}",
+      "expected": false
+    },
+    {
+      "id": "country/isEmpty//unavailable",
+      "field": "country",
+      "operator": "isEmpty",
+      "profile": "unavailable",
+      "predicate": "{\"==\": [{\"var\": \"country\"}, null]}",
+      "expected": true
+    },
+    {
+      "id": "country/isNotEmpty//new",
+      "field": "country",
+      "operator": "isNotEmpty",
+      "profile": "new",
+      "predicate": "{\"!=\": [{\"var\": \"country\"}, null]}",
+      "expected": true
+    },
+    {
+      "id": "country/isNotEmpty//renewed",
+      "field": "country",
+      "operator": "isNotEmpty",
+      "profile": "renewed",
+      "predicate": "{\"!=\": [{\"var\": \"country\"}, null]}",
+      "expected": true
+    },
+    {
+      "id": "country/isNotEmpty//first_purchase",
+      "field": "country",
+      "operator": "isNotEmpty",
+      "profile": "first_purchase",
+      "predicate": "{\"!=\": [{\"var\": \"country\"}, null]}",
+      "expected": true
+    },
+    {
+      "id": "country/isNotEmpty//unavailable",
+      "field": "country",
+      "operator": "isNotEmpty",
+      "profile": "unavailable",
+      "predicate": "{\"!=\": [{\"var\": \"country\"}, null]}",
+      "expected": false
+    }
+  ]
+}
