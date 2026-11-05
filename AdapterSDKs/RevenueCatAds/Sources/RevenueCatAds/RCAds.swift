@@ -52,9 +52,11 @@ import Foundation
         Self.module = module
     }
 
+    #if DEBUG
     static func reset() {
         Self.module = nil
     }
+    #endif
 
 }
 
