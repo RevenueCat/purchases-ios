@@ -181,7 +181,6 @@ class WorkflowManager: WorkflowAssetPrewarmingType {
         var resolutionsByWorkflowId: [String: Result<WorkflowDataResult, WorkflowResolutionError>] = [:]
         var claimedWorkflowIDs: Set<String> = []
         var workflowIDsToMarkPublished: Set<String> = []
-        var shouldPublish = false
         let configGeneration = self.workflowsConfigProvider.configGeneration
         for offeringId in WebBundleURLBatcher.targetOfferingIds(from: offerings) {
             guard let workflowId = await self.workflowsConfigProvider.workflowId(forOfferingId: offeringId) else {
@@ -197,7 +196,6 @@ class WorkflowManager: WorkflowAssetPrewarmingType {
                     configGeneration: configGeneration
                 ) else { continue }
 
-                shouldPublish = true
                 claimedWorkflowIDs.insert(workflowId)
                 resolution = await self.workflowPrewarmingDecodeCoordinator.decode(
                     workflowId: workflowId,
@@ -212,7 +210,7 @@ class WorkflowManager: WorkflowAssetPrewarmingType {
             }
         }
 
-        guard shouldPublish else { return }
+        guard !claimedWorkflowIDs.isEmpty else { return }
         await webBundleURLBatcher.publish(
             offerings: offerings,
             workflowsByOfferingId: workflowsByOfferingId
