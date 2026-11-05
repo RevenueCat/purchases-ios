@@ -25,6 +25,9 @@ import Foundation
         public static let invalidState = Code(rawValue: "invalid_ad_state")
         /// `present(from:)` was called before an ad finished loading.
         public static let notReady = Code(rawValue: "ad_not_ready")
+        /// The view controller passed to `present(from:)` cannot present: it is not in a window or is
+        /// already presenting. The ad stays loaded; call `present(from:)` again when it can.
+        public static let presentFailed = Code(rawValue: "ad_present_failed")
         /// The auction completed without a winning bid.
         public static let noFill = Code(rawValue: "ad_request_no_fill")
         /// The ad failed to load for any other reason; see ``AdsError/underlyingError``.

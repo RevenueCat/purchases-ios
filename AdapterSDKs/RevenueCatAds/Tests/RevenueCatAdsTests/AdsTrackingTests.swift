@@ -16,9 +16,11 @@ final class AdsTrackingTests: TestCase {
     private var module: FakeAdModule!
     private var tracking: FakeAdTracking!
     private var interstitial: AdsInterstitial!
+    private var presenters: PresenterFactory!
 
     override func setUp() async throws {
         try await super.setUp()
+        self.presenters = PresenterFactory()
         self.module = FakeAdModule()
         self.tracking = FakeAdTracking()
         let module = self.module
@@ -203,7 +205,7 @@ final class AdsTrackingTests: TestCase {
 
     private func presentLoadedAd() async throws {
         try await self.loadSuccessfully()
-        self.interstitial.present(from: UIViewController())
+        self.interstitial.present(from: self.presenters.makePresenter())
         self.module.lastInterstitial?.emit(.presented)
     }
 

@@ -15,9 +15,11 @@ final class AdsInterstitialTests: TestCase {
     private var module: FakeAdModule!
     private var delegate: RecordingDelegate!
     private var interstitial: AdsInterstitial!
+    private var presenters: PresenterFactory!
 
     override func setUp() async throws {
         try await super.setUp()
+        self.presenters = PresenterFactory()
         self.module = FakeAdModule()
         self.delegate = RecordingDelegate()
         let module = self.module
@@ -117,7 +119,7 @@ final class AdsInterstitialTests: TestCase {
     // MARK: - Present
 
     func testPresentBeforeLoadFailsWithNotReady() {
-        self.interstitial.present(from: UIViewController())
+        self.interstitial.present(from: self.presenters.makePresenter())
 
         XCTAssertEqual(self.delegate.events, [.failedToPresent(.notReady)])
         XCTAssertEqual(self.interstitial.state, .idle)
@@ -127,17 +129,50 @@ final class AdsInterstitialTests: TestCase {
         try await self.loadSuccessfully()
         self.module.lastInterstitial?.isReady = false
 
-        self.interstitial.present(from: UIViewController())
+        self.interstitial.present(from: self.presenters.makePresenter())
 
         XCTAssertEqual(self.module.lastInterstitial?.showCallCount, 0)
         XCTAssertEqual(self.delegate.events, [.failedToPresent(.notReady)])
+    }
+
+    func testPresentFromViewControllerWithoutWindowFailsAndKeepsAd() async throws {
+        try await self.loadSuccessfully()
+
+        self.interstitial.present(from: UIViewController())
+
+        XCTAssertEqual(self.module.lastInterstitial?.showCallCount, 0)
+        XCTAssertEqual(self.delegate.events, [.failedToPresent(.presentFailed)])
+        XCTAssertEqual(self.interstitial.state, .loaded)
+        XCTAssertTrue(self.interstitial.isReady)
+    }
+
+    func testPresentFromViewControllerAlreadyPresentingFailsAndKeepsAd() async throws {
+        try await self.loadSuccessfully()
+        let presenter = self.presenters.makePresenter()
+        presenter.present(UIViewController(), animated: false)
+
+        self.interstitial.present(from: presenter)
+
+        XCTAssertEqual(self.module.lastInterstitial?.showCallCount, 0)
+        XCTAssertEqual(self.delegate.events, [.failedToPresent(.presentFailed)])
+        XCTAssertEqual(self.interstitial.state, .loaded)
+    }
+
+    func testCanPresentAfterFailedPresentation() async throws {
+        try await self.loadSuccessfully()
+        self.interstitial.present(from: UIViewController())
+
+        self.interstitial.present(from: self.presenters.makePresenter())
+
+        XCTAssertEqual(self.module.lastInterstitial?.showCallCount, 1)
+        XCTAssertEqual(self.interstitial.state, .presenting)
     }
 
     func testFullLifecycleDeliversEventsInOrder() async throws {
         try await self.loadSuccessfully()
         let unit = try XCTUnwrap(self.module.lastInterstitial)
 
-        self.interstitial.present(from: UIViewController())
+        self.interstitial.present(from: self.presenters.makePresenter())
         XCTAssertEqual(unit.showCallCount, 1)
         XCTAssertEqual(self.interstitial.state, .presenting)
 
@@ -155,8 +190,8 @@ final class AdsInterstitialTests: TestCase {
         try await self.loadSuccessfully()
         let unit = try XCTUnwrap(self.module.lastInterstitial)
 
-        self.interstitial.present(from: UIViewController())
-        self.interstitial.present(from: UIViewController())
+        self.interstitial.present(from: self.presenters.makePresenter())
+        self.interstitial.present(from: self.presenters.makePresenter())
 
         XCTAssertEqual(unit.showCallCount, 1)
         XCTAssertEqual(self.delegate.events, [.failedToPresent(.notReady)])
@@ -202,7 +237,7 @@ final class AdsInterstitialTests: TestCase {
 
     func testExpiryWhilePresentingResetsAndCanLoadAgain() async throws {
         try await self.loadSuccessfully()
-        self.interstitial.present(from: UIViewController())
+        self.interstitial.present(from: self.presenters.makePresenter())
 
         self.module.lastInterstitial?.emit(.expired)
         XCTAssertEqual(self.interstitial.state, .idle)
@@ -247,7 +282,7 @@ final class AdsInterstitialTests: TestCase {
 
     private func presentLoadedAd() async throws {
         try await self.loadSuccessfully()
-        self.interstitial.present(from: UIViewController())
+        self.interstitial.present(from: self.presenters.makePresenter())
         self.module.lastInterstitial?.emit(.presented)
     }
 
