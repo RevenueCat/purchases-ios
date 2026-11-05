@@ -11,7 +11,7 @@ import UIKit
 
 /// A full-screen interstitial ad served by RevenueCat.
 ///
-/// Load it, then present it once. After it is dismissed (or fails to load) it can be loaded again.
+/// Load it, then present it once. After it is dismissed (or fails to load, or expires) it can be loaded again.
 @available(iOS 15.0, *)
 @MainActor
 @_spi(Experimental) public final class AdsInterstitial {
@@ -130,6 +130,8 @@ import UIKit
             self.handlePresentFailure(error)
         case .loaded, .failedToLoad:
             self.handleLoadEvent(event)
+        case .expired:
+            self.handleExpiry()
         case .presented, .impression, .clicked, .dismissed:
             self.handlePresentationEvent(event)
         }
@@ -150,9 +152,17 @@ import UIKit
             self.unit = nil
             self.resumeLoad(with: .failure(error))
             self.delegate?.interstitial(self, didFailWithError: error)
-        case .presented, .impression, .clicked, .dismissed:
+        case .presented, .impression, .clicked, .dismissed, .expired:
             break
         }
+    }
+
+    private func handleExpiry() {
+        guard self.state == .loaded else { return }
+
+        self.state = .idle
+        self.unit = nil
+        self.delegate?.interstitialDidExpire(self)
     }
 
     private func handlePresentationEvent(_ event: AdModuleEvent) {

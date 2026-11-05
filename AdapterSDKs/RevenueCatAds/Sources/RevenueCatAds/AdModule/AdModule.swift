@@ -52,6 +52,8 @@ enum AdModuleEvent {
 
     case loaded
     case failedToLoad(AdsError)
+    /// A loaded ad can no longer be presented.
+    case expired
     case presented
     case impression
     case clicked

@@ -20,6 +20,9 @@ import Foundation
     /// or when presenting fails (``AdsError/Code/presentFailed``).
     func interstitial(_ interstitial: AdsInterstitial, didFailWithError error: AdsError)
 
+    /// The loaded ad expired before being presented. Load again to get a new one.
+    func interstitialDidExpire(_ interstitial: AdsInterstitial)
+
     /// The ad is being presented.
     func interstitialDidPresent(_ interstitial: AdsInterstitial)
 
@@ -42,6 +45,8 @@ import Foundation
     func interstitialDidLoad(_ interstitial: AdsInterstitial) {}
 
     func interstitial(_ interstitial: AdsInterstitial, didFailWithError error: AdsError) {}
+
+    func interstitialDidExpire(_ interstitial: AdsInterstitial) {}
 
     func interstitialDidPresent(_ interstitial: AdsInterstitial) {}
 
