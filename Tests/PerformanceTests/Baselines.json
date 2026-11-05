@@ -4,9 +4,9 @@
       "architecture" : "arm64",
       "model" : "iPhone18,1",
       "os" : "Version 26.0 (Build 23A343)",
-      "xcodeBuild" : "17A324"
+      "xcodeBuild" : "17A400"
     },
-    "peakMemoryMiB" : 54.27455291748047,
+    "peakMemoryMiB" : 51.0099609375,
     "workloadSHA256" : "959a1c94069c07a67398bdbdb641bf6b48a18ab7bd956f7b48e982d4bffc6d04"
   }
 }
