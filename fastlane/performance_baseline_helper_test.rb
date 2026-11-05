@@ -69,6 +69,13 @@ class PerformanceBaselineHelperTest < Minitest::Test
     assert_equal remote_head, command('git', '--git-dir', @remote, 'rev-parse', 'test-pr')
   end
 
+  def test_pr_merge_gate_requires_the_memory_benchmark
+    config = YAML.safe_load(File.read(File.join(ROOT, '.circleci/default_config.yml')), aliases: true)
+    jobs = config.fetch('workflows').fetch('run-all-tests').fetch('jobs')
+    gate = jobs.find { |job| job.is_a?(Hash) && job.key?('all-tasks-passed') }
+    assert_includes gate.fetch('all-tasks-passed').fetch('requires'), 'performance-tests'
+  end
+
   def test_requested_job_enables_record_and_push_with_boolean_parameters
     command('node', '.circleci/generate-requested-jobs-config.js', env: {'REQUESTED_JOBS' => 'record-performance'}, directory: ROOT)
     config = YAML.safe_load(File.read('/tmp/requested-jobs-config.yml'), aliases: true)

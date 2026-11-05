@@ -2748,6 +2748,7 @@ workflows:
       - all-tasks-passed:
           requires:
             # Reduced Test Suite
+            - performance-tests
             - performance-automation-tests
             - lint
             - check-api-changes
