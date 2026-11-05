@@ -885,7 +885,7 @@ final class CheckpointsManagerTests: TestCase {
     func testShownAdWithAnUnverifiedRewardDeliversItInTheFlowResult() async throws {
         let reward = UnverifiedAdReward(type: "coins", amount: 5)
         let presenter = MockAdPresenter()
-        presenter.result = .shown(unverifiedReward: reward)
+        presenter.result = .shown(unverifiedRewardType: "coins", amount: 5)
         let adStep = Self.adStep(adFormat: .rewarded, rewardVerificationEnabled: false)
         let manager = CheckpointsManager(
             resolveCheckpoint: { _, _ in .matchedAd(adStep) },

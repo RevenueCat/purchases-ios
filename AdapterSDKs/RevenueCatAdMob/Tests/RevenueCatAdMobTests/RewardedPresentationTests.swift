@@ -309,7 +309,10 @@ final class RewardedPresentationTests: AdapterTestCase {
         XCTAssertEqual(RewardedPresentation.Outcome.shown(nil).presentationResult, AdPresentationResult.shown)
         XCTAssertEqual(
             RewardedPresentation.Outcome.shown(FakeRewardedAd.reward).presentationResult,
-            AdPresentationResult.shown(unverifiedReward: FakeRewardedAd.reward)
+            AdPresentationResult.shown(
+                unverifiedRewardType: FakeRewardedAd.reward.type,
+                amount: FakeRewardedAd.reward.amount
+            )
         )
 
         let error = NSError(domain: "gma", code: 1)

@@ -149,7 +149,7 @@ internal final class RewardedPresentation: NSObject, GoogleMobileAds.FullScreenC
         var presentationResult: AdPresentationResult {
             switch self {
             case let .shown(unverifiedReward?):
-                return .shown(unverifiedReward: unverifiedReward)
+                return .shown(unverifiedRewardType: unverifiedReward.type, amount: unverifiedReward.amount)
             case .shown(nil):
                 return .shown
             case let .failed(error):
