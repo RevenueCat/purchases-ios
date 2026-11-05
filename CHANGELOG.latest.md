@@ -1,16 +1,18 @@
-## RevenueCat SDK
-### 🐞 Bugfixes
-* fix: prevent race in sandbox environment detection (#8202) via Rick (@rickvdl)
-
 ## RevenueCatUI SDK
 ### 🐞 Bugfixes
-* Fix(Paywalls) correctly identify tab content (#8198) via Jacob Rakidzich (@JZDesign)
+* Fix(Paywalls) Package Selection/Resolution (#8145) via Jacob Rakidzich (@JZDesign)
 ### Paywallsv2
 #### 🐞 Bugfixes
-* Prefetch paywall images only for the displayed localization (#8188) via Josh Holtz (@joshdholtz)
+* fix(Paywalls) Package selection resolution on older OSes (#8226) via Jacob Rakidzich (@JZDesign)
+* Fix video controls intercepting taps outside the video (#8182) via Facundo Menzella (@facumenzella)
 
 ### 🔄 Other Changes
-* Let testing apps simulate API source outages (#8196) via Antonio Pallares (@ajpallares)
-* Remove the usesRemoteConfigAPISources dangerous setting and enable API sources for everyone (#8195) via Antonio Pallares (@ajpallares)
-* Chore(deps): Bump fastlane-plugin-revenuecat_internal from `996879c` to `1e7875c` (#8201) via dependabot[bot] (@dependabot[bot])
-* Move rc-maestro to Projects and rename it AutomatedSDKTestsApp (#8190) via Facundo Menzella (@facumenzella)
+* Add workflow prewarming performance benchmark (#8206) via Facundo Menzella (@facumenzella)
+* test(events): fix flaky feature event integration test (#8219) via Rick (@rickvdl)
+* refactor(paywalls): remove internal paywall components prewarming (#8207) via Rick (@rickvdl)
+* fix: present Test Store UI in the passed presentationContext (#7978) via Rick (@rickvdl)
+* fix: centralize presentation context resolution (#7977) via Rick (@rickvdl)
+* test(storekit): work around iOS 27 active repurchase hang (#8214) via Rick (@rickvdl)
+* test: fix flaky StoreKit 1 receipt retry test (#8213) via Rick (@rickvdl)
+* WFL-822 | Add Maestro tests for workflow branch routing (#8210) via Rosie Watson (@RosieWatson)
+* Warn CocoaPods users to migrate to Swift Package Manager (#8203) via Antonio Pallares (@ajpallares)
