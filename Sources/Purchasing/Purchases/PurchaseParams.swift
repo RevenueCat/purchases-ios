@@ -167,8 +167,8 @@ import AppKit
          * Set `confirmInScene`.
          *
          * - Parameter confirmInScene: The scene the system uses to show the purchase confirmation UI.
-         * - Note: This value anchors purchase UI that supports scene-aware presentation.
-         *   This is not supported when using StoreKit 1.
+         * - Note: Used to anchor StoreKit 2 purchase confirmation UI and the Test Store purchase dialog.
+         *   Ignored when using StoreKit 1.
          *
          * Availability: iOS 17.0+, macCatalyst 17.0+, tvOS 17.0+, visionOS 1.0+
          */
