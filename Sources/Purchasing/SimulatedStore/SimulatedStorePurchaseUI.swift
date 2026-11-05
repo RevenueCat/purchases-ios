@@ -79,7 +79,7 @@ struct DefaultSimulatedStorePurchaseUI: SimulatedStorePurchaseUI {
 
     func presentPurchaseUI(
         for product: SimulatedStoreProduct,
-        presentationContext: PresentationContext? = nil
+        presentationContext: PresentationContext?
     ) async -> SimulatedStorePurchaseUIResult {
         await Task { @MainActor in
             return await withUnsafeContinuation { continuation in
