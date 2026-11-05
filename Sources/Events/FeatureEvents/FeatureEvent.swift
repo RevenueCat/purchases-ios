@@ -74,6 +74,7 @@ extension PaywallEvent {
         let typeName: String = {
             switch self {
             case .impression: return "paywall_impression"
+            case .loaded: return "paywall_loaded"
             case .cancel: return "paywall_cancel"
             case .close: return "paywall_close"
             case .exitOffer: return "paywall_exit_offer"
@@ -98,6 +99,18 @@ extension PaywallEvent {
 
         if let paywallIdentifier = self.data.paywallIdentifier {
             result["paywall_id"] = paywallIdentifier
+        }
+
+        if let msSinceConfigure = self.data.msSinceConfigure {
+            result["ms_since_configure"] = msSinceConfigure
+        }
+
+        if let loadingDurationMs = self.data.loadingDurationMs {
+            result["loading_duration_ms"] = loadingDurationMs
+        }
+
+        if let loadingIncompleteReason = self.data.loadingIncompleteReason {
+            result["loading_incomplete_reason"] = loadingIncompleteReason
         }
 
         if let interaction = self.componentInteractionData {
