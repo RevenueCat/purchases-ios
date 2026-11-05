@@ -190,6 +190,58 @@ class WorkflowPrewarmingCoordinatorTests: TestCase {
         ]
     }
 
+    func testConcurrentBackgroundPassesRemainSequentialWhileOnDemandPrewarmingBypassesQueue() async throws {
+        try requireWorkflowPrewarmingAvailability()
+        let first = try Self.workflowDataResult(id: "wf_first")
+        let second = try Self.workflowDataResult(id: "wf_second")
+        let firstAssetDownloadGate = WorkflowDecodeGate()
+        let startedAssetWorkflowIDs: Atomic<[String]> = .init([])
+        let paywallCache = MockPaywallCacheWarming(workflowAssetPrewarmingHandler: { workflowID in
+            startedAssetWorkflowIDs.modify { $0.append(workflowID) }
+            if workflowID == "wf_first" {
+                await firstAssetDownloadGate.wait()
+            }
+        })
+        let provider = PriorityWorkflowPrewarmingDecodeProvider(
+            results: ["wf_first": first, "wf_second": second],
+            workflowIdByOfferingId: ["default": "wf_first", "placement": "wf_second"],
+            cachedWorkflowIDs: ["wf_first", "wf_second"],
+            blockedWorkflowID: "unused"
+        )
+        let coordinator = WorkflowPrewarmingCoordinator(
+            workflowsConfigProvider: provider,
+            paywallCache: paywallCache,
+            operationDispatcher: self.mockOperationDispatcher,
+            webBundleURLBatcher: self.mockWebBundleURLBatcher,
+            decodeCoordinator: .init()
+        )
+        let offerings = Self.offerings(placements: .init(
+            fallbackOfferingId: nil,
+            offeringIdsByPlacement: ["placement_id": "placement"]
+        ))
+
+        await coordinator.schedulePrewarming(offerings: offerings)
+        await coordinator.schedulePrewarming(offerings: offerings)
+        let firstPass = Task {
+            await self.mockOperationDispatcher.invokeDispatchedAsyncWorkerThreadBlock(at: 0)
+        }
+        await expect(startedAssetWorkflowIDs.value).toEventually(equal(["wf_first"]))
+
+        let secondPass = Task {
+            await self.mockOperationDispatcher.invokeDispatchedAsyncWorkerThreadBlock(at: 0)
+        }
+        await expect(startedAssetWorkflowIDs.value)
+            .toNever(equal(["wf_first", "wf_second"]), until: .milliseconds(100))
+
+        coordinator.scheduleAssetPrewarming(for: second)
+        await self.mockOperationDispatcher.invokeDispatchedAsyncWorkerThreadBlock(at: 0)
+        expect(startedAssetWorkflowIDs.value) == ["wf_first", "wf_second"]
+
+        await firstAssetDownloadGate.open()
+        _ = await (firstPass.value, secondPass.value)
+        expect(startedAssetWorkflowIDs.value) == ["wf_first", "wf_second"]
+    }
+
     func testSchedulePrewarmingPublishesWebBundlesWithoutWaitingForTargetAssetDownloads() async throws {
         try requireWorkflowPrewarmingAvailability()
         let target = try Self.workflowDataResult(
@@ -495,7 +547,7 @@ class WorkflowPrewarmingCoordinatorTests: TestCase {
         expect(urls.filter { $0 == "https://example.com/workflow-fallback" }.count) == 0
     }
 
-    func testPublishWebBundleURLsPublishesConcurrentWorkflowOnlyOncePerConfigGeneration() async throws {
+    func testConcurrentBackgroundPassesAreSerializedAndPublishWorkflowOncePerConfigGeneration() async throws {
         try requireWorkflowPrewarmingAvailability()
         let provider = BlockingWorkflowPrewarmingDecodeProvider(result: try Self.workflowDataResult(id: "wf_1"))
         let decodeCoordinator = WorkflowPrewarmingDecodeCoordinator()
@@ -512,7 +564,7 @@ class WorkflowPrewarmingCoordinatorTests: TestCase {
             Task { await coordinator.schedulePrewarming(offerings: offerings) }
         }
 
-        await expect { await decodeCoordinator.activeRequestCount }.toEventually(equal(20))
+        await expect { await decodeCoordinator.activeRequestCount }.toEventually(equal(1))
         await expect(provider.decodeCount).toEventually(equal(1))
         await provider.releaseDecodes()
         for task in tasks {

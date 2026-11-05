@@ -20,6 +20,7 @@ final class WorkflowPrewarmingCoordinator: @unchecked Sendable {
     private let webBundleURLBatcher: WebBundleURLBatcherType
     private let decodeCoordinator: WorkflowPrewarmingDecodeCoordinator
     private let webBundlePublicationTracker = WorkflowWebBundlePublicationTracker()
+    private let backgroundPrewarmingLimiter = AsyncConcurrencyLimiter(maxConcurrentOperations: 1)
 
     init(
         workflowsConfigProvider: WorkflowsConfigProviderType,
@@ -46,10 +47,12 @@ final class WorkflowPrewarmingCoordinator: @unchecked Sendable {
         self.operationDispatcher.dispatchOnWorkerThread { [weak self] in
             guard let self else { return }
             guard #available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *) else { return }
-            await self.prewarm(
-                offerings: offerings,
-                workflowIDsForAssetPrewarming: workflowIDsReadyForPrewarming
-            )
+            await self.backgroundPrewarmingLimiter.perform {
+                await self.prewarm(
+                    offerings: offerings,
+                    workflowIDsForAssetPrewarming: workflowIDsReadyForPrewarming
+                )
+            }
         }
     }
 
