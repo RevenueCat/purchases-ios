@@ -183,7 +183,7 @@ struct RootPackageSelectionSheetModifier: ViewModifier {
     @Environment(\.screenCondition) private var screenCondition
     @Environment(\.customPaywallVariables) private var customVariables
     @Environment(\.paywallWindowSize) private var paywallWindowSize
-    @Environment(\.hasPurchasedInSession) private var hasPurchasedInSession
+    @Environment(\.sessionPurchaseResult) private var sessionPurchaseResult
     @EnvironmentObject private var introOfferEligibilityContext: IntroOfferEligibilityContext
     @EnvironmentObject private var paywallPromoOfferCache: PaywallPromoOfferCache
 
@@ -229,10 +229,11 @@ struct RootPackageSelectionSheetModifier: ViewModifier {
             },
             packageContext: self.sheetPackageContext
         )
-        .onChangeOf(self.hasPurchasedInSession) { hasPurchased in
+        .onChangeOf(self.sessionPurchaseResult) { result in
             // A purchase made from inside the sheet only requests a dismissal of the whole paywall, which does
-            // nothing when the paywall is embedded, so close the sheet here.
-            guard hasPurchased else { return }
+            // nothing when the paywall is embedded, so close the sheet here. Every purchase changes the result,
+            // so this also covers purchases after the first.
+            guard case .purchased = result else { return }
             self.sheetViewModel = nil
         }
         .onChangeOf(sheetViewModel) { newValue in
