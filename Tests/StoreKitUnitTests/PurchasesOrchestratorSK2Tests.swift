@@ -53,14 +53,31 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         self.backend.stubbedPostReceiptResult = .success(mockCustomerInfo)
 
         let transaction = try await createTransaction(finished: true)
+        let sk2Transaction = try XCTUnwrap(transaction.sk2Transaction)
         let product = try await self.fetchSk2Product()
+
+        let shouldMockSecondPurchase = AvailabilityChecks.activeRepurchaseWithSKTestNeedsWorkaround
+        if shouldMockSecondPurchase {
+            // On iOS 27, repurchasing the same active subscription can hang in StoreKit's confirmation path because
+            // the test host has no usable presentation scene. This StoreKitTest regression is tracked in
+            // https://github.com/RevenueCat/purchases-ios/pull/7742. Therefore, mock the second purchase; this test
+            // verifies receipt posting, while the transaction and JWS still come from the first real purchase.
+            self.mockStoreKit2ProductPurchaser = MockStoreKit2ProductPurchaser()
+            self.mockStoreKit2ProductPurchaser.stubbedPurchaseResult = .init(
+                .success(.success(.verified(sk2Transaction)))
+            )
+            self.setUpOrchestrator(storeKit2ProductPurchaser: self.mockStoreKit2ProductPurchaser)
+            self.setUpStoreKit2Listener()
+        } else {
+            self.mockStoreKit2TransactionListener?.mockTransaction = .init(sk2Transaction)
+            self.mockStoreKit2TransactionListener?.mockJWSToken = transaction.jwsRepresentation!
+        }
+
         let package = Package(identifier: "package",
                               packageType: .monthly,
                               storeProduct: StoreProduct(sk2Product: product),
                               offeringIdentifier: "offering",
                               webCheckoutUrl: nil)
-        mockStoreKit2TransactionListener?.mockTransaction = .init(transaction.sk2Transaction)
-        mockStoreKit2TransactionListener?.mockJWSToken = transaction.jwsRepresentation!
 
         _ = try await orchestrator.purchase(sk2Product: product,
                                             package: package,
@@ -70,6 +87,9 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
                                             billingPlanType: nil,
                                             promotionalOfferOptions: nil)
 
+        if shouldMockSecondPurchase {
+            expect(self.mockStoreKit2ProductPurchaser.invokedPurchaseCount) == 1
+        }
         expect(self.backend.invokedPostReceiptDataCount) == 1
         expect(self.backend.invokedPostReceiptData).to(beTrue())
         expect(self.backend.invokedPostReceiptDataParameters?.data) == .jws(transaction.jwsRepresentation!)
