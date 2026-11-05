@@ -346,6 +346,7 @@ struct PaywallsV2View: View {
         .environment(\.urlOpenedNotifier, URLOpenedNotifier { [purchaseHandler] url in
             purchaseHandler.signalURLOpened(url)
         })
+        .environment(\.hasPurchasedInSession, self.purchaseHandler.hasPurchasedInSession)
         .environmentObject(self.purchaseHandler)
         .environmentObject(self.introOfferEligibilityContext)
         .environmentObject(self.paywallPromoOfferCache)

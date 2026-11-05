@@ -28,4 +28,19 @@ extension EnvironmentValues {
     }
 }
 
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private struct HasPurchasedInSessionKey: EnvironmentKey {
+    static let defaultValue = false
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension EnvironmentValues {
+    /// Whether a purchase has completed in this paywall session. Lets a sheet close itself afterwards, since a
+    /// purchase made from inside it only requests a dismissal of the whole paywall.
+    var hasPurchasedInSession: Bool {
+        get { self[HasPurchasedInSessionKey.self] }
+        set { self[HasPurchasedInSessionKey.self] = newValue }
+    }
+}
+
 #endif
