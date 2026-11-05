@@ -380,7 +380,7 @@ extension DefaultSimulatedStorePurchaseUI {
             selectedAction?.callback(selectedAction?.title ?? "")
         }
 
-        if let window = self.findPresentationWindow(presentationContext: presentationContext)?.sheetPresentationWindow {
+        if let window = self.resolvedPresentationContext(presentationContext)?.sheetPresentationWindow {
             nsAlert.beginSheetModal(for: window, completionHandler: handleResponse)
         } else {
             handleResponse(nsAlert.runModal())
