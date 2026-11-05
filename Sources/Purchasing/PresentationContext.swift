@@ -63,6 +63,18 @@ import AppKit
         #endif
     }
 
+    #if canImport(AppKit) && !targetEnvironment(macCatalyst)
+    @MainActor
+    var sheetPresentationWindow: NSWindow? {
+        var window = self.window
+        while let attachedSheet = window.attachedSheet {
+            window = attachedSheet
+        }
+
+        return window.isVisible ? window : nil
+    }
+    #endif
+
     #if canImport(UIKit) && !os(watchOS)
     @available(macCatalyst 13.1, *)
     @available(macOS, unavailable)

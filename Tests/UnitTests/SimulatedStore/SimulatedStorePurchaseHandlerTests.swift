@@ -139,6 +139,28 @@ class SimulatedStorePurchaseHandlerTests: TestCase {
         XCTAssertTrue(presentationWindow === fallbackWindow)
     }
 
+    @MainActor
+    func testPurchaseUIUsesDeepestAttachedSheet() {
+        let deepestSheet = StubPresentationWindow(isVisible: true)
+        let attachedSheet = StubPresentationWindow(isVisible: true, attachedSheet: deepestSheet)
+        let window = StubPresentationWindow(isVisible: true, attachedSheet: attachedSheet)
+        let context = PresentationContext(window: window)
+
+        let presentationWindow = context.sheetPresentationWindow
+
+        XCTAssertTrue(presentationWindow === deepestSheet)
+    }
+
+    @MainActor
+    func testPurchaseUIFallsBackToAppModalForHiddenPresentationWindow() {
+        let window = StubPresentationWindow(isVisible: false)
+        let context = PresentationContext(window: window)
+
+        let presentationWindow = context.sheetPresentationWindow
+
+        XCTAssertNil(presentationWindow)
+    }
+
     func testPurchaseUIMapsOnlyButtonResponsesToActions() {
         XCTAssertEqual(DefaultSimulatedStorePurchaseUI.actionIndex(for: .alertFirstButtonReturn), 0)
         XCTAssertEqual(DefaultSimulatedStorePurchaseUI.actionIndex(for: .alertSecondButtonReturn), 1)
@@ -314,3 +336,21 @@ class SimulatedStorePurchaseHandlerTests: TestCase {
 
     private static let mockDate = Date(millisecondsSince1970: 1756796794912) // Sep 02 2025 07:06:34.912 UTC
 }
+
+#if canImport(AppKit) && !targetEnvironment(macCatalyst)
+private final class StubPresentationWindow: NSWindow {
+
+    private let stubbedIsVisible: Bool
+    private let stubbedAttachedSheet: NSWindow?
+
+    override var isVisible: Bool { return self.stubbedIsVisible }
+    override var attachedSheet: NSWindow? { return self.stubbedAttachedSheet }
+
+    init(isVisible: Bool, attachedSheet: NSWindow? = nil) {
+        self.stubbedIsVisible = isVisible
+        self.stubbedAttachedSheet = attachedSheet
+        super.init(contentRect: .zero, styleMask: [], backing: .buffered, defer: false)
+    }
+
+}
+#endif
