@@ -267,8 +267,7 @@ let project = Project(
                 "../../Tests/PerformanceTests/**/*.swift"
             ],
             resources: [
-                "../../Tests/TestingApps/PaywallFixtures/Resources/reported_tabs.json",
-                "../../Tests/UnitTests/Networking/Responses/Fixtures/UIConfig.json"
+                "../../Tests/PerformanceTests/Fixtures/*.json"
             ],
             dependencies: [
                 .revenueCat

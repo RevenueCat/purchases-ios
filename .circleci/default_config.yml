@@ -1120,7 +1120,7 @@ jobs:
         default: false
     executor:
       name: macos-executor
-      xcode_version: "26.0.0"
+      xcode_version: "26.0.1"
     steps:
       - checkout
       - tuist-generate-workspace:

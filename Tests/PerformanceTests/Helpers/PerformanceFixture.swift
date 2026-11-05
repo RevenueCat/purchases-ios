@@ -25,27 +25,26 @@ enum PerformanceFixture {
         ))
         let blobStore = RemoteConfigBlobStore(directoryURL: rootURL.appendingPathComponent("blobs"))
         var topics: [String: RemoteConfiguration.ConfigTopic] = [:]
-        func store(_ body: Any, topic: RemoteConfigTopic, key: String) throws {
-            let data = try JSONSerialization.data(withJSONObject: body, options: [.sortedKeys])
+        func store(_ data: Data, topic: RemoteConfigTopic, key: String) {
             let ref = Data(SHA256.hash(data: data).prefix(24)).base64EncodedString()
                 .replacingOccurrences(of: "+", with: "-").replacingOccurrences(of: "/", with: "_")
             XCTAssertTrue(data.withUnsafeBytes { blobStore.write(ref: ref, bytes: $0) })
             topics[topic.wireName, default: [:]][key] = .init(
                 blobRef: ref,
                 prefetch: true,
-                content: topic == .workflows ? ["offering_identifier": .string(key)] : [:]
+                content: topic == .workflows ? ["offering_identifier": .string("[performance-benchmark-1]")] : [:]
             )
         }
 
-        let screen = try self.json(named: "reported_tabs")
-        for index in 0..<12 {
-            let identifier = "workflow-\(index)"
-            try store(self.workflow(id: identifier, screen: screen), topic: .workflows, key: identifier)
-        }
-        var uiConfig = try self.json(named: "UIConfig")
-        uiConfig["custom_variables"] = [:] as [String: Any]
+        let url = try XCTUnwrap(Bundle(for: WorkflowPrewarmingMemoryTests.self)
+            .url(forResource: "performance-benchmark-1-revision-24", withExtension: "json"))
+        let data = try Data(contentsOf: url)
+        let workflow = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
+        let identifier = try XCTUnwrap(workflow["id"] as? String)
+        store(data, topic: .workflows, key: identifier)
+        let uiConfig = try XCTUnwrap(workflow["ui_config"] as? [String: Any])
         for (key, value) in uiConfig {
-            try store(value, topic: .uiConfig, key: key)
+            store(try JSONSerialization.data(withJSONObject: value, options: [.sortedKeys]), topic: .uiConfig, key: key)
         }
         XCTAssertTrue(diskCache.write(.init(
             manifest: "performance-fixture",
@@ -66,19 +65,6 @@ enum PerformanceFixture {
         )
     }
 
-    private static func workflow(id: String, screen: [String: Any]) -> [String: Any] {
-        let screens = Dictionary(uniqueKeysWithValues: (0..<8).map { ("screen-\($0)", screen) })
-        let steps = Dictionary(uniqueKeysWithValues: (0..<8).map {
-            ("step-\($0)", ["id": "step-\($0)", "type": "screen", "screen_id": "screen-\($0)"])
-        })
-        return ["id": id, "display_name": id, "initial_step_id": "step-0", "steps": steps, "screens": screens]
-    }
-
-    private static func json(named name: String) throws -> [String: Any] {
-        let url = try XCTUnwrap(Bundle(for: WorkflowPrewarmingMemoryTests.self)
-            .url(forResource: name, withExtension: "json"))
-        return try XCTUnwrap(JSONSerialization.jsonObject(with: Data(contentsOf: url)) as? [String: Any])
-    }
 }
 
 private final class OfflinePerformanceBackend: RemoteConfigAPIType,

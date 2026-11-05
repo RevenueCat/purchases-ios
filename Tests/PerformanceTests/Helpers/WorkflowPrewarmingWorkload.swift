@@ -20,7 +20,7 @@ final class WorkflowPrewarmingWorkload {
     private let manager: RemoteConfigManager
     private let rootURL: URL
     private var offeringIDs: [String] = []
-    private var workflowIDs: Set<String> = []
+    private var expectedScreens: [String: Set<String>] = [:]
     private(set) var sha256 = ""
 
     private init(manager: RemoteConfigManager, rootURL: URL) {
@@ -48,16 +48,18 @@ final class WorkflowPrewarmingWorkload {
             guard case let .string(identifier)? = item.content["offering_identifier"] else { return nil }
             return identifier
         }).sorted()
-        XCTAssertGreaterThan(self.offeringIDs.count, 1, "The fixture needs multiple mapped workflows.")
+        XCTAssertFalse(self.offeringIDs.isEmpty, "The fixture needs a mapped workflow.")
 
         let provider = WorkflowsConfigProvider(manager: self.manager)
         var fingerprint = SHA256()
         for offeringID in self.offeringIDs {
             let mappedID = await provider.workflowId(forOfferingId: offeringID)
             let workflowID = try XCTUnwrap(mappedID)
-            self.workflowIDs.insert(workflowID)
             let body = await self.manager.blobData(for: .workflows, itemKey: workflowID)
             let data = try XCTUnwrap(body)
+            let workflow = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
+            let screens = try XCTUnwrap(workflow["screens"] as? [String: Any])
+            self.expectedScreens[workflowID] = Set(screens.keys)
             fingerprint.update(data: Data(offeringID.utf8))
             fingerprint.update(data: data)
         }
@@ -75,14 +77,14 @@ final class WorkflowPrewarmingWorkload {
     }
 
     func prepareIteration() async throws -> WorkflowPrewarmingIteration {
-        let decodedIDs = Atomic<Set<String>>([])
+        let decodedScreens = Atomic<[String: Set<String>]>([:])
         let uiConfigProvider = UiConfigProvider(manager: self.manager)
         let provider = WorkflowsConfigProvider(
             manager: self.manager,
             uiConfigProvider: uiConfigProvider,
             workflowDecoder: { data in
                 let workflow = try JSONDecoder.default.decode(PublishedWorkflow.self, from: data)
-                decodedIDs.modify { $0.insert(workflow.id) }
+                decodedScreens.modify { $0[workflow.id] = Set(workflow.screens.keys) }
                 return workflow
             }
         )
@@ -99,8 +101,8 @@ final class WorkflowPrewarmingWorkload {
                 webBundleURLBatcher: WebBundleURLBatcher(eventBus: WebBundleEventBus())
             ),
             offerings: self.makeOfferings(),
-            decodedIDs: decodedIDs,
-            expectedIDs: self.workflowIDs
+            decodedScreens: decodedScreens,
+            expectedScreens: self.expectedScreens
         )
     }
 
@@ -133,14 +135,15 @@ final class WorkflowPrewarmingWorkload {
 struct WorkflowPrewarmingIteration {
     let manager: WorkflowManager
     let offerings: Offerings
-    let decodedIDs: Atomic<Set<String>>
-    let expectedIDs: Set<String>
+    let decodedScreens: Atomic<[String: Set<String>]>
+    let expectedScreens: [String: Set<String>]
 
     func run() async {
         await self.manager.publishWebBundleURLs(offerings: self.offerings)
     }
 
     func validate() {
-        XCTAssertEqual(self.decodedIDs.value, self.expectedIDs, "Every workflow must decode in every iteration.")
+        XCTAssertEqual(self.decodedScreens.value, self.expectedScreens,
+                       "Every workflow and screen must decode in every iteration.")
     }
 }
