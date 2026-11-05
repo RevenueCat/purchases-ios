@@ -187,7 +187,7 @@ final class AdsTrackingTests: TestCase {
     func testPrebidRevenueConvertsCPMToMicrosPerImpression() {
         let revenue = PrebidInterstitial.revenue(fromCPM: 1.37)
 
-        XCTAssertEqual(revenue, AdModuleRevenue(micros: 1_370, currency: "USD", precision: .exact))
+        XCTAssertEqual(revenue, AdModuleRevenue(micros: 1_370, currency: "USD", precision: .estimated))
     }
 
     func testPrebidRevenueIsNilWithoutAPrice() {

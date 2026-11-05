@@ -51,6 +51,9 @@ An instance shows one ad per load. After the ad is dismissed, or loading fails, 
 When no ad is available, `load()` throws `AdsError.Code.noFill`; treat it as normal and continue
 without an ad.
 
+Revenue is reported per impression as an estimate: the auction's winning price in USD, recorded
+when the ad is about to be shown.
+
 All APIs are `@MainActor` and available on iOS 15.0+.
 
 ## API reference
