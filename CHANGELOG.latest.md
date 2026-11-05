@@ -1,22 +1,16 @@
 ## RevenueCat SDK
-### ✨ New Features
-* feat(ads): dispatch checkpoint ad presentation by format (#7786) via Peter Porfy (@peterporfy)
-* feat(ads): extend admob presenter with rewarded support (#7785) via Peter Porfy (@peterporfy)
 ### 🐞 Bugfixes
-* fix: preserve workflow attribution in custom paywall impressions (#8183) via Álvaro Marco (@amarco90)
-### Paywallsv2
-#### 🐞 Bugfixes
-* fix: Reduce CPU usage when downloading large assets (#8177) via Rick (@rickvdl)
+* fix: prevent race in sandbox environment detection (#8202) via Rick (@rickvdl)
 
 ## RevenueCatUI SDK
 ### 🐞 Bugfixes
-* Fix(Paywalls) Prioritize app locale (#8165) via Jacob Rakidzich (@JZDesign)
+* Fix(Paywalls) correctly identify tab content (#8198) via Jacob Rakidzich (@JZDesign)
+### Paywallsv2
+#### 🐞 Bugfixes
+* Prefetch paywall images only for the displayed localization (#8188) via Josh Holtz (@joshdholtz)
 
 ### 🔄 Other Changes
-* feat(checkpoints): Add internal error dialog factory for checkpoints (#8134) via Cesar de la Vega (@vegaro)
-* Move PurchaseTester to Projects (#8189) via Facundo Menzella (@facumenzella)
-* other: move the checkpoint samples to SampleCat and delete CheckpointTester (#8162) via Facundo Menzella (@facumenzella)
-* lint: add SwiftLint rule against Int for epoch milliseconds (#8181) via Will Taylor (@fire-at-will)
-* ci: limit the Lock Threads token to `issues: write` (#8178) via Álvaro Brey (@AlvaroBrey)
-* ci: run actionlint from the shared workflow (#8159) via Álvaro Brey (@AlvaroBrey)
-* WFL-800 send step analytics for all step types in a flow (#8160) via Rosie Watson (@RosieWatson)
+* Let testing apps simulate API source outages (#8196) via Antonio Pallares (@ajpallares)
+* Remove the usesRemoteConfigAPISources dangerous setting and enable API sources for everyone (#8195) via Antonio Pallares (@ajpallares)
+* Chore(deps): Bump fastlane-plugin-revenuecat_internal from `996879c` to `1e7875c` (#8201) via dependabot[bot] (@dependabot[bot])
+* Move rc-maestro to Projects and rename it AutomatedSDKTestsApp (#8190) via Facundo Menzella (@facumenzella)
