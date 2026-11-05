@@ -266,6 +266,10 @@ let project = Project(
             sources: [
                 "../../Tests/PerformanceTests/**/*.swift"
             ],
+            resources: [
+                "../../Tests/TestingApps/PaywallFixtures/Resources/reported_tabs.json",
+                "../../Tests/UnitTests/Networking/Responses/Fixtures/UIConfig.json"
+            ],
             dependencies: [
                 .revenueCat
             ],

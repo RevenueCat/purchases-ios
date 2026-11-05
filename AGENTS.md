@@ -132,30 +132,26 @@ Before you add or change a test, read [Contributing/TESTING.md](Contributing/TES
 
 ### Performance tests
 
-- Add a test in `Tests/PerformanceTests/` for a measurable memory regression or a change to a memory-sensitive SDK path.
-- Use `PerformanceTestCase.measureMemory` and keep backend setup, asynchronous waits, and workload construction in shared helpers.
-- Set `tolerancePercent` explicitly in each performance test. Keep the allowed regression in code, separate from baseline measurements.
-- Keep setup outside the measurement interval unless setup is the behavior under test. Verify that every iteration completes the expected work.
-- Verify benchmark sensitivity against a known regression before you use it as evidence for a performance improvement.
-- Run the `PerformanceTests` scheme on the baseline simulator. Set `REVENUECAT_PERFORMANCE_API_KEY` in the test environment.
-- Set `RECORD_PERFORMANCE_BASELINES=1` in the test environment to record a baseline. Run only the selected test.
-- Disable record mode after the run. Review the diff in `Tests/PerformanceTests/Baselines.json`.
-- Keep the workload, environment, and measurement interval consistent. Record a new baseline explicitly when these change.
-- Never update baselines automatically after a failure.
-- Use unit or integration tests for functional correctness. A performance baseline does not replace those tests.
+- Add memory benchmarks in `Tests/PerformanceTests/`. Keep setup outside the measurement interval.
+- Use fixed fixtures. Verify that each iteration completes the expected work.
+- Set the tolerance in each test. Keep the measured baseline in `Baselines.json`.
+- Verify that a known memory regression fails before you use a benchmark as evidence.
+- Keep the Xcode version, simulator, and workload consistent with the baseline.
+- Never record a new baseline automatically after a failure.
 
-XCTest compares the mean of the iteration peaks with the JSON baseline plus the tolerance from the test. A missing baseline or changed environment or workload fails the test. Record mode writes the selected entry to the source file. It preserves other entries.
+The `performance-tests` CI job runs on each PR branch push. It uses Xcode 26.0.0, an iPhone 17 Pro simulator with iOS 26.0, and Release configuration. It does not need an API key.
 
-The current Release build requires `ENABLE_TESTABILITY=YES` for internal SDK access. For command-line runs:
+For a local comparison:
 
 ```sh
-TEST_RUNNER_REVENUECAT_PERFORMANCE_API_KEY="$REVENUECAT_PERFORMANCE_API_KEY" \
 xcodebuild test -workspace RevenueCat-Tuist.xcworkspace -scheme PerformanceTests \
   -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=26.0' \
-  ENABLE_TESTABILITY=YES
+  -parallel-testing-enabled NO ENABLE_TESTABILITY=YES CODE_SIGNING_ALLOWED=NO
 ```
 
-Add `TEST_RUNNER_RECORD_PERFORMANCE_BASELINES=1` to record from the command line. Select one test with `-only-testing:PerformanceTests/Class/testMethod`.
+To record a candidate baseline, start a CircleCI pipeline with `action=record_performance_baselines`. Download the `Baselines.json` artifact. Review its measurements and workload hash before you update the checked-in file. The job does not commit the file.
+
+For local record mode, prefix the command with `TEST_RUNNER_RECORD_PERFORMANCE_BASELINES=1`. Use `-only-testing:PerformanceTests/Class/testMethod` to select a benchmark. Disable record mode before you compare results.
 
 ## Development Workflow
 

@@ -29,12 +29,8 @@ final class WorkflowPrewarmingWorkload {
     }
 
     static func load() async throws -> WorkflowPrewarmingWorkload {
-        let apiKey = try XCTUnwrap(
-            ProcessInfo.processInfo.environment["REVENUECAT_PERFORMANCE_API_KEY"],
-            "Set REVENUECAT_PERFORMANCE_API_KEY to the benchmark project's SDK key."
-        )
         let rootURL = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
-        let manager = try PerformanceBackend.makeManager(apiKey: apiKey, rootURL: rootURL)
+        let manager = try PerformanceFixture.makeManager(rootURL: rootURL)
         let workload = WorkflowPrewarmingWorkload(manager: manager, rootURL: rootURL)
         do {
             try await workload.prepare()
@@ -52,7 +48,7 @@ final class WorkflowPrewarmingWorkload {
             guard case let .string(identifier)? = item.content["offering_identifier"] else { return nil }
             return identifier
         }).sorted()
-        XCTAssertGreaterThan(self.offeringIDs.count, 1, "The benchmark needs multiple mapped workflows.")
+        XCTAssertGreaterThan(self.offeringIDs.count, 1, "The fixture needs multiple mapped workflows.")
 
         let provider = WorkflowsConfigProvider(manager: self.manager)
         var fingerprint = SHA256()
