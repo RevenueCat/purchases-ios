@@ -376,14 +376,7 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
 
         expect(allTransactions.count) == 2 // Purchase + renewal
 
-        for transaction in allTransactions {
-            try await self.verifySpecificTransactionIsEventuallyFinished(
-                transactionId: String(transaction.identifier),
-                productId: transaction.productIdentifier,
-                count: nil,
-                timeout: .seconds(15)
-            )
-        }
+        try await self.waitUntilNoUnfinishedTransactions(timeout: .seconds(15))
 
         let transactionId = transaction.transactionIdentifier
 
