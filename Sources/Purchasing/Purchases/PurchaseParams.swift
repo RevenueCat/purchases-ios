@@ -189,8 +189,8 @@ import AppKit
          * Set `confirmInWindow`.
          *
          * - Parameter confirmInWindow: The window to show the purchase confirmation UI in proximity to.
-         * - Note: This value anchors purchase UI that supports window-aware presentation.
-         *   This is not supported when using StoreKit 1.
+         * - Note: Used to anchor StoreKit 2 purchase confirmation UI and the Test Store purchase dialog.
+         *   Ignored when using StoreKit 1.
          *
          * Availability: macOS 15.2+
          */
