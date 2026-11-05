@@ -29,8 +29,8 @@ import UIKit
     /// Identifies the ad slot on
     public let placementID: String
 
-    /// Receives the ad's lifecycle events (load, presentation, impression, click, dismissal).
-    /// Set it before calling ``load()``. Held weakly.
+    /// Receives the ad's presentation events (presented, impression, click, dismissal, expiry, failures).
+    /// Load results come from ``load()`` itself. Held weakly.
     public weak var delegate: AdsInterstitialDelegate?
 
     /// Whether the ad is loaded and can be presented.
@@ -62,23 +62,19 @@ import UIKit
         self.tracker = InterstitialEventTracker(placementID: placementID, tracking: tracking)
     }
 
-    /// Loads an ad. ``AdsInterstitialDelegate`` is notified as well.
+    /// Loads an ad.
     ///
     /// - Throws: ``AdsError``.
     public func load() async throws {
         switch self.state {
         case .loading, .presenting, .presented:
-            let error = AdsError(code: .invalidState, message: "Cannot load while the ad is \(self.state).")
-            self.delegate?.interstitial(self, didFailWithError: error)
-            throw error
+            throw AdsError(code: .invalidState, message: "Cannot load while the ad is \(self.state).")
         case .idle, .loaded:
             break
         }
 
         guard let module = self.moduleProvider() else {
-            let error = AdsError(code: .notConfigured, message: "Call RCAds.configure(with:) before loading ads.")
-            self.delegate?.interstitial(self, didFailWithError: error)
-            throw error
+            throw AdsError(code: .notConfigured, message: "Call RCAds.configure(with:) before loading ads.")
         }
 
         let unit = module.makeInterstitial(placementID: self.placementID)
@@ -94,7 +90,7 @@ import UIKit
         }
     }
 
-    /// Loads an ad, calling `completion` with `nil` on success. ``AdsInterstitialDelegate`` is notified as well.
+    /// Loads an ad, calling `completion` with `nil` on success.
     public func load(completion: @escaping @MainActor (AdsError?) -> Void) {
         Task { @MainActor in
             do {
@@ -109,13 +105,13 @@ import UIKit
     }
 
     /// Presents the loaded ad. If the ad is not ready, the delegate receives
-    /// ``AdsInterstitialDelegate/interstitial(_:didFailWithError:)`` with ``AdsError/Code/notReady``;
+    /// ``AdsInterstitialDelegate/interstitial(_:didFailToPresentWithError:)`` with ``AdsError/Code/notReady``;
     /// if presenting fails, with ``AdsError/Code/presentFailed``, and the ad can be loaded again.
     public func present(from viewController: UIViewController) {
         guard self.isReady, let unit = self.unit else {
             self.delegate?.interstitial(
                 self,
-                didFailWithError: AdsError(code: .notReady, message: "The ad is not loaded.")
+                didFailToPresentWithError: AdsError(code: .notReady, message: "The ad is not loaded.")
             )
             return
         }
@@ -146,12 +142,10 @@ import UIKit
         case .loaded:
             self.state = .loaded
             self.resumeLoad(with: .success(()))
-            self.delegate?.interstitialDidLoad(self)
         case let .failedToLoad(error):
             self.state = .idle
             self.unit = nil
             self.resumeLoad(with: .failure(error))
-            self.delegate?.interstitial(self, didFailWithError: error)
         case .presented, .impression, .clicked, .dismissed, .expired:
             break
         }
@@ -195,7 +189,7 @@ import UIKit
         self.unit = nil
         self.delegate?.interstitial(
             self,
-            didFailWithError: AdsError(
+            didFailToPresentWithError: AdsError(
                 code: .presentFailed,
                 message: error.message,
                 underlyingError: error.underlyingError
