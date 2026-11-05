@@ -1161,15 +1161,25 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
 
     func testVerifyPurchaseDoesntGrantEntitlementsAfter429RetriesExhausted() async throws {
         // Ensure that each time POST /receipt is called, we mock a 429 error.
-        // Group requests by nonce so a separate receipt post for the same SK1 transaction
-        // does not get counted as part of the original request's retry sequence.
-        let retryCountsByRequestNonce: Atomic<[String: [String]]> = .init([:])
+        // Track the purchase-initiated request by nonce so a separate receipt post from an SK1 queue
+        // redelivery does not get counted as part of the original request's retry sequence.
+        let purchaseRequest: Atomic<(nonce: String?, retryCounts: [String])> = .init((nil, []))
         let host = try XCTUnwrap(HTTPRequest.Path.serverHostURL.host)
         stub(condition: isHost(host) && isPath("/v1/receipts")) { request in
-            if let nonce = request.value(forHTTPHeaderField: HTTPClient.RequestHeader.nonce.rawValue),
+            let requestBody = request.ohhttpStubs_httpBody.flatMap {
+                try? JSONSerialization.jsonObject(with: $0) as? [String: Any]
+            }
+
+            if requestBody?["initiation_source"] as? String == "purchase",
+               let nonce = request.value(forHTTPHeaderField: HTTPClient.RequestHeader.nonce.rawValue),
                let retryCount = request.value(forHTTPHeaderField: HTTPClient.RequestHeader.retryCount.rawValue) {
-                retryCountsByRequestNonce.modify {
-                    $0[nonce, default: []].append(retryCount)
+                purchaseRequest.modify {
+                    if $0.nonce == nil {
+                        $0.nonce = nonce
+                    }
+                    if $0.nonce == nonce {
+                        $0.retryCounts.append(retryCount)
+                    }
                 }
             }
 
@@ -1184,7 +1194,8 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
             expect(error).to(matchError(ErrorCode.unknownError))
         }
 
-        expect(retryCountsByRequestNonce.value.values).to(contain(["0", "1", "2", "3"]))
+        expect(purchaseRequest.value.nonce).toNot(beNil())
+        expect(purchaseRequest.value.retryCounts) == ["0", "1", "2", "3"]
     }
 
     func testVerifyPurchaseDoesntRetryIfIsRetryableHeaderIsFalse() async throws {
