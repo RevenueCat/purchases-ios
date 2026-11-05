@@ -62,7 +62,7 @@ struct InterstitialEventTracker {
             ))
         case .impression:
             self.trackRevenue(unit: unit, impressionID: impressionID)
-        case .dismissed:
+        case .dismissed, .expired:
             break
         }
     }
@@ -98,6 +98,7 @@ private extension AdModuleEvent {
         case .impression: return "revenue"
         case .clicked: return "opened"
         case .dismissed: return "dismissed"
+        case .expired: return "expired"
         }
     }
 

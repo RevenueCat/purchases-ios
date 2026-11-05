@@ -60,7 +60,7 @@ All APIs are `@MainActor` and available on iOS 15.0+.
 | `RCAds` | `static func configure(with: AdsConfiguration = .init()) throws` |
 | `AdsConfiguration` | `apiKey: String?`, `serverURL: URL?` |
 | `AdsInterstitial` | `init(placementID:)`, `load() async throws`, `load(completion:)`, `present(from:)`, `isReady`, `delegate` |
-| `AdsInterstitialDelegate` | loaded, failed(`AdsError`), presented, impression, click, dismissed (all optional) |
+| `AdsInterstitialDelegate` | loaded, failed(`AdsError`), expired, presented, impression, click, dismissed (all optional) |
 | `AdsError` | `code` (`notConfigured`, `invalidConfiguration`, `invalidState`, `notReady`, `presentFailed`, `noFill`, `loadFailed`), `message`, `underlyingError` |
 
 `AdsError.Code` is a struct with static constants rather than an enum, so codes can be added without

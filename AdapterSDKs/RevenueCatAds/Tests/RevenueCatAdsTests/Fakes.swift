@@ -117,6 +117,7 @@ final class RecordingDelegate: AdsInterstitialDelegate {
 
         case loaded
         case failed(AdsError.Code)
+        case expired
         case presented
         case impression
         case clicked
@@ -131,6 +132,8 @@ final class RecordingDelegate: AdsInterstitialDelegate {
     func interstitial(_ interstitial: AdsInterstitial, didFailWithError error: AdsError) {
         self.events.append(.failed(error.code))
     }
+
+    func interstitialDidExpire(_ interstitial: AdsInterstitial) { self.events.append(.expired) }
 
     func interstitialDidPresent(_ interstitial: AdsInterstitial) { self.events.append(.presented) }
 
