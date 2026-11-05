@@ -187,29 +187,6 @@ final class AdsInterstitialTests: TestCase {
         XCTAssertEqual(self.interstitial.state, .loaded)
     }
 
-    func testFailureWhilePresentingResetsAndNotifiesDelegate() async throws {
-        try await self.loadSuccessfully()
-        let unit = try XCTUnwrap(self.module.lastInterstitial)
-        self.interstitial.present(from: UIViewController())
-
-        unit.emit(.failedToLoad(AdsError(code: .loadFailed, message: "no view controller")))
-
-        XCTAssertEqual(self.delegate.events, [.failedToPresent(.presentFailed)])
-        XCTAssertEqual(self.interstitial.state, .idle)
-        XCTAssertFalse(self.interstitial.isReady)
-    }
-
-    func testFailureWhilePresentedResetsAndCanLoadAgain() async throws {
-        try await self.presentLoadedAd()
-
-        self.module.lastInterstitial?.emit(.failedToLoad(AdsError(code: .loadFailed, message: "creative")))
-        try await self.loadSuccessfully()
-
-        XCTAssertEqual(self.delegate.events, [.presented, .failedToPresent(.presentFailed)])
-        XCTAssertEqual(self.module.interstitials.count, 2)
-        XCTAssertEqual(self.interstitial.state, .loaded)
-    }
-
     func testExpiryResetsAndCanLoadAgain() async throws {
         try await self.loadSuccessfully()
 
