@@ -1160,15 +1160,23 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
     }
 
     func testVerifyPurchaseDoesntGrantEntitlementsAfter429RetriesExhausted() async throws {
-        // Ensure that the each time POST /receipt is called, we mock a 429 error
-        var stubbedRequestCount = 0
+        // Ensure that each time POST /receipt is called, we mock a 429 error.
+        // Group requests by nonce so a separate receipt post for the same SK1 transaction
+        // does not get counted as part of the original request's retry sequence.
+        let retryCountsByRequestNonce: Atomic<[String: [String]]> = .init([:])
         let host = try XCTUnwrap(HTTPRequest.Path.serverHostURL.host)
-        stub(condition: isHost(host) && isPath("/v1/receipts")) { _ in
-            stubbedRequestCount += 1
+        stub(condition: isHost(host) && isPath("/v1/receipts")) { request in
+            if let nonce = request.value(forHTTPHeaderField: HTTPClient.RequestHeader.nonce.rawValue),
+               let retryCount = request.value(forHTTPHeaderField: HTTPClient.RequestHeader.retryCount.rawValue) {
+                retryCountsByRequestNonce.modify {
+                    $0[nonce, default: []].append(retryCount)
+                }
+            }
+
             return Self.emptyTooManyRequestsResponse()
         }
 
-        let product = try await self.monthlyPackage.storeProduct
+        let product = try await self.product("com.revenuecat.monthly_4.99.1_week_intro")
         do {
             _ = try await self.purchases.purchase(product: product)
             fail("Expected purchases.purchase to fail after exhausting retry count with 429 responses")
@@ -1176,7 +1184,7 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
             expect(error).to(matchError(ErrorCode.unknownError))
         }
 
-        expect(stubbedRequestCount).to(equal(4)) // 1 original request + 3 retries
+        expect(retryCountsByRequestNonce.value.values).to(contain(["0", "1", "2", "3"]))
     }
 
     func testVerifyPurchaseDoesntRetryIfIsRetryableHeaderIsFalse() async throws {
