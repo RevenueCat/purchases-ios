@@ -444,7 +444,7 @@ final class WebBundleURLBatcherTests: TestCase {
             )
         )
 
-        let urls = WebBundleURLBatcher.orderedWebViewURLs(
+        let batches = WebBundleURLBatcher.orderedScreenURLBatches(
             offerings: offerings,
             workflowsByOfferingId: [
                 "default": shared,
@@ -452,7 +452,7 @@ final class WebBundleURLBatcherTests: TestCase {
             ]
         )
 
-        expect(urls.map(\.url.absoluteString)) == ["https://example.com/shared"]
+        expect(batches.map { $0.map(\.url.absoluteString) }) == [["https://example.com/shared"]]
     }
 
     func testInlineV2TreeIsIgnoredWhenOfferingHasNoWorkflow() {
