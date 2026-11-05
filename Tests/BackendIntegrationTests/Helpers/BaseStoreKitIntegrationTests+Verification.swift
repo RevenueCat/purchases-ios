@@ -185,6 +185,7 @@ extension BaseStoreKitIntegrationTests {
         transactionId: String,
         productId: String,
         count: Int? = 1,
+        timeout: NimbleTimeInterval = .seconds(5),
         file: FileString = #file,
         line: UInt = #line
     ) async throws {
@@ -193,7 +194,7 @@ extension BaseStoreKitIntegrationTests {
             expectedLog,
             level: .info,
             expectedCount: count,
-            timeout: .seconds(5),
+            timeout: timeout,
             pollInterval: .milliseconds(100),
             file: file,
             line: line
