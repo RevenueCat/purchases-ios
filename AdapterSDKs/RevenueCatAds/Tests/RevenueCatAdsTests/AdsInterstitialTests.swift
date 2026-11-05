@@ -223,6 +223,19 @@ final class AdsInterstitialTests: TestCase {
         XCTAssertEqual(self.module.interstitials.count, 2)
     }
 
+    func testExpiryWhilePresentingResetsAndCanLoadAgain() async throws {
+        try await self.loadSuccessfully()
+        self.interstitial.present(from: UIViewController())
+
+        self.module.lastInterstitial?.emit(.expired)
+        XCTAssertEqual(self.interstitial.state, .idle)
+
+        try await self.loadSuccessfully()
+
+        XCTAssertEqual(self.delegate.events, [.expired])
+        XCTAssertEqual(self.module.interstitials.count, 2)
+    }
+
     func testExpiryWhilePresentedIsIgnored() async throws {
         try await self.presentLoadedAd()
 
