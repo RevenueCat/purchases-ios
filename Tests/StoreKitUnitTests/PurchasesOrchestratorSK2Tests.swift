@@ -68,10 +68,9 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
             )
             self.setUpOrchestrator(storeKit2ProductPurchaser: self.mockStoreKit2ProductPurchaser)
             self.setUpStoreKit2Listener()
-        } else {
-            self.mockStoreKit2TransactionListener?.mockTransaction = .init(sk2Transaction)
-            self.mockStoreKit2TransactionListener?.mockJWSToken = transaction.jwsRepresentation!
         }
+        self.mockStoreKit2TransactionListener?.mockTransaction = .init(sk2Transaction)
+        self.mockStoreKit2TransactionListener?.mockJWSToken = transaction.jwsRepresentation!
 
         let package = Package(identifier: "package",
                               packageType: .monthly,
