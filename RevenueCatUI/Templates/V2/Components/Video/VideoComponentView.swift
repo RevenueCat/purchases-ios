@@ -97,6 +97,8 @@ struct VideoComponentView: View {
             ) { style in
                 if style.visible {
                     let viewData = style.viewData(forDarkMode: colorScheme == .dark)
+                    let contentShape = style.shape?.toInsettableShape(size: size)
+                        ?? AnyInsettableShape(Rectangle())
 
                     ZStack {
                         // Determine if video player will render
@@ -166,6 +168,7 @@ struct VideoComponentView: View {
                     .padding(style.padding.extend(by: style.border?.width ?? 0))
                     .shape(border: style.border, shape: style.shape)
                     .clipped()
+                    .contentShape(contentShape)
                     .shadow(shadow: style.shadow, shape: style.shape?.toInsettableShape(size: size))
                     .padding(style.margin)
                 }

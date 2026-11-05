@@ -21,7 +21,9 @@ struct FixtureRootView: View {
 
     var body: some View {
         if let requestedFixture {
-            if requestedFixture == CustomerCenterPreviewFixture.name {
+            if requestedFixture == VideoCloseFixtureView.name {
+                VideoCloseFixtureView()
+            } else if requestedFixture == CustomerCenterPreviewFixture.name {
                 CustomerCenterPreviewFixture()
             } else if requestedFixture == AccessibilityHiddenControlView.fixtureName {
                 AccessibilityHiddenControlView()
@@ -45,9 +47,14 @@ struct FixtureRootView: View {
             }
         } else {
             NavigationView {
-                List(PaywallFixture.allCases, id: \.self) { fixture in
-                    NavigationLink(fixture.title) {
-                        FixturePaywallView(fixture: fixture)
+                List {
+                    NavigationLink("Video with Close button") {
+                        VideoCloseFixtureView()
+                    }
+                    ForEach(PaywallFixture.allCases, id: \.self) { fixture in
+                        NavigationLink(fixture.title) {
+                            FixturePaywallView(fixture: fixture)
+                        }
                     }
                 }
                 .navigationTitle("Fixtures")
