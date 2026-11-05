@@ -232,13 +232,18 @@ final class SizeModifierTests: TestCase {
 
 /// Passes its single subview through unchanged, logging the bounds of every placement.
 @available(iOS 16.0, *)
-private struct PlacementRecorder: Layout {
+private struct PlacementRecorder {
 
     final class Log {
         var placements: [CGRect] = []
     }
 
     let log: Log
+
+}
+
+@available(iOS 16.0, *)
+extension PlacementRecorder: Layout {
 
     func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
         subviews.first?.sizeThatFits(proposal) ?? .zero

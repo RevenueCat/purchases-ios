@@ -124,10 +124,15 @@ extension View {
 
 /// Lays out its single subview like `.frame(minWidth: 0, maxWidth: .infinity, alignment:)` along `axis`.
 @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
-private struct FillLayout: Layout {
+private struct FillLayout {
 
     let axis: Axis
     let alignment: Alignment
+
+}
+
+@available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
+extension FillLayout: Layout {
 
     func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
         let size = subviews.first?.sizeThatFits(proposal) ?? .zero
