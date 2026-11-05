@@ -151,8 +151,9 @@ import UIKit
         }
     }
 
+    // Prebid's expiry timer runs until the creative is on screen, so it can still fire right after `present`.
     private func handleExpiry() {
-        guard self.state == .loaded else { return }
+        guard self.state == .loaded || self.state == .presenting else { return }
 
         self.state = .idle
         self.unit = nil
