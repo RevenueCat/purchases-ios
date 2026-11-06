@@ -89,15 +89,15 @@ extension ReceiptStrings: LogMessage {
             return "Unable to load receipt, ensure you are logged in to a valid Apple account.\n" +
             "Error: \(error)"
 
-        case let .posting_receipt(receipt, initiationSource):
+        case let .posting_receipt(_, initiationSource):
             return "Posting receipt (source: '\(initiationSource)') (note: the contents might not be up-to-date, " +
-            "but it will be refreshed with Apple's servers):\n\(receipt.debugDescription)"
+            "but it will be refreshed with Apple's servers). Receipt contents omitted from logs."
 
-        case let .posting_jws(token, initiationSource):
-            return "Posting JWS token (source: '\(initiationSource)'):\n\(token)"
+        case let .posting_jws(_, initiationSource):
+            return "Posting JWS token (source: '\(initiationSource)'). Token contents omitted from logs."
 
-        case let .posting_sk2_receipt(receipt, initiationSource):
-            return "Posting StoreKit 2 receipt (source: '\(initiationSource)'):\n\(receipt)"
+        case let .posting_sk2_receipt(_, initiationSource):
+            return "Posting StoreKit 2 receipt (source: '\(initiationSource)'). Receipt contents omitted from logs."
 
         case let .receipt_subscription_purchase_equals_expiration(
             productIdentifier,
@@ -107,9 +107,9 @@ extension ReceiptStrings: LogMessage {
             return "Receipt for product '\(productIdentifier)' has the same purchase (\(purchase)) " +
             "and expiration (\(expiration?.description ?? "")) dates. This is likely a StoreKit bug."
 
-        case let .local_receipt_missing_purchase(receipt, productIdentifier):
-            return "Local receipt is still missing purchase for '\(productIdentifier)': \n" +
-            "\((try? receipt.prettyPrintedJSON) ?? "<null>")"
+        case let .local_receipt_missing_purchase(_, productIdentifier):
+            return "Local receipt is still missing purchase for '\(productIdentifier)'. " +
+            "Receipt contents omitted from logs."
 
         case let .retrying_receipt_fetch_after(sleepDuration):
             return String(format: "Retrying receipt fetch after %2.f seconds", sleepDuration)

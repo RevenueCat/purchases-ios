@@ -160,16 +160,12 @@ final class ReceiptStringsTests: TestCase {
                 receipt,
                 initiationSource: "initiationSource"
             )
-        let expectedDescriptionPrefix = "Posting receipt (source: 'initiationSource') " +
+        let expectedDescription = "Posting receipt (source: 'initiationSource') " +
         "(note: the contents might not be up-to-date, " +
-        "but it will be refreshed with Apple's servers):"
+        "but it will be refreshed with Apple's servers). Receipt contents omitted from logs."
 
-        // The full `debugDescription` of `AppleReceipt` is not asserted against
-        // because the conformance to `CustomDebugStringConvertible` has an internal
-        // implementation of `try? self.encodedJSON`, which does not print the JSON
-        // deterministically.
         expect(subject.category).to(equal("receipt"))
-        expect(subject.description.hasPrefix(expectedDescriptionPrefix)).to(beTrue())
+        expect(subject.description).to(equal(expectedDescription))
     }
 
     func testPostingJWS() {
@@ -178,7 +174,7 @@ final class ReceiptStringsTests: TestCase {
                 "JWS",
                 initiationSource: "initiationSource"
             )
-        let expectedDescription = "Posting JWS token (source: 'initiationSource'):\nJWS"
+        let expectedDescription = "Posting JWS token (source: 'initiationSource'). Token contents omitted from logs."
 
         expect(subject.category).to(equal("receipt"))
         expect(subject.description).to(equal(expectedDescription))
@@ -190,7 +186,8 @@ final class ReceiptStringsTests: TestCase {
                 "SK2 receipt",
                 initiationSource: "initiationSource"
             )
-        let expectedDescription = "Posting StoreKit 2 receipt (source: 'initiationSource'):\nSK2 receipt"
+        let expectedDescription = "Posting StoreKit 2 receipt (source: 'initiationSource'). " +
+        "Receipt contents omitted from logs."
 
         expect(subject.category).to(equal("receipt"))
         expect(subject.description).to(equal(expectedDescription))
@@ -229,14 +226,11 @@ final class ReceiptStringsTests: TestCase {
                 receipt,
                 forProductIdentifier: "productIdentifier"
             )
-        let expectedDescriptionPrefix = "Local receipt is still missing purchase for 'productIdentifier':"
+        let expectedDescription = "Local receipt is still missing purchase for 'productIdentifier'. " +
+        "Receipt contents omitted from logs."
 
-        // The full `debugDescription` of `AppleReceipt` is not asserted against
-        // because the conformance to `CustomDebugStringConvertible` has an internal
-        // implementation of `try? self.encodedJSON`, which does not print the JSON
-        // deterministically.
         expect(subject.category).to(equal("receipt"))
-        expect(subject.description.hasPrefix(expectedDescriptionPrefix)).to(beTrue())
+        expect(subject.description).to(equal(expectedDescription))
     }
 
     func testRetryingReceiptFetchAfterDuration() {
