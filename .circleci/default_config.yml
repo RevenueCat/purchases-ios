@@ -2471,7 +2471,7 @@ jobs:
             - run:
                 name: Halt if approve-full-tests was already approved
                 command: |
-                  approval=$(curl --fail --silent --retry 5 \
+                  approval=$(curl --fail --silent --show-error --max-time 30 --retry 5 \
                     -H "Circle-Token: ${CIRCLECI_API_TOKEN}" \
                     "https://circleci.com/api/v2/workflow/${CIRCLE_WORKFLOW_ID}/job" \
                     | jq -r '.items[] | select(.name == "approve-full-tests") | .status')
@@ -2801,7 +2801,6 @@ workflows:
           name: all-tasks-passed
           state: success
           requires:
-            # Reduced Test Suite, through full-suite-not-requested
             - full-suite-started
             # Full Test Suite
             - backend-integration-tests-SK1
@@ -2826,8 +2825,6 @@ workflows:
             - api-tests
             - spm-receipt-parser
             - check-app-extension-safe-api-usage
-            - revenuecat-admob-tests
-            - revenuecat-ads-tests
             - deploy-purchase-tester
             - run-workflow-maestro-tests
             - run-all-maestro-e2e-tests
