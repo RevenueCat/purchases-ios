@@ -17,6 +17,7 @@ jobs:
       github.event.comment.author_association == 'MEMBER'
     permissions:
       pull-requests: write
+      statuses: write
 
     steps:
       # GitHub Actions `issue_comment` workflows always run from the default branch,
@@ -24,7 +25,9 @@ jobs:
       # the hold job in the existing workflow.
       - name: Get PR branch
         id: get-branch
-        run: echo "branch=$(gh pr view "$PR_NO" --repo "$REPO" --json headRefName --jq '.headRefName')" >> "$GITHUB_OUTPUT"
+        run: |
+          gh pr view "$PR_NO" --repo "$REPO" --json headRefName,headRefOid \
+            --jq '"branch=\(.headRefName)\nsha=\(.headRefOid)"' >> "$GITHUB_OUTPUT"
         env:
           REPO: ${{ github.repository }}
           PR_NO: ${{ github.event.issue.number }}
@@ -126,6 +129,18 @@ jobs:
           fi
 
           echo "Successfully approved '$APPROVAL_JOB_NAME' in workflow '$WORKFLOW_NAME'"
+          echo "approved=true" >> "$GITHUB_OUTPUT"
+
+      - name: Mark the merge gate pending
+        if: steps.approve.outputs.approved == 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          SHA: ${{ steps.get-branch.outputs.sha }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          gh api "repos/$REPO/statuses/$SHA" \
+            -f state=pending -f context=ci/all-tests-gate -f target_url="$RUN_URL"
 
       - name: React to comment
         if: always()
