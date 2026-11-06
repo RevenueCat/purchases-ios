@@ -104,8 +104,19 @@ enum AvailabilityChecks {
         try Self.skipOnIOS27("StoreKitTest returns .unknown instead of simulated .purchaseNotAllowed; PR #7742")
     }
 
+    static var activeRepurchaseWithSKTestNeedsWorkaround: Bool {
+        #if os(iOS)
+        return ProcessInfo.processInfo.operatingSystemVersion.majorVersion == 27
+        #else
+        return false
+        #endif
+    }
+
     static func activeRepurchaseWithoutSKTestDialogWorksOrSkipTest() throws {
-        try Self.skipOnIOS27("StoreKitTest shows an active purchase dialog despite disableDialogs; PR #7742")
+        try XCTSkipIf(
+            Self.activeRepurchaseWithSKTestNeedsWorkaround,
+            "StoreKitTest shows an active purchase dialog despite disableDialogs; PR #7742"
+        )
     }
 
     static func expiredRepurchaseWithSKTestWorksOrSkipTest() throws {

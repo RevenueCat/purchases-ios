@@ -106,12 +106,25 @@ import UIKit
 
     /// Presents the loaded ad. If the ad is not ready, the delegate receives
     /// ``AdsInterstitialDelegate/interstitial(_:didFailToPresentWithError:)`` with ``AdsError/Code/notReady``.
+    /// If `viewController` is not in a window or is already presenting, it receives ``AdsError/Code/presentFailed``
+    /// and the ad stays loaded.
     public func present(from viewController: UIViewController) {
         guard self.isReady, let unit = self.unit else {
             self.delegate?.interstitial(
                 self,
                 didFailToPresentWithError: AdsError(code: .notReady, message: "The ad is not loaded.")
             )
+            return
+        }
+
+        // The underlying SDK reports that it is presenting before UIKit is asked, and never reports a
+        // refused presentation, so a view controller that cannot present would leave this instance stuck.
+        if viewController.viewIfLoaded?.window == nil {
+            self.failToPresent("The view controller is not in a window.")
+            return
+        }
+        if viewController.presentedViewController != nil {
+            self.failToPresent("The view controller is already presenting.")
             return
         }
 
@@ -179,6 +192,10 @@ import UIKit
         default:
             break
         }
+    }
+
+    private func failToPresent(_ message: String) {
+        self.delegate?.interstitial(self, didFailToPresentWithError: AdsError(code: .presentFailed, message: message))
     }
 
     private func resumeLoad(with result: Result<Void, Error>) {

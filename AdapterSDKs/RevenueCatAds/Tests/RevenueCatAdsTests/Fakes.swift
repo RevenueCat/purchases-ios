@@ -110,6 +110,23 @@ final class FakeAdTracking: AdTracking {
 
 }
 
+/// Builds view controllers that can present, which `AdsInterstitial.present(from:)` requires.
+@MainActor
+final class PresenterFactory {
+
+    private var windows: [UIWindow] = []
+
+    func makePresenter() -> UIViewController {
+        let window = UIWindow(frame: UIScreen.main.bounds)
+        let viewController = UIViewController()
+        window.rootViewController = viewController
+        window.makeKeyAndVisible()
+        self.windows.append(window)
+        return viewController
+    }
+
+}
+
 @MainActor
 final class RecordingDelegate: AdsInterstitialDelegate {
 
