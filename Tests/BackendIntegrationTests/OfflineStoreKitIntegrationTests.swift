@@ -360,6 +360,14 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
 
         try await self.waitUntilUnfinishedTransactions { $0 >= 2 }
 
+        let allTransactions = self.testSession.allTransactions()
+        expect(allTransactions.count) == 2 // Purchase + renewal
+
+        let expectedTransactionIDs = Set(allTransactions.map { String($0.identifier) })
+        let unfinishedTransactions = await StoreKit.Transaction.unfinished.extractValues()
+        let unfinishedTransactionIDs = Set(unfinishedTransactions.map { String($0.underlyingTransaction.id) })
+        expect(unfinishedTransactionIDs) == expectedTransactionIDs
+
         self.logger.clearMessages()
         self.allServersUp()
 
@@ -372,17 +380,7 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
             expectedCount: 1
         )
 
-        let allTransactions = self.testSession.allTransactions()
-
-        expect(allTransactions.count) == 2 // Purchase + renewal
-
-        for transaction in allTransactions {
-            try await self.verifySpecificTransactionIsEventuallyFinished(
-                transactionId: String(transaction.identifier),
-                productId: transaction.productIdentifier,
-                count: nil
-            )
-        }
+        try await self.waitUntilNoUnfinishedTransactions(timeout: .seconds(15))
 
         let transactionId = transaction.transactionIdentifier
 
