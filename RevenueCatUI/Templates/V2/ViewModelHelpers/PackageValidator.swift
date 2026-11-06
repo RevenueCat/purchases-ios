@@ -23,6 +23,9 @@ struct PackageSelectionContext {
 
     let condition: ScreenCondition
     let customVariables: [String: CustomVariableValue]
+    /// Session state used by containing-footer rules; tabs and sheets have no page footer.
+    let stateValues: [String: PaywallComponent.ConditionValue]
+    let stateDefaults: [String: PaywallComponent.ConditionValue]
     let windowSize: CGSize?
     let isEligibleForIntroOffer: (Package) -> Bool
     let isEligibleForPromoOffer: (Package) -> Bool
@@ -30,12 +33,16 @@ struct PackageSelectionContext {
     init(
         condition: ScreenCondition,
         customVariables: [String: CustomVariableValue],
-        windowSize: CGSize? = nil,
+        stateValues: [String: PaywallComponent.ConditionValue],
+        stateDefaults: [String: PaywallComponent.ConditionValue],
+        windowSize: CGSize?,
         isEligibleForIntroOffer: @escaping (Package) -> Bool,
         isEligibleForPromoOffer: @escaping (Package) -> Bool
     ) {
         self.condition = condition
         self.customVariables = customVariables
+        self.stateValues = stateValues
+        self.stateDefaults = stateDefaults
         self.windowSize = windowSize
         self.isEligibleForIntroOffer = isEligibleForIntroOffer
         self.isEligibleForPromoOffer = isEligibleForPromoOffer
@@ -48,6 +55,9 @@ struct PackageSelectionContext {
         return .init(
             condition: .compact,
             customVariables: [:],
+            stateValues: [:],
+            stateDefaults: [:],
+            windowSize: nil,
             isEligibleForIntroOffer: { _ in false },
             isEligibleForPromoOffer: { _ in false }
         )
@@ -108,6 +118,18 @@ class PackageValidator {
         }
     }
 
+    func addAncestorFooter(
+        _ component: PaywallComponent.StickyFooterComponent,
+        startingAt index: Int,
+        discardRules: Bool
+    ) {
+        for packageIndex in index..<self.scopedPackageInfos.count {
+            self.scopedPackageInfos[packageIndex].info.visibilityResolver.addAncestorFooter(
+                component, discardRules: discardRules
+            )
+        }
+    }
+
     var isValid: Bool {
         !self.scopedPackageInfos.isEmpty
     }
@@ -126,6 +148,8 @@ class PackageValidator {
             isEligibleForPromoOffer: context.isEligibleForPromoOffer(info.package),
             selectedPackageId: nil,
             customVariables: context.customVariables,
+            footerStateValues: context.stateValues,
+            footerStateDefaults: context.stateDefaults,
             windowSize: context.windowSize
         )
     }
@@ -146,7 +170,8 @@ class PackageValidator {
     ///
     /// 1. the authored default (first `isSelectedByDefault` in document order), if it resolves visible
     /// 2. otherwise the first visible package in document order
-    /// 3. otherwise `nil`
+    /// 3. otherwise the authored default, even if hidden, when no packages are visible
+    /// 4. otherwise `nil`
     func defaultSelectedPackage(in context: PackageSelectionContext) -> Package? {
         return self.defaultSelectedPackage(among: self.packageInfos, in: context)
     }
@@ -173,7 +198,8 @@ class PackageValidator {
             return nil
         }
 
-        return self.defaultSelectedPackage(among: self.pageScopedPackageInfos, in: context)
+        let resolved = self.defaultSelectedPackage(among: self.pageScopedPackageInfos, in: context)
+        return resolved?.identifier == current?.identifier ? nil : resolved
     }
 
     /// Whether any card for `package` is on screen, page or tab.
@@ -219,6 +245,8 @@ class PackageValidator {
                 isEligibleForPromoOffer: outcome.isEligibleForPromoOffer,
                 selectedPackageId: nil,
                 customVariables: context.customVariables,
+                footerStateValues: context.stateValues,
+                footerStateDefaults: context.stateDefaults,
                 windowSize: context.windowSize
             )
         }
@@ -235,6 +263,10 @@ class PackageValidator {
         }
 
         guard let fallback = visiblePackageInfos.first else {
+            if let hiddenDefault = packageInfos.first(where: { $0.isSelectedByDefault }),
+               self.visiblePackages(in: context).isEmpty {
+                return hiddenDefault.package
+            }
             self.warnOnce(Strings.paywall_could_not_find_any_packages)
             return nil
         }

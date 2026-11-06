@@ -83,6 +83,8 @@ struct StackComponentView: View {
 
     private let viewModel: StackComponentViewModel
     private let isScrollableByDefault: Bool
+    private let defaultScrollAxis: Axis?
+    private let fillsAvailableHeight: Bool
     private let onDismiss: () -> Void
     /// Used when this stack needs more padding than defined in the component, e.g. to avoid being drawn in the safe
     /// area when displayed as a sticky footer.
@@ -94,6 +96,8 @@ struct StackComponentView: View {
     init(
         viewModel: StackComponentViewModel,
         isScrollableByDefault: Bool = false,
+        defaultScrollAxis: Axis? = nil,
+        fillsAvailableHeight: Bool = false,
         onDismiss: @escaping () -> Void,
         additionalPadding: EdgeInsets? = nil,
         showActivityIndicatorOverContent: Bool = false,
@@ -101,6 +105,8 @@ struct StackComponentView: View {
     ) {
         self.viewModel = viewModel
         self.isScrollableByDefault = isScrollableByDefault
+        self.defaultScrollAxis = defaultScrollAxis
+        self.fillsAvailableHeight = fillsAvailableHeight
         self.onDismiss = onDismiss
         self.additionalPadding = additionalPadding ?? EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0)
         self.showActivityIndicatorOverContent = showActivityIndicatorOverContent
@@ -157,6 +163,7 @@ struct StackComponentView: View {
             windowSize: self.paywallWindowSize,
             colorScheme: colorScheme
         ) { style in
+            let style = self.fillsAvailableHeight ? style.fillingAvailableHeight() : style
             if style.visible {
                 if self.registrationOnly {
                     self.nativeButtonRegistrations
@@ -255,6 +262,7 @@ struct StackComponentView: View {
         .scrollableIfEnabled(
             style.dimension,
             size: layoutSize,
+            axis: style.scrollAxis(default: self.defaultScrollAxis),
             enabled: style.scrollable ?? self.isScrollableByDefault,
             zLayerShouldScroll: PaywallZLayerScrollPolicy.shouldApplyScroll(
                 stackScrollPreference: style.scrollable,
@@ -341,46 +349,47 @@ fileprivate extension View {
     func scrollableIfEnabled(
         _ dimension: PaywallComponent.Dimension,
         size: PaywallComponent.Size,
+        axis: Axis?,
         enabled: Bool,
         zLayerShouldScroll: Bool
     ) -> some View {
         switch dimension {
         case .horizontal(let verticalAlignment, let distribution):
-            if enabled {
+            if enabled, let axis {
                 self.scrollableIfNecessaryWhenAvailable(
-                    .horizontal,
-                    size: size.width,
+                    axis,
+                    size: axis == .vertical ? size.height : size.width,
                     alignment: Alignment(
                         horizontal: distribution.horizontalFrameAlignment.horizontal,
                         vertical: verticalAlignment.frameAlignment.vertical
                     )
                 )
-                .preservingFixedSize(along: .horizontal, size: size)
+                .preservingFixedSize(along: axis, size: size)
             } else {
                 self
             }
         case .vertical(let horizontalAlignment, let distribution):
-            if enabled {
+            if enabled, let axis {
                 self.scrollableIfNecessaryWhenAvailable(
-                    .vertical,
-                    size: size.height,
+                    axis,
+                    size: axis == .horizontal ? size.width : size.height,
                     alignment: Alignment(
                         horizontal: horizontalAlignment.frameAlignment.horizontal,
                         vertical: distribution.verticalFrameAlignment.vertical
                     )
                 )
-                .preservingFixedSize(along: .vertical, size: size)
+                .preservingFixedSize(along: axis, size: size)
             } else {
                 self
             }
         case .zlayer(let alignment):
-            if zLayerShouldScroll {
+            if zLayerShouldScroll, let axis {
                 self.scrollableIfNecessaryWhenAvailable(
-                    .vertical,
+                    axis,
                     size: .fill,
                     alignment: alignment.stackAlignment
                 )
-                .preservingFixedSize(along: .vertical, size: size)
+                .preservingFixedSize(along: axis, size: size)
             } else {
                 self
             }

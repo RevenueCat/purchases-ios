@@ -55,10 +55,53 @@ final class StackOverflowOverrideTests: TestCase {
         expect(Self.scrollable(viewModel, width: 700)) == true
     }
 
+    func testSplitFooterDefaultsToVerticalScrollingForEveryStackDirection() {
+        let dimensions: [PaywallComponent.Dimension] = [
+            .horizontal(.top, .start), .vertical(.leading, .start), .zlayer(.topLeading)
+        ]
+        for dimension in dimensions {
+            let viewModel = Self.viewModel(base: nil, ruleOverflow: .default, dimension: dimension)
+
+            XCTAssertEqual(Self.style(viewModel, width: 300).scrollAxis(default: .vertical), .vertical)
+            XCTAssertNil(Self.style(viewModel, width: 700).scrollAxis(default: .vertical))
+            XCTAssertEqual(Self.style(viewModel, width: 300).scrollAxis(default: .vertical), .vertical)
+        }
+    }
+
+    func testSplitFooterExplicitScrollUsesAuthoredStackDirection() {
+        let viewModel = Self.viewModel(
+            base: .scroll, ruleOverflow: .default, dimension: .horizontal(.top, .start)
+        )
+
+        XCTAssertEqual(Self.style(viewModel, width: 300).scrollAxis(default: .vertical), .horizontal)
+        XCTAssertNil(Self.style(viewModel, width: 700).scrollAxis(default: .vertical))
+    }
+
+    func testSplitFooterScrollOverrideUsesAuthoredDirectionAndResetsOnResize() {
+        let viewModel = Self.viewModel(
+            base: nil, ruleOverflow: .scroll, dimension: .horizontal(.top, .start)
+        )
+
+        XCTAssertEqual(Self.style(viewModel, width: 300).scrollAxis(default: .vertical), .vertical)
+        XCTAssertEqual(Self.style(viewModel, width: 700).scrollAxis(default: .vertical), .horizontal)
+        XCTAssertEqual(Self.style(viewModel, width: 300).scrollAxis(default: .vertical), .vertical)
+    }
+
+    func testSplitFooterExplicitNoScrollCanBeEnabledByServerOverride() {
+        let viewModel = Self.viewModel(
+            base: .default, ruleOverflow: .scroll, dimension: .horizontal(.top, .start)
+        )
+
+        XCTAssertNil(Self.style(viewModel, width: 300).scrollAxis(default: .vertical))
+        XCTAssertEqual(Self.style(viewModel, width: 700).scrollAxis(default: .vertical), .horizontal)
+        XCTAssertNil(Self.style(viewModel, width: 300).scrollAxis(default: .vertical))
+    }
+
     private static func viewModel(
         base: PaywallComponent.StackComponent.Overflow?,
         ruleOverflow: PaywallComponent.StackComponent.Overflow,
-        laterOverride: PaywallComponent.PartialStackComponent? = nil
+        laterOverride: PaywallComponent.PartialStackComponent? = nil,
+        dimension: PaywallComponent.Dimension = .zlayer(.top)
     ) -> StackComponentViewModel {
         let condition = PaywallComponent.ExtendedCondition.windowWidth(operator: .greaterThanOrEqual, value: 600)
         var overrides = [PaywallComponent.ComponentOverride(
@@ -69,7 +112,7 @@ final class StackOverflowOverrideTests: TestCase {
             overrides.append(.init(extendedConditions: [condition], properties: laterOverride))
         }
         return StackComponentViewModel(
-            component: .init(components: [], dimension: .zlayer(.top), overflow: base, overrides: overrides),
+            component: .init(components: [], dimension: dimension, overflow: base, overrides: overrides),
             viewModels: [],
             badgeViewModels: [],
             uiConfigProvider: UIConfigProvider(uiConfig: PreviewUIConfig.make())
@@ -77,6 +120,10 @@ final class StackOverflowOverrideTests: TestCase {
     }
 
     private static func scrollable(_ viewModel: StackComponentViewModel, width: CGFloat) -> Bool? {
+        return Self.style(viewModel, width: width).scrollable
+    }
+
+    private static func style(_ viewModel: StackComponentViewModel, width: CGFloat) -> StackComponentStyle {
         viewModel.styles(
             state: .default,
             condition: .compact,
@@ -86,7 +133,7 @@ final class StackOverflowOverrideTests: TestCase {
             customVariables: [:],
             windowSize: CGSize(width: width, height: 600),
             colorScheme: .light
-        ).scrollable
+        )
     }
 
 }

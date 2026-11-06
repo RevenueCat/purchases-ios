@@ -495,7 +495,8 @@ extension PaywallComponent {
         case .purchaseButton(let component):
             return component.stack.containsUnsupportedConditions()
         case .stickyFooter(let component):
-            return component.stack.containsUnsupportedConditions()
+            return component.overrides?.hasUnsupportedCondition() == true ||
+                component.stack.containsUnsupportedConditions()
         case .timeline(let component):
             return component.containsUnsupportedConditions()
         case .tabs(let component):

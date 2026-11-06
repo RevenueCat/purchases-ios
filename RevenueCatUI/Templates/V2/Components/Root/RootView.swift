@@ -81,6 +81,31 @@ struct RootView: View {
     }
 
     var body: some View {
+        FooterLayoutReader(viewModel: viewModel.stickyFooterViewModel) { layout in
+            if layout == .splitLeading || layout == .splitTrailing {
+                GeometryReader { geometry in
+                    HStack(spacing: 0) {
+                        if layout == .splitLeading {
+                            splitFooter.frame(width: geometry.size.width / 2)
+                        }
+                        mainContent(footerLayout: layout).frame(width: geometry.size.width / 2)
+                        if layout == .splitTrailing {
+                            splitFooter.frame(width: geometry.size.width / 2)
+                        }
+                    }
+                }
+            } else {
+                mainContent(footerLayout: layout)
+            }
+        }
+        .environment(\.paywallRootStackIsZLayer, self.paywallRootStackIsZLayer)
+        .onPreferenceChange(NativePaywallCollapsedHeaderKey.self) { self.nativeHeaderCollapsed = $0 }
+        .modifier(RootPackageSelectionSheetModifier(defaultPackage: self.defaultPackage))
+        // The body owns this resolution; sheets and footers have independent layout roots.
+        .environment(\.paywallHeroLayout, nil)
+    }
+
+    private func mainContent(footerLayout: PaywallComponent.StickyFooterComponent.Layout) -> some View {
         VStack(alignment: .center, spacing: 0) {
             if let headerViewModel = viewModel.headerViewModel,
                !viewModel.shouldOverlayHeader {
@@ -99,7 +124,10 @@ struct RootView: View {
                     viewModel: viewModel.stackViewModel,
                     isScrollableByDefault: true,
                     onDismiss: onDismiss,
-                    additionalPadding: EdgeInsets(top: 0, leading: 0, bottom: overlaidFooterHeight, trailing: 0)
+                    additionalPadding: EdgeInsets(
+                        top: 0, leading: 0,
+                        bottom: footerLayout == .normal ? overlaidFooterHeight : safeAreaInsets.bottom, trailing: 0
+                    )
                 )
                 .environment(\.paywallHeroLayout, self.heroLayout)
                 .environment(\.overlaidHeaderHeight, overlaidHeaderHeight)
@@ -132,7 +160,7 @@ struct RootView: View {
             }
             // Overlay the footer while reserving its measured height in the main content.
             .overlay(alignment: .bottom) {
-                if let stickyFooterViewModel = viewModel.stickyFooterViewModel {
+                if footerLayout == .normal, let stickyFooterViewModel = viewModel.stickyFooterViewModel {
                     StackComponentView(
                         viewModel: stickyFooterViewModel.stackViewModel,
                         onDismiss: onDismiss,
@@ -151,11 +179,26 @@ struct RootView: View {
                 }
             }
         }
-        .environment(\.paywallRootStackIsZLayer, self.paywallRootStackIsZLayer)
-        .onPreferenceChange(NativePaywallCollapsedHeaderKey.self) { self.nativeHeaderCollapsed = $0 }
-        .modifier(RootPackageSelectionSheetModifier(defaultPackage: self.defaultPackage))
-        // The body owns this resolution; sheets and footers have independent layout roots.
-        .environment(\.paywallHeroLayout, nil)
+    }
+
+    @ViewBuilder private var splitFooter: some View {
+        if let footer = viewModel.stickyFooterViewModel {
+            StackComponentView(
+                viewModel: footer.stackViewModel,
+                isScrollableByDefault: true,
+                defaultScrollAxis: .vertical,
+                fillsAvailableHeight: true,
+                onDismiss: onDismiss,
+                additionalPadding: EdgeInsets(
+                    top: safeAreaInsets.top, leading: 0,
+                    bottom: Self.stickyFooterBottomPadding(
+                        safeAreaBottom: safeAreaInsets.bottom, idiom: userInterfaceIdiom
+                    ),
+                    trailing: 0
+                )
+            )
+            .frame(maxHeight: .infinity)
+        }
     }
 
     /// Restores the selection from before the sheet opened, falling back to the page default
@@ -205,6 +248,8 @@ struct RootPackageSelectionSheetModifier: ViewModifier {
             let selectionContext = PackageSelectionContext(
                 condition: self.screenCondition,
                 customVariables: self.customVariables,
+                stateValues: [:],
+                stateDefaults: [:],
                 windowSize: self.paywallWindowSize,
                 isEligibleForIntroOffer: { self.introOfferEligibilityContext.isEligible(package: $0) },
                 isEligibleForPromoOffer: { self.paywallPromoOfferCache.isMostLikelyEligible(for: $0) }
