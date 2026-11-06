@@ -246,6 +246,7 @@ public class PaywallViewController: UIViewController {
         introEligibility: TrialOrIntroEligibilityChecker? = nil,
         performPurchase: PerformPurchase? = nil,
         performRestore: PerformRestore? = nil,
+        purchaseHandler: PurchaseHandler? = nil,
         workflowPresentationErrorHandler: WorkflowPresentationErrorHandler? = nil
     ) {
         self.init(
@@ -260,6 +261,7 @@ public class PaywallViewController: UIViewController {
 
         var configuration = self.configuration
         configuration.introEligibility = introEligibility
+        configuration.purchaseHandler = purchaseHandler ?? configuration.purchaseHandler
         configuration.injectedWorkflowContext = workflowContext
         configuration.displaysPurchaseAndRestoreErrors = false
         configuration.workflowPresentationErrorHandler = workflowPresentationErrorHandler
