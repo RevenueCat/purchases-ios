@@ -521,6 +521,36 @@ final class PackageValidatorTests: TestCase {
         )?.identifier, TestData.monthlyPackage.identifier)
     }
 
+    func testStateHiddenFooterDefaultDoesNotOverrideVisibleBodyPackage() throws {
+        let validator = try Self.footerValidator(
+            layout: .normal,
+            overrides: [.init(
+                extendedConditions: [.state(operator: .equals, name: "hide_footer", value: .bool(true))],
+                properties: .init(layout: .hidden)
+            )],
+            bodyVisible: true
+        )
+        let context = Self.context(stateDefaults: ["hide_footer": .bool(true)])
+
+        XCTAssertEqual(validator.visiblePackages(in: context).map(\.identifier),
+                       [TestData.monthlyPackage.identifier])
+        XCTAssertEqual(validator.defaultSelectedPackage(in: context)?.identifier,
+                       TestData.monthlyPackage.identifier)
+        XCTAssertEqual(validator.reconciledSelection(
+            current: TestData.annualPackage,
+            in: context,
+            offerEligibilityLoading: [],
+            offerEligibilityAvailability: .unknown
+        )?.identifier, TestData.monthlyPackage.identifier)
+
+        let visibleContext = Self.context(
+            stateValues: ["hide_footer": .bool(false)],
+            stateDefaults: ["hide_footer": .bool(true)]
+        )
+        XCTAssertEqual(validator.defaultSelectedPackage(in: visibleContext)?.identifier,
+                       TestData.annualPackage.identifier)
+    }
+
     func testUnsupportedFooterRuleDoesNotHideDefaultPackage() throws {
         let validator = try Self.footerValidator(
             layout: .normal,
@@ -931,6 +961,8 @@ private extension PackageValidatorTests {
 
     static func context(
         customVariables: [String: CustomVariableValue] = [:],
+        stateValues: [String: PaywallComponent.ConditionValue] = [:],
+        stateDefaults: [String: PaywallComponent.ConditionValue] = [:],
         windowSize: CGSize? = nil,
         isEligibleForIntroOffer: @escaping (Package) -> Bool = { _ in false },
         isEligibleForPromoOffer: @escaping (Package) -> Bool = { _ in false }
@@ -938,6 +970,8 @@ private extension PackageValidatorTests {
         return PackageSelectionContext(
             condition: .compact,
             customVariables: customVariables,
+            stateValues: stateValues,
+            stateDefaults: stateDefaults,
             windowSize: windowSize,
             isEligibleForIntroOffer: isEligibleForIntroOffer,
             isEligibleForPromoOffer: isEligibleForPromoOffer

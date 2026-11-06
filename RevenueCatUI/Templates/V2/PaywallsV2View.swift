@@ -701,6 +701,8 @@ struct LoadedPaywallsV2View: View {
         return PackageSelectionContext(
             condition: self.screenCondition,
             customVariables: self.customVariables,
+            stateValues: self.paywallStateValues,
+            stateDefaults: self.paywallStateDefaults,
             windowSize: self.paywallWindowSize,
             isEligibleForIntroOffer: { [introOfferEligibilityContext] in
                 introOfferEligibilityContext.isEligible(package: $0)
@@ -845,6 +847,12 @@ struct LoadedPaywallsV2View: View {
             // A window resize (rotation, Split View, Stage Manager) can hide the
             // selected package via a window size condition.
             .onChangeOf(self.paywallWindowSize) { _ in
+                self.reconcileSelection()
+            }
+            .onChangeOf(self.paywallStateValues) { _ in
+                self.reconcileSelection()
+            }
+            .onChangeOf(self.paywallStateDefaults) { _ in
                 self.reconcileSelection()
             }
         }

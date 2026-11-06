@@ -23,6 +23,9 @@ struct PackageSelectionContext {
 
     let condition: ScreenCondition
     let customVariables: [String: CustomVariableValue]
+    /// Session state used by containing-footer rules; tabs and sheets have no page footer.
+    let stateValues: [String: PaywallComponent.ConditionValue]
+    let stateDefaults: [String: PaywallComponent.ConditionValue]
     let windowSize: CGSize?
     let isEligibleForIntroOffer: (Package) -> Bool
     let isEligibleForPromoOffer: (Package) -> Bool
@@ -30,12 +33,16 @@ struct PackageSelectionContext {
     init(
         condition: ScreenCondition,
         customVariables: [String: CustomVariableValue],
-        windowSize: CGSize? = nil,
+        stateValues: [String: PaywallComponent.ConditionValue],
+        stateDefaults: [String: PaywallComponent.ConditionValue],
+        windowSize: CGSize?,
         isEligibleForIntroOffer: @escaping (Package) -> Bool,
         isEligibleForPromoOffer: @escaping (Package) -> Bool
     ) {
         self.condition = condition
         self.customVariables = customVariables
+        self.stateValues = stateValues
+        self.stateDefaults = stateDefaults
         self.windowSize = windowSize
         self.isEligibleForIntroOffer = isEligibleForIntroOffer
         self.isEligibleForPromoOffer = isEligibleForPromoOffer
@@ -48,6 +55,9 @@ struct PackageSelectionContext {
         return .init(
             condition: .compact,
             customVariables: [:],
+            stateValues: [:],
+            stateDefaults: [:],
+            windowSize: nil,
             isEligibleForIntroOffer: { _ in false },
             isEligibleForPromoOffer: { _ in false }
         )
@@ -138,6 +148,8 @@ class PackageValidator {
             isEligibleForPromoOffer: context.isEligibleForPromoOffer(info.package),
             selectedPackageId: nil,
             customVariables: context.customVariables,
+            footerStateValues: context.stateValues,
+            footerStateDefaults: context.stateDefaults,
             windowSize: context.windowSize
         )
     }
@@ -233,6 +245,8 @@ class PackageValidator {
                 isEligibleForPromoOffer: outcome.isEligibleForPromoOffer,
                 selectedPackageId: nil,
                 customVariables: context.customVariables,
+                footerStateValues: context.stateValues,
+                footerStateDefaults: context.stateDefaults,
                 windowSize: context.windowSize
             )
         }

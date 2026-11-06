@@ -247,6 +247,8 @@ struct RootPackageSelectionSheetModifier: ViewModifier {
             let selectionContext = PackageSelectionContext(
                 condition: self.screenCondition,
                 customVariables: self.customVariables,
+                stateValues: [:],
+                stateDefaults: [:],
                 windowSize: self.paywallWindowSize,
                 isEligibleForIntroOffer: { self.introOfferEligibilityContext.isEligible(package: $0) },
                 isEligibleForPromoOffer: { self.paywallPromoOfferCache.isMostLikelyEligible(for: $0) }

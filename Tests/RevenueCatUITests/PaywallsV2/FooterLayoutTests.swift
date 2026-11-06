@@ -67,6 +67,79 @@ final class FooterLayoutTests: TestCase {
 
     #if canImport(UIKit) && !os(watchOS)
     @MainActor
+    func testStateHiddenFooterReconcilesSelectionOnAppearAndStateChange() throws {
+        for initiallyHidden in [true, false] {
+            let paywallState = try self.makePackagePaywallState()
+            let packageContext = PackageContext(
+                package: TestData.annualPackage,
+                variableContext: .init(packages: paywallState.packages)
+            )
+            let intro = IntroOfferEligibilityContext(introEligibilityChecker: BaseSnapshotTest.eligibleChecker)
+            let store = PaywallStateStore(declarations: [
+                "hide_footer": .init(type: "boolean", defaultValue: .bool(initiallyHidden))
+            ])
+            let view = LoadedPaywallsV2View(
+                introOfferEligibilityContext: intro,
+                paywallState: paywallState,
+                uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
+                selectedPackageContext: packageContext,
+                workflowDefaultPackage: nil,
+                onDismiss: {}
+            )
+            .environmentObject(PurchaseHandler.mock())
+            .environmentObject(intro)
+            .environmentObject(PaywallPromoOfferCache(subscriptionHistoryTracker: SubscriptionHistoryTracker()))
+            let dispose = try FooterStateHost(store: store, content: view).addToHierarchy()
+            defer { dispose() }
+            RunLoop.main.run(until: Date().addingTimeInterval(0.1))
+            XCTAssertEqual(packageContext.package?.identifier,
+                           initiallyHidden ? TestData.monthlyPackage.identifier : TestData.annualPackage.identifier)
+
+            store.apply([.set(key: "hide_footer", value: .literal(.bool(true)))])
+            RunLoop.main.run(until: Date().addingTimeInterval(0.1))
+            XCTAssertEqual(packageContext.package?.identifier, TestData.monthlyPackage.identifier)
+
+            store.apply([.set(key: "hide_footer", value: .literal(.bool(false)))])
+            RunLoop.main.run(until: Date().addingTimeInterval(0.1))
+            XCTAssertEqual(packageContext.package?.identifier, TestData.monthlyPackage.identifier,
+                           "Showing the footer again must preserve the visible body selection")
+        }
+    }
+
+    @MainActor
+    private func makePackagePaywallState() throws -> PaywallState {
+        let packages = [TestData.monthlyPackage, TestData.annualPackage]
+        let components = packages.map { package in
+            PaywallComponent.package(.init(
+                packageID: package.identifier,
+                isSelectedByDefault: package == TestData.annualPackage,
+                applePromoOfferProductCode: nil,
+                stack: .init(components: [.text(.init(text: "package", color: .init(light: .hex("#000000"))))])
+            ))
+        }
+        return try PaywallsV2View.createPaywallState(
+            componentsConfig: .init(
+                stack: .init(components: [components[0]]),
+                stickyFooter: .init(stack: .init(components: [components[1]]), layout: .normal, overrides: [.init(
+                    extendedConditions: [.state(operator: .equals, name: "hide_footer", value: .bool(true))],
+                    properties: .init(layout: .hidden)
+                )]),
+                background: .color(.init(light: .hex("#FFFFFF")))
+            ),
+            componentsLocalizations: ["en_US": ["package": .string("Package")]],
+            preferredLocales: [Locale(identifier: "en_US")],
+            defaultLocale: "en_US",
+            uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
+            offering: .init(
+                identifier: "test", serverDescription: "", availablePackages: packages, webCheckoutUrl: nil
+            ),
+            introEligibilityChecker: BaseSnapshotTest.eligibleChecker,
+            showZeroDecimalPlacePrices: false,
+            colorScheme: .light
+        ).get()
+    }
+
+    @MainActor
     func testSplitFooterBackgroundFillsColumn() throws {
         let size = CGSize(width: 800, height: 600)
         for layout in [Footer.Layout.splitLeading, .splitTrailing] {
@@ -173,4 +246,20 @@ final class FooterLayoutTests: TestCase {
         return try decoder.decode(Footer.self, from: Data(payload.utf8))
     }
 }
+
+#if canImport(UIKit) && !os(watchOS)
+@available(iOS 15.0, *)
+private struct FooterStateHost<Content: View>: View {
+
+    @ObservedObject var store: PaywallStateStore
+    let content: Content
+
+    var body: some View {
+        self.content
+            .environment(\.paywallStateValues, self.store.values)
+            .environment(\.paywallStateDefaults, self.store.defaults)
+    }
+
+}
+#endif
 #endif
