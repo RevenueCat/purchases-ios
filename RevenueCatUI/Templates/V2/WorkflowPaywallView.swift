@@ -466,6 +466,10 @@ struct WorkflowPaywallView: View {
 
             await self.animateTransition(id: activeTransitionID)
         }
+        .modifier(DisplayedOfferingRegistrationModifier(
+            bridge: self.presentationBridge,
+            offering: { self.transitionState.currentPage?.content.offering }
+        ))
         // Re-emitted on every step change because navigator is @StateObject with @Published
         // currentStepId. The exit offer is resolved synchronously from the context's offerings on the
         // triggering step; when the user navigates away the value becomes nil, clearing
@@ -638,7 +642,7 @@ struct WorkflowPaywallView: View {
     private func pageView(for page: RenderedPage, isActive: Bool) -> some View {
         PaywallsV2View(
             paywallComponents: page.content.paywallComponents,
-            offering: page.content.offering,
+            offering: page.content.renderingOffering,
             purchaseHandler: self.purchaseHandler,
             introEligibilityChecker: self.introEligibilityChecker,
             showZeroDecimalPlacePrices: self.showZeroDecimalPlacePrices,
@@ -994,14 +998,12 @@ struct WorkflowPaywallView: View {
             )
         }
         #endif
-        let offering = WorkflowContext.renderingOffering(
-            baseOffering: context.offering(for: step),
-            paywallComponents: paywallComponents
-        )
-
         return .init(
             stepId: stepId,
-            content: .init(paywallComponents: paywallComponents, offering: offering),
+            content: .init(
+                paywallComponents: paywallComponents,
+                baseOffering: context.offering(for: step)
+            ),
             stepType: step.type,
             screenType: step.stepScreenType,
             isSingleStepFallback: stepId == context.workflow.singleStepFallbackId,
@@ -1223,8 +1225,21 @@ private struct DisplayedPage: Identifiable {
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private struct CurrentStepContent {
+
     let paywallComponents: Offering.PaywallComponents
-    let offering: Offering
+    let offering: Offering?
+    /// Rendering requires an offering even for content-only screens, which use a package-less placeholder.
+    let renderingOffering: Offering
+
+    init(paywallComponents: Offering.PaywallComponents, baseOffering: Offering?) {
+        let renderingOffering = WorkflowContext.renderingOffering(
+            baseOffering: baseOffering, paywallComponents: paywallComponents
+        )
+        self.paywallComponents = paywallComponents
+        self.offering = baseOffering.map { _ in renderingOffering }
+        self.renderingOffering = renderingOffering
+    }
+
 }
 
 /// A workflow configuration problem presented to the customer. Its code stays compatible with the SDK
@@ -1342,7 +1357,7 @@ private struct WorkflowHeaderOverlayPageView: View {
                     preferredLocales: purchaseHandler.preferredLocales,
                     defaultLocale: paywallComponents.data.defaultLocale,
                     uiConfigProvider: uiConfigProvider,
-                    offering: page.content.offering,
+                    offering: page.content.renderingOffering,
                     introEligibilityChecker: introEligibilityChecker,
                     showZeroDecimalPlacePrices: showZeroDecimalPlacePrices,
                     colorScheme: colorScheme

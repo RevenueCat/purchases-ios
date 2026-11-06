@@ -179,6 +179,11 @@ public class PaywallViewController: UIViewController {
         return configuration.purchaseHandler
     }
 
+    /// The offering on the currently rendered paywall, or nil while no offering is displayed.
+    var displayedOffering: Offering? {
+        return self.configuration.presentationBridge.displayedOffering
+    }
+
     func completeAndDismiss() {
         if !self.configuration.presentationBridge.completeAndDismiss() {
             self.dismiss(animated: true)
