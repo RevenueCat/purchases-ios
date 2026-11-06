@@ -2491,7 +2491,7 @@ jobs:
           environment:
             GATE_STATE: << parameters.state >>
           command: |
-            curl --fail --silent --show-error --output /dev/null \
+            curl --fail --silent --show-error --output /dev/null --retry 5 \
               -X POST "https://api.github.com/repos/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}/statuses/${CIRCLE_SHA1}" \
               -H "Authorization: Bearer ${GITHUB_TOKEN}" \
               -H "Accept: application/vnd.github+json" \
