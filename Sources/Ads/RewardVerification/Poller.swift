@@ -16,7 +16,7 @@ import Foundation
 /// which throws a structured ``BackendError`` so the poller can reuse the SDK's retry
 /// classification (``BackendError/isTransient``).
 internal protocol RewardVerificationStatusPolling: Sendable {
-    func pollStatus(clientTransactionID: String) async throws -> RewardVerificationPollStatus
+    func pollStatus(clientTransactionID: String, appUserID: String) async throws -> RewardVerificationPollStatus
 }
 
 /// Async sleep abstraction used by the polling loop. Production wiring is `RewardVerification.TaskSleeper`.
@@ -68,14 +68,14 @@ internal extension RewardVerification {
 
         /// Production poller wired to `Purchases.shared.fetchRewardVerificationStatus(...)` and
         /// `Task.sleep`.
-        static func makeDefault(adUnitID: String?, appUserID: String) -> Poller {
+        static func makeDefault(adUnitID: String?) -> Poller {
             Poller(
-                statusPoller: PurchasesStatusPoller(adUnitID: adUnitID, appUserID: appUserID),
+                statusPoller: PurchasesStatusPoller(adUnitID: adUnitID),
                 sleeper: TaskSleeper()
             )
         }
 
-        func run(clientTransactionID: String) async -> Outcome {
+        func run(clientTransactionID: String, appUserID: String) async -> Outcome {
             Logger.debug(AdsStrings.poll_start(
                 transactionID: clientTransactionID,
                 maxAttempts: self.maxAttempts
@@ -98,7 +98,7 @@ internal extension RewardVerification {
                     try? await self.sleeper.sleep(seconds: self.jitter.sample())
                 }
 
-                switch await self.pollOnce(clientTransactionID: clientTransactionID) {
+                switch await self.pollOnce(clientTransactionID: clientTransactionID, appUserID: appUserID) {
                 case .finished(let outcome):
                     return outcome
                 case .retry(let disposition):
@@ -114,10 +114,11 @@ internal extension RewardVerification {
 
         /// Runs a single poll attempt: either a terminal `Outcome` or a `retry` carrying the
         /// disposition to remember for exhaustion classification.
-        private func pollOnce(clientTransactionID: String) async -> PollAttemptResult {
+        private func pollOnce(clientTransactionID: String, appUserID: String) async -> PollAttemptResult {
             do {
                 let status = try await self.statusPoller.pollStatus(
-                    clientTransactionID: clientTransactionID
+                    clientTransactionID: clientTransactionID,
+                    appUserID: appUserID
                 )
                 // A cancellation that lands while the status request is in flight won't surface as a
                 // `CancellationError` if the request resolves successfully. Re-check before logging or
@@ -204,13 +205,12 @@ internal extension RewardVerification {
     struct PurchasesStatusPoller: RewardVerificationStatusPolling {
 
         let adUnitID: String?
-        let appUserID: String
 
-        func pollStatus(clientTransactionID: String) async throws -> RewardVerificationPollStatus {
+        func pollStatus(clientTransactionID: String, appUserID: String) async throws -> RewardVerificationPollStatus {
             try await Purchases.shared.fetchRewardVerificationStatus(
                 clientTransactionID: clientTransactionID,
                 adUnitID: self.adUnitID,
-                appUserID: self.appUserID
+                appUserID: appUserID
             )
         }
     }
