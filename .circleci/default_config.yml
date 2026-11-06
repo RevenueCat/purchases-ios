@@ -2453,23 +2453,49 @@ jobs:
           name: Trigger RC App Pipeline
           command: bundle exec fastlane trigger_bump_sdk_in_rc_mobile_app
 
-  all-tests-succeeded:
+  post-gate-status:
+    parameters:
+      state:
+        type: enum
+        enum: [success, pending]
+      unless_full_suite_approved:
+        type: boolean
+        default: false
     docker:
       - image: cimg/base:stable
     resource_class: small
     steps:
+      - when:
+          condition: << parameters.unless_full_suite_approved >>
+          steps:
+            - run:
+                name: Halt if approve-full-tests was already approved
+                command: |
+                  approval=$(curl --fail --silent --show-error --max-time 30 --retry 5 \
+                    -H "Circle-Token: ${CIRCLECI_API_TOKEN}" \
+                    "https://circleci.com/api/v2/workflow/${CIRCLE_WORKFLOW_ID}/job" \
+                    | jq -r '.items[] | select(.name == "approve-full-tests") | .status')
+                  case "$approval" in
+                    success)
+                      echo "Full suite already requested, leaving the gate to it"
+                      circleci-agent step halt
+                      ;;
+                    on_hold) ;;
+                    *)
+                      echo "Unexpected approve-full-tests status '${approval}', not posting"
+                      exit 1
+                      ;;
+                  esac
       - run:
-          name: All tests succeeded
-          command: echo "All tests succeeded"
-
-  all-tasks-passed:
-    docker:
-      - image: cimg/base:stable
-    resource_class: small
-    steps:
-      - run:
-          name: All tasks passed
-          command: echo "All tasks passed"
+          name: Post ci/all-tests-gate status (<< parameters.state >>)
+          environment:
+            GATE_STATE: << parameters.state >>
+          command: |
+            curl --fail --silent --show-error --output /dev/null --retry 5 \
+              -X POST "https://api.github.com/repos/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}/statuses/${CIRCLE_SHA1}" \
+              -H "Authorization: Bearer ${GITHUB_TOKEN}" \
+              -H "Accept: application/vnd.github+json" \
+              -d "{\"state\":\"${GATE_STATE}\",\"context\":\"ci/all-tests-gate\",\"target_url\":\"${CIRCLE_BUILD_URL}\"}"
 
 workflows:
   record-performance-baselines:
@@ -2585,12 +2611,38 @@ workflows:
       - revenuecat-ads-tests:
           context:
             - slack-secrets
+      - post-gate-status:
+          name: full-suite-not-requested
+          state: success
+          unless_full_suite_approved: true
+          requires:
+            - performance-tests
+            - performance-automation-tests
+            - lint
+            - check-api-changes
+            - run-test-ios-27
+            - build-samplecat
+            - build-purchase-tester
+            - pod-lib-lint
+            - run-revenuecat-ui-ios-27
+            - run-revenuecat-ui-ios-26
+            - emerge_purchases_ui_snapshot_tests
+            - binary_size_analysis
+            - build-tv-watch-mac-and-visionos
+            - revenuecat-admob-tests
+            - revenuecat-ads-tests
 
       # =============================================================
       # Hold gate for the Full Test Suite
       # =============================================================
       - approve-full-tests:
           type: approval
+      - post-gate-status:
+          name: full-suite-started
+          state: pending
+          requires:
+            - approve-full-tests
+            - full-suite-not-requested
 
       # =============================================================
       # Full Test Suite: Gated behind approve-full-tests
@@ -2745,22 +2797,11 @@ workflows:
       # =============================================================
       # Summary gate: blocks merge until all jobs pass
       # =============================================================
-      - all-tasks-passed:
+      - post-gate-status:
+          name: all-tasks-passed
+          state: success
           requires:
-            # Reduced Test Suite
-            - performance-tests
-            - performance-automation-tests
-            - lint
-            - check-api-changes
-            - run-test-ios-27
-            - build-samplecat
-            - build-purchase-tester
-            - pod-lib-lint
-            - run-revenuecat-ui-ios-27
-            - run-revenuecat-ui-ios-26
-            - emerge_purchases_ui_snapshot_tests
-            - binary_size_analysis
-            - build-tv-watch-mac-and-visionos
+            - full-suite-started
             # Full Test Suite
             - backend-integration-tests-SK1
             - backend-integration-tests-SK2
@@ -2784,8 +2825,6 @@ workflows:
             - api-tests
             - spm-receipt-parser
             - check-app-extension-safe-api-usage
-            - revenuecat-admob-tests
-            - revenuecat-ads-tests
             - deploy-purchase-tester
             - run-workflow-maestro-tests
             - run-all-maestro-e2e-tests
@@ -3136,7 +3175,9 @@ workflows:
       # =============================================================
       # All tests gate for release branches
       # =============================================================
-      - all-tests-succeeded:
+      - post-gate-status:
+          name: all-tests-succeeded
+          state: success
           requires:
             - check-api-changes
             - run-all-maestro-e2e-tests
@@ -3192,7 +3233,9 @@ workflows:
             - all-tests-succeeded
           <<: *release-branches
 
-      - all-tasks-passed:
+      - post-gate-status:
+          name: all-tasks-passed
+          state: success
           requires:
             - revenuecat/tag-current-branch
           <<: *release-branches
