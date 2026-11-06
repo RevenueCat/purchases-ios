@@ -112,6 +112,7 @@
 		164681D02E6B577600854AA5 /* VideoComponentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 164681C82E6B577600854AA5 /* VideoComponentView.swift */; };
 		164681D12E6B577600854AA5 /* VideoPlayerViewUIView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 164681CC2E6B577600854AA5 /* VideoPlayerViewUIView.swift */; };
 		164681D22E6B577600854AA5 /* VideoComponentViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 164681C92E6B577600854AA5 /* VideoComponentViewModel.swift */; };
+		E5E2829D6F474A6CBE90AC16 /* VideoPlaybackWindowObserver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30E7D21909F844078463558A /* VideoPlaybackWindowObserver.swift */; };
 		164681D62E6B577600854AA5 /* VideoPlayerLayerUIView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 164681D52E6B577600854AA5 /* VideoPlayerLayerUIView.swift */; };
 		164933242E5808BE00CE43A9 /* PaywallTransitionTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 164933232E5808BE00CE43A9 /* PaywallTransitionTest.swift */; };
 		166B9F0F30251A4A0037DDCB /* WebBundleEventBusTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 166B9F0E30251A4A0037DDCB /* WebBundleEventBusTests.swift */; };
@@ -1909,6 +1910,7 @@
 		164681CA2E6B577600854AA5 /* VideoPlayerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoPlayerView.swift; sourceTree = "<group>"; };
 		164681CB2E6B577600854AA5 /* VideoPlayerViewNSView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoPlayerViewNSView.swift; sourceTree = "<group>"; };
 		164681CC2E6B577600854AA5 /* VideoPlayerViewUIView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoPlayerViewUIView.swift; sourceTree = "<group>"; };
+		30E7D21909F844078463558A /* VideoPlaybackWindowObserver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoPlaybackWindowObserver.swift; sourceTree = "<group>"; };
 		164681D52E6B577600854AA5 /* VideoPlayerLayerUIView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoPlayerLayerUIView.swift; sourceTree = "<group>"; };
 		164933232E5808BE00CE43A9 /* PaywallTransitionTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallTransitionTest.swift; sourceTree = "<group>"; };
 		166B9F0E30251A4A0037DDCB /* WebBundleEventBusTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebBundleEventBusTests.swift; sourceTree = "<group>"; };
@@ -3966,6 +3968,7 @@
 				164681CA2E6B577600854AA5 /* VideoPlayerView.swift */,
 				164681CB2E6B577600854AA5 /* VideoPlayerViewNSView.swift */,
 				164681CC2E6B577600854AA5 /* VideoPlayerViewUIView.swift */,
+				30E7D21909F844078463558A /* VideoPlaybackWindowObserver.swift */,
 				164681D52E6B577600854AA5 /* VideoPlayerLayerUIView.swift */,
 				36ECF1E76DAADD986E3D0E5A /* VideoAutoplayHandler.swift */,
 				DBD2A167300E81E20019DB7F /* VideoAudioSessionHandler.swift */,
@@ -9494,6 +9497,7 @@
 				164681CF2E6B577600854AA5 /* VideoPlayerView.swift in Sources */,
 				164681D02E6B577600854AA5 /* VideoComponentView.swift in Sources */,
 				164681D12E6B577600854AA5 /* VideoPlayerViewUIView.swift in Sources */,
+				E5E2829D6F474A6CBE90AC16 /* VideoPlaybackWindowObserver.swift in Sources */,
 				164681D62E6B577600854AA5 /* VideoPlayerLayerUIView.swift in Sources */,
 				FC5AE63E8F81C3EC2FFDA408 /* WebViewOrigin.swift in Sources */,
 				C4E10000000000000000B002 /* WebViewHTTPStatus.swift in Sources */,

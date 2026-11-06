@@ -44,7 +44,11 @@ final class WorkflowPaywallViewTests: TestCase {
     }
 
     @MainActor
-    private func assertVideoPausesAndResumesWithWorkflowPage(showControls: Bool, loop: Bool = false) async throws {
+    private func withVideoPaywall(
+        showControls: Bool,
+        loop: Bool = false,
+        body: (UIHostingController<AnyView>, UIWindow, WorkflowPageActivation, AVPlayer) async throws -> Void
+    ) async throws {
         let url = FileManager.default.temporaryDirectory
             .appendingPathComponent("workflow-video-\(UUID().uuidString).mp4")
         try await Self.writePlaybackTestVideo(to: url)
@@ -86,49 +90,110 @@ final class WorkflowPaywallViewTests: TestCase {
         let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 390, height: 844))
         window.rootViewController = controller
         window.makeKeyAndVisible()
+        controller.view.layoutIfNeeded()
         defer {
             window.isHidden = true
             window.rootViewController = nil
         }
-        func player(in controller: UIViewController) -> AVPlayer? {
-            if let player = (controller as? AVPlayerViewController)?.player { return player }
-            return controller.children.compactMap { player(in: $0) }.first ?? player(in: controller.view.layer)
-        }
-        func player(in layer: CALayer) -> AVPlayer? {
-            if let player = (layer as? AVPlayerLayer)?.player { return player }
-            return layer.sublayers?.compactMap { player(in: $0) }.first
-        }
-        await expect(player(in: controller)?.rate).toEventually(equal(1), timeout: .seconds(8))
-        let videoPlayer = try XCTUnwrap(player(in: controller))
+        await expect(Self.player(in: controller)?.rate).toEventually(equal(1), timeout: .seconds(8))
+        let videoPlayer = try XCTUnwrap(Self.player(in: controller))
         XCTAssertFalse(videoPlayer.isMuted)
         await videoPlayer.seek(to: CMTime(seconds: 5, preferredTimescale: 600))
-        NotificationCenter.default.post(name: UIApplication.willResignActiveNotification, object: nil)
-        activation.isActive = false
-        await expect(videoPlayer.rate).toEventually(equal(0), timeout: .seconds(2))
-        let pausedTime = videoPlayer.currentTime().seconds
-        NotificationCenter.default.post(name: UIApplication.didBecomeActiveNotification, object: nil)
-        XCTAssertEqual(videoPlayer.rate, 0)
-        activation.isActive = true
-        await expect(videoPlayer.rate).toEventually(equal(1), timeout: .seconds(2))
-        XCTAssertTrue(player(in: controller) === videoPlayer)
-        XCTAssertGreaterThanOrEqual(videoPlayer.currentTime().seconds, pausedTime)
-        videoPlayer.pause()
-        activation.isActive = false
-        RunLoop.main.run(until: Date().addingTimeInterval(0.1))
-        activation.isActive = true
-        RunLoop.main.run(until: Date().addingTimeInterval(0.1))
-        XCTAssertEqual(videoPlayer.rate, 0)
-        activation.isActive = false
-        RunLoop.main.run(until: Date().addingTimeInterval(0.1))
-        NotificationCenter.default.post(name: AVPlayerItem.didPlayToEndTimeNotification,
-                                        object: videoPlayer.currentItem)
-        XCTAssertEqual(videoPlayer.rate, 0)
-        activation.isActive = true
-        await expect(videoPlayer.rate).toAlways(equal(0), until: .milliseconds(200))
-        videoPlayer.play()
-        await expect(videoPlayer.rate).toEventually(equal(1), timeout: .seconds(2))
-        controller.rootView = AnyView(EmptyView())
-        await expect(videoPlayer.rate).toEventually(equal(0), timeout: .seconds(2))
+        try await body(controller, window, activation, videoPlayer)
+    }
+
+    @MainActor
+    func testVideoWithControlsPausesWhenRetainedPaywallDisappears() async throws {
+        for loop in [false, true] {
+            try await self.assertVideoPausesWhenRetainedPaywallDisappears(showControls: true, loop: loop)
+        }
+    }
+
+    @MainActor
+    func testVideoWithoutControlsPausesWhenRetainedPaywallDisappears() async throws {
+        for loop in [false, true] {
+            try await self.assertVideoPausesWhenRetainedPaywallDisappears(showControls: false, loop: loop)
+        }
+    }
+
+    @MainActor
+    private func assertVideoPausesWhenRetainedPaywallDisappears(showControls: Bool, loop: Bool) async throws {
+        try await self.withVideoPaywall(
+            showControls: showControls,
+            loop: loop
+        ) { controller, window, _, videoPlayer in
+            window.rootViewController = UIViewController()
+            await expect(videoPlayer.rate).toEventually(equal(0), timeout: .seconds(2))
+            let pausedTime = videoPlayer.currentTime().seconds
+            NotificationCenter.default.post(name: UIApplication.willResignActiveNotification, object: nil)
+            NotificationCenter.default.post(name: UIApplication.didBecomeActiveNotification, object: nil)
+            await expect(videoPlayer.rate).toAlways(equal(0), until: .milliseconds(200))
+
+            NotificationCenter.default.post(name: AVPlayerItem.didPlayToEndTimeNotification,
+                                            object: videoPlayer.currentItem)
+            XCTAssertEqual(videoPlayer.rate, 0)
+
+            window.rootViewController = controller
+            await expect(videoPlayer.rate).toEventually(equal(1), timeout: .seconds(2))
+            XCTAssertTrue(Self.player(in: controller) === videoPlayer)
+            if !loop {
+                XCTAssertGreaterThanOrEqual(videoPlayer.currentTime().seconds, pausedTime)
+            }
+
+            videoPlayer.pause()
+            window.rootViewController = UIViewController()
+            await Task.yield()
+            window.rootViewController = controller
+            await expect(videoPlayer.rate).toAlways(equal(0), until: .milliseconds(200))
+        }
+    }
+
+    @MainActor
+    private func assertVideoPausesAndResumesWithWorkflowPage(showControls: Bool, loop: Bool = false) async throws {
+        try await self.withVideoPaywall(
+            showControls: showControls,
+            loop: loop
+        ) { controller, _, activation, videoPlayer in
+            NotificationCenter.default.post(name: UIApplication.willResignActiveNotification, object: nil)
+            activation.isActive = false
+            await expect(videoPlayer.rate).toEventually(equal(0), timeout: .seconds(2))
+            let pausedTime = videoPlayer.currentTime().seconds
+            NotificationCenter.default.post(name: UIApplication.didBecomeActiveNotification, object: nil)
+            XCTAssertEqual(videoPlayer.rate, 0)
+            activation.isActive = true
+            await expect(videoPlayer.rate).toEventually(equal(1), timeout: .seconds(2))
+            XCTAssertTrue(Self.player(in: controller) === videoPlayer)
+            XCTAssertGreaterThanOrEqual(videoPlayer.currentTime().seconds, pausedTime)
+            videoPlayer.pause()
+            activation.isActive = false
+            RunLoop.main.run(until: Date().addingTimeInterval(0.1))
+            activation.isActive = true
+            RunLoop.main.run(until: Date().addingTimeInterval(0.1))
+            XCTAssertEqual(videoPlayer.rate, 0)
+            activation.isActive = false
+            RunLoop.main.run(until: Date().addingTimeInterval(0.1))
+            NotificationCenter.default.post(name: AVPlayerItem.didPlayToEndTimeNotification,
+                                            object: videoPlayer.currentItem)
+            XCTAssertEqual(videoPlayer.rate, 0)
+            activation.isActive = true
+            await expect(videoPlayer.rate).toAlways(equal(0), until: .milliseconds(200))
+            videoPlayer.play()
+            await expect(videoPlayer.rate).toEventually(equal(1), timeout: .seconds(2))
+            controller.rootView = AnyView(EmptyView())
+            await expect(videoPlayer.rate).toEventually(equal(0), timeout: .seconds(2))
+        }
+    }
+
+    @MainActor
+    private static func player(in controller: UIViewController) -> AVPlayer? {
+        if let player = (controller as? AVPlayerViewController)?.player { return player }
+        return controller.children.compactMap { player(in: $0) }.first ?? player(in: controller.view.layer)
+    }
+
+    @MainActor
+    private static func player(in layer: CALayer) -> AVPlayer? {
+        if let player = (layer as? AVPlayerLayer)?.player { return player }
+        return layer.sublayers?.compactMap { player(in: $0) }.first
     }
 
     @MainActor
