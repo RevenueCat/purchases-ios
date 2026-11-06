@@ -68,9 +68,9 @@ internal extension RewardVerification {
 
         /// Production poller wired to `Purchases.shared.fetchRewardVerificationStatus(...)` and
         /// `Task.sleep`.
-        static func makeDefault(adUnitID: String?) -> Poller {
+        static func makeDefault(adUnitID: String?, appUserID: String) -> Poller {
             Poller(
-                statusPoller: PurchasesStatusPoller(adUnitID: adUnitID),
+                statusPoller: PurchasesStatusPoller(adUnitID: adUnitID, appUserID: appUserID),
                 sleeper: TaskSleeper()
             )
         }
@@ -204,11 +204,13 @@ internal extension RewardVerification {
     struct PurchasesStatusPoller: RewardVerificationStatusPolling {
 
         let adUnitID: String?
+        let appUserID: String
 
         func pollStatus(clientTransactionID: String) async throws -> RewardVerificationPollStatus {
             try await Purchases.shared.fetchRewardVerificationStatus(
                 clientTransactionID: clientTransactionID,
-                adUnitID: self.adUnitID
+                adUnitID: self.adUnitID,
+                appUserID: self.appUserID
             )
         }
     }
