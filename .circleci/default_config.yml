@@ -2453,23 +2453,25 @@ jobs:
           name: Trigger RC App Pipeline
           command: bundle exec fastlane trigger_bump_sdk_in_rc_mobile_app
 
-  all-tests-succeeded:
+  post-gate-status:
+    parameters:
+      state:
+        type: enum
+        enum: [success, pending]
     docker:
       - image: cimg/base:stable
     resource_class: small
     steps:
       - run:
-          name: All tests succeeded
-          command: echo "All tests succeeded"
-
-  all-tasks-passed:
-    docker:
-      - image: cimg/base:stable
-    resource_class: small
-    steps:
-      - run:
-          name: All tasks passed
-          command: echo "All tasks passed"
+          name: Post ci/all-tests-gate status (<< parameters.state >>)
+          environment:
+            GATE_STATE: << parameters.state >>
+          command: |
+            curl --fail --silent --show-error --output /dev/null \
+              -X POST "https://api.github.com/repos/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}/statuses/${CIRCLE_SHA1}" \
+              -H "Authorization: Bearer ${GITHUB_TOKEN}" \
+              -H "Accept: application/vnd.github+json" \
+              -d "{\"state\":\"${GATE_STATE}\",\"context\":\"ci/all-tests-gate\",\"target_url\":\"${CIRCLE_BUILD_URL}\"}"
 
 workflows:
   record-performance-baselines:
@@ -2585,12 +2587,21 @@ workflows:
       - revenuecat-ads-tests:
           context:
             - slack-secrets
+      - post-gate-status:
+          name: full-suite-not-requested
+          state: success
 
       # =============================================================
       # Hold gate for the Full Test Suite
       # =============================================================
       - approve-full-tests:
           type: approval
+      - post-gate-status:
+          name: full-suite-started
+          state: pending
+          requires:
+            - approve-full-tests
+            - full-suite-not-requested
 
       # =============================================================
       # Full Test Suite: Gated behind approve-full-tests
@@ -2745,8 +2756,11 @@ workflows:
       # =============================================================
       # Summary gate: blocks merge until all jobs pass
       # =============================================================
-      - all-tasks-passed:
+      - post-gate-status:
+          name: all-tasks-passed
+          state: success
           requires:
+            - full-suite-started
             # Reduced Test Suite
             - performance-tests
             - performance-automation-tests
@@ -3136,7 +3150,9 @@ workflows:
       # =============================================================
       # All tests gate for release branches
       # =============================================================
-      - all-tests-succeeded:
+      - post-gate-status:
+          name: all-tests-succeeded
+          state: success
           requires:
             - check-api-changes
             - run-all-maestro-e2e-tests
@@ -3192,7 +3208,9 @@ workflows:
             - all-tests-succeeded
           <<: *release-branches
 
-      - all-tasks-passed:
+      - post-gate-status:
+          name: all-tasks-passed
+          state: success
           requires:
             - revenuecat/tag-current-branch
           <<: *release-branches
