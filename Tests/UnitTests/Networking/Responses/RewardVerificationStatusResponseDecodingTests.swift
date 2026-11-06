@@ -288,6 +288,7 @@ final class RewardVerificationStatusResponseDecodingTests: TestCase {
 
         expect(response.customerInfo).to(beNil())
         expect(response.status) == .verified(reward: .entitlement(Self.entitlement), moreRewards: [])
+        self.logger.verifyMessageWasNotLogged(regexPattern: "customer info", allowNoMessages: true)
     }
 
     func testDecodesVerifiedWithMalformedSubscriberAsNilCustomerInfo() throws {
@@ -300,6 +301,7 @@ final class RewardVerificationStatusResponseDecodingTests: TestCase {
 
         expect(response.customerInfo).to(beNil())
         expect(response.status) == .verified(reward: .entitlement(Self.entitlement), moreRewards: [])
+        self.logger.verifyMessageWasLogged(regexPattern: "customer info", level: .warn)
     }
 
     func testCopyWithVerificationResultStampsEmbeddedCustomerInfo() throws {
