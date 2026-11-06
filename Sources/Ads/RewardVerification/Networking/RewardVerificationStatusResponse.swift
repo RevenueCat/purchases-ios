@@ -20,7 +20,7 @@ struct RewardVerificationStatusResponse: Equatable {
     /// `customerInfo` is present only when the backend embeds subscriber info with an entitlement grant.
     let customerInfo: CustomerInfo?
 
-    init(status: Status, customerInfo: CustomerInfo? = nil) {
+    init(status: Status, customerInfo: CustomerInfo?) {
         self.status = status
         self.customerInfo = customerInfo
     }

@@ -33,7 +33,9 @@ final class PurchasesRewardVerificationTests: BasePurchasesTests {
 
     func testFetchRewardVerificationStatusMapsUnknownStatusToUnknown() async throws {
         let transactionID = "AABBCCDD-1111-2222-3333-444455556666"
-        try self.mockAdsAPI.stubbedGetRewardVerificationStatusResult = .success(.init(status: .unknown))
+        try self.mockAdsAPI.stubbedGetRewardVerificationStatusResult = .success(
+            .init(status: .unknown, customerInfo: nil)
+        )
 
         let status = try await self.purchases.fetchRewardVerificationStatus(
             clientTransactionID: transactionID,
@@ -49,7 +51,9 @@ final class PurchasesRewardVerificationTests: BasePurchasesTests {
     }
 
     func testFetchRewardVerificationStatusForwardsAdUnitID() async throws {
-        try self.mockAdsAPI.stubbedGetRewardVerificationStatusResult = .success(.init(status: .pending))
+        try self.mockAdsAPI.stubbedGetRewardVerificationStatusResult = .success(
+            .init(status: .pending, customerInfo: nil)
+        )
 
         _ = try await self.purchases.fetchRewardVerificationStatus(clientTransactionID: "tx-id", adUnitID: "ad-unit")
 
@@ -59,7 +63,7 @@ final class PurchasesRewardVerificationTests: BasePurchasesTests {
     func testFetchRewardVerificationStatusMapsVerifiedStatusWithVirtualCurrencyReward() async throws {
         let reward = try XCTUnwrap(VirtualCurrencyReward(code: "coins", amount: 10))
         try self.mockAdsAPI.stubbedGetRewardVerificationStatusResult = .success(
-            .init(status: .verified(.virtualCurrency(reward)))
+            .init(status: .verified(.virtualCurrency(reward)), customerInfo: nil)
         )
 
         let status = try await self.purchases.fetchRewardVerificationStatus(clientTransactionID: "tx-id", adUnitID: nil)
@@ -69,7 +73,7 @@ final class PurchasesRewardVerificationTests: BasePurchasesTests {
 
     func testFetchRewardVerificationStatusMapsVerifiedStatusWithNoReward() async throws {
         try self.mockAdsAPI.stubbedGetRewardVerificationStatusResult = .success(
-            .init(status: .verified(.noReward))
+            .init(status: .verified(.noReward), customerInfo: nil)
         )
 
         let status = try await self.purchases.fetchRewardVerificationStatus(clientTransactionID: "tx-id", adUnitID: nil)
@@ -79,7 +83,7 @@ final class PurchasesRewardVerificationTests: BasePurchasesTests {
 
     func testFetchRewardVerificationStatusMapsVerifiedStatusWithUnsupportedReward() async throws {
         try self.mockAdsAPI.stubbedGetRewardVerificationStatusResult = .success(
-            .init(status: .verified(.unsupportedReward))
+            .init(status: .verified(.unsupportedReward), customerInfo: nil)
         )
 
         let status = try await self.purchases.fetchRewardVerificationStatus(clientTransactionID: "tx-id", adUnitID: nil)
@@ -88,7 +92,9 @@ final class PurchasesRewardVerificationTests: BasePurchasesTests {
     }
 
     func testFetchRewardVerificationStatusMapsPendingStatus() async throws {
-        try self.mockAdsAPI.stubbedGetRewardVerificationStatusResult = .success(.init(status: .pending))
+        try self.mockAdsAPI.stubbedGetRewardVerificationStatusResult = .success(
+            .init(status: .pending, customerInfo: nil)
+        )
 
         let status = try await self.purchases.fetchRewardVerificationStatus(clientTransactionID: "tx-id", adUnitID: nil)
 
@@ -97,7 +103,7 @@ final class PurchasesRewardVerificationTests: BasePurchasesTests {
 
     func testFetchRewardVerificationStatusMapsFailedStatus() async throws {
         try self.mockAdsAPI.stubbedGetRewardVerificationStatusResult = .success(
-            .init(status: .failed(.init(reason: nil, message: nil)))
+            .init(status: .failed(.init(reason: nil, message: nil)), customerInfo: nil)
         )
 
         let status = try await self.purchases.fetchRewardVerificationStatus(clientTransactionID: "tx-id", adUnitID: nil)
@@ -110,7 +116,7 @@ final class PurchasesRewardVerificationTests: BasePurchasesTests {
             .init(status: .failed(.init(
                 reason: "no_access",
                 message: "AdMob server-side reward verification is not enabled for this app."
-            )))
+            )), customerInfo: nil)
         )
 
         let status = try await self.purchases.fetchRewardVerificationStatus(clientTransactionID: "tx-id", adUnitID: nil)
