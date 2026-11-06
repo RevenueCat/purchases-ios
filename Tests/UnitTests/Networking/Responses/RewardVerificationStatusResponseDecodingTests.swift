@@ -279,6 +279,17 @@ final class RewardVerificationStatusResponseDecodingTests: TestCase {
         expect(response.customerInfo).to(beNil())
     }
 
+    func testDecodesVerifiedWithNullSubscriberAsNilCustomerInfo() throws {
+        let response = try Self.decode([
+            "status": "verified",
+            "reward": Self.entitlementReward,
+            "subscriber": NSNull()
+        ])
+
+        expect(response.customerInfo).to(beNil())
+        expect(response.status) == .verified(reward: .entitlement(Self.entitlement), moreRewards: [])
+    }
+
     func testDecodesVerifiedWithMalformedSubscriberAsNilCustomerInfo() throws {
         let response = try Self.decode([
             "status": "verified",

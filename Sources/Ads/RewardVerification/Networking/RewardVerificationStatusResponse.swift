@@ -85,7 +85,8 @@ extension RewardVerificationStatusResponse: Decodable {
         from decoder: Decoder,
         container: KeyedDecodingContainer<CodingKeys>
     ) -> CustomerInfo? {
-        guard container.contains(.subscriber) else {
+        guard container.contains(.subscriber),
+              (try? container.decodeNil(forKey: .subscriber)) != true else {
             return nil
         }
 
