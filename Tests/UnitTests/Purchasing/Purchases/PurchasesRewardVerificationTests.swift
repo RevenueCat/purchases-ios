@@ -373,14 +373,15 @@ extension PurchasesRewardVerificationTests {
         let originalAppUserID = self.identityManager.currentAppUserID
         let newAppUserID = "other-user"
         let identityManager = try XCTUnwrap(self.identityManager)
-        let statusPoller = UserSwitchingStatusPoller(
-            status: .verified(reward: .entitlement(reward), moreRewards: [], customerInfo: customerInfo)
-        ) { identityManager.mockAppUserID = newAppUserID }
+        let statusPoller = UserSwitchingStatusPoller(statuses: [
+            .pending,
+            .verified(reward: .entitlement(reward), moreRewards: [], customerInfo: customerInfo)
+        ]) { identityManager.mockAppUserID = newAppUserID }
         let poller = makePoller(statusPoller: statusPoller, sleeper: RecordingSleeper())
 
         _ = await self.pollRewardVerification(clientTransactionID: "tx-1", poller: poller)
 
-        expect(statusPoller.receivedAppUserIDs) == [originalAppUserID]
+        expect(statusPoller.receivedAppUserIDs) == [originalAppUserID, originalAppUserID]
         expect(try self.customerInfoManager.cachedCustomerInfo(appUserID: originalAppUserID)) == customerInfo
         expect(try self.customerInfoManager.cachedCustomerInfo(appUserID: newAppUserID)).to(beNil())
         await expect(self.purchasesDelegate.customerInfo).toNever(equal(customerInfo), until: .milliseconds(200))
@@ -390,19 +391,19 @@ extension PurchasesRewardVerificationTests {
 
 private final class UserSwitchingStatusPoller: RewardVerificationStatusPolling, @unchecked Sendable {
 
-    private let status: RewardVerificationPollStatus
+    private var statuses: [RewardVerificationPollStatus]
     private let onPoll: () -> Void
     private(set) var receivedAppUserIDs: [String] = []
 
-    init(status: RewardVerificationPollStatus, onPoll: @escaping () -> Void) {
-        self.status = status
+    init(statuses: [RewardVerificationPollStatus], onPoll: @escaping () -> Void) {
+        self.statuses = statuses
         self.onPoll = onPoll
     }
 
     func pollStatus(clientTransactionID: String, appUserID: String) async throws -> RewardVerificationPollStatus {
         self.receivedAppUserIDs.append(appUserID)
         self.onPoll()
-        return self.status
+        return self.statuses.removeFirst()
     }
 
 }
