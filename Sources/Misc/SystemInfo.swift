@@ -125,7 +125,7 @@ class SystemInfo {
     }
 
     static var frameworkVersion: String {
-        return "5.102.2"
+        return "5.102.3"
     }
 
     static var installationMethod: String {
