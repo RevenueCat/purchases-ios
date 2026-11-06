@@ -81,6 +81,10 @@ let package = Package(
             "12.0.0"..<"14.0.0"
         ),
         .package(
+            url: "https://github.com/prebid/prebid-mobile-ios.git",
+            "3.3.1"..<"4.0.0"
+        ),
+        .package(
             url: "https://github.com/AliSoftware/OHHTTPStubs",
             revision: "9.1.0"
         )
