@@ -60,8 +60,8 @@ extension BackendErrorStrings: LogMessage {
         case .unexpected_reward_verification_reward_value:
             return "Received unexpected reward verification reward value: expected a JSON object"
         case let .malformed_reward_verification_customer_info(error):
-            return "Received malformed customer info in reward verification response, " +
-                "it will be fetched instead: \(error)"
+            return "Ignoring malformed customer info in reward verification response, " +
+                "local CustomerInfo may be stale until the next fetch: \(error)"
         case let .unknown_workflow_trigger_type(type):
             return "Received unknown workflow trigger type: \(type)"
         case let .unknown_workflow_trigger_action_type(type):

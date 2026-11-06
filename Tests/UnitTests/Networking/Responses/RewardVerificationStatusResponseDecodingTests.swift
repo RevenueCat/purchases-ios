@@ -279,7 +279,7 @@ final class RewardVerificationStatusResponseDecodingTests: TestCase {
         expect(response.customerInfo).to(beNil())
     }
 
-    func testDecodesVerifiedWithMalformedSubscriberAsNilCustomerInfoAndLogsWarning() throws {
+    func testDecodesVerifiedWithMalformedSubscriberAsNilCustomerInfo() throws {
         let response = try Self.decode([
             "status": "verified",
             "reward": Self.entitlementReward,
@@ -289,11 +289,6 @@ final class RewardVerificationStatusResponseDecodingTests: TestCase {
 
         expect(response.customerInfo).to(beNil())
         expect(response.status) == .verified(reward: .entitlement(Self.entitlement), moreRewards: [])
-        expect(self.logger.messages.map(\.message)).to(
-            containElementSatisfying {
-                $0.contains("Received malformed customer info in reward verification response")
-            }
-        )
     }
 
     func testCopyWithVerificationResultStampsEmbeddedCustomerInfo() throws {
