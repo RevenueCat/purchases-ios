@@ -504,8 +504,8 @@ struct WorkflowPaywallView: View {
         }
         // This catches dismissal paths that do not pass through a workflow failure: close button,
         // post-purchase auto-dismiss, swipe-to-dismiss on a sheet, and programmatic parent dismiss.
-        // A late configuration failure tracks the same lifecycle immediately before showing its error;
-        // the coordinator's fire-once guards prevent this hook from duplicating those events later.
+        // Natural completion and late configuration failure track the same lifecycle before requesting dismissal
+        // or showing an error; the coordinator's fire-once guards prevent duplicate events when this hook runs later.
         .onChangeOf(self.transitionState.currentPage?.id) { pageID in
             self.nativeButtonCoordinator?.activatePage(pageID)
         }
@@ -805,12 +805,14 @@ struct WorkflowPaywallView: View {
     private func completeAndDismiss() {
         self.hasCompletedWorkflowInSession = true
         self.workflowCompletedInSessionBinding.wrappedValue = true
+        // Enqueue terminal analytics before the host observes dismissal.
+        self.trackCurrentWorkflowLeft()
         self.onDismiss()
     }
 
     /// Finishes the current step and, unless purchase or restore completed this presentation, records
-    /// workflow abandonment. Called both when the paywall goes away and when a reached step is found to be
-    /// unservable.
+    /// workflow abandonment. Called on natural completion, when the paywall goes away, and when a reached
+    /// step is found to be unservable.
     private func trackCurrentWorkflowLeft() {
         let hasRenderedPage = self.transitionState.currentPage != nil
         let completedInSession = Self.hasCompletedInSession(

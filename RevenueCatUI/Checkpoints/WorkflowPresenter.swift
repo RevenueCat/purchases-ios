@@ -325,6 +325,7 @@ extension WorkflowPresenter {
             presentedEntitlements: offering.entitlementsGrantedBy(self.productEntitlementMappingProvider())
         ) else { return }
 
+        self.activeErrorPresentation = nil
         self.stage(.outcome(.completed(customerInfo: customerInfo)))
         controller.completeAndDismiss()
     }
@@ -348,7 +349,6 @@ extension WorkflowPresenter {
         didFinishRestoringWith customerInfo: CustomerInfo
     ) {
         MainActor.assumeIsolated {
-            self.activeErrorPresentation = nil
             self.didCompleteRestore(controller: controller, customerInfo: customerInfo)
         }
     }
@@ -411,7 +411,6 @@ extension WorkflowPresenter {
         _ controller: PaywallViewController,
         didFinishRestoringWith customerInfo: CustomerInfo
     ) {
-        self.activeErrorPresentation = nil
         self.didCompleteRestore(controller: controller, customerInfo: customerInfo)
     }
 
