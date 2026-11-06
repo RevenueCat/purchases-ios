@@ -68,6 +68,64 @@ class StoreKit2ProductPurchaserTests: StoreKitConfigTestCase {
         #endif
     }
 
+    #if compiler(>=6.4) && canImport(UIKit) && !os(watchOS)
+    func testInvalidSDKManagedUISceneRetriesWithoutPresentationContext() async throws {
+        guard #available(iOS 27.0, tvOS 27.0, *) else {
+            throw XCTSkip("Requires StoreKitError.invalidPresentationContext")
+        }
+
+        let mockProduct = MockPurchasableSK2Product()
+        mockProduct.purchaseConfirmInSceneError = StoreKitError.invalidPresentationContext
+        guard let scene = await UIScene.mock() else {
+            fail("Failed to create UIScene mock")
+            return
+        }
+        let presentationContext = PresentationContext(
+            scene: scene,
+            allowsDefaultPresentationFallback: true
+        )
+        let options: Set<Product.PurchaseOption> = []
+
+        _ = try await storeKit2ProductPurchaser.purchase(
+            product: mockProduct,
+            options: options,
+            presentationContext: presentationContext
+        )
+
+        confirmPurchaseConfirmInSceneWithOptionsExpectations(
+            on: mockProduct,
+            scene: scene,
+            options: options
+        )
+        confirmPurchaseWithOptionsExpectations(on: mockProduct, options: options)
+    }
+
+    func testInvalidExplicitUISceneDoesNotRetryWithoutPresentationContext() async throws {
+        guard #available(iOS 27.0, tvOS 27.0, *) else {
+            throw XCTSkip("Requires StoreKitError.invalidPresentationContext")
+        }
+
+        let mockProduct = MockPurchasableSK2Product()
+        mockProduct.purchaseConfirmInSceneError = StoreKitError.invalidPresentationContext
+        guard let scene = await UIScene.mock() else {
+            fail("Failed to create UIScene mock")
+            return
+        }
+        let presentationContext = PresentationContext(scene: scene)
+
+        do {
+            _ = try await storeKit2ProductPurchaser.purchase(
+                product: mockProduct,
+                options: [],
+                presentationContext: presentationContext
+            )
+            XCTFail("Expected invalidPresentationContext")
+        } catch StoreKitError.invalidPresentationContext {
+            XCTAssertFalse(mockProduct.calledPurchaseWithOptions)
+        }
+    }
+    #endif
+
     // MARK: - macOS Purchase Tests
     func testMacOSPurchaseWithNSWindowCallsPurchaseWithConfirmInNSWindow() async throws {
         #if os(macOS) && !targetEnvironment(macCatalyst)
@@ -106,6 +164,64 @@ class StoreKit2ProductPurchaserTests: StoreKitConfigTestCase {
         // Nothing needs to be done for macOS tests on other platforms
         #endif
     }
+
+    #if compiler(>=6.4) && os(macOS) && !targetEnvironment(macCatalyst)
+    func testInvalidSDKManagedNSWindowRetriesWithoutPresentationContext() async throws {
+        guard #available(macOS 27.0, *) else {
+            throw XCTSkip("Requires StoreKitError.invalidPresentationContext")
+        }
+
+        let mockProduct = MockPurchasableSK2Product()
+        mockProduct.purchaseConfirmInWindowError = StoreKitError.invalidPresentationContext
+        guard let window = await NSWindow.mock() else {
+            fail("Failed to create NSWindow mock")
+            return
+        }
+        let presentationContext = PresentationContext(
+            window: window,
+            allowsDefaultPresentationFallback: true
+        )
+        let options: Set<Product.PurchaseOption> = []
+
+        _ = try await storeKit2ProductPurchaser.purchase(
+            product: mockProduct,
+            options: options,
+            presentationContext: presentationContext
+        )
+
+        confirmPurchaseConfirmInWindowWithOptionsExpectations(
+            on: mockProduct,
+            window: window,
+            options: options
+        )
+        confirmPurchaseWithOptionsExpectations(on: mockProduct, options: options)
+    }
+
+    func testInvalidExplicitNSWindowDoesNotRetryWithoutPresentationContext() async throws {
+        guard #available(macOS 27.0, *) else {
+            throw XCTSkip("Requires StoreKitError.invalidPresentationContext")
+        }
+
+        let mockProduct = MockPurchasableSK2Product()
+        mockProduct.purchaseConfirmInWindowError = StoreKitError.invalidPresentationContext
+        guard let window = await NSWindow.mock() else {
+            fail("Failed to create NSWindow mock")
+            return
+        }
+        let presentationContext = PresentationContext(window: window)
+
+        do {
+            _ = try await storeKit2ProductPurchaser.purchase(
+                product: mockProduct,
+                options: [],
+                presentationContext: presentationContext
+            )
+            XCTFail("Expected invalidPresentationContext")
+        } catch StoreKitError.invalidPresentationContext {
+            XCTAssertFalse(mockProduct.calledPurchaseWithOptions)
+        }
+    }
+    #endif
 
     // MARK: - Non-VisionOS Universal Tests
     func testPurchaseWithoutConfirmInCallsPurchaseWithOptions() async throws {
