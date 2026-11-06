@@ -11,8 +11,10 @@
 //
 //  Created by Antonio Pallares on 7/30/26.
 
+import Nimble
 @_spi(Internal) @testable import RevenueCat
 @testable import RevenueCatUI
+import SwiftUI
 import XCTest
 
 #if !os(tvOS) && !os(watchOS) && canImport(WebKit)
@@ -46,6 +48,41 @@ final class WebViewInstanceTests: TestCase {
         XCTAssertNotNil(first)
         XCTAssertFalse(first === second)
     }
+
+    #if os(iOS)
+    func testReplacingComponentCreatesANewHostAndRestoresTheOriginalWebViewOnReturn() throws {
+        let firstViewModel = Self.makeViewModel()
+        let secondViewModel = Self.makeViewModel(url: "https://example.com/second.html")
+        let firstInstance = try XCTUnwrap(firstViewModel.webViewInstance())
+        let secondInstance = try XCTUnwrap(secondViewModel.webViewInstance())
+        // Pre-create the native views so this only exercises hosting, without making network requests.
+        let firstWebView = firstInstance.webView { WKWebView(frame: .zero) }
+        let secondWebView = secondInstance.webView { WKWebView(frame: .zero) }
+        let selection = WebViewComponentSelection(viewModel: firstViewModel)
+        let dispose = try SwitchingWebViewComponent(selection: selection)
+            .previewRequiredPaywallsV2Properties()
+            .addToHierarchy()
+        defer { dispose() }
+
+        expect(firstWebView.window).toEventuallyNot(beNil())
+        let originalHost = try XCTUnwrap(firstWebView.superview)
+
+        selection.viewModel = secondViewModel
+
+        expect(secondWebView.window).toEventuallyNot(beNil())
+        expect(firstWebView.window).toEventually(beNil())
+        XCTAssertFalse(secondWebView.superview === originalHost)
+
+        selection.viewModel = firstViewModel
+
+        expect(firstWebView.window).toEventuallyNot(beNil())
+        expect(secondWebView.window).toEventually(beNil())
+        XCTAssertTrue(firstInstance.webView {
+            XCTFail("Returning to a component must reuse its existing web view")
+            return WKWebView(frame: .zero)
+        } === firstWebView)
+    }
+    #endif
 
     /// The origin gates every bridge message, so a component whose URL can't resolve one must not get
     /// a web view at all.
@@ -608,5 +645,30 @@ final class WebViewInstanceHostAttachmentTests: TestCase {
     }
 
 }
+
+#if os(iOS)
+@available(iOS 15.0, *)
+@MainActor
+private final class WebViewComponentSelection: ObservableObject {
+
+    @Published var viewModel: WebViewComponentViewModel
+
+    init(viewModel: WebViewComponentViewModel) {
+        self.viewModel = viewModel
+    }
+
+}
+
+@available(iOS 15.0, *)
+private struct SwitchingWebViewComponent: View {
+
+    @ObservedObject var selection: WebViewComponentSelection
+
+    var body: some View {
+        WebViewComponentView(viewModel: self.selection.viewModel)
+    }
+
+}
+#endif
 
 #endif

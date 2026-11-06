@@ -11,6 +11,7 @@
 #
 
 require_relative 'api_diff_helper'
+require_relative 'performance_baseline_helper'
 require 'rexml/document'
 require 'json'
 require 'open3'
@@ -1301,7 +1302,7 @@ platform :ios do
     backend_environment = options[:backend_environment] || "production"
     store = options[:store] || "app_store"
     output_dir = options[:output_dir] || "test_output/maestro"
-    # Which subdirectory of Examples/rc-maestro/maestro to run flows from (e.g. "e2e_tests", "workflows").
+    # Which subdirectory of Projects/AutomatedSDKTestsApp/maestro to run flows from (e.g. "e2e_tests", "workflows").
     flow_subdir = options[:flow_subdir] || "e2e_tests"
     skip_slack_notification = options.fetch(:skip_slack_notification, true)
     base_path = "#{Dir.pwd}/.."
@@ -1368,7 +1369,7 @@ platform :ios do
 
     xcodebuild(
       workspace: xcworkspace,
-      scheme: "Maestro",
+      scheme: "AutomatedSDKTestsApp",
       sdk: "iphonesimulator",
       configuration: "Debug",
       derivedDataPath: "./build"
@@ -1376,11 +1377,11 @@ platform :ios do
 
     # Install app to simulator
     UI.message("Installing app to simulator...")
-    sh("xcrun", "simctl", "install", "booted", "#{base_path}/build/Build/Products/Debug-iphonesimulator/Maestro.app")
+    sh("xcrun", "simctl", "install", "booted", "#{base_path}/build/Build/Products/Debug-iphonesimulator/AutomatedSDKTestsApp.app")
 
     if store == "app_store"
       bundle_id = "com.revenuecat.maestro.ios"
-      storekit_config_path = "#{base_path}/Examples/rc-maestro/rc-maestro/Resources/StoreKit/app787ddb07e6.storekit"
+      storekit_config_path = "#{base_path}/Projects/AutomatedSDKTestsApp/AutomatedSDKTestsApp/Resources/StoreKit/app787ddb07e6.storekit"
 
       # Start file watcher in background
       UI.message("Starting StoreKit config file watcher...")
@@ -1397,7 +1398,7 @@ platform :ios do
 
     success = false
     begin
-      flow_dir = "#{base_path}/Examples/rc-maestro/maestro/#{flow_subdir}"
+      flow_dir = "#{base_path}/Projects/AutomatedSDKTestsApp/maestro/#{flow_subdir}"
 
       previous_test_environment = {}
       if store == "app_store"
@@ -1769,6 +1770,13 @@ platform :ios do
     workflow_url = "https://app.circleci.com/pipelines/github/RevenueCat/#{REPO_NAME}/#{number}"
 
     UI.important "Workflow: #{workflow_url}"
+  end
+
+  desc "Push updated performance baselines to the PR branch"
+  lane :push_performance_baselines do
+    Dir.chdir(File.expand_path('..', __dir__)) do
+      PerformanceBaselineHelper.push
+    end
   end
 
   desc "Creates a new PR after new snapshot files were generated"

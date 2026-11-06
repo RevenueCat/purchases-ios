@@ -88,7 +88,37 @@ public extension Purchases {
             customVariables: customVariables,
             presentationMode: presentationMode,
             paywallPresenter: paywallPresenter,
-            errorPresenter: errorPresenter
+            errorPresenter: errorPresenter,
+            errorDialogFactory: nil
+        )
+        self.performCheckpoint(identifier, params: params, onPassed: onPassed)
+    }
+
+}
+
+/// Internal-only checkpoint entry point that supports a per-call ``ErrorDialogFactory``.
+@_spi(Internal)
+@available(iOS 15.0, *)
+public extension Purchases {
+
+    /// Passes a checkpoint and calls `onPassed` when the app can continue past it.
+    ///
+    /// Behaves like ``checkpoint(_:customVariables:presentationMode:paywallPresenter:errorPresenter:_:)``, but
+    /// takes an `errorDialogFactory` for hybrid bridges. It overrides the global ``errorPresenter`` for this call.
+    @MainActor
+    func checkpoint(
+        _ identifier: String,
+        customVariables: [String: CustomVariableValue] = [:],
+        presentationMode: FlowPresentationMode = .default,
+        paywallPresenter: PaywallPresentationHandler? = nil,
+        errorDialogFactory: ErrorDialogFactory?,
+        _ onPassed: @escaping (CheckpointResult) -> Void
+    ) {
+        let params = CheckpointCallParams(
+            customVariables: customVariables,
+            presentationMode: presentationMode,
+            paywallPresenter: paywallPresenter,
+            errorDialogFactory: errorDialogFactory
         )
         self.performCheckpoint(identifier, params: params, onPassed: onPassed)
     }

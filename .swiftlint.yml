@@ -1,6 +1,7 @@
 excluded:
   - Carthage
   - Examples
+  - Projects/AutomatedSDKTestsApp
   - Tests/InstallationTests
   - Tests/TestingApps
   - Tests/APITesters

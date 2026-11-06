@@ -16,7 +16,6 @@ import Foundation
     internal struct Internal: InternalDangerousSettingsType {
 
         let enableReceiptFetchRetry: Bool
-        let usesRemoteConfigAPISources: Bool
 
         #if DEBUG
         let forceServerErrorStrategy: ForceServerErrorStrategy?
@@ -26,26 +25,20 @@ import Foundation
 
         init(
             enableReceiptFetchRetry: Bool = false,
-            usesRemoteConfigAPISources: Bool = false,
             forceServerErrorStrategy: ForceServerErrorStrategy? = nil,
             forceSignatureFailures: Bool = false,
             disableHeaderSignatureVerification: Bool = false,
             testReceiptIdentifier: String? = nil
         ) {
             self.enableReceiptFetchRetry = enableReceiptFetchRetry
-            self.usesRemoteConfigAPISources = usesRemoteConfigAPISources
             self.forceServerErrorStrategy = forceServerErrorStrategy
             self.forceSignatureFailures = forceSignatureFailures
             self.disableHeaderSignatureVerification = disableHeaderSignatureVerification
             self.testReceiptIdentifier = testReceiptIdentifier
         }
         #else
-        init(
-            enableReceiptFetchRetry: Bool = false,
-            usesRemoteConfigAPISources: Bool = false
-        ) {
+        init(enableReceiptFetchRetry: Bool = false) {
             self.enableReceiptFetchRetry = enableReceiptFetchRetry
-            self.usesRemoteConfigAPISources = usesRemoteConfigAPISources
         }
 
         #endif
@@ -193,11 +186,6 @@ internal protocol InternalDangerousSettingsType: Sendable {
     /// Whether `ReceiptFetcher` can retry fetching receipts.
     var enableReceiptFetchRetry: Bool { get }
 
-    /// Whether main-API requests resolve their base host from the remote-config API sources
-    /// instead of the static `SystemInfo.apiBaseURL`. Disabled by default; enabled in tests while
-    /// remote-config-driven host resolution is being validated.
-    var usesRemoteConfigAPISources: Bool { get }
-
     #if DEBUG
     /// The strategy for the `HTTPClient` to fake server errors, and for `SourceHealthChecker` to fake
     /// health check outcomes. Meant for tests only. `nil` means no server errors are forced.
@@ -280,6 +268,83 @@ struct ForceServerErrorStrategy {
          healthCheckAction: @escaping (URL) -> HealthCheckAction) {
         self.action = action
         self.healthCheckAction = healthCheckAction
+    }
+
+}
+
+/// API hosts the SDK should treat as failing, so API source failover can be exercised by hand from a testing app.
+struct SimulatedHostFailures: Equatable, Sendable {
+
+    /// Requests to these hosts get a server error, but their health checks still run, so the SDK doesn't fail over.
+    let serverErrorHosts: Set<String>
+
+    /// Requests to these hosts get a server error and their health checks fail, so the SDK fails over.
+    let unreachableHosts: Set<String>
+
+    static let none: Self = .init(serverErrorHosts: [], unreachableHosts: [])
+
+}
+
+extension SimulatedHostFailures {
+
+    /// The API source outages testing apps can simulate.
+    enum Mode: String, CaseIterable, Identifiable, Sendable {
+
+        case none
+        case primaryUnreachable
+        case primaryServerError
+        case allUnreachable
+
+        var id: Self { return self }
+
+        var label: String {
+            switch self {
+            case .none: return "None"
+            case .primaryUnreachable: return "Primary source unreachable (fails over to backup)"
+            case .primaryServerError: return "Primary source 5xx but healthy (no failover)"
+            case .allUnreachable: return "All sources unreachable (static fallback only)"
+            }
+        }
+
+        var hostFailures: SimulatedHostFailures {
+            switch self {
+            case .none:
+                return .none
+            case .primaryUnreachable:
+                return .init(serverErrorHosts: [], unreachableHosts: [Self.primaryHost])
+            case .primaryServerError:
+                return .init(serverErrorHosts: [Self.primaryHost], unreachableHosts: [])
+            case .allUnreachable:
+                return .init(serverErrorHosts: [], unreachableHosts: [Self.primaryHost, Self.backupHost])
+            }
+        }
+
+        private static let primaryHost = "api.revenuecat.com"
+        private static let backupHost = "api.rc-backup.com"
+
+    }
+
+}
+
+extension ForceServerErrorStrategy {
+
+    /// Fails the requests to the hosts in `current`, which is read again for every request and health check so
+    /// changes apply mid-session. Requests sent through a proxy target the proxy host, so they're never failed.
+    static func simulating(_ current: @escaping @Sendable () -> SimulatedHostFailures) -> Self {
+        return .init(
+            action: { request in
+                let failures = current()
+                let host = request.getCurrentRequestURL(
+                    proxyURL: SystemInfo.proxyURL,
+                    apiSourceURL: request.apiSourceState.source?.url
+                )?.host ?? ""
+                let isFailing = failures.serverErrorHosts.contains(host) || failures.unreachableHosts.contains(host)
+                return isFailing ? .defaultServerError : .performRequest
+            },
+            healthCheckAction: { url in
+                return current().unreachableHosts.contains(url.host ?? "") ? .fakeUnhealthy : .performHealthCheck
+            }
+        )
     }
 
 }

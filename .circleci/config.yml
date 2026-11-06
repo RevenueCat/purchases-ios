@@ -18,7 +18,8 @@ parameters:
         update_paywall_templates,
         record_paywall_screenshots,
         deploy_rct_tester,
-        update_error_codes
+        update_error_codes,
+        record_performance_baselines
       ]
     default: default
   generate_snapshots:

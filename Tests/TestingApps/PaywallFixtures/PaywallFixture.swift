@@ -27,6 +27,8 @@ enum PaywallFixture: String, CaseIterable {
     /// Packages outside and inside tabs, authored default hidden. Cards rename themselves when
     /// selected, so a UI test can read the selection.
     case mixedTabsPageDefault = "mixed_tabs_page_default"
+    case hiddenTabs = "hidden_tabs"
+    case responsiveTabsVisibility = "responsive_tabs_visibility"
 
     /// One badge rule per offer type, each with its own rule for its copy.
     case badgeRulesPerOffer = "badge_rules_per_offer"
@@ -51,15 +53,26 @@ enum PaywallFixture: String, CaseIterable {
     /// A button opening a bottom sheet, for checking what is reachable while it is up.
     case sheetOverContent = "sheet_over_content"
     case carouselTabs = "carousel_tabs"
+    case nestedBillingTabs = "nested_billing_tabs"
+
+    /// Root, active tabs, and a sheet each declare a different default package.
+    case competingSheetDefaults = "competing_sheet_defaults"
+    case manualRootSelectionVisibility = "manual_root_selection_visibility"
 
     var title: String {
         switch self {
+        case .nestedBillingTabs:
+            return "Nested billing tabs across tiers"
         case .carouselTabs:
             return "Carousel pages across tabs"
         case .iconOnlyButton:
             return "Icon-only button"
         case .mixedTabsPageDefault:
             return "Mixed page and tab packages"
+        case .hiddenTabs:
+            return "Hidden tabs with a visible page package"
+        case .responsiveTabsVisibility:
+            return "Tabs hidden in a wide window"
         case .badgeRulesPerOffer:
             return "Badge rules per offer type"
         case .decorativeMedia:
@@ -74,17 +87,32 @@ enum PaywallFixture: String, CaseIterable {
             return "Reported tabbed paywall (real config)"
         case .sheetOverContent:
             return "Sheet over content"
+        case .competingSheetDefaults:
+            return "Competing sheet defaults"
+        case .manualRootSelectionVisibility:
+            return "Manual root selection visibility"
         }
     }
 
     var componentsData: PaywallComponentsData {
         switch self {
+        case .nestedBillingTabs:
+            return Self.nestedBillingTabsComponentsData()
         case .carouselTabs:
             return Self.carouselTabsComponentsData()
         case .iconOnlyButton:
             return Self.iconOnlyButtonComponentsData()
         case .mixedTabsPageDefault:
             return Self.mixedTabsPageDefaultComponentsData()
+        case .hiddenTabs:
+            return Self.mixedTabsPageDefaultComponentsData(tabsVisible: false)
+        case .responsiveTabsVisibility:
+            return Self.mixedTabsPageDefaultComponentsData(tabsOverrides: [
+                .init(
+                    extendedConditions: [.windowWidth(operator: .greaterThanOrEqual, value: 700)],
+                    properties: .init(visible: false)
+                )
+            ])
         case .badgeRulesPerOffer:
             return Self.badgeRulesPerOfferComponentsData()
         case .decorativeMedia:
@@ -99,6 +127,10 @@ enum PaywallFixture: String, CaseIterable {
             return Self.decodeResource("reported_tabs")
         case .sheetOverContent:
             return Self.sheetOverContentComponentsData()
+        case .competingSheetDefaults:
+            return Self.competingSheetDefaultsComponentsData()
+        case .manualRootSelectionVisibility:
+            return Self.competingSheetDefaultsComponentsData(hideRootOnWide: true)
         }
     }
 
@@ -113,15 +145,26 @@ enum PaywallFixture: String, CaseIterable {
             return [Self.annualPackageWithPromoOffer(offeringIdentifier: self.rawValue)]
         case .offerPriceWithZero:
             return [Self.annualPackageWithFreeTrial(offeringIdentifier: self.rawValue)]
-        case .mixedTabsPageDefault:
+        case .mixedTabsPageDefault, .hiddenTabs, .responsiveTabsVisibility:
             return [
                 Self.annualPackage(offeringIdentifier: self.rawValue),
                 Self.monthlyPackage(offeringIdentifier: self.rawValue),
                 Self.weeklyPackage(offeringIdentifier: self.rawValue),
                 Self.lifetimePackage(offeringIdentifier: self.rawValue)
             ]
-        case .reportedTabs:
+        case .reportedTabs, .nestedBillingTabs:
             return Self.reportedTabsPackages(offeringIdentifier: self.rawValue)
+        case .competingSheetDefaults, .manualRootSelectionVisibility:
+            return [
+                Self.monthlyPackage(offeringIdentifier: self.rawValue),
+                Self.annualPackage(offeringIdentifier: self.rawValue),
+                Self.package(identifier: "monthly_xl", packageType: .custom, title: "Monthly XL",
+                             price: 29.99, priceString: "$29.99", period: .init(value: 1, unit: .month),
+                             offeringIdentifier: self.rawValue),
+                Self.package(identifier: "annual_xl", packageType: .custom, title: "Annual XL",
+                             price: 199.99, priceString: "$199.99", period: .init(value: 1, unit: .year),
+                             offeringIdentifier: self.rawValue)
+            ]
         case .decorativeMedia:
             return [
                 Self.annualPackage(offeringIdentifier: self.rawValue),
@@ -492,8 +535,12 @@ private extension PaywallFixture {
     }
 
     /// Two page packages with the default among them hidden, plus two tabs declaring their own.
-    static func mixedTabsPageDefaultComponentsData() -> PaywallComponentsData {
+    static func mixedTabsPageDefaultComponentsData(
+        tabsVisible: Bool? = nil,
+        tabsOverrides: [PaywallComponent.ComponentOverride<PaywallComponent.PartialTabsComponent>]? = nil
+    ) -> PaywallComponentsData {
         let tabs: PaywallComponent = .tabs(.init(
+            visible: tabsVisible,
             control: .init(
                 type: .buttons,
                 stack: .init(components: [
@@ -515,7 +562,8 @@ private extension PaywallFixture {
                     Self.packageCard(packageID: "$rc_lifetime", label: "lifetime", isSelectedByDefault: true)
                 ]))
             ],
-            defaultTabId: "tab_weekly"
+            defaultTabId: "tab_weekly",
+            overrides: tabsOverrides
         ))
 
         return .init(
@@ -657,6 +705,71 @@ private extension PaywallFixture {
 
     /// The only green on screen, so a test can find the ring by color.
     static let radioGreen = "#7CB518"
+
+    /// Competing root, tab, and sheet defaults, with real purchase and dismissal controls.
+    static func competingSheetDefaultsComponentsData(hideRootOnWide: Bool = false) -> PaywallComponentsData {
+        func text(_ lid: String) -> PaywallComponent {
+            .text(.init(text: lid, color: .init(light: .hex("#000000"))))
+        }
+        func button(_ lid: String, action: PaywallComponent.ButtonComponent.Action) -> PaywallComponent {
+            .button(.init(action: action, stack: .init(
+                components: [text(lid)], padding: .init(top: 12, bottom: 12, leading: 12, trailing: 12)
+            )))
+        }
+        let sheet = PaywallComponent.ButtonComponent.Sheet(
+            id: "competing-sheet", name: "Plans",
+            stack: .init(components: [
+                Self.packageCard(packageID: "annual_xl", label: "annual_xl", isSelectedByDefault: true),
+                text("sheet_price"),
+                .purchaseButton(.init(stack: .init(
+                    components: [text("purchase")], padding: .init(top: 12, bottom: 12, leading: 12, trailing: 12)
+                ), action: .inAppCheckout, method: .inAppCheckout, name: nil)),
+                button("close", action: .navigateBack)
+            ], spacing: 12, backgroundColor: .init(light: .hex("#ffffff")),
+               padding: .init(top: 24, bottom: 24, leading: 24, trailing: 24)),
+            backgroundBlur: false, size: .init(width: .fill, height: .fit(nil))
+        )
+        let tabs = PaywallComponent.tabs(.init(
+            control: .init(type: .buttons, stack: .init(components: [
+                .tabControlButton(.init(tabId: "annual", stack: .init(components: [text("annual_tab")]))),
+                .tabControlButton(.init(tabId: "monthly_xl", stack: .init(components: [text("monthly_xl_tab")])))
+            ])),
+            tabs: [
+                .init(id: "annual", stack: .init(components: [
+                    .tabControl(.init()),
+                    Self.packageCard(packageID: "$rc_annual", label: "annual", isSelectedByDefault: true)
+                ])),
+                .init(id: "monthly_xl", stack: .init(components: [
+                    .tabControl(.init()),
+                    Self.packageCard(packageID: "monthly_xl", label: "monthly_xl", isSelectedByDefault: true)
+                ]))
+            ], defaultTabId: "annual"
+        ))
+        return .init(
+            templateName: "fixture-competing-sheet-defaults", assetBaseURL: URL(string: "https://assets.pawwalls.com")!,
+            componentsConfig: .init(base: .init(stack: .init(components: [
+                .stack(.init(components: [
+                    Self.packageCard(packageID: "$rc_monthly", label: "root_monthly", isSelectedByDefault: true)
+                ], overrides: hideRootOnWide ? [.init(
+                    extendedConditions: [.windowWidth(operator: .greaterThanOrEqual, value: 700)],
+                    properties: .init(visible: false)
+                )] : nil)),
+                tabs, text("root_price"), button("open", action: .navigateTo(destination: .sheet(sheet: sheet)))
+            ], spacing: 16, padding: .init(top: 60, bottom: 24, leading: 16, trailing: 16)),
+            stickyFooter: nil, background: .color(.init(light: .hex("#ffffff"))))),
+            componentsLocalizations: ["en_US": [
+                "root_monthly": .string("Root monthly"), "root_monthly_selected": .string("Root monthly selected"),
+                "annual": .string("Annual"), "annual_selected": .string("Annual selected"),
+                "monthly_xl": .string("Monthly XL"), "monthly_xl_selected": .string("Monthly XL selected"),
+                "annual_xl": .string("Annual XL"), "annual_xl_selected": .string("Annual XL selected"),
+                "annual_tab": .string("Annual tab"), "monthly_xl_tab": .string("Monthly XL tab"),
+                "open": .string("Open plans"), "close": .string("Close plans"),
+                "purchase": .string("Purchase from sheet"),
+                "root_price": .string("Selected price: {{ product.price }}"),
+                "sheet_price": .string("Sheet price: {{ product.price }}")
+            ]], revision: 1, defaultLocaleIdentifier: "en_US"
+        )
+    }
 
     /// A package row with a fixed 22x22 pill ring and a 10x10 dot. `overflow: scroll` wraps the
     /// ring in a scroll view, which must not change its size.

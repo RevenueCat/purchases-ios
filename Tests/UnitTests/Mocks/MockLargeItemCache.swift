@@ -39,10 +39,11 @@ final class MockLargeItemCache: LargeItemCacheType {
     }
 
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, visionOS 1.0, watchOS 8.0, *)
-    func saveData(_ bytes: AsyncThrowingStream<UInt8, Error>, to url: URL, checksum: Checksum?) async throws {
-        var data = Data()
-        for try await byte in bytes {
-            data.append(byte)
+    func saveDownloadedFile(fromTemporaryURL temporaryURL: URL, to url: URL, checksum: Checksum?) throws {
+        let data = try Data(contentsOf: temporaryURL)
+        defer { try? FileManager.default.removeItem(at: temporaryURL) }
+        if let checksum {
+            try Checksum.generate(from: data, with: checksum.algorithm).compare(to: checksum)
         }
         try saveData(data, to: url)
     }

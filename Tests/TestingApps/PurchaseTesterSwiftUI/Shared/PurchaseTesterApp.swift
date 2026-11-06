@@ -161,6 +161,13 @@ struct PurchaseTesterApp: App {
                         Text("Proxy")
                     }
                     #endif
+
+                    #if DEBUG && !os(tvOS)
+                    Menu("Failures") {
+                        Text(SimulatedFailuresPicker.footer)
+                        SimulatedFailuresPicker()
+                    }
+                    #endif
                 }
             }
     }

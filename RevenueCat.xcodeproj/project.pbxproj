@@ -704,6 +704,7 @@
 		5721360F28B4602C006C46BE /* Purchases+nonasync.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5721360E28B4602C006C46BE /* Purchases+nonasync.swift */; };
 		572247D127BEC28E00C524A7 /* Array+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 572247D027BEC28E00C524A7 /* Array+Extensions.swift */; };
 		572247F727BF1ADF00C524A7 /* ArrayExtensionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 572247F627BF1ADF00C524A7 /* ArrayExtensionsTests.swift */; };
+		A81009B13D10000000000001 /* UIApplicationExtensionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A81009B13D10000000000002 /* UIApplicationExtensionsTests.swift */; };
 		5722482727C2BD3200C524A7 /* LockTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5722482627C2BD3200C524A7 /* LockTests.swift */; };
 		5723FBBE28EDE1360003BA16 /* InternalAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5723FBBD28EDE1360003BA16 /* InternalAPI.swift */; };
 		5733B18E27FF586A00EC2045 /* BackendError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5733B18D27FF586A00EC2045 /* BackendError.swift */; };
@@ -1562,6 +1563,8 @@
 		73A6C0000000000000000001 /* CheckpointFailureKind.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73A6C0000000000000000011 /* CheckpointFailureKind.swift */; };
 		73A6D0000000000000000001 /* ErrorPresentationQueue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73A6D0000000000000000011 /* ErrorPresentationQueue.swift */; };
 		73A680000000000000000005 /* AdPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73A680000000000000000015 /* AdPresenter.swift */; };
+		73A6E0000000000000000001 /* CheckpointErrorDialog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73A6E0000000000000000011 /* CheckpointErrorDialog.swift */; };
+		73A6F0000000000000000001 /* ErrorDialogFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73A6F0000000000000000011 /* ErrorDialogFactory.swift */; };
 		73A620000000000000000001 /* CheckpointValueTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73A620000000000000000011 /* CheckpointValueTests.swift */; };
 		73A630000000000000000001 /* NSNumber+JSON.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73A630000000000000000011 /* NSNumber+JSON.swift */; };
 		FA4A2DF41FC434A9401F08CC /* PaywallWebViewValue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D0C57ECDF0E7F1A5B4418FF /* PaywallWebViewValue.swift */; };
@@ -1630,7 +1633,7 @@
 		FD6D87632FAE79E700CAF0F2 /* InstallmentsInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD6D87622FAE79E700CAF0F2 /* InstallmentsInfo.swift */; };
 		FD8C00472DE7A04200224B78 /* VirtualCurrencyManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD8C00462DE7A04200224B78 /* VirtualCurrencyManager.swift */; };
 		FD9BCEBC2DC946C400408A5D /* BottomSheetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD9BCEBB2DC946C400408A5D /* BottomSheetView.swift */; };
-		FD54F4C42D5A664700C848A2 /* StoreKit2ConfirmInOptions.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD54F4C32D5A664700C848A2 /* StoreKit2ConfirmInOptions.swift */; };
+		FD54F4C42D5A664700C848A2 /* PresentationContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD54F4C32D5A664700C848A2 /* PresentationContext.swift */; };
 		FD6186542D1393FA007843DA /* MockCustomerCenterStoreKitUtilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD6186532D1393FA007843DA /* MockCustomerCenterStoreKitUtilities.swift */; };
 		FD9F982D2BE28A7F0091A5BF /* MockNotificationCenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 351B515526D44B2300BD2BD7 /* MockNotificationCenter.swift */; };
 		FDA6F96F2E035544008BF232 /* VirtualCurrencyStrings.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDA6F96E2E035544008BF232 /* VirtualCurrencyStrings.swift */; };
@@ -2271,6 +2274,9 @@
 		73A6A0000000000000000011 /* DefaultErrorPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefaultErrorPresenter.swift; sourceTree = "<group>"; };
 		73A6C0000000000000000011 /* CheckpointFailureKind.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckpointFailureKind.swift; sourceTree = "<group>"; };
 		73A6D0000000000000000011 /* ErrorPresentationQueue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorPresentationQueue.swift; sourceTree = "<group>"; };
+		73A6E0000000000000000011 /* CheckpointErrorDialog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckpointErrorDialog.swift; sourceTree = "<group>"; };
+		73A6F0000000000000000011 /* ErrorDialogFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorDialogFactory.swift; sourceTree = "<group>"; };
+		73A6E0000000000000000012 /* ErrorDialogFactoryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorDialogFactoryTests.swift; sourceTree = "<group>"; };
 		73A680000000000000000014 /* WorkflowPresenterExecutionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkflowPresenterExecutionTests.swift; sourceTree = "<group>"; };
 		73A650000000000000000011 /* WorkflowPresenterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkflowPresenterTests.swift; sourceTree = "<group>"; };
 		73A650000000000000000012 /* CheckpointsManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckpointsManagerTests.swift; sourceTree = "<group>"; };
@@ -2607,6 +2613,7 @@
 		5721360E28B4602C006C46BE /* Purchases+nonasync.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Purchases+nonasync.swift"; sourceTree = "<group>"; };
 		572247D027BEC28E00C524A7 /* Array+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Array+Extensions.swift"; sourceTree = "<group>"; };
 		572247F627BF1ADF00C524A7 /* ArrayExtensionsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArrayExtensionsTests.swift; sourceTree = "<group>"; };
+		A81009B13D10000000000002 /* UIApplicationExtensionsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIApplicationExtensionsTests.swift; sourceTree = "<group>"; };
 		5722482627C2BD3200C524A7 /* LockTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LockTests.swift; sourceTree = "<group>"; };
 		5723FBBD28EDE1360003BA16 /* InternalAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InternalAPI.swift; sourceTree = "<group>"; };
 		5733B18D27FF586A00EC2045 /* BackendError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackendError.swift; sourceTree = "<group>"; };
@@ -3162,6 +3169,7 @@
 		887A612F2C1D168B00E1A461 /* AvailabilityChecks.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AvailabilityChecks.swift; sourceTree = "<group>"; };
 		887A61302C1D168B00E1A461 /* CurrentTestCaseTracker.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CurrentTestCaseTracker.swift; sourceTree = "<group>"; };
 		887A61312C1D168B00E1A461 /* DataExtensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DataExtensions.swift; sourceTree = "<group>"; };
+		73A6E0000000000000000013 /* CheckpointCallParams+TestConvenience.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CheckpointCallParams+TestConvenience.swift"; sourceTree = "<group>"; };
 		887A61322C1D168B00E1A461 /* ImageSnapshot.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ImageSnapshot.swift; sourceTree = "<group>"; };
 		887A61332C1D168B00E1A461 /* OSVersionEquivalent.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OSVersionEquivalent.swift; sourceTree = "<group>"; };
 		887A61342C1D168B00E1A461 /* SnapshotTesting+Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "SnapshotTesting+Extensions.swift"; sourceTree = "<group>"; };
@@ -3539,6 +3547,7 @@
 		FACD00042F61A1230073D2DE /* StackBadgeOverrideTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StackBadgeOverrideTests.swift; sourceTree = "<group>"; };
 		FACD00072F61A1230073D2DE /* PackageComponentViewTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PackageComponentViewTests.swift; sourceTree = "<group>"; };
 		FACD00092F61A1230073D2DE /* PackageValidatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PackageValidatorTests.swift; sourceTree = "<group>"; };
+		927159E09AC9460E93A72949 /* PackageResolutionTestFixture.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PackageResolutionTestFixture.swift; sourceTree = "<group>"; };
 		DB04A6C4304033760087EFC5 /* PurchaseButtonComponentViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchaseButtonComponentViewModelTests.swift; sourceTree = "<group>"; };
 		FACD000B2F61A1230073D2DE /* PackageVisibilityPreview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PackageVisibilityPreview.swift; sourceTree = "<group>"; };
 		FACE0000000000000000A002 /* BackendRemoteConfigLaneTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackendRemoteConfigLaneTests.swift; sourceTree = "<group>"; };
@@ -3597,7 +3606,7 @@
 		FD8C00462DE7A04200224B78 /* VirtualCurrencyManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VirtualCurrencyManager.swift; sourceTree = "<group>"; };
 		FD9BCEBB2DC946C400408A5D /* BottomSheetView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BottomSheetView.swift; sourceTree = "<group>"; };
 		FDA6F96E2E035544008BF232 /* VirtualCurrencyStrings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VirtualCurrencyStrings.swift; sourceTree = "<group>"; };
-		FD54F4C32D5A664700C848A2 /* StoreKit2ConfirmInOptions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreKit2ConfirmInOptions.swift; sourceTree = "<group>"; };
+		FD54F4C32D5A664700C848A2 /* PresentationContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PresentationContext.swift; sourceTree = "<group>"; };
 		FD6186532D1393FA007843DA /* MockCustomerCenterStoreKitUtilities.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockCustomerCenterStoreKitUtilities.swift; sourceTree = "<group>"; };
 		FDAADFCA2BE2A5BF00BD1659 /* MockAllTransactionsProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockAllTransactionsProvider.swift; sourceTree = "<group>"; };
 		FDAADFCE2BE2B84500BD1659 /* StoreKit2ObserverModePurchaseDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreKit2ObserverModePurchaseDetector.swift; sourceTree = "<group>"; };
@@ -3781,7 +3790,6 @@
 				2D294E5B26DECFD500B8FE4F /* StoreKit2TransactionListener.swift */,
 				4F7DBFBC2A1E986C00A2F511 /* StoreKit2TransactionFetcher.swift */,
 				FD20467E2CB82F1700166727 /* StoreKit2PurchaseIntentListener.swift */,
-				FD54F4C32D5A664700C848A2 /* StoreKit2ConfirmInOptions.swift */,
 				FD1197092D6E48A5002718E3 /* StoreKit2ProductPurchaser.swift */,
 			);
 			path = StoreKit2;
@@ -3822,6 +3830,7 @@
 				FACD00072F61A1230073D2DE /* PackageComponentViewTests.swift */,
 				0DD50FFC7C0F48B6A0FDE360 /* PaywallPromoOfferCacheTests.swift */,
 				FACD00092F61A1230073D2DE /* PackageValidatorTests.swift */,
+				927159E09AC9460E93A72949 /* PackageResolutionTestFixture.swift */,
 				DB04A6C4304033760087EFC5 /* PurchaseButtonComponentViewModelTests.swift */,
 				FD4253DD2F1DBD7E0073D2DE /* FileImageLoaderTests.swift */,
 				57BFCD0F2EEB1234009E5844 /* TabsPackageSelectionResolverTests.swift */,
@@ -4060,6 +4069,8 @@
 				73A6C0000000000000000011 /* CheckpointFailureKind.swift */,
 				73A6D0000000000000000011 /* ErrorPresentationQueue.swift */,
 				73A6A0000000000000000011 /* DefaultErrorPresenter.swift */,
+				73A6E0000000000000000011 /* CheckpointErrorDialog.swift */,
+				73A6F0000000000000000011 /* ErrorDialogFactory.swift */,
 				73A610000000000000000013 /* Purchases+Checkpoints.swift */,
 			);
 			path = Checkpoints;
@@ -4076,6 +4087,7 @@
 				73A650000000000000000016 /* ObtainedProductsTests.swift */,
 				73A650000000000000000013 /* CheckpointIdentifierValidatorTests.swift */,
 				73A6B0000000000000000011 /* DefaultErrorPresenterTests.swift */,
+				73A6E0000000000000000012 /* ErrorDialogFactoryTests.swift */,
 			);
 			path = Checkpoints;
 			sourceTree = "<group>";
@@ -5264,6 +5276,7 @@
 				75BB99002E3381BF0001DD1A /* SimulatedStore */,
 				EF0100000000000000000041 /* ExternalPurchase */,
 				AAAA44760000000000000041 /* HostedCheckout */,
+				FD54F4C32D5A664700C848A2 /* PresentationContext.swift */,
 				B325543B2825C81800DA62EA /* Configuration.swift */,
 				B32B750026868C1D005647BF /* EntitlementInfo.swift */,
 				B3AA6235268A81C700894871 /* EntitlementInfos.swift */,
@@ -5624,6 +5637,7 @@
 			isa = PBXGroup;
 			children = (
 				572247F627BF1ADF00C524A7 /* ArrayExtensionsTests.swift */,
+				A81009B13D10000000000002 /* UIApplicationExtensionsTests.swift */,
 				57069A5D28E398E100B86355 /* AsyncExtensionsTests.swift */,
 				37E35ABEE9FD79CCA64E4F8B /* DataExtensionsTests.swift */,
 				37E3508EC20EEBAB4EAC4C82 /* DateExtensionsTests.swift */,
@@ -6808,6 +6822,7 @@
 		887A61362C1D168B00E1A461 /* Helpers */ = {
 			isa = PBXGroup;
 			children = (
+				73A6E0000000000000000013 /* CheckpointCallParams+TestConvenience.swift */,
 				169FF4EB2F4E014B00D2F8ED /* ColorComputationHelpersTests.swift */,
 				887A612E2C1D168B00E1A461 /* AsyncTestHelpers.swift */,
 				1D76F25B2F921D3500863AF8 /* PaywallEventTrackerTestDispatcher.swift */,
@@ -8269,7 +8284,7 @@
 				57C381DC27961547009E3940 /* SK2StoreProductDiscount.swift in Sources */,
 				B34605CA279A6E380031CA74 /* GetCustomerInfoOperation.swift in Sources */,
 				5751379527F4C4D80064AB2C /* Optional+Extensions.swift in Sources */,
-				FD54F4C42D5A664700C848A2 /* StoreKit2ConfirmInOptions.swift in Sources */,
+				FD54F4C42D5A664700C848A2 /* PresentationContext.swift in Sources */,
 				B3852FA026C1ED1F005384F8 /* IdentityManager.swift in Sources */,
 				9A65E03625918B0500DE00B0 /* ConfigureStrings.swift in Sources */,
 				4FF6E4B92B069B8C000141ED /* HTTPRequest+Signing.swift in Sources */,
@@ -9217,6 +9232,7 @@
 				4D72E8622B221EA600BF9EFE /* StoreEnvironmentTests.swift in Sources */,
 				575A8EE12922C56300936709 /* AsyncTestHelpers.swift in Sources */,
 				572247F727BF1ADF00C524A7 /* ArrayExtensionsTests.swift in Sources */,
+				A81009B13D10000000000001 /* UIApplicationExtensionsTests.swift in Sources */,
 				F55FFA5A27634C3F00995146 /* MockTransactionsManager.swift in Sources */,
 				F575858F26C0893600C12B97 /* MockOfferingsManager.swift in Sources */,
 				A563F586271E072B00246E0C /* MockBeginRefundRequestHelper.swift in Sources */,
@@ -9334,6 +9350,8 @@
 				73A6C0000000000000000001 /* CheckpointFailureKind.swift in Sources */,
 				73A6D0000000000000000001 /* ErrorPresentationQueue.swift in Sources */,
 				73A6A0000000000000000001 /* DefaultErrorPresenter.swift in Sources */,
+				73A6E0000000000000000001 /* CheckpointErrorDialog.swift in Sources */,
+				73A6F0000000000000000001 /* ErrorDialogFactory.swift in Sources */,
 				73A610000000000000000003 /* Purchases+Checkpoints.swift in Sources */,
 				88B1BB132C81479F001B7EE5 /* PaywallComponentTypeTransformers.swift in Sources */,
 				88B1BB042C813A3C001B7EE5 /* StackComponentViewModel.swift in Sources */,

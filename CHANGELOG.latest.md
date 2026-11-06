@@ -1,17 +1,18 @@
-## RevenueCat SDK
-### ✨ New Features
-* feat(ads): AdMob interstitial checkpoint presenter (#7784) via Peter Porfy (@peterporfy)
-### 🐞 Bugfixes
-* Fix diagnostics timestamp overflow on 32-bit watchOS (#8170) via Josh Holtz (@joshdholtz)
-### 📦 Dependency Updates
-* [RENOVATE] Update dependency revenuecat to v4.7.1 (#8168) via RevenueCat Git Bot (@RCGitBot)
-
 ## RevenueCatUI SDK
+### 🐞 Bugfixes
+* Fix(Paywalls) Package Selection/Resolution (#8145) via Jacob Rakidzich (@JZDesign)
 ### Paywallsv2
-#### ✨ New Features
-* feat(paywalls): Resume each carousel on its last page when returning to its tab (#8077) via Vinh P. Dinh (@vpdn)
 #### 🐞 Bugfixes
-* Fix video playback on inactive workflow pages (#8131) via Facundo Menzella (@facumenzella)
+* fix(Paywalls) Package selection resolution on older OSes (#8226) via Jacob Rakidzich (@JZDesign)
+* Fix video controls intercepting taps outside the video (#8182) via Facundo Menzella (@facumenzella)
 
 ### 🔄 Other Changes
-* Support Google IAM identities (#8136) via Dave DeLong (@davedelong)
+* Add workflow prewarming performance benchmark (#8206) via Facundo Menzella (@facumenzella)
+* test(events): fix flaky feature event integration test (#8219) via Rick (@rickvdl)
+* refactor(paywalls): remove internal paywall components prewarming (#8207) via Rick (@rickvdl)
+* fix: present Test Store UI in the passed presentationContext (#7978) via Rick (@rickvdl)
+* fix: centralize presentation context resolution (#7977) via Rick (@rickvdl)
+* test(storekit): work around iOS 27 active repurchase hang (#8214) via Rick (@rickvdl)
+* test: fix flaky StoreKit 1 receipt retry test (#8213) via Rick (@rickvdl)
+* WFL-822 | Add Maestro tests for workflow branch routing (#8210) via Rosie Watson (@RosieWatson)
+* Warn CocoaPods users to migrate to Swift Package Manager (#8203) via Antonio Pallares (@ajpallares)

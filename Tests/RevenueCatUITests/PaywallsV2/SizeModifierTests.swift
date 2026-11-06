@@ -180,6 +180,35 @@ final class SizeModifierTests: TestCase {
                        .init(width: 100, height: 600))
     }
 
+    func testNestedFillStacksInsideScrollViewPlaceContentOnce() throws {
+        guard #available(iOS 16.0, *) else { throw XCTSkip("PlacementRecorder needs iOS 16") }
+        let log = PlacementRecorder.Log()
+        var content = AnyView(PlacementRecorder(log: log) { Color.clear.frame(width: 10, height: 10) })
+        for _ in 0..<10 {
+            content = AnyView(VStack { content }.size(.init(width: .fill, height: .fit(nil))))
+        }
+
+        Self.layOut(ScrollView { content }, in: .init(width: 100, height: 600))
+
+        // iOS 17 used to place each level's content three times: 2 * 3^10 placements of this leaf.
+        XCTAssertGreaterThan(log.placements.count, 0)
+        XCTAssertLessThan(log.placements.count, 20)
+    }
+
+    func testFillAlignsContentLikeAFrame() throws {
+        guard #available(iOS 16.0, *) else { throw XCTSkip("PlacementRecorder needs iOS 16") }
+        for (alignment, minX) in [(HorizontalAlignment.leading, 0.0), (.center, 45), (.trailing, 90)] {
+            let log = PlacementRecorder.Log()
+            let view = PlacementRecorder(log: log) { Color.clear.frame(width: 10, height: 10) }
+                .size(.init(width: .fill, height: .fixed(10)),
+                      horizontalAlignment: Alignment(horizontal: alignment, vertical: .center))
+
+            Self.layOut(view.frame(width: 100, height: 10), in: .init(width: 100, height: 10))
+
+            XCTAssertEqual(log.placements.last?.minX, CGFloat(minX))
+        }
+    }
+
     private static func requireFitScrollAvailability() throws {
         guard #available(iOS 16.0, *) else {
             throw XCTSkip("FIT scrolling uses ViewThatFits on iOS 16 and later")
@@ -188,6 +217,41 @@ final class SizeModifierTests: TestCase {
 
     private static func fittingSize<Content: View>(of view: Content, in proposal: CGSize) -> CGSize {
         UIHostingController(rootView: view).sizeThatFits(in: proposal)
+    }
+
+    private static func layOut<Content: View>(_ view: Content, in size: CGSize) {
+        let controller = UIHostingController(rootView: view)
+        let window = UIWindow(frame: CGRect(origin: .zero, size: size))
+        window.rootViewController = controller
+        window.isHidden = false
+        controller.view.frame = window.bounds
+        controller.view.layoutIfNeeded()
+    }
+
+}
+
+/// Passes its single subview through unchanged, logging the bounds of every placement.
+@available(iOS 16.0, *)
+private struct PlacementRecorder {
+
+    final class Log {
+        var placements: [CGRect] = []
+    }
+
+    let log: Log
+
+}
+
+@available(iOS 16.0, *)
+extension PlacementRecorder: Layout {
+
+    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
+        subviews.first?.sizeThatFits(proposal) ?? .zero
+    }
+
+    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
+        self.log.placements.append(bounds)
+        subviews.first?.place(at: bounds.origin, proposal: proposal)
     }
 
 }

@@ -42,7 +42,8 @@ protocol WorkflowAssetPrewarmingType: Sendable {
 ///   workflows on a background worker solely to discover their assets. That decode is never retained in
 ///   `LazyPublishedWorkflow`; the graph is released after the asset-prewarming task finishes.
 ///
-/// Both paths use the same `PaywallCacheWarming` entry point, which deduplicates asset prewarming by workflow ID.
+/// Both paths use the same `PaywallCacheWarming` entry point, which deduplicates asset prewarming by workflow ID
+/// and locale preferences.
 class WorkflowManager: WorkflowAssetPrewarmingType {
 
     private let workflowsConfigProvider: WorkflowsConfigProviderType
@@ -174,22 +175,17 @@ class WorkflowManager: WorkflowAssetPrewarmingType {
     func publishWebBundleURLs(offerings: Offerings) async {
         guard #available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *) else { return }
 
-        // workflowsByOfferingId contains workflows resolved for this publication. workflowBackedOfferingIds
-        // contains every offering mapped to a workflow, including workflows skipped or still being resolved.
-        // This ensures a missing workflow means "skip it", not "publish assets from the offering's inline V2 tree".
+        // Contains workflows resolved for this call. Offerings without a workflow mapping are skipped
+        // because only workflow-backed web bundles are prewarmed.
         var workflowsByOfferingId: [String: PublishedWorkflow] = [:]
-        var workflowBackedOfferingIds: Set<String> = []
         var resolutionsByWorkflowId: [String: Result<WorkflowDataResult, WorkflowResolutionError>] = [:]
         var claimedWorkflowIDs: Set<String> = []
         var workflowIDsToMarkPublished: Set<String> = []
-        var shouldPublish = false
         let configGeneration = self.workflowsConfigProvider.configGeneration
         for offeringId in WebBundleURLBatcher.targetOfferingIds(from: offerings) {
             guard let workflowId = await self.workflowsConfigProvider.workflowId(forOfferingId: offeringId) else {
-                shouldPublish = true
                 continue
             }
-            workflowBackedOfferingIds.insert(offeringId)
 
             let resolution: Result<WorkflowDataResult, WorkflowResolutionError>
             if let cachedResolution = resolutionsByWorkflowId[workflowId] {
@@ -200,7 +196,6 @@ class WorkflowManager: WorkflowAssetPrewarmingType {
                     configGeneration: configGeneration
                 ) else { continue }
 
-                shouldPublish = true
                 claimedWorkflowIDs.insert(workflowId)
                 resolution = await self.workflowPrewarmingDecodeCoordinator.decode(
                     workflowId: workflowId,
@@ -215,11 +210,10 @@ class WorkflowManager: WorkflowAssetPrewarmingType {
             }
         }
 
-        guard shouldPublish else { return }
+        guard !claimedWorkflowIDs.isEmpty else { return }
         await webBundleURLBatcher.publish(
             offerings: offerings,
-            workflowsByOfferingId: workflowsByOfferingId,
-            workflowBackedOfferingIds: workflowBackedOfferingIds
+            workflowsByOfferingId: workflowsByOfferingId
         )
         await self.webBundlePublicationTracker.completeClaims(
             claimedWorkflowIDs,
