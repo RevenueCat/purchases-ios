@@ -140,7 +140,7 @@ class PurchaseHandlerTests: TestCase {
         )
         let window = MockPresentationWindow()
         window.presentationScene = scene
-        handler.presentationWindow = window
+        handler.updatePresentationWindow(window, reportedBy: self)
 
         try await handler.purchase(package: TestData.packageWithIntroOffer)
 
@@ -1154,7 +1154,7 @@ final class PurchaseHandlerMacOSTests: TestCase {
             purchases: purchases,
             eventTracker: .init(purchases: purchases, eventDispatcher: PaywallEventTrackerTestDispatcher.value)
         )
-        handler.presentationWindow = window
+        handler.updatePresentationWindow(window, reportedBy: self)
 
         try await handler.purchase(package: TestData.packageWithIntroOffer)
 
