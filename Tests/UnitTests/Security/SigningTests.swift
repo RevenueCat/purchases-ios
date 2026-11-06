@@ -1409,6 +1409,43 @@ class SigningTests: TestCase {
         expect(verifiedResponse.verificationResult) == .failed(.payloadSignatureMismatch)
     }
 
+    func testVerifySignatureOverDecodedPath() throws {
+        let appUserID = "$RCAnonymousID:1af512a3b9c848899fe427f39dd69f2b"
+        let message = "Hello World"
+        let nonce = "0123456789ab"
+        let requestDate = Date().millisecondsSince1970
+        let intermediateKey = try self.createIntermediatePublicKeyData(expiration: Self.intermediateKeyFutureExpiration)
+        let salt = Self.createSalt()
+        let parameters: Signing.SignatureParameters = .init(
+            path: .getCustomerInfo(appUserID: appUserID),
+            iamEnabled: false,
+            message: message.asData,
+            nonce: nonce.asData,
+            etag: nil,
+            requestDate: requestDate
+        )
+        expect(parameters.path.relativePath) == "/v1/subscribers/$RCAnonymousID%3A1af512a3b9c848899fe427f39dd69f2b"
+
+        func fullSignature(overPath path: String) throws -> String {
+            let signedMessage = salt.asData + Self.apiKey.asData + nonce.asData + path.asData
+                + String(requestDate).asData + message.asData
+            let signature = try self.privateIntermediateKey.signature(for: signedMessage)
+            return Self.fullSignature(intermediateKey: intermediateKey, salt: salt, signature: signature)
+                .base64EncodedString()
+        }
+
+        expect(self.signing.verificationResult(
+            for: try fullSignature(overPath: "/v1/subscribers/\(appUserID)"),
+            with: parameters,
+            publicKey: self.publicKey
+        )) == .verified
+        expect(self.signing.verificationResult(
+            for: try fullSignature(overPath: parameters.path.relativePath),
+            with: parameters,
+            publicKey: self.publicKey
+        )) == .failed(.payloadSignatureMismatch)
+    }
+
     func testDebugDescriptionUsesIAMRelativePathWhenIAMEnabled() {
         let parameters: Signing.SignatureParameters = .init(
             path: .getCustomerInfo(appUserID: "user"),
