@@ -1272,7 +1272,7 @@ extension WorkflowPaywallViewTests {
         let dispose = try view.addToHierarchy()
         defer { dispose() }
 
-        await expect(events.value.compactMap { $0.data.paywallIdentifier })
+        await expect(Self.impressionData(in: events.value).compactMap(\.paywallIdentifier))
             .toEventually(equal(["screen_terminal"]), timeout: .seconds(3))
     }
 

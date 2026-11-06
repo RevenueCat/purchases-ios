@@ -74,7 +74,7 @@ import Foundation
         switch self {
         case .purchaseInitiated, .purchaseError:
             return false
-        case .impression, .cancel, .close, .exitOffer, .componentInteraction:
+        case .impression, .cancel, .close, .exitOffer, .componentInteraction, .loaded:
             return true
         }
     }
@@ -83,13 +83,18 @@ import Foundation
         switch self {
         case .impression:
             return true
-        case .cancel, .close, .exitOffer, .componentInteraction, .purchaseInitiated, .purchaseError:
+        case .cancel, .close, .exitOffer, .componentInteraction, .purchaseInitiated, .purchaseError, .loaded:
             return false
         }
     }
 
     /// A `PaywallView` was displayed.
     case impression(CreationData, Data)
+
+    /// A `PaywallView` finished loading: nothing on screen is redacted anymore.
+    /// `Data/loadingDurationMs` is how long placeholders were visible after the impression (0 = never),
+    /// `Data/loadingIncompleteReason` is set when loading did not finish normally.
+    case loaded(CreationData, Data)
 
     /// A purchase was cancelled.
     case cancel(CreationData, Data)
@@ -158,6 +163,14 @@ extension PaywallEvent {
         @_spi(Internal) public var workflowId: String?
         @_spi(Internal) public var stepId: String?
         @_spi(Internal) public var traceId: String?
+        /// Milliseconds between `Purchases.configure()` and this paywall's first render.
+        /// Distinguishes paywalls shown at cold start from paywalls shown later in the session.
+        var msSinceConfigure: Int?
+        /// Milliseconds the paywall showed loading placeholders. Only set on ``PaywallEvent/loaded(_:_:)``.
+        var loadingDurationMs: Int?
+        /// Why loading did not finish normally (`error`, `timeout`, `dismissed`). Only set on
+        /// ``PaywallEvent/loaded(_:_:)``.
+        var loadingIncompleteReason: String?
 
         #if !os(tvOS) // For Paywalls V2
         @_spi(Internal)
@@ -419,6 +432,7 @@ extension PaywallEvent {
     @_spi(Internal) public var creationData: CreationData {
         switch self {
         case let .impression(creationData, _): return creationData
+        case let .loaded(creationData, _): return creationData
         case let .cancel(creationData, _): return creationData
         case let .close(creationData, _): return creationData
         case let .exitOffer(creationData, _, _): return creationData
@@ -432,6 +446,7 @@ extension PaywallEvent {
     @_spi(Internal) public var data: Data {
         switch self {
         case let .impression(_, data): return data
+        case let .loaded(_, data): return data
         case let .cancel(_, data): return data
         case let .close(_, data): return data
         case let .exitOffer(_, data, _): return data
@@ -444,7 +459,8 @@ extension PaywallEvent {
     /// - Returns: the underlying ``PaywallEvent/ExitOfferData-swift.struct`` for exit offer events, nil otherwise.
     @_spi(Internal) public var exitOfferData: ExitOfferData? {
         switch self {
-        case .impression, .cancel, .close, .purchaseInitiated, .purchaseError, .componentInteraction: return nil
+        case .impression, .cancel, .close, .purchaseInitiated, .purchaseError, .componentInteraction, .loaded:
+            return nil
         case let .exitOffer(_, _, exitOfferData): return exitOfferData
         }
     }
@@ -452,7 +468,7 @@ extension PaywallEvent {
     /// - Returns: control interaction payload for ``PaywallEvent/componentInteraction(_:_:_:)``, nil for other events.
     @_spi(Internal) public var componentInteractionData: ComponentInteractionData? {
         switch self {
-        case .impression, .cancel, .close, .exitOffer, .purchaseInitiated, .purchaseError: return nil
+        case .impression, .cancel, .close, .exitOffer, .purchaseInitiated, .purchaseError, .loaded: return nil
         case let .componentInteraction(_, _, interactionData): return interactionData
         }
     }
@@ -476,6 +492,26 @@ extension PaywallEvent.Data {
         copy.productId = productId
         copy.errorCode = errorCode
         copy.errorMessage = errorMessage
+        return copy
+    }
+
+    /// Creates a copy of this data with the time elapsed since `Purchases.configure()`.
+    @_spi(Internal)
+    public func withMsSinceConfigure(_ msSinceConfigure: Int?) -> PaywallEvent.Data {
+        var copy = self
+        copy.msSinceConfigure = msSinceConfigure
+        return copy
+    }
+
+    /// Creates a copy of this data with loading information for a ``PaywallEvent/loaded(_:_:)`` event.
+    @_spi(Internal)
+    public func withLoadingInfo(
+        loadingDurationMs: Int,
+        incompleteReason: String?
+    ) -> PaywallEvent.Data {
+        var copy = self
+        copy.loadingDurationMs = loadingDurationMs
+        copy.loadingIncompleteReason = incompleteReason
         return copy
     }
 
