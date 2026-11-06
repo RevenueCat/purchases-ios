@@ -58,6 +58,8 @@ struct DefaultPaywallView: View {
     @Environment(\.locale) var locale
 
     @Environment(\.componentInteractionLogger) var componentInteractionLogger
+    @Environment(\.restoreInitiatedAction)
+    private var restoreInitiatedAction: RestoreInitiatedAction?
 
     @StateObject var appIconDetailProvider: AppIconDetailProvider
 
@@ -207,8 +209,23 @@ struct DefaultPaywallView: View {
                     }
 
                     let restoreButton = Button {
-                        self.componentInteractionLogger(.paywallFooterRestorePurchases())
                         Task(priority: .userInitiated) {
+                            guard !handler.actionInProgress else { return }
+                            self.componentInteractionLogger(.paywallFooterRestorePurchases())
+                            if let interceptor = self.restoreInitiatedAction {
+                                Logger.debug(Strings.restore_purchases_gate_start)
+                                let result = await handler.withPendingPurchaseContinuation {
+                                    await withCheckedContinuation { continuation in
+                                        interceptor(resume: ResumeAction { shouldProceed in
+                                            Logger.debug(Strings.restore_purchases_gate_finish(with: shouldProceed))
+                                            continuation.resume(returning: shouldProceed)
+                                        })
+                                    }
+                                }
+
+                                guard result else { return }
+                            }
+                            Logger.debug(Strings.restoring_purchases)
                             do {
                                 _ = try await handler.restorePurchases()
                             } catch {
