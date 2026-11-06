@@ -33,6 +33,12 @@
 // Set your RevenueCat API key for local development here (without quotes!):
 // REVENUECAT_API_KEY = your-api-key-without-quotes
 
+// Override Unity's public LevelPlay demo configuration for the VanillaAdTrackingSample:
+// LEVELPLAY_APP_KEY = your-app-key
+// LEVELPLAY_BANNER_AD_UNIT_ID = your-banner-ad-unit-id
+// LEVELPLAY_INTERSTITIAL_AD_UNIT_ID = your-interstitial-ad-unit-id
+// LEVELPLAY_REWARDED_AD_UNIT_ID = your-rewarded-ad-unit-id
+
 // Set your your RevenueCat Proxy URL scheme and host for local development here (without quotes!):
 // REVENUECAT_PROXY_URL_SCHEME = http
 // REVENUECAT_PROXY_URL_HOST = localhost:9000

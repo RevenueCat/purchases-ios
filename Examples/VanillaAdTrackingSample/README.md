@@ -1,253 +1,100 @@
-# Vanilla Ad Tracking Sample
+# LevelPlay Manual Integration Sample
 
-This sample app demonstrates how to track Google AdMob ad events with RevenueCat by calling `Purchases.shared.adTracker.trackXxx(...)` directly in each AdMob callback.
+This app demonstrates manual ad-event tracking with Unity LevelPlay and RevenueCat on iOS.
 
-## Overview
+The sample covers the LevelPlay formats that have public demo credentials:
 
-### Architecture
+- Banner
+- Interstitial
+- Rewarded
+- An explicit load-failure example
 
-```text
-┌─────────────┐
-│   AdMob SDK │
-│  (Load Ads) │
-└──────┬──────┘
-       │
-       │ Ad callbacks (delegate, completion, paidEventHandler)
-       ▼
-┌─────────────────────────┐
-│  Your App Code          │
-│  (Manual tracking)      │
-│                         │
-│  Purchases.shared       │
-│    .adTracker           │
-│    .trackAdLoaded(...)  │
-│    .trackAdDisplayed(...)│
-│    .trackAdOpened(...)  │
-│    .trackAdRevenue(...) │
-│    .trackAdFailedToLoad(...)│
-└──────┬──────────────────┘
-       │
-       │ RevenueCat events
-       ▼
-┌────────────────────────┐
-│  RevenueCat Dashboard  │
-│  (Analytics)           │
-└────────────────────────┘
+Native, app-open, and rewarded-interstitial ads are out of scope because Unity's public LevelPlay demo
+configuration does not provide ad units for them.
+
+## Event mapping
+
+Each LevelPlay callback is mapped to the equivalent RevenueCat `AdTracker` call:
+
+| LevelPlay callback | RevenueCat call |
+| --- | --- |
+| `didLoadAd` | `trackAdLoaded` |
+| `didDisplayAd` | `trackAdDisplayed` and `trackAdRevenue` |
+| `didClickAd` | `trackAdOpened` |
+| `didFailToLoadAd` | `trackAdFailedToLoad` |
+
+`LPMAdInfo.auctionId` is reused as the RevenueCat impression ID so events for the same impression can be
+correlated. LevelPlay reports impression revenue in USD as a decimal value; the sample converts it to micros
+before calling `trackAdRevenue`.
+
+LevelPlay revenue precision maps as follows:
+
+| LevelPlay | RevenueCat |
+| --- | --- |
+| `BID` | `exact` |
+| `RATE` | `publisherDefined` |
+| `CPM` | `estimated` |
+| Anything else | `unknown` |
+
+## Setup
+
+### RevenueCat
+
+Copy `Local.xcconfig.SAMPLE` to `Local.xcconfig` in the repository root, then add a RevenueCat public SDK key:
+
+```xcconfig
+REVENUECAT_API_KEY = your-api-key
 ```
 
-### 5 tracked events
+`Local.xcconfig` is gitignored. Do not add API keys to source files.
 
-| Event | When to call |
-|-------|-------------|
-| **Ad Loaded** | Ad successfully loads (completion handler / delegate callback) |
-| **Ad Displayed** | Ad impression is recorded (`adDidRecordImpression` / `bannerViewDidRecordImpression`) |
-| **Ad Opened** | User clicks/interacts with ad (`adDidRecordClick` / `bannerViewDidRecordClick`) |
-| **Ad Revenue** | Ad generates revenue (`paidEventHandler`) |
-| **Ad Failed to Load** | Ad fails to load (error callback) |
+### LevelPlay
 
-### Code example — manual interstitial tracking
+By default, the app uses the app key and ad unit IDs from Unity's
+[official LevelPlay iOS demo app](https://github.com/ironsource-mobile/Mediation-Demo-Apps/tree/master/iOS/Swift%20SPM).
+These public values initialize the SDK but do not guarantee inventory: LevelPlay can return a no-fill error with
+an empty waterfall.
 
-```swift
-import GoogleMobileAds
-import RevenueCat
+For reliable testing:
 
-// Load
-InterstitialAd.load(withAdUnitID: adUnitID, request: Request()) { [weak self] ad, error in
-    guard let self else { return }
-    if let error {
-        Purchases.shared.adTracker.trackAdFailedToLoad(AdFailedToLoad(
-            mediatorName: .adMob,
-            adFormat: .interstitial,
-            placement: "my_placement",
-            adUnitId: adUnitID,
-            mediatorErrorCode: (error as NSError).code
-        ))
-        return
-    }
-    guard let ad else { return }
-    let responseInfo = ad.responseInfo
+1. Create an iOS app in the LevelPlay dashboard.
+2. Create banner, interstitial, and rewarded ad units.
+3. Ensure the mediation configuration has an active ad-network instance for all three formats and that the ad
+   units are included in an active mediation group.
+4. In **LevelPlay > Settings > Test devices**, add the device and enable test ads for the configured network and
+   ad units.
+5. Override the public demo values in `Local.xcconfig`:
 
-    // Track loaded
-    Purchases.shared.adTracker.trackAdLoaded(AdLoaded(
-        networkName: responseInfo?.loadedAdNetworkResponseInfo?.adNetworkClassName ?? "",
-        mediatorName: .adMob,
-        adFormat: .interstitial,
-        placement: "my_placement",
-        adUnitId: adUnitID,
-        impressionId: responseInfo?.responseIdentifier ?? ""
-    ))
-
-    // Track revenue
-    ad.paidEventHandler = { adValue in
-        Purchases.shared.adTracker.trackAdRevenue(AdRevenue(
-            networkName: responseInfo?.loadedAdNetworkResponseInfo?.adNetworkClassName ?? "",
-            mediatorName: .adMob,
-            adFormat: .interstitial,
-            placement: "my_placement",
-            adUnitId: adUnitID,
-            impressionId: responseInfo?.responseIdentifier ?? "",
-            revenueMicros: Int(adValue.value.multiplying(by: 1_000_000).int64Value),
-            currency: adValue.currencyCode,
-            precision: .estimated // map from adValue.precision
-        ))
-    }
-
-    // Set delegate for impression/click tracking
-    ad.fullScreenContentDelegate = self
-}
+```xcconfig
+LEVELPLAY_APP_KEY = your-app-key
+LEVELPLAY_BANNER_AD_UNIT_ID = your-banner-ad-unit-id
+LEVELPLAY_INTERSTITIAL_AD_UNIT_ID = your-interstitial-ad-unit-id
+LEVELPLAY_REWARDED_AD_UNIT_ID = your-rewarded-ad-unit-id
 ```
 
-### Ad formats demonstrated
+Generate and run the sample:
 
-This sample uses **Google Mobile Ads SDK v13** Swift API:
+```bash
+tuist generate --path Examples/VanillaAdTrackingSample
+```
 
-- **Banner** — `BannerView` with `BannerViewDelegate`
-- **Interstitial** — `InterstitialAd.load(...)` with `FullScreenContentDelegate`
-- **App Open** — `AppOpenAd.load(...)` with `FullScreenContentDelegate`
-- **Rewarded** — `RewardedAd.load(...)` with `FullScreenContentDelegate`
-- **Rewarded Interstitial** — `RewardedInterstitialAd.load(...)` with `FullScreenContentDelegate`
-- **Native** — `AdLoader` with `NativeAdLoaderDelegate` + `NativeAdDelegate`
-- **Native Video** — native loader with a video-oriented ad unit ID
-- **Error Handling** — intentionally invalid ad unit ID to validate failed-to-load tracking
+The LevelPlay Swift package requires the `-ObjC` linker flag; the Tuist project configures it automatically.
 
-### Key files
+LevelPlay's separate Integration Test Suite can verify that a mediated network serves test ads, but it should run
+before interacting with the regular LevelPlay ad APIs. It therefore does not exercise the RevenueCat callbacks
+demonstrated by this sample.
 
-- `Sources/App.swift` — initializes `GoogleMobileAds.MobileAds` and `Purchases`
-- `Sources/HomeView.swift` — UI for loading/showing each ad format and status
-- `Sources/AdMobManager.swift` — all manual ad tracking code
-- `Sources/Constants.swift` — RevenueCat API key and AdMob ad unit IDs
+If every format returns no fill, confirm the test-device assignment is still active and the device is online.
 
----
+## Key files
 
-## Mediator name
+- `Sources/App.swift` initializes RevenueCat.
+- `Sources/LevelPlayManager.swift` initializes LevelPlay and contains the manual event mappings.
+- `Sources/Constants.swift` reads local configuration and provides Unity's public demo defaults.
+- `Sources/HomeView.swift` contains the sample UI for each supported format.
 
-This sample uses `.adMob` as the `MediatorName` in all tracking calls since it uses the AdMob SDK directly. If you use a different ad network or mediation platform, substitute the appropriate value:
+## Verify events
 
-- `.appLovin` for AppLovin MAX
-- `MediatorName(rawValue: "YourNetwork")` for custom networks
-
----
-
-## Requirements
-
-- Xcode 16+ recommended
-- iOS Simulator or device (iOS 15+)
-- Ad tracking APIs are available on iOS 15.0+.
-- A valid RevenueCat API key
-- AdMob test ad unit IDs (included in this sample)
-- **Google Mobile Ads SDK v13** (Swift API; this sample uses v13 naming)
-- `RevenueCat` from the `purchases-ios` package
-- `GoogleMobileAds` from the Google Mobile Ads SPM package
-
----
-
-## Setup & Run
-
-### 1. Prerequisites
-
-1. **Get a RevenueCat API key**
-   - Sign up at [revenuecat.com](https://www.revenuecat.com)
-   - Get your API key from the [RevenueCat Dashboard](https://app.revenuecat.com/)
-
-2. **AdMob setup** (optional for testing)
-   - This sample uses Google's official test ad unit IDs (see below)
-   - No AdMob account is required to run the sample as-is
-   - For production validation, create an [AdMob account](https://admob.google.com/) and replace IDs
-
-### 2. Configure the app
-
-1. Open `Sources/Constants.swift`.
-2. Replace `YOUR_REVENUECAT_API_KEY` with your real RevenueCat API key.
-3. Keep the default AdMob test ad unit IDs for local testing.
-
-### 3. Build and run
-
-1. From the repository root, run `tuist generate` to generate the Xcode workspace.
-2. Open the generated workspace and select the `VanillaAdTrackingSample` scheme.
-3. Run on an iPhone simulator or device.
-
-### 4. Verify ad events
-
-In the app:
-
-1. Tap an ad format from the list.
-2. Tap **Load** and wait for status to become `Ready`.
-3. Tap **Show** (where applicable).
-4. Interact with the ad and dismiss it.
-
-The sample prints diagnostics in the Xcode console and emits RevenueCat ad events for each format. For dashboard verification, background the app after testing to trigger SDK flush.
-
----
-
-## Test ad unit IDs used by this sample
-
-| Ad Format | Ad Unit ID | Status |
-| --------- | ---------- | ------ |
-| **Banner** | `ca-app-pub-3940256099942544/2435281174` | Working |
-| **Interstitial** | `ca-app-pub-3940256099942544/4411468910` | Working |
-| **Rewarded** | `ca-app-pub-3940256099942544/1712485313` | Working |
-| **Rewarded Interstitial** | `ca-app-pub-3940256099942544/6978759866` | Working |
-| **App Open** | `ca-app-pub-3940256099942544/5575463023` | Working |
-| **Native** | `ca-app-pub-3940256099942544/2247696110` | Unreliable |
-| **Native Video** | `ca-app-pub-3940256099942544/1044960115` | Unreliable |
-| **Error Testing** | `invalid-ad-unit-id` | Working |
-
-These are official Google test IDs and are safe for development.
-
-### Native ads and test IDs
-
-Native and native video test IDs can be less reliable than other formats depending on environment. For more reliable native testing:
-
-1. Create ad units in your [AdMob account](https://admob.google.com/)
-2. Replace test IDs in `Sources/Constants.swift`
-3. Configure your device as a test device in AdMob
-4. Keep test mode enabled during validation
-
-## Error testing
-
-AdMob does not provide an official "error trigger" test ad unit ID. This sample uses `invalid-ad-unit-id` to intentionally fail ad load requests and validate failed-to-load tracking.
-
-Use the **Error Testing** section in the sample UI:
-
-- Tap **Trigger Ad Load Error**.
-- This uses `Constants.AdMob.invalidAdUnitID` to intentionally fail load.
-- Confirm failure is logged and failure tracking is emitted.
-
----
-
-## Troubleshooting
-
-### "Missing RevenueCat API key" or build fails at startup
-
-Make sure `revenueCatAPIKey` in `Sources/Constants.swift` is set to your real RevenueCat API key (replace the `YOUR_REVENUECAT_API_KEY` placeholder).
-
-### Ads not loading
-
-1. **No internet connection** — ensure simulator/device has internet access
-2. **AdMob SDK still initializing** — wait a few seconds after launch
-3. **Test device not configured** — simulator is typically treated as test; real devices may require explicit setup in AdMob
-4. **Ad unit mismatch** — start with Google's test IDs before custom IDs
-
-### "Invalid request" on real device
-
-Your device may not yet be recognized as a test device. Configure it in AdMob and retry after propagation.
-
-### Revenue events not visible
-
-- Verify `Purchases.configure(withAPIKey:)` is called (`Sources/App.swift`)
-- Keep `Purchases.logLevel = .debug` during troubleshooting
-- Confirm you are calling `adTracker.trackAdRevenue(...)` in each ad's `paidEventHandler`
-- Background the app after interactions so events flush sooner
-
-### Revenue callbacks missing in test mode
-
-AdMob test ads may not always trigger `paidEventHandler`. Revenue tracking is more reliable with production ad units on configured test devices.
-
-### Tracking calls not appearing in console
-
-- Confirm you're running on iOS 15+ (ad tracking APIs require `@available(iOS 15.0, *)`)
-- Verify `Purchases.isConfigured` is `true` before tracking calls execute
-
-## AdMob SDK version note
-
-This sample uses **Google Mobile Ads v13**; no compiler flag is required.
+Load and display an ad, then background the app so RevenueCat can flush pending events. The events should appear
+shortly afterward in the RevenueCat dashboard. Use the error-testing screen to verify `trackAdFailedToLoad`
+without waiting for a real inventory failure.
