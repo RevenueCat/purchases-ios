@@ -87,18 +87,35 @@ public struct AdPresentationParams {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public struct AdPresentationResult: Equatable, Sendable {
 
-    /// The ad was shown and dismissed.
-    public static let shown = AdPresentationResult(error: nil)
+    /// The ad was shown and dismissed. For a rewarded ad, the customer also earned its reward.
+    ///
+    /// The checkpoint passes.
+    public static let shown = AdPresentationResult(kind: .shown)
+
+    /// A rewarded ad was dismissed before the customer earned its reward, or the reward could not be verified.
+    ///
+    /// The checkpoint does not pass, as when the customer closes a paywall.
+    public static let rewardNotEarned = AdPresentationResult(kind: .rewardNotEarned)
 
     /// The ad could not be shown, for example because it failed to load or the mediator had no fill.
+    ///
+    /// The checkpoint presents the error and does not pass.
     public static func failed(error: PublicError) -> AdPresentationResult {
-        return AdPresentationResult(error: error)
+        return AdPresentationResult(kind: .failed(error))
     }
 
-    let error: PublicError?
+    enum Kind: Equatable, Sendable {
 
-    private init(error: PublicError?) {
-        self.error = error
+        case shown
+        case rewardNotEarned
+        case failed(PublicError)
+
+    }
+
+    let kind: Kind
+
+    private init(kind: Kind) {
+        self.kind = kind
     }
 
 }
