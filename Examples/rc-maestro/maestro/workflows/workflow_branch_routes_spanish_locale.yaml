@@ -1,0 +1,41 @@
+# Opens the `with-branch` workflow with an es-ES locale and asserts its branch routes to Testimonials 3
+# instead of the default Testimonials 1.
+#
+# Run locally against the test store:
+#   maestro test -e MAESTRO_STORE=test_store Examples/rc-maestro/maestro/workflows/workflow_branch_routes_spanish_locale.yaml
+
+appId: com.revenuecat.maestro.ios
+name: A workflow branch routes a Spanish locale to Testimonials 3
+env:
+  MAESTRO_STORE: ${MAESTRO_STORE || 'test_store'}
+
+---
+- clearState
+# Dismiss any leftover system alerts from previous test runs.
+- pressKey: home
+- launchApp:
+    arguments:
+        e2e_test_flow: open_workflow
+        workflow_offering_identifier: "with-branch"
+        AppleLanguages: "(es-ES)"
+        AppleLocale: "es_ES"
+- extendedWaitUntil:
+    visible: "Present Paywall"
+    timeout: 15000
+- tapOn:
+    text: "Present Paywall"
+
+# Welcome screen 1, before the branch node.
+- extendedWaitUntil:
+    visible: "Continu(e|ar)"
+    timeout: 15000
+- takeScreenshot: "workflow_branch_routes_spanish_locale - welcome screen 1"
+- tapOn:
+    text: "Continu(e|ar)"
+
+# Branch 1 -> Testimonials 3 for a Spanish locale.
+- extendedWaitUntil:
+    visible: "Cat whisperer in your pocket"
+    timeout: 15000
+- assertNotVisible: "(?s).*Over 1 million.*"
+- takeScreenshot: "workflow_branch_routes_spanish_locale - testimonials 3"

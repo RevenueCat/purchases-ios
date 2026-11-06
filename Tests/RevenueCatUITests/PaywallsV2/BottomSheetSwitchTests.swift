@@ -115,6 +115,7 @@ final class BottomSheetSwitchTests: TestCase {
 private final class SheetHolder: ObservableObject {
     @Published var sheet: SheetViewModel?
     var openSheet: ((SheetViewModel) -> Void)?
+    @Published var purchaseResult: PaywallPurchaseResult?
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -208,6 +209,47 @@ private extension BottomSheetSwitchTests {
 @available(iOS 15.0, *)
 extension BottomSheetSwitchTests {
 
+    func testSheetClosesAfterEveryPurchase() async throws {
+        let fixture = try PackageResolutionTestFixture(competingDefaults: true)
+        let holder = SheetHolder()
+        let button = try XCTUnwrap(fixture.state.rootViewModel.stackViewModel.viewModels.compactMap {
+            if case .button(let button) = $0, button.sheetStackViewModel != nil { return button }
+            return nil
+        }.first)
+        guard case .sheet(let sheet) = button.action else { return XCTFail("Expected a sheet action") }
+        let model = SheetViewModel(
+            sheet: try XCTUnwrap(sheet),
+            sheetStackViewModel: try XCTUnwrap(button.sheetStackViewModel),
+            packageValidator: button.sheetPackageValidator
+        )
+        let (window, _) = Self.host(PackageResolutionSheetHost(fixture: fixture, holder: holder))
+        defer {
+            holder.openSheet = nil
+            window.isHidden = true
+            window.rootViewController = nil
+        }
+        try await PackageResolutionTestFixture.settlePresentation()
+
+        // A cancelled purchase leaves the sheet open.
+        try XCTUnwrap(holder.openSheet)(model)
+        try await PackageResolutionTestFixture.settlePresentation()
+        XCTAssertTrue(fixture.context.isPresentingSheet)
+        holder.purchaseResult = .cancelled
+        try await PackageResolutionTestFixture.settlePresentation()
+        XCTAssertTrue(fixture.context.isPresentingSheet)
+
+        // Every successful purchase closes it, not just the first.
+        for _ in 1...2 {
+            try XCTUnwrap(holder.openSheet)(model)
+            try await PackageResolutionTestFixture.settlePresentation()
+            XCTAssertTrue(fixture.context.isPresentingSheet)
+            holder.purchaseResult = .purchased(transaction: nil, customerInfo: TestData.customerInfo)
+            try await PackageResolutionTestFixture.settlePresentation()
+            XCTAssertFalse(fixture.context.isPresentingSheet)
+            holder.purchaseResult = nil
+        }
+    }
+
     func testPW11SheetOwnsSelectionAndVariablesWithoutChangingTabMemory() async throws {
         let fixture = try PackageResolutionTestFixture(competingDefaults: true)
         let validator = fixture.state.viewModelFactory.packageValidator
@@ -288,6 +330,7 @@ private struct PackageResolutionSheetHost: View {
                 defaultPackage: self.fixture.state.viewModelFactory.packageValidator
                     .defaultSelectedPackage(in: .provisional)
             ))
+            .environment(\.sessionPurchaseResult, self.holder.purchaseResult)
             .environmentObject(self.fixture.context)
             .environmentObject(PurchaseHandler.mock())
             .environmentObject(IntroOfferEligibilityContext(introEligibilityChecker: BaseSnapshotTest.eligibleChecker))

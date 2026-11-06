@@ -69,7 +69,12 @@ extension RootViewSheetDismissalTests {
         try await PackageResolutionTestFixture.settlePresentation()
         let snapshot = fixture.context.package
         let variables = fixture.context.variableContext
-        let tabContext = try XCTUnwrap(fixture.context.tabsState(for: fixture.tabs).contextsByTabId["tab-2"])
+        let tabsState = fixture.context.tabsState(for: fixture.tabs)
+        let tabContext = try XCTUnwrap(tabsState.contextsByTabId["tab-2"])
+        XCTAssertEqual(snapshot?.identifier, rootPackage.identifier)
+        XCTAssertEqual(fixture.context.manuallySelectedPackage?.identifier, rootPackage.identifier)
+        XCTAssertTrue(tabsState.didUserSelectPackage)
+        XCTAssertEqual(tabsState.parentOwnedPackage?.identifier, rootPackage.identifier)
         XCTAssertNil(tabContext.package)
 
         let sheetValidator = try XCTUnwrap(fixture.state.rootViewModel.stackViewModel.viewModels.compactMap {
@@ -80,6 +85,8 @@ extension RootViewSheetDismissalTests {
         try await PackageResolutionTestFixture.settlePresentation()
         XCTAssertEqual(sheetContext.package?.identifier, "annual_xl")
         XCTAssertEqual(fixture.context.package?.identifier, "annual_xl")
+        XCTAssertEqual(fixture.context.manuallySelectedPackage?.identifier, rootPackage.identifier)
+        XCTAssertEqual(tabsState.parentOwnedPackage?.identifier, rootPackage.identifier)
 
         fixture.context.update(
             package: RootView.restoredPackageAfterSheetDismissal(

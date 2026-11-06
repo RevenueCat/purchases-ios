@@ -75,6 +75,9 @@ internal enum RewardedPresentationError: Error, CustomNSError {
 /// outlives the dismissal. The outcome is therefore reported only once the ad is dismissed *and*, if
 /// verification started, its result has arrived — so the checkpoint never resolves underneath a visible ad
 /// and never resolves while a reward is still being verified.
+///
+/// The checkpoint passes only on a verified reward: closing the ad early, or a reward that fails
+/// verification, keeps the customer in front of the checkpoint like a dismissed paywall would.
 @available(iOS 15.0, *)
 @MainActor
 internal final class RewardedPresentation: NSObject, GoogleMobileAds.FullScreenContentDelegate {
@@ -104,16 +107,19 @@ internal final class RewardedPresentation: NSObject, GoogleMobileAds.FullScreenC
     enum Outcome {
 
         case shown
+        case rewardNotEarned
         case failed(NSError)
 
         /// A verified reward reaches the app through the refreshed customer info. A reward that failed
-        /// verification is only logged: the customer watched the ad in full, so the checkpoint still passes
-        /// rather than presenting an error for an ad that was shown.
+        /// verification is logged and gates like an unearned one: the ad was shown, so it is not an error to
+        /// present, but nothing was granted, so the checkpoint must not pass.
         @MainActor
         var presentationResult: AdPresentationResult {
             switch self {
             case .shown:
                 return .shown
+            case .rewardNotEarned:
+                return .rewardNotEarned
             case let .failed(error):
                 return .failed(error: error)
             }
@@ -139,6 +145,7 @@ internal final class RewardedPresentation: NSObject, GoogleMobileAds.FullScreenC
     private var isDismissed = false
     private var isAwaitingVerification = false
     private var isVerificationSettled = false
+    private var isRewardVerified = false
 
     init(
         format: Format,
@@ -205,6 +212,9 @@ internal final class RewardedPresentation: NSObject, GoogleMobileAds.FullScreenC
                             adUnitID: adUnitID
                         ))
                     }
+                    // Non-nil means verification succeeded; a verified result with nothing granted
+                    // still passes, like client-reported mode.
+                    self.isRewardVerified = result.verifiedReward != nil
                     self.isVerificationSettled = true
                     self.finishIfSettled()
                 }
@@ -236,7 +246,7 @@ internal final class RewardedPresentation: NSObject, GoogleMobileAds.FullScreenC
 
         guard !self.isAwaitingVerification || self.isVerificationSettled else { return }
 
-        self.finish(.shown)
+        self.finish(self.isRewardVerified ? .shown : .rewardNotEarned)
     }
 
     private func finish(_ outcome: Outcome) {

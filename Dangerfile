@@ -5,6 +5,7 @@ require 'set'
 
 EXCLUDED_SWIFT_PATH_PREFIXES = [
   'Tests/APITesters/',
+  'Tests/PerformanceTests/',
   # Tuist-only: these targets exist solely in Projects/PaywallFixtures/Project.swift and are
   # deliberately absent from RevenueCat.xcodeproj.
   'Tests/TestingApps/PaywallFixtures/',

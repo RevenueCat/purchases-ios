@@ -21,9 +21,10 @@ private struct PlanSelectionDefaultPackageKey: EnvironmentKey {
     static let defaultValue: Package? = nil
 }
 
-/// Whether the selected package has a card that can render in its owning scope.
+/// Checks whether the current selection has a card that can render in its owning scope.
+/// Evaluate lazily because pre-iOS 17 `onChange` closures capture the previous render's environment.
 private struct SelectedPackageIsVisibleKey: EnvironmentKey {
-    static let defaultValue = true
+    static let defaultValue: () -> Bool = { true }
 }
 
 extension EnvironmentValues {
@@ -33,7 +34,7 @@ extension EnvironmentValues {
         set { self[PlanSelectionDefaultPackageKey.self] = newValue }
     }
 
-    var selectedPackageIsVisible: Bool {
+    var selectedPackageIsVisible: () -> Bool {
         get { self[SelectedPackageIsVisibleKey.self] }
         set { self[SelectedPackageIsVisibleKey.self] = newValue }
     }
