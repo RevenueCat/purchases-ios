@@ -66,7 +66,6 @@ final class WorkflowPresenter: NSObject, WorkflowPresenterType {
         let customVariables: [String: CustomVariableValue]
         let errorPresentationHandler: ErrorPresentationHandler
         let initialActiveEntitlementIdentifiers: Set<String>
-        let presentedOfferings: [Offering]
         var outcomeState: WorkflowOutcomeState = .none
         var dismissalReason: WorkflowDismissalReason = .close
 
@@ -144,8 +143,7 @@ final class WorkflowPresenter: NSObject, WorkflowPresenterType {
             checkpointIdentifier: presentation.checkpointIdentifier,
             customVariables: presentation.customVariables,
             errorPresentationHandler: presentation.errorPresentationHandler,
-            initialActiveEntitlementIdentifiers: presentation.initialActiveEntitlementIdentifiers,
-            presentedOfferings: presentation.workflow.presentedOfferings
+            initialActiveEntitlementIdentifiers: presentation.initialActiveEntitlementIdentifiers
         )
 
         do {
@@ -319,13 +317,12 @@ extension WorkflowPresenter {
         controller: PaywallViewController,
         customerInfo: CustomerInfo
     ) {
-        guard let state = self.presentationState else { return }
+        guard let state = self.presentationState,
+              let offering = controller.displayedOffering else { return }
         // Read the mapping when restoring so a late cache fill is picked up. Missing mapping leaves the paywall open.
-        let mapping = self.productEntitlementMappingProvider()
-        let entitlements = state.presentedOfferings.flatMap { $0.entitlementsGrantedBy(mapping) }
         guard customerInfo.grantsPresentedEntitlement(
             comparedTo: state.initialActiveEntitlementIdentifiers,
-            presentedEntitlements: entitlements
+            presentedEntitlements: offering.entitlementsGrantedBy(self.productEntitlementMappingProvider())
         ) else { return }
 
         self.stage(.outcome(.completed(customerInfo: customerInfo)))

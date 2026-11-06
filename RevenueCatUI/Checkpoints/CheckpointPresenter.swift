@@ -387,9 +387,7 @@ final class DefaultPaywallPresenter: NSObject, PaywallPresenter, PaywallViewCont
         self.session = PresentationSession(
             params: params,
             completion: completion,
-            initialActiveEntitlementIdentifiers: self.cachedCustomerInfoProvider().map { customerInfo in
-                Set(customerInfo.entitlements.active.keys)
-            },
+            initialActiveEntitlementIdentifiers: self.cachedCustomerInfoProvider()?.activeEntitlementIdentifiers,
             presentedViewController: presentedViewController
         )
     }
@@ -569,11 +567,12 @@ private extension DefaultPaywallPresenter {
         controller: PaywallViewController,
         customerInfo: CustomerInfo
     ) {
-        guard let session = self.session else { return }
+        guard let session = self.session,
+              let offering = controller.displayedOffering else { return }
         // Read the mapping when restoring so a late cache fill is picked up. Missing mapping leaves the paywall open.
         guard customerInfo.grantsPresentedEntitlement(
             comparedTo: session.initialActiveEntitlementIdentifiers,
-            presentedEntitlements: session.params.offering.entitlementsGrantedBy(self.mappingProvider())
+            presentedEntitlements: offering.entitlementsGrantedBy(self.mappingProvider())
         ) else { return }
 
         session.activeErrorPresentationID = nil

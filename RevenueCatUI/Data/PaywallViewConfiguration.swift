@@ -78,11 +78,27 @@ struct PaywallViewConfiguration {
 final class PaywallPresentationBridge: ObservableObject {
 
     @Published private(set) var hasPendingBackNavigationRequest = false
-    private(set) var hasActiveWorkflow = false
+    private var offeringProvider: (id: UUID, read: @MainActor () -> Offering?)?
     private var workflowCompletionHandler: (@MainActor () -> Void)?
 
+    var hasActiveWorkflow: Bool { self.workflowCompletionHandler != nil }
+
+    @MainActor
+    var displayedOffering: Offering? {
+        return self.offeringProvider?.read()
+    }
+
+    func paywallDidAppear(id: UUID, offering: @escaping @MainActor () -> Offering?) {
+        self.offeringProvider = (id, offering)
+    }
+
+    func paywallDidDisappear(id: UUID) {
+        // A replacement may already own the getter when an outgoing view disappears.
+        guard self.offeringProvider?.id == id else { return }
+        self.offeringProvider = nil
+    }
+
     func workflowDidAppear(onCompletion: @escaping @MainActor () -> Void) {
-        self.hasActiveWorkflow = true
         self.workflowCompletionHandler = onCompletion
     }
 
@@ -95,7 +111,6 @@ final class PaywallPresentationBridge: ObservableObject {
     }
 
     func workflowDidDisappear() {
-        self.hasActiveWorkflow = false
         self.workflowCompletionHandler = nil
         self.hasPendingBackNavigationRequest = false
     }
