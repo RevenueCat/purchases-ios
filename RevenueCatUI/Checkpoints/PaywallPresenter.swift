@@ -98,7 +98,7 @@ public struct PaywallPresentationParams {
         presentationMode: FlowPresentationMode = .modalSheet,
         offering: Offering,
         errorPresentationHandler: ErrorPresentationHandler? = nil,
-        presentationContext: PresentationContext? = nil
+        presentationContext: PresentationContext?
     ) {
         self.checkpointIdentifier = checkpointIdentifier
         self.customVariables = customVariables

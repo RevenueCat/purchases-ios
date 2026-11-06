@@ -34,7 +34,7 @@ struct WorkflowPresentationRequest {
         presentationMode: FlowPresentationMode,
         initialActiveEntitlementIdentifiers: Set<String>,
         errorPresentationHandler: @escaping ErrorPresentationHandler,
-        presentationContext: PresentationContext? = nil
+        presentationContext: PresentationContext?
     ) {
         self.checkpointIdentifier = checkpointIdentifier
         self.workflow = workflow

@@ -45,6 +45,51 @@ final class DefaultErrorPresenterTests: TestCase {
         XCTAssertEqual(completionCount, 1)
     }
 
+    func testExplicitWindowPresentationContextUsesItsHostViewController() throws {
+        let sceneClass = try XCTUnwrap(NSClassFromString("UIWindowScene") as? NSObject.Type)
+        let windowScene = try XCTUnwrap(sceneClass.init() as? UIWindowScene)
+        let host = UIViewController()
+        let window = MockPresentationWindow()
+        window.presentationScene = windowScene
+        window.rootViewController = host
+        var presentedFrom: UIViewController?
+        var fallbackCallCount = 0
+        let presenter = DefaultErrorPresenter(
+            presentationContext: try XCTUnwrap(.init(window: window)),
+            presentationViewControllerProvider: {
+                fallbackCallCount += 1
+                return UIViewController()
+            },
+            alertFactory: { host, _, _, _, _ in
+                presentedFrom = host
+                return PresentedViewController()
+            }
+        )
+
+        presenter.present(params: Self.params(), completion: .init {})
+
+        XCTAssertTrue(presentedFrom === host)
+        XCTAssertEqual(fallbackCallCount, 0)
+    }
+
+    func testDialogPresenterUsesExplicitWindowPresentationContext() throws {
+        let sceneClass = try XCTUnwrap(NSClassFromString("UIWindowScene") as? NSObject.Type)
+        let windowScene = try XCTUnwrap(sceneClass.init() as? UIWindowScene)
+        let host = RecordingPresentationViewController()
+        let window = MockPresentationWindow()
+        window.presentationScene = windowScene
+        window.rootViewController = host
+        let presenter = DefaultErrorPresenter.makePresenter(
+            for: nil,
+            presentationContext: try XCTUnwrap(.init(window: window)),
+            preferredUILocaleProvider: { "en" }
+        )
+
+        presenter.present(params: Self.params(), completion: .init {})
+
+        XCTAssertTrue(host.capturedViewController is UIAlertController)
+    }
+
     func testPresentCreatesAlertWithoutCompletingFlow() {
         let harness = Harness()
 
@@ -293,7 +338,10 @@ final class DefaultErrorPresenterTests: TestCase {
     func testMissingPresentationContextDoesNotLeaveFlowWaiting() {
         var recoverableCompletionCount = 0
         var terminalCompletionCount = 0
-        let presenter = DefaultErrorPresenter(presentationViewControllerProvider: { nil })
+        let presenter = DefaultErrorPresenter(
+            presentationContext: nil,
+            presentationViewControllerProvider: { nil }
+        )
 
         presenter.present(
             params: Self.params(kind: .flowActionFailed),
@@ -375,6 +423,7 @@ final class DefaultErrorPresenterTests: TestCase {
         }
 
         lazy var presenter = DefaultErrorPresenter(
+            presentationContext: nil,
             presentationViewControllerProvider: { [host] in host },
             preferredUILocaleProvider: { [localeIdentifier] in localeIdentifier },
             alertFactory: { [weak self] _, title, message, acknowledgementTitle, acknowledgement in
@@ -441,6 +490,32 @@ final class DefaultErrorPresenterTests: TestCase {
             self.dismissalCompletion = nil
             completion?()
         }
+    }
+
+    private final class MockPresentationWindow: UIWindow {
+
+        var presentationScene: UIWindowScene?
+
+        override var windowScene: UIWindowScene? {
+            get { self.presentationScene }
+            set { self.presentationScene = newValue }
+        }
+
+    }
+
+    private final class RecordingPresentationViewController: UIViewController {
+
+        private(set) var capturedViewController: UIViewController?
+
+        override func present(
+            _ viewControllerToPresent: UIViewController,
+            animated flag: Bool,
+            completion: (() -> Void)? = nil
+        ) {
+            self.capturedViewController = viewControllerToPresent
+            completion?()
+        }
+
     }
 
 }

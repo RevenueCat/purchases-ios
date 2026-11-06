@@ -52,7 +52,7 @@ final class DefaultErrorPresenter: ErrorPresenter {
     private var pendingPresentation: Presentation?
 
     init(
-        presentationContext: PresentationContext? = nil,
+        presentationContext: PresentationContext?,
         presentationViewControllerProvider: @escaping PresentationViewControllerProvider = {
             UIApplication.extensionSafeApplication?.currentPresentationViewController
         },
@@ -170,12 +170,17 @@ extension DefaultErrorPresenter {
 
     static func makePresenter(
         for dialog: CheckpointErrorDialog?,
+        presentationContext: PresentationContext?,
         preferredUILocaleProvider: @escaping PreferredUILocaleProvider
     ) -> DefaultErrorPresenter {
         guard let dialog else {
-            return DefaultErrorPresenter(preferredUILocaleProvider: preferredUILocaleProvider)
+            return DefaultErrorPresenter(
+                presentationContext: presentationContext,
+                preferredUILocaleProvider: preferredUILocaleProvider
+            )
         }
         return DefaultErrorPresenter(
+            presentationContext: presentationContext,
             preferredUILocaleProvider: preferredUILocaleProvider,
             alertFactory: { host, title, _, _, acknowledged in
                 DefaultErrorPresenter.makeAlert(
@@ -245,7 +250,7 @@ final class DefaultErrorPresenter: ErrorPresenter {
     typealias PreferredUILocaleProvider = @MainActor () -> String?
 
     init(
-        presentationContext _: PresentationContext? = nil,
+        presentationContext _: PresentationContext?,
         preferredUILocaleProvider: @escaping PreferredUILocaleProvider = { nil }
     ) {}
 
@@ -260,9 +265,13 @@ extension DefaultErrorPresenter {
 
     static func makePresenter(
         for dialog: CheckpointErrorDialog?,
+        presentationContext: PresentationContext?,
         preferredUILocaleProvider: @escaping PreferredUILocaleProvider
     ) -> DefaultErrorPresenter {
-        return DefaultErrorPresenter(preferredUILocaleProvider: preferredUILocaleProvider)
+        return DefaultErrorPresenter(
+            presentationContext: presentationContext,
+            preferredUILocaleProvider: preferredUILocaleProvider
+        )
     }
 
 }

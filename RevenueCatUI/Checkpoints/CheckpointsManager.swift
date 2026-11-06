@@ -354,7 +354,11 @@ extension CheckpointsManager {
 
         if let factory = params.localErrorDialogFactory {
             let makePresenter = dialogPresenterFactory ?? { [preferredUILocaleProvider] dialog in
-                DefaultErrorPresenter.makePresenter(for: dialog, preferredUILocaleProvider: preferredUILocaleProvider)
+                DefaultErrorPresenter.makePresenter(
+                    for: dialog,
+                    presentationContext: params.presentationContext,
+                    preferredUILocaleProvider: preferredUILocaleProvider
+                )
             }
             let handler = makeErrorDialogFactoryHandler(factory: factory, makePresenter: makePresenter)
             return { [errorPresentationQueue] params, completion in

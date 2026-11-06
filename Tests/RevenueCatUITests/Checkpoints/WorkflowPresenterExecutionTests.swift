@@ -140,7 +140,8 @@ final class WorkflowPresenterExecutionTests: TestCase {
             customVariables: customVariables,
             presentationMode: .modalSheet,
             initialActiveEntitlementIdentifiers: [],
-            errorPresentationHandler: { _, completion in completion.complete() }
+            errorPresentationHandler: { _, completion in completion.complete() },
+            presentationContext: nil
         )
     }
 
