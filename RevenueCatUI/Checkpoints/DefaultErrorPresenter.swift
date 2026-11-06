@@ -69,9 +69,21 @@ final class DefaultErrorPresenter: ErrorPresenter {
     ) {
         self.presentationViewControllerProvider = {
             if let presentationContext {
-                return presentationContext.presentationViewController
+                guard let viewController = presentationContext.presentationViewController else {
+                    Logger.error(
+                        "Cannot present checkpoint error: the provided presentation context did not resolve to " +
+                        "a presentation view controller."
+                    )
+                    return nil
+                }
+                return viewController
             }
-            return presentationViewControllerProvider()
+
+            guard let viewController = presentationViewControllerProvider() else {
+                Logger.error("Cannot present checkpoint error: no presentation context found.")
+                return nil
+            }
+            return viewController
         }
         self.preferredUILocaleProvider = preferredUILocaleProvider
         self.alertFactory = alertFactory
@@ -92,7 +104,6 @@ final class DefaultErrorPresenter: ErrorPresenter {
 
     private func beginPresentation(_ current: Presentation) {
         guard let host = self.presentationViewControllerProvider() else {
-            Logger.error("Cannot present checkpoint error: no presentation context found.")
             current.completion.complete()
             return
         }

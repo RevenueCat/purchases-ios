@@ -43,6 +43,11 @@ final class DefaultErrorPresenterTests: TestCase {
 
         XCTAssertEqual(fallbackCallCount, 0)
         XCTAssertEqual(completionCount, 1)
+        self.logger.verifyMessageWasLogged(
+            "Cannot present checkpoint error: the provided presentation context did not resolve to " +
+            "a presentation view controller.",
+            level: .error
+        )
     }
 
     func testExplicitWindowPresentationContextUsesItsHostViewController() throws {
@@ -354,6 +359,11 @@ final class DefaultErrorPresenterTests: TestCase {
 
         XCTAssertEqual(recoverableCompletionCount, 1)
         XCTAssertEqual(terminalCompletionCount, 1)
+        self.logger.verifyMessageWasLogged(
+            "Cannot present checkpoint error: no presentation context found.",
+            level: .error,
+            expectedCount: 2
+        )
     }
 
     func testFailedAlertPresentationDoesNotLeaveFlowWaiting() {
