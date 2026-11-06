@@ -338,6 +338,10 @@ class AdFeatureEventsRequestTests: TestCase {
         expect(AdEventCaptureMethod.unityAdMobAdapter.rawValue) == "unity_admob_adapter"
     }
 
+    func testRevenueCatAdsCaptureMethodSerializesToItsWireValue() {
+        expect(AdEventCaptureMethod.iosRevenueCatAds.rawValue) == "ios_revenuecat_ads"
+    }
+
     func testLegacyAdapterCaptureMethodCanStillBeDeserialized() throws {
         let data = try XCTUnwrap("\"adapter\"".data(using: .utf8))
         let captureMethod = try JSONDecoder.default.decode(AdEventCaptureMethod.self, from: data)

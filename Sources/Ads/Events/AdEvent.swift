@@ -40,6 +40,9 @@ internal protocol AdImpressionEventData: AdEventData {
     /// Auto-captured by the official RevenueCat Google AdMob adapter for iOS.
     case iosAdMobAdapter = "ios_admob_adapter"
 
+    /// Auto-captured by the RevenueCat Ads SDK for iOS.
+    case iosRevenueCatAds = "ios_revenuecat_ads"
+
     /// Auto-captured by the official RevenueCat AdMob adapter for Flutter.
     case flutterAdMobAdapter = "flutter_admob_adapter"
 
