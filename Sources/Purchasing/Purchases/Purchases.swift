@@ -2198,7 +2198,7 @@ extension Purchases {
             captureMethod: captureMethod
         )
 
-        let result = await self.rewardVerificationResult(
+        let result = self.rewardVerificationResult(
             for: outcome,
             clientTransactionID: clientTransactionID,
             appUserID: appUserID
@@ -2282,7 +2282,7 @@ extension Purchases {
         for outcome: RewardVerification.Outcome,
         clientTransactionID: String,
         appUserID: String
-    ) async -> RewardVerificationResult {
+    ) -> RewardVerificationResult {
         #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
         if case let .verified(reward, moreRewards, customerInfo) = outcome {
             let rewards = [reward] + moreRewards
