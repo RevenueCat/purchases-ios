@@ -110,7 +110,7 @@ public final class PaywallFooterViewController: PaywallViewController {
         offeringIdentifier: String,
         dismissRequestedHandler: ((_ controller: PaywallViewController) -> Void)? = nil
     ) {
-        super.init(content: .offeringIdentifier(offeringIdentifier, presentedOfferingContext: nil),
+        super.init(content: .offeringIdentifier(.init(offeringIdentifier), presentedOfferingContext: nil),
                    fonts: DefaultPaywallFontProvider(),
                    displayCloseButton: false,
                    shouldBlockTouchEvents: false,
@@ -128,7 +128,8 @@ public final class PaywallFooterViewController: PaywallViewController {
         presentedOfferingContext: PresentedOfferingContext? = nil,
         dismissRequestedHandler: ((_ controller: PaywallViewController) -> Void)? = nil
     ) {
-        super.init(content: .offeringIdentifier(offeringIdentifier, presentedOfferingContext: presentedOfferingContext),
+        super.init(content: .offeringIdentifier(.init(offeringIdentifier),
+                                                presentedOfferingContext: presentedOfferingContext),
                    fonts: DefaultPaywallFontProvider(),
                    displayCloseButton: false,
                    shouldBlockTouchEvents: false,
@@ -146,7 +147,7 @@ public final class PaywallFooterViewController: PaywallViewController {
         fontName: String,
         dismissRequestedHandler: ((_ controller: PaywallViewController) -> Void)? = nil
     ) {
-        super.init(content: .offeringIdentifier(offeringIdentifier, presentedOfferingContext: nil),
+        super.init(content: .offeringIdentifier(.init(offeringIdentifier), presentedOfferingContext: nil),
                    fonts: CustomPaywallFontProvider(fontName: fontName),
                    displayCloseButton: false,
                    shouldBlockTouchEvents: false,
@@ -167,7 +168,8 @@ public final class PaywallFooterViewController: PaywallViewController {
         fontName: String,
         dismissRequestedHandler: ((_ controller: PaywallViewController) -> Void)? = nil
     ) {
-        super.init(content: .offeringIdentifier(offeringIdentifier, presentedOfferingContext: presentedOfferingContext),
+        super.init(content: .offeringIdentifier(.init(offeringIdentifier),
+                                                presentedOfferingContext: presentedOfferingContext),
                    fonts: CustomPaywallFontProvider(fontName: fontName),
                    displayCloseButton: false,
                    shouldBlockTouchEvents: false,
