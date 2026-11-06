@@ -141,7 +141,8 @@ final class CheckpointsManager {
                     checkpointIdentifier: identifier,
                     adIdentifier: adStep.adIdentifier,
                     mediator: adStep.mediator,
-                    adFormat: adStep.adFormat
+                    adFormat: adStep.adFormat,
+                    presentationContext: params.presentationContext
                 ),
                 customVariables: params.customVariables,
                 errorPresentationHandler: errorPresentationHandler
@@ -401,7 +402,8 @@ extension CheckpointsManager {
                     checkpointIdentifier: identifier,
                     error: error,
                     customVariables: params.customVariables,
-                    kind: kind
+                    kind: kind,
+                    presentationContext: params.presentationContext
                 ),
                 .init { continuation.resume() }
             )

@@ -90,6 +90,9 @@ private func checkPaywallPresentationAPI(
         let _: [String: CustomVariableValue] = params.customVariables
         let _: FlowPresentationMode = params.presentationMode
         let _: Offering = params.offering
+        #if os(iOS) && !targetEnvironment(macCatalyst)
+        let _: UIWindowScene? = params.windowScene
+        #endif
         completion(.continued)
     }
 
@@ -111,6 +114,9 @@ private func checkErrorPresentationAPI(_ purchases: Purchases) {
         let _: any Error = params.error
         let _: [String: CustomVariableValue] = params.customVariables
         let _: CheckpointFailureKind = params.kind
+        #if os(iOS) && !targetEnvironment(macCatalyst)
+        let _: UIWindowScene? = params.windowScene
+        #endif
         completion.complete()
     }
 
@@ -182,6 +188,9 @@ private final class CheckpointAPIAdPresenter: AdPresenter {
         let _: String = params.adIdentifier
         let _: MediatorName = params.mediator
         let _: AdFormat = params.adFormat
+        #if os(iOS) && !targetEnvironment(macCatalyst)
+        let _: UIWindowScene? = params.windowScene
+        #endif
         completion(.shown)
     }
 

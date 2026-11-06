@@ -748,8 +748,8 @@ final class WorkflowPresenterTests: TestCase {
 final class DefaultPaywallPresenterTests: TestCase {
 
     func testExplicitPresentationContextDoesNotFallBackToAnotherScene() throws {
-        let sceneClass = try XCTUnwrap(NSClassFromString("UIScene") as? NSObject.Type)
-        let scene = try XCTUnwrap(sceneClass.init() as? UIScene)
+        let sceneClass = try XCTUnwrap(NSClassFromString("UIWindowScene") as? NSObject.Type)
+        let scene = try XCTUnwrap(sceneClass.init() as? UIWindowScene)
         var fallbackCallCount = 0
         var receivedError: ErrorPresentationParams?
         let presenter = DefaultPaywallPresenter(presentationViewControllerProvider: {
@@ -774,6 +774,9 @@ final class DefaultPaywallPresenterTests: TestCase {
         guard case .noPresentationContext? = receivedError?.error as? CheckpointError else {
             return XCTFail("Expected noPresentationContext")
         }
+        #if os(iOS) && !targetEnvironment(macCatalyst)
+        XCTAssertTrue(receivedError?.windowScene === scene)
+        #endif
     }
 
     // Missing presentation context: route the startup error before reporting presentation failure.

@@ -116,7 +116,8 @@ final class DefaultErrorPresenterTests: TestCase {
                 checkpointIdentifier: "test_checkpoint",
                 error: error,
                 customVariables: [:],
-                kind: .flowActionFailed
+                kind: .flowActionFailed,
+                presentationContext: nil
             ),
             completion: harness.completion
         )
@@ -207,7 +208,8 @@ final class DefaultErrorPresenterTests: TestCase {
                     userInfo: [NSLocalizedDescriptionKey: message]
                 ),
                 customVariables: [:],
-                kind: .flowActionFailed
+                kind: .flowActionFailed,
+                presentationContext: nil
             ),
             completion: harness.completion
         )
@@ -389,7 +391,8 @@ final class DefaultErrorPresenterTests: TestCase {
                 userInfo: [NSLocalizedDescriptionKey: message]
             ),
             customVariables: [:],
-            kind: kind
+            kind: kind,
+            presentationContext: nil
         )
     }
 
@@ -405,7 +408,8 @@ final class DefaultErrorPresenterTests: TestCase {
                 userInfo: [NSLocalizedDescriptionKey: "raw detail"]
             ),
             customVariables: [:],
-            kind: kind
+            kind: kind,
+            presentationContext: nil
         )
     }
 

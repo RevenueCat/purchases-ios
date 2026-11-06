@@ -99,7 +99,8 @@ public extension Purchases {
     /// Passes a checkpoint and presents SDK-owned UI in a specific window scene.
     ///
     /// Use this overload in multi-window applications to keep checkpoint flows, paywalls, and errors in the scene
-    /// associated with the interaction that triggered the checkpoint. Custom presenters continue to own their UI.
+    /// associated with the interaction that triggered the checkpoint. Custom presenters receive the same scene
+    /// through their presentation parameters and continue to own their UI.
     /// - Parameters:
     ///   - identifier: The checkpoint identifier configured in the RevenueCat dashboard.
     ///   - windowScene: The window scene in which SDK-owned checkpoint UI is presented.

@@ -66,6 +66,7 @@ final class CheckpointPresenter: CheckpointPresenterType {
                 error,
                 checkpointIdentifier: presentation.checkpointIdentifier,
                 customVariables: presentation.customVariables,
+                presentationContext: presentation.presentationContext,
                 handler: presentation.errorPresentationHandler
             )
             return .failed
@@ -76,6 +77,7 @@ final class CheckpointPresenter: CheckpointPresenterType {
         _ error: any Error,
         checkpointIdentifier: String,
         customVariables: [String: CustomVariableValue],
+        presentationContext: PresentationContext?,
         handler: ErrorPresentationHandler
     ) async {
         await withCheckedContinuation { continuation in
@@ -84,7 +86,8 @@ final class CheckpointPresenter: CheckpointPresenterType {
                     checkpointIdentifier: checkpointIdentifier,
                     error: error,
                     customVariables: customVariables,
-                    kind: .flowCouldNotBeShown
+                    kind: .flowCouldNotBeShown,
+                    presentationContext: presentationContext
                 ),
                 .init { continuation.resume() }
             )
@@ -147,6 +150,7 @@ final class CheckpointPresenter: CheckpointPresenterType {
             error,
             checkpointIdentifier: presentation.params.checkpointIdentifier,
             customVariables: presentation.customVariables,
+            presentationContext: presentation.params.presentationContext,
             handler: presentation.errorPresentationHandler
         )
         return .failed
@@ -356,7 +360,8 @@ final class DefaultPaywallPresenter: NSObject, PaywallPresenter, PaywallViewCont
                 checkpointIdentifier: session.params.checkpointIdentifier,
                 error: error,
                 customVariables: session.params.customVariables,
-                kind: kind
+                kind: kind,
+                presentationContext: session.params.presentationContext
             ),
             .init { [weak self] in
                 self?.handleErrorPresentationResult(
@@ -660,7 +665,8 @@ private extension DefaultPaywallPresenter {
                 checkpointIdentifier: params.checkpointIdentifier,
                 error: error,
                 customVariables: params.customVariables,
-                kind: .flowCouldNotBeShown
+                kind: .flowCouldNotBeShown,
+                presentationContext: params.presentationContext
             ),
             .init { completion(.failed) }
         )

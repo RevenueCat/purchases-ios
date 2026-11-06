@@ -66,6 +66,7 @@ final class WorkflowPresenter: NSObject, WorkflowPresenterType {
         let customVariables: [String: CustomVariableValue]
         let errorPresentationHandler: ErrorPresentationHandler
         let initialActiveEntitlementIdentifiers: Set<String>
+        let presentationContext: PresentationContext?
         var outcomeState: WorkflowOutcomeState = .none
         var dismissalReason: WorkflowDismissalReason = .close
 
@@ -138,7 +139,8 @@ final class WorkflowPresenter: NSObject, WorkflowPresenterType {
             checkpointIdentifier: presentation.checkpointIdentifier,
             customVariables: presentation.customVariables,
             errorPresentationHandler: presentation.errorPresentationHandler,
-            initialActiveEntitlementIdentifiers: presentation.initialActiveEntitlementIdentifiers
+            initialActiveEntitlementIdentifiers: presentation.initialActiveEntitlementIdentifiers,
+            presentationContext: presentation.presentationContext
         )
 
         do {
@@ -174,7 +176,8 @@ final class WorkflowPresenter: NSObject, WorkflowPresenterType {
                 checkpointIdentifier: state.checkpointIdentifier,
                 error: error,
                 customVariables: state.customVariables,
-                kind: kind
+                kind: kind,
+                presentationContext: state.presentationContext
             ),
             .init { [weak self] in
                 self?.handleErrorPresentationResult(

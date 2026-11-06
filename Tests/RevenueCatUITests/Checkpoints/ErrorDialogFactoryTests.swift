@@ -275,13 +275,15 @@ final class ErrorDialogFactoryTests: TestCase {
             checkpointIdentifier: "first",
             error: NSError(domain: "test", code: 1),
             customVariables: [:],
-            kind: .flowActionFailed
+            kind: .flowActionFailed,
+            presentationContext: nil
         )
         let secondParams = ErrorPresentationParams(
             checkpointIdentifier: "second",
             error: NSError(domain: "test", code: 2),
             customVariables: [:],
-            kind: .flowCouldNotBeShown
+            kind: .flowCouldNotBeShown,
+            presentationContext: nil
         )
 
         firstHandler(firstParams, Self.errorPresentationCompletion)
@@ -335,7 +337,8 @@ private extension ErrorDialogFactoryTests {
             checkpointIdentifier: "test_checkpoint",
             error: NSError(domain: "test", code: 1),
             customVariables: [:],
-            kind: .flowActionFailed
+            kind: .flowActionFailed,
+            presentationContext: nil
         )
     }
 

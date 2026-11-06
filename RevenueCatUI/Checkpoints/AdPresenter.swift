@@ -12,6 +12,9 @@
 
 import Foundation
 @_spi(Internal) import RevenueCat
+#if os(iOS) && !targetEnvironment(macCatalyst)
+import UIKit
+#endif
 
 /// Reports the terminal outcome of a custom ad presentation.
 @_spi(InviteOnlyCheckpointsApi)
@@ -58,6 +61,15 @@ public struct AdPresentationParams {
     /// The ad format ``adIdentifier`` was created for, which decides how the presenter loads and shows it.
     public let adFormat: AdFormat
 
+    #if os(iOS) && !targetEnvironment(macCatalyst)
+    /// The window scene passed to the checkpoint call, if any.
+    public var windowScene: UIWindowScene? {
+        return self.presentationContext?.windowScene
+    }
+    #endif
+
+    let presentationContext: PresentationContext?
+
     /// Creates presentation context for an ad step selected by a checkpoint.
     ///
     /// - Parameters:
@@ -69,12 +81,14 @@ public struct AdPresentationParams {
         checkpointIdentifier: String,
         adIdentifier: String,
         mediator: MediatorName,
-        adFormat: AdFormat
+        adFormat: AdFormat,
+        presentationContext: PresentationContext?
     ) {
         self.checkpointIdentifier = checkpointIdentifier
         self.adIdentifier = adIdentifier
         self.mediator = mediator
         self.adFormat = adFormat
+        self.presentationContext = presentationContext
     }
 
 }

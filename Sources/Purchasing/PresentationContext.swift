@@ -106,6 +106,11 @@ import AppKit
     #endif
 
     #if canImport(UIKit) && !os(watchOS)
+    /// The window scene represented by this context, if any.
+    @_spi(Internal) public var windowScene: UIWindowScene? {
+        return self.scene as? UIWindowScene
+    }
+
     /// The view controller suitable for presenting UI from this context.
     @available(macCatalyst 13.1, *)
     @available(macOS, unavailable)
@@ -117,7 +122,7 @@ import AppKit
             return window.currentPresentationViewController
         }
 
-        return (self.scene as? UIWindowScene)?.currentPresentationViewController
+        return self.windowScene?.currentPresentationViewController
     }
     #endif
 

@@ -191,7 +191,8 @@ final class CheckpointOutcomeBehaviorTests: TestCase {
                             checkpointIdentifier: params.checkpointIdentifier,
                             error: expectedError,
                             customVariables: params.customVariables,
-                            kind: .flowActionFailed
+                            kind: .flowActionFailed,
+                            presentationContext: params.presentationContext
                         ),
                         .init { completion(.failed) }
                     )
@@ -573,7 +574,8 @@ private final class TerminalErrorCheckpointPresenter: CheckpointPresenterType {
                     checkpointIdentifier: presentation.checkpointIdentifier,
                     error: self.error,
                     customVariables: presentation.customVariables,
-                    kind: .flowActionFailed
+                    kind: .flowActionFailed,
+                    presentationContext: presentation.presentationContext
                 ),
                 .init { continuation.resume() }
             )

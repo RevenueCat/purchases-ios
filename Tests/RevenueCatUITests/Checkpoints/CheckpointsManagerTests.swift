@@ -821,8 +821,8 @@ final class CheckpointsManagerTests: TestCase {
     }
 
     func testPresentationContextReachesPaywallPresentation() async throws {
-        let sceneClass = try XCTUnwrap(NSClassFromString("UIScene") as? NSObject.Type)
-        let scene = try XCTUnwrap(sceneClass.init() as? UIScene)
+        let sceneClass = try XCTUnwrap(NSClassFromString("UIWindowScene") as? NSObject.Type)
+        let scene = try XCTUnwrap(sceneClass.init() as? UIWindowScene)
         let context = PresentationContext(scene: scene)
         var receivedParams: PaywallPresentationParams?
         let manager = CheckpointsManager(
@@ -842,8 +842,32 @@ final class CheckpointsManagerTests: TestCase {
             )
         )
 
-        XCTAssertTrue(receivedParams?.presentationContext?.scene === scene)
+        #if os(iOS) && !targetEnvironment(macCatalyst)
+        XCTAssertTrue(receivedParams?.windowScene === scene)
+        #else
+        XCTAssertTrue(receivedParams?.presentationContext?.windowScene === scene)
+        #endif
     }
+
+    #if os(iOS) && !targetEnvironment(macCatalyst)
+    func testPresentationContextReachesAdPresentation() async throws {
+        let sceneClass = try XCTUnwrap(NSClassFromString("UIWindowScene") as? NSObject.Type)
+        let scene = try XCTUnwrap(sceneClass.init() as? UIWindowScene)
+        let presenter = MockAdPresenter()
+        let manager = CheckpointsManager(
+            resolveCheckpoint: { _, _ in .matchedAd(Self.adStep()) },
+            workflowPresenter: MockWorkflowPresenter()
+        )
+        manager.adPresenter = presenter
+
+        _ = try await manager.executeCheckpoint(
+            identifier: "onboarding",
+            params: .init(presentationContext: .init(scene: scene))
+        )
+
+        XCTAssertTrue(presenter.receivedParams?.windowScene === scene)
+    }
+    #endif
     #endif
 
     func testCallSitePaywallPresenterOverridesGlobalPresenter() async throws {
@@ -1682,7 +1706,8 @@ private extension CheckpointsManagerTests {
             checkpointIdentifier: "test_checkpoint",
             error: NSError(domain: "test", code: 1),
             customVariables: [:],
-            kind: .flowActionFailed
+            kind: .flowActionFailed,
+            presentationContext: nil
         )
     }
 
