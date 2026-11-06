@@ -87,7 +87,8 @@ public struct AdPresentationParams {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public struct AdPresentationResult: Equatable, Sendable {
 
-    /// The ad was shown and dismissed. For a rewarded ad, the customer also earned its reward.
+    /// The ad was shown and dismissed. For a rewarded ad, the customer watched it through and the server
+    /// confirmed it.
     ///
     /// The checkpoint passes.
     public static let shown = AdPresentationResult(kind: .shown)
