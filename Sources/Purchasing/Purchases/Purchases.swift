@@ -2148,7 +2148,7 @@ extension Purchases {
     /// ``generateRewardVerificationToken(impressionId:)``. Pass `trackingMetadata` to have the SDK
     /// automatically track the reward events as verification progresses
     ///
-    /// Refreshes local reward state before returning verified rewards.
+    /// Updates local reward state from the verification response before returning verified rewards.
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     public func pollRewardVerification(
         clientTransactionID: String,
