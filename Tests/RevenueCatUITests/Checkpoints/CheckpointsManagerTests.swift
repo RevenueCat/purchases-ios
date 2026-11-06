@@ -863,6 +863,46 @@ final class CheckpointsManagerTests: TestCase {
         XCTAssertEqual(presenter.receivedParams?.adFormat, .interstitial)
     }
 
+    func testResolvedAdWithoutAnEarnedRewardBacksOut() async throws {
+        let presenter = MockAdPresenter()
+        presenter.result = .rewardNotEarned
+        let manager = CheckpointsManager(
+            resolveCheckpoint: { _, _ in .matchedAd(Self.adStep(adFormat: .rewarded)) },
+            workflowPresenter: MockWorkflowPresenter()
+        )
+        manager.adPresenter = presenter
+
+        let execution = try await manager.executeCheckpoint(identifier: "extra_life", params: .init())
+
+        guard case .backedOut = execution else {
+            return XCTFail("Expected the checkpoint to back out like a dismissed paywall")
+        }
+    }
+
+    func testResolvedAdWithoutAnEarnedRewardDoesNotPassTheCheckpoint() async throws {
+        let presenter = MockAdPresenter()
+        presenter.result = .rewardNotEarned
+        var errorPresentations = 0
+        let manager = CheckpointsManager(
+            resolveCheckpoint: { _, _ in .matchedAd(Self.adStep(adFormat: .rewarded)) },
+            workflowPresenter: MockWorkflowPresenter()
+        )
+        manager.adPresenter = presenter
+
+        let result = await manager.checkpointForCallback(
+            identifier: "extra_life",
+            params: .init(errorPresenter: { _, completion in
+                errorPresentations += 1
+                completion.complete()
+            })
+        )
+
+        guard case .suppressed = result else {
+            return XCTFail("Expected the callback to be suppressed")
+        }
+        XCTAssertEqual(errorPresentations, 0, "An unearned reward is not an error to present")
+    }
+
     func testSequentialAdCheckpointsOfDifferentFormatsEachPresentAfterThePreviousCompletes() async throws {
         // Each checkpoint resolves to a different ad step; the presenter reports its result only after an async
         // hop, so a stale presentation slot would surface as operationAlreadyInProgress.
