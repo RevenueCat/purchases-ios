@@ -14,6 +14,9 @@
 
 import Foundation
 @_spi(Internal) import RevenueCat
+#if os(iOS) && !targetEnvironment(macCatalyst)
+import UIKit
+#endif
 
 /// Presents a checkpoint error.
 ///
@@ -57,16 +60,27 @@ public final class ErrorPresentationParams {
     /// What kind of failure occurred.
     public let kind: CheckpointFailureKind
 
+    #if os(iOS) && !targetEnvironment(macCatalyst)
+    /// The window scene passed to the checkpoint call, if any.
+    public var windowScene: UIWindowScene? {
+        return self.presentationContext?.windowScene
+    }
+    #endif
+
+    let presentationContext: PresentationContext?
+
     init(
         checkpointIdentifier: String,
         error: any Error,
         customVariables: [String: CustomVariableValue],
-        kind: CheckpointFailureKind
+        kind: CheckpointFailureKind,
+        presentationContext: PresentationContext?
     ) {
         self.checkpointIdentifier = checkpointIdentifier
         self.error = error
         self.customVariables = customVariables
         self.kind = kind
+        self.presentationContext = presentationContext
     }
 
 }

@@ -135,7 +135,7 @@ final class CheckpointOutcomeBehaviorTests: TestCase {
         let errorPresenter = ErrorPresentationRecorder()
         let presenter = CheckpointPresenter(
             workflowPresenter: WorkflowPresenter(),
-            defaultPaywallPresenter: DefaultPaywallPresenter(presentationContextProvider: { nil })
+            defaultPaywallPresenter: DefaultPaywallPresenter(presentationViewControllerProvider: { nil })
         )
         let manager = CheckpointsManager(
             resolveCheckpoint: { _, _ in .matchedOffering(Self.offering(), traceID: "trace_id") },
@@ -191,7 +191,8 @@ final class CheckpointOutcomeBehaviorTests: TestCase {
                             checkpointIdentifier: params.checkpointIdentifier,
                             error: expectedError,
                             customVariables: params.customVariables,
-                            kind: .flowActionFailed
+                            kind: .flowActionFailed,
+                            presentationContext: params.presentationContext
                         ),
                         .init { completion(.failed) }
                     )
@@ -573,7 +574,8 @@ private final class TerminalErrorCheckpointPresenter: CheckpointPresenterType {
                     checkpointIdentifier: presentation.checkpointIdentifier,
                     error: self.error,
                     customVariables: presentation.customVariables,
-                    kind: .flowActionFailed
+                    kind: .flowActionFailed,
+                    presentationContext: presentation.presentationContext
                 ),
                 .init { continuation.resume() }
             )

@@ -23,7 +23,7 @@ import UIKit
 @available(iOS 15.0, macOS 12.0, *)
 final class DefaultErrorPresenter: ErrorPresenter {
 
-    typealias PresentationContextProvider = @MainActor () -> UIViewController?
+    typealias PresentationViewControllerProvider = @MainActor () -> UIViewController?
     typealias PreferredUILocaleProvider = @MainActor () -> String?
     typealias AlertFactory = @MainActor (
         _ host: UIViewController,
@@ -45,14 +45,15 @@ final class DefaultErrorPresenter: ErrorPresenter {
         }
     }
 
-    private let presentationContextProvider: PresentationContextProvider
+    private let presentationViewControllerProvider: PresentationViewControllerProvider
     private let preferredUILocaleProvider: PreferredUILocaleProvider
     private let alertFactory: AlertFactory
     private var presentation: Presentation?
     private var pendingPresentation: Presentation?
 
     init(
-        presentationContextProvider: @escaping PresentationContextProvider = {
+        presentationContext: PresentationContext?,
+        presentationViewControllerProvider: @escaping PresentationViewControllerProvider = {
             UIApplication.extensionSafeApplication?.currentPresentationViewController
         },
         preferredUILocaleProvider: @escaping PreferredUILocaleProvider = { nil },
@@ -66,7 +67,24 @@ final class DefaultErrorPresenter: ErrorPresenter {
             )
         }
     ) {
-        self.presentationContextProvider = presentationContextProvider
+        self.presentationViewControllerProvider = {
+            if let presentationContext {
+                guard let viewController = presentationContext.presentationViewController else {
+                    Logger.error(
+                        "Cannot present checkpoint error: the provided presentation context did not resolve to " +
+                        "a presentation view controller."
+                    )
+                    return nil
+                }
+                return viewController
+            }
+
+            guard let viewController = presentationViewControllerProvider() else {
+                Logger.error("Cannot present checkpoint error: no presentation context found.")
+                return nil
+            }
+            return viewController
+        }
         self.preferredUILocaleProvider = preferredUILocaleProvider
         self.alertFactory = alertFactory
     }
@@ -85,8 +103,7 @@ final class DefaultErrorPresenter: ErrorPresenter {
     }
 
     private func beginPresentation(_ current: Presentation) {
-        guard let host = self.presentationContextProvider() else {
-            Logger.error("Cannot present checkpoint error: no presentation context found.")
+        guard let host = self.presentationViewControllerProvider() else {
             current.completion.complete()
             return
         }
@@ -164,12 +181,17 @@ extension DefaultErrorPresenter {
 
     static func makePresenter(
         for dialog: CheckpointErrorDialog?,
+        presentationContext: PresentationContext?,
         preferredUILocaleProvider: @escaping PreferredUILocaleProvider
     ) -> DefaultErrorPresenter {
         guard let dialog else {
-            return DefaultErrorPresenter(preferredUILocaleProvider: preferredUILocaleProvider)
+            return DefaultErrorPresenter(
+                presentationContext: presentationContext,
+                preferredUILocaleProvider: preferredUILocaleProvider
+            )
         }
         return DefaultErrorPresenter(
+            presentationContext: presentationContext,
             preferredUILocaleProvider: preferredUILocaleProvider,
             alertFactory: { host, title, _, _, acknowledged in
                 DefaultErrorPresenter.makeAlert(
@@ -238,7 +260,10 @@ final class DefaultErrorPresenter: ErrorPresenter {
 
     typealias PreferredUILocaleProvider = @MainActor () -> String?
 
-    init(preferredUILocaleProvider: @escaping PreferredUILocaleProvider = { nil }) {}
+    init(
+        presentationContext _: PresentationContext?,
+        preferredUILocaleProvider: @escaping PreferredUILocaleProvider = { nil }
+    ) {}
 
     func present(params: ErrorPresentationParams, completion: ErrorPresentationCompletion) {
         completion.complete()
@@ -251,9 +276,13 @@ extension DefaultErrorPresenter {
 
     static func makePresenter(
         for dialog: CheckpointErrorDialog?,
+        presentationContext: PresentationContext?,
         preferredUILocaleProvider: @escaping PreferredUILocaleProvider
     ) -> DefaultErrorPresenter {
-        return DefaultErrorPresenter(preferredUILocaleProvider: preferredUILocaleProvider)
+        return DefaultErrorPresenter(
+            presentationContext: presentationContext,
+            preferredUILocaleProvider: preferredUILocaleProvider
+        )
     }
 
 }

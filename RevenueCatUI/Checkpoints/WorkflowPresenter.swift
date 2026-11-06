@@ -66,6 +66,7 @@ final class WorkflowPresenter: NSObject, WorkflowPresenterType {
         let customVariables: [String: CustomVariableValue]
         let errorPresentationHandler: ErrorPresentationHandler
         let initialActiveEntitlementIdentifiers: Set<String>
+        let presentationContext: PresentationContext?
         var outcomeState: WorkflowOutcomeState = .none
         var dismissalReason: WorkflowDismissalReason = .close
 
@@ -138,7 +139,8 @@ final class WorkflowPresenter: NSObject, WorkflowPresenterType {
             checkpointIdentifier: presentation.checkpointIdentifier,
             customVariables: presentation.customVariables,
             errorPresentationHandler: presentation.errorPresentationHandler,
-            initialActiveEntitlementIdentifiers: presentation.initialActiveEntitlementIdentifiers
+            initialActiveEntitlementIdentifiers: presentation.initialActiveEntitlementIdentifiers,
+            presentationContext: presentation.presentationContext
         )
 
         do {
@@ -174,7 +176,8 @@ final class WorkflowPresenter: NSObject, WorkflowPresenterType {
                 checkpointIdentifier: state.checkpointIdentifier,
                 error: error,
                 customVariables: state.customVariables,
-                kind: kind
+                kind: kind,
+                presentationContext: state.presentationContext
             ),
             .init { [weak self] in
                 self?.handleErrorPresentationResult(
@@ -254,19 +257,6 @@ final class WorkflowPresenter: NSObject, WorkflowPresenterType {
     private func stageDismissalReasonIfNeeded(_ reason: WorkflowDismissalReason) {
         guard reason == .navigatedBack else { return }
         self.stage(.dismissalReason(reason))
-    }
-
-    private func presentAutomatically(_ presentation: WorkflowPresentationRequest) throws {
-        guard let presentationContext = UIApplication.extensionSafeApplication?.currentPresentationViewController else {
-            throw CheckpointError.noPresentationContext
-        }
-        let viewController = try self.makePaywallViewController(for: presentation)
-        viewController.delegate = self
-        viewController.modalPresentationStyle = presentation.presentationMode.modalPresentationStyle
-        presentationContext.present(viewController, animated: true)
-        guard viewController.presentingViewController != nil else {
-            throw CheckpointError.presentationContextUnavailable
-        }
     }
 
     func makePaywallViewController(
@@ -435,6 +425,31 @@ extension WorkflowPresenter {
     }
 
     #endif
+
+}
+
+@available(iOS 15.0, macOS 12.0, *)
+@MainActor
+private extension WorkflowPresenter {
+
+    func presentAutomatically(_ presentation: WorkflowPresentationRequest) throws {
+        let presentationViewController: UIViewController?
+        if let context = presentation.presentationContext {
+            presentationViewController = context.presentationViewController
+        } else {
+            presentationViewController = UIApplication.extensionSafeApplication?.currentPresentationViewController
+        }
+        guard let presentationViewController else {
+            throw CheckpointError.noPresentationContext
+        }
+        let viewController = try self.makePaywallViewController(for: presentation)
+        viewController.delegate = self
+        viewController.modalPresentationStyle = presentation.presentationMode.modalPresentationStyle
+        presentationViewController.present(viewController, animated: true)
+        guard viewController.presentingViewController != nil else {
+            throw CheckpointError.presentationContextUnavailable
+        }
+    }
 
 }
 

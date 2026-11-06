@@ -8,6 +8,7 @@
 //      https://opensource.org/licenses/MIT
 //
 
+@_spi(Internal) import RevenueCat
 @_spi(InviteOnlyCheckpointsApi) @_spi(Internal) @testable import RevenueCatUI
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -17,14 +18,16 @@ extension CheckpointCallParams {
         customVariables: [String: CustomVariableValue] = [:],
         presentationMode: FlowPresentationMode = .default,
         paywallPresenter: PaywallPresentationHandler? = nil,
-        errorPresenter: ErrorPresentationHandler? = nil
+        errorPresenter: ErrorPresentationHandler? = nil,
+        presentationContext: PresentationContext? = nil
     ) {
         self.init(
             customVariables: customVariables,
             presentationMode: presentationMode,
             paywallPresenter: paywallPresenter,
             errorPresenter: errorPresenter,
-            errorDialogFactory: nil
+            errorDialogFactory: nil,
+            presentationContext: presentationContext
         )
     }
 

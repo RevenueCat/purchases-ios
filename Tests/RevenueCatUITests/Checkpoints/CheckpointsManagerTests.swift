@@ -15,6 +15,9 @@
 @_spi(Internal) @testable import RevenueCat
 @_spi(InviteOnlyCheckpointsApi) @_spi(Internal) @testable import RevenueCatUI
 import XCTest
+#if canImport(UIKit) && !os(watchOS)
+import UIKit
+#endif
 
 // swiftlint:disable file_length type_body_length
 
@@ -66,6 +69,17 @@ final class CheckpointsManagerTests: TestCase {
         XCTAssertEqual(CheckpointCallParams(presentationMode: .default).presentationMode, .modalSheet)
         XCTAssertEqual(CheckpointCallParams(presentationMode: .modalFullScreen).presentationMode, .modalFullScreen)
     }
+
+    #if canImport(UIKit) && !os(watchOS)
+    func testCheckpointCallParamsKeepPresentationContext() throws {
+        let sceneClass = try XCTUnwrap(NSClassFromString("UIScene") as? NSObject.Type)
+        let scene = try XCTUnwrap(sceneClass.init() as? UIScene)
+
+        let params = CheckpointCallParams(presentationContext: .init(scene: scene))
+
+        XCTAssertTrue(params.presentationContext?.scene === scene)
+    }
+    #endif
 
     func testErrorPresentationHandlerPrefersLocalPresenter() {
         let globalPresenter = MockErrorPresenter()
@@ -786,6 +800,75 @@ final class CheckpointsManagerTests: TestCase {
         XCTAssertEqual(receivedParams?.offering.identifier, "offering-id")
         XCTAssertTrue(executor.presentations.isEmpty)
     }
+
+    #if canImport(UIKit) && !os(watchOS)
+    func testPresentationContextReachesWorkflowPresentation() async throws {
+        let sceneClass = try XCTUnwrap(NSClassFromString("UIScene") as? NSObject.Type)
+        let scene = try XCTUnwrap(sceneClass.init() as? UIScene)
+        let context = PresentationContext(scene: scene)
+        let presenter = MockWorkflowPresenter()
+        let manager = CheckpointsManager(
+            resolveCheckpoint: { _, _ in .matchedWorkflow(Self.workflow()) },
+            workflowPresenter: presenter
+        )
+
+        _ = try await manager.executeCheckpoint(
+            identifier: "onboarding",
+            params: .init(presentationContext: context)
+        )
+
+        XCTAssertTrue(presenter.presentations.first?.presentationContext?.scene === scene)
+    }
+
+    func testPresentationContextReachesPaywallPresentation() async throws {
+        let sceneClass = try XCTUnwrap(NSClassFromString("UIWindowScene") as? NSObject.Type)
+        let scene = try XCTUnwrap(sceneClass.init() as? UIWindowScene)
+        let context = PresentationContext(scene: scene)
+        var receivedParams: PaywallPresentationParams?
+        let manager = CheckpointsManager(
+            resolveCheckpoint: { _, _ in .matchedOffering(Self.offering(), traceID: "trace_id") },
+            workflowPresenter: MockWorkflowPresenter(),
+            customerInfoSynchronizer: { try Self.customerInfo(activeEntitlements: []) }
+        )
+
+        _ = try await manager.executeCheckpoint(
+            identifier: "onboarding",
+            params: .init(
+                paywallPresenter: { params, completion in
+                    receivedParams = params
+                    completion(.continued)
+                },
+                presentationContext: context
+            )
+        )
+
+        #if os(iOS) && !targetEnvironment(macCatalyst)
+        XCTAssertTrue(receivedParams?.windowScene === scene)
+        #else
+        XCTAssertTrue(receivedParams?.presentationContext?.windowScene === scene)
+        #endif
+    }
+
+    #if os(iOS) && !targetEnvironment(macCatalyst)
+    func testPresentationContextReachesAdPresentation() async throws {
+        let sceneClass = try XCTUnwrap(NSClassFromString("UIWindowScene") as? NSObject.Type)
+        let scene = try XCTUnwrap(sceneClass.init() as? UIWindowScene)
+        let presenter = MockAdPresenter()
+        let manager = CheckpointsManager(
+            resolveCheckpoint: { _, _ in .matchedAd(Self.adStep()) },
+            workflowPresenter: MockWorkflowPresenter()
+        )
+        manager.adPresenter = presenter
+
+        _ = try await manager.executeCheckpoint(
+            identifier: "onboarding",
+            params: .init(presentationContext: .init(scene: scene))
+        )
+
+        XCTAssertTrue(presenter.receivedParams?.windowScene === scene)
+    }
+    #endif
+    #endif
 
     func testCallSitePaywallPresenterOverridesGlobalPresenter() async throws {
         let global = MockPaywallPresenter()
@@ -1623,7 +1706,8 @@ private extension CheckpointsManagerTests {
             checkpointIdentifier: "test_checkpoint",
             error: NSError(domain: "test", code: 1),
             customVariables: [:],
-            kind: .flowActionFailed
+            kind: .flowActionFailed,
+            presentationContext: nil
         )
     }
 

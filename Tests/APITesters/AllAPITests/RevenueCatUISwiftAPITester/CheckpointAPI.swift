@@ -14,6 +14,9 @@
 
 import RevenueCat
 @_spi(InviteOnlyCheckpointsApi) @_spi(Internal) import RevenueCatUI
+#if os(iOS) && !targetEnvironment(macCatalyst)
+import UIKit
+#endif
 
 func checkCheckpointAPI(_ purchases: Purchases) {
     let literalCustomVariables: [String: CustomVariableValue] = [
@@ -48,6 +51,13 @@ func checkCheckpointAPI(_ purchases: Purchases) {
     let _: StoreProduct? = product?.product
 }
 
+#if os(iOS) && !targetEnvironment(macCatalyst)
+@MainActor
+private func checkCheckpointWindowSceneAPI(_ purchases: Purchases, windowScene: UIWindowScene) {
+    purchases.checkpoint("test_checkpoint", in: windowScene) { (_: CheckpointResult) in }
+}
+#endif
+
 private func checkCheckpointResultAPI(_ result: CheckpointResult) {
     let _: FlowResult? = result.flow
     let _: CustomerInfo = result.customer
@@ -80,6 +90,9 @@ private func checkPaywallPresentationAPI(
         let _: [String: CustomVariableValue] = params.customVariables
         let _: FlowPresentationMode = params.presentationMode
         let _: Offering = params.offering
+        #if os(iOS) && !targetEnvironment(macCatalyst)
+        let _: UIWindowScene? = params.windowScene
+        #endif
         completion(.continued)
     }
 
@@ -101,6 +114,9 @@ private func checkErrorPresentationAPI(_ purchases: Purchases) {
         let _: any Error = params.error
         let _: [String: CustomVariableValue] = params.customVariables
         let _: CheckpointFailureKind = params.kind
+        #if os(iOS) && !targetEnvironment(macCatalyst)
+        let _: UIWindowScene? = params.windowScene
+        #endif
         completion.complete()
     }
 
@@ -172,6 +188,9 @@ private final class CheckpointAPIAdPresenter: AdPresenter {
         let _: String = params.adIdentifier
         let _: MediatorName = params.mediator
         let _: AdFormat = params.adFormat
+        #if os(iOS) && !targetEnvironment(macCatalyst)
+        let _: UIWindowScene? = params.windowScene
+        #endif
         completion(.shown)
     }
 
