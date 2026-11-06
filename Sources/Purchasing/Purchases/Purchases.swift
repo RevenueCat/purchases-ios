@@ -2154,11 +2154,13 @@ extension Purchases {
         clientTransactionID: String,
         trackingMetadata: RewardedAdTrackingMetadata? = nil
     ) async -> RewardVerificationResult {
-        await self.pollRewardVerification(
+        let appUserID = self.appUserID
+        return await self.pollRewardVerification(
             clientTransactionID: clientTransactionID,
+            appUserID: appUserID,
             trackingMetadata: trackingMetadata,
             captureMethod: .manual,
-            poller: RewardVerification.Poller.makeDefault(adUnitID: trackingMetadata?.adUnitId)
+            poller: RewardVerification.Poller.makeDefault(adUnitID: trackingMetadata?.adUnitId, appUserID: appUserID)
         )
     }
 
@@ -2169,21 +2171,25 @@ extension Purchases {
         trackingMetadata: RewardedAdTrackingMetadata?,
         captureMethod: AdEventCaptureMethod
     ) async -> RewardVerificationResult {
-        await self.pollRewardVerification(
+        let appUserID = self.appUserID
+        return await self.pollRewardVerification(
             clientTransactionID: clientTransactionID,
+            appUserID: appUserID,
             trackingMetadata: trackingMetadata,
             captureMethod: captureMethod,
-            poller: RewardVerification.Poller.makeDefault(adUnitID: trackingMetadata?.adUnitId)
+            poller: RewardVerification.Poller.makeDefault(adUnitID: trackingMetadata?.adUnitId, appUserID: appUserID)
         )
     }
 
+    /// `appUserID` is captured once by the caller so the poll requests and the cached `CustomerInfo`
+    /// always refer to the same user, even if `logIn` lands mid-poll.
     internal func pollRewardVerification(
         clientTransactionID: String,
+        appUserID: String,
         trackingMetadata: RewardedAdTrackingMetadata? = nil,
         captureMethod: AdEventCaptureMethod = .manual,
         poller: RewardVerification.Poller
     ) async -> RewardVerificationResult {
-        let appUserID = self.appUserID
         self.trackRewardEarnedUnverified(
             trackingMetadata: trackingMetadata,
             captureMethod: captureMethod
@@ -2322,11 +2328,12 @@ extension Purchases {
     /// - Throws: `BackendError`
     internal func fetchRewardVerificationStatus(
         clientTransactionID: String,
-        adUnitID: String?
+        adUnitID: String?,
+        appUserID: String
     ) async throws -> RewardVerificationPollStatus {
         let response = try await Async.call { completion in
             self.backend.adsAPI.getRewardVerificationStatus(
-                appUserID: self.appUserID,
+                appUserID: appUserID,
                 clientTransactionID: clientTransactionID,
                 adUnitID: adUnitID,
                 completion: completion

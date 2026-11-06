@@ -31,13 +31,37 @@ final class PurchasesRewardVerificationTests: BasePurchasesTests {
         self.setupPurchases()
     }
 
+    private func fetchRewardVerificationStatus(
+        clientTransactionID: String,
+        adUnitID: String?
+    ) async throws -> RewardVerificationPollStatus {
+        try await self.purchases.fetchRewardVerificationStatus(
+            clientTransactionID: clientTransactionID,
+            adUnitID: adUnitID,
+            appUserID: self.identityManager.currentAppUserID
+        )
+    }
+
+    private func pollRewardVerification(
+        clientTransactionID: String,
+        trackingMetadata: RewardedAdTrackingMetadata? = nil,
+        poller: RewardVerification.Poller
+    ) async -> RewardVerificationResult {
+        await self.purchases.pollRewardVerification(
+            clientTransactionID: clientTransactionID,
+            appUserID: self.identityManager.currentAppUserID,
+            trackingMetadata: trackingMetadata,
+            poller: poller
+        )
+    }
+
     func testFetchRewardVerificationStatusMapsUnknownStatusToUnknown() async throws {
         let transactionID = "AABBCCDD-1111-2222-3333-444455556666"
         try self.mockAdsAPI.stubbedGetRewardVerificationStatusResult = .success(
             .init(status: .unknown, customerInfo: nil)
         )
 
-        let status = try await self.purchases.fetchRewardVerificationStatus(
+        let status = try await self.fetchRewardVerificationStatus(
             clientTransactionID: transactionID,
             adUnitID: nil
         )
@@ -55,9 +79,23 @@ final class PurchasesRewardVerificationTests: BasePurchasesTests {
             .init(status: .pending, customerInfo: nil)
         )
 
-        _ = try await self.purchases.fetchRewardVerificationStatus(clientTransactionID: "tx-id", adUnitID: "ad-unit")
+        _ = try await self.fetchRewardVerificationStatus(clientTransactionID: "tx-id", adUnitID: "ad-unit")
 
         expect(try self.mockAdsAPI.invokedGetRewardVerificationStatusParameters?.adUnitID) == "ad-unit"
+    }
+
+    func testFetchRewardVerificationStatusRequestsGivenAppUserID() async throws {
+        try self.mockAdsAPI.stubbedGetRewardVerificationStatusResult = .success(
+            .init(status: .pending, customerInfo: nil)
+        )
+
+        _ = try await self.purchases.fetchRewardVerificationStatus(
+            clientTransactionID: "tx-id",
+            adUnitID: nil,
+            appUserID: "other-user"
+        )
+
+        expect(try self.mockAdsAPI.invokedGetRewardVerificationStatusParameters?.appUserID) == "other-user"
     }
 
     func testFetchRewardVerificationStatusMapsVerifiedStatusWithVirtualCurrencyReward() async throws {
@@ -66,7 +104,7 @@ final class PurchasesRewardVerificationTests: BasePurchasesTests {
             .init(status: .verified(.virtualCurrency(reward)), customerInfo: nil)
         )
 
-        let status = try await self.purchases.fetchRewardVerificationStatus(clientTransactionID: "tx-id", adUnitID: nil)
+        let status = try await self.fetchRewardVerificationStatus(clientTransactionID: "tx-id", adUnitID: nil)
 
         expect(status) == .verified(.virtualCurrency(reward))
     }
@@ -76,7 +114,7 @@ final class PurchasesRewardVerificationTests: BasePurchasesTests {
             .init(status: .verified(.noReward), customerInfo: nil)
         )
 
-        let status = try await self.purchases.fetchRewardVerificationStatus(clientTransactionID: "tx-id", adUnitID: nil)
+        let status = try await self.fetchRewardVerificationStatus(clientTransactionID: "tx-id", adUnitID: nil)
 
         expect(status) == .verified(.noReward)
     }
@@ -86,7 +124,7 @@ final class PurchasesRewardVerificationTests: BasePurchasesTests {
             .init(status: .verified(.unsupportedReward), customerInfo: nil)
         )
 
-        let status = try await self.purchases.fetchRewardVerificationStatus(clientTransactionID: "tx-id", adUnitID: nil)
+        let status = try await self.fetchRewardVerificationStatus(clientTransactionID: "tx-id", adUnitID: nil)
 
         expect(status) == .verified(.unsupportedReward)
     }
@@ -96,7 +134,7 @@ final class PurchasesRewardVerificationTests: BasePurchasesTests {
             .init(status: .pending, customerInfo: nil)
         )
 
-        let status = try await self.purchases.fetchRewardVerificationStatus(clientTransactionID: "tx-id", adUnitID: nil)
+        let status = try await self.fetchRewardVerificationStatus(clientTransactionID: "tx-id", adUnitID: nil)
 
         expect(status) == .pending
     }
@@ -106,7 +144,7 @@ final class PurchasesRewardVerificationTests: BasePurchasesTests {
             .init(status: .failed(.init(reason: nil, message: nil)), customerInfo: nil)
         )
 
-        let status = try await self.purchases.fetchRewardVerificationStatus(clientTransactionID: "tx-id", adUnitID: nil)
+        let status = try await self.fetchRewardVerificationStatus(clientTransactionID: "tx-id", adUnitID: nil)
 
         expect(status) == .failed(reason: nil, message: nil)
     }
@@ -119,7 +157,7 @@ final class PurchasesRewardVerificationTests: BasePurchasesTests {
             )), customerInfo: nil)
         )
 
-        let status = try await self.purchases.fetchRewardVerificationStatus(clientTransactionID: "tx-id", adUnitID: nil)
+        let status = try await self.fetchRewardVerificationStatus(clientTransactionID: "tx-id", adUnitID: nil)
 
         expect(status) == .failed(
             reason: "no_access",
@@ -134,7 +172,7 @@ final class PurchasesRewardVerificationTests: BasePurchasesTests {
             .init(status: .verified(.entitlement(reward)), customerInfo: customerInfo)
         )
 
-        let status = try await self.purchases.fetchRewardVerificationStatus(clientTransactionID: "tx-id", adUnitID: nil)
+        let status = try await self.fetchRewardVerificationStatus(clientTransactionID: "tx-id", adUnitID: nil)
 
         expect(status) == .verified(reward: .entitlement(reward), moreRewards: [], customerInfo: customerInfo)
     }
@@ -144,7 +182,7 @@ final class PurchasesRewardVerificationTests: BasePurchasesTests {
         try self.mockAdsAPI.stubbedGetRewardVerificationStatusResult = .failure(backendError)
 
         do {
-            _ = try await self.purchases.fetchRewardVerificationStatus(clientTransactionID: "tx-id", adUnitID: nil)
+            _ = try await self.fetchRewardVerificationStatus(clientTransactionID: "tx-id", adUnitID: nil)
             fail("Expected fetchRewardVerificationStatus to throw")
         } catch {
             expect(error).to(matchError(backendError))
@@ -165,7 +203,7 @@ extension PurchasesRewardVerificationTests {
         let reward = try XCTUnwrap(VirtualCurrencyReward(code: "coins", amount: 3))
         let poller = self.makeStubPoller(statuses: [.verified(.virtualCurrency(reward))])
 
-        let result = await self.purchases.pollRewardVerification(clientTransactionID: "tx-1", poller: poller)
+        let result = await self.pollRewardVerification(clientTransactionID: "tx-1", poller: poller)
 
         expect(result.verifiedReward) == .virtualCurrency(reward)
     }
@@ -173,7 +211,7 @@ extension PurchasesRewardVerificationTests {
     func testPollRewardVerificationReturnsVerifiedWithNoReward() async {
         let poller = self.makeStubPoller(statuses: [.verified(.noReward)])
 
-        let result = await self.purchases.pollRewardVerification(clientTransactionID: "tx-1", poller: poller)
+        let result = await self.pollRewardVerification(clientTransactionID: "tx-1", poller: poller)
 
         expect(result) == .verified(.noReward)
     }
@@ -181,7 +219,7 @@ extension PurchasesRewardVerificationTests {
     func testPollRewardVerificationReturnsVerifiedWithUnsupportedReward() async {
         let poller = self.makeStubPoller(statuses: [.verified(.unsupportedReward)])
 
-        let result = await self.purchases.pollRewardVerification(clientTransactionID: "tx-1", poller: poller)
+        let result = await self.pollRewardVerification(clientTransactionID: "tx-1", poller: poller)
 
         expect(result) == .verified(.unsupportedReward)
     }
@@ -189,7 +227,7 @@ extension PurchasesRewardVerificationTests {
     func testPollRewardVerificationReturnsFailed() async {
         let poller = self.makeStubPoller(statuses: [.failed(reason: nil, message: nil)])
 
-        let result = await self.purchases.pollRewardVerification(clientTransactionID: "tx-1", poller: poller)
+        let result = await self.pollRewardVerification(clientTransactionID: "tx-1", poller: poller)
 
         expect(result) == .failed
     }
@@ -198,7 +236,7 @@ extension PurchasesRewardVerificationTests {
         let reward = try XCTUnwrap(VirtualCurrencyReward(code: "coins", amount: 4))
         let poller = self.makeStubPoller(statuses: [.verified(.virtualCurrency(reward))])
 
-        _ = await self.purchases.pollRewardVerification(clientTransactionID: "tx-1", poller: poller)
+        _ = await self.pollRewardVerification(clientTransactionID: "tx-1", poller: poller)
 
         expect(self.mockVirtualCurrencyManager.invalidateVirtualCurrenciesCacheCallCount) == 1
     }
@@ -206,7 +244,7 @@ extension PurchasesRewardVerificationTests {
     func testPollRewardVerificationDoesNotInvalidateCacheOnNoReward() async {
         let poller = self.makeStubPoller(statuses: [.verified(.noReward)])
 
-        _ = await self.purchases.pollRewardVerification(clientTransactionID: "tx-1", poller: poller)
+        _ = await self.pollRewardVerification(clientTransactionID: "tx-1", poller: poller)
 
         expect(self.mockVirtualCurrencyManager.invalidateVirtualCurrenciesCacheCallCount) == 0
     }
@@ -214,7 +252,7 @@ extension PurchasesRewardVerificationTests {
     func testPollRewardVerificationDoesNotInvalidateCacheOnUnsupportedReward() async {
         let poller = self.makeStubPoller(statuses: [.verified(.unsupportedReward)])
 
-        _ = await self.purchases.pollRewardVerification(clientTransactionID: "tx-1", poller: poller)
+        _ = await self.pollRewardVerification(clientTransactionID: "tx-1", poller: poller)
 
         expect(self.mockVirtualCurrencyManager.invalidateVirtualCurrenciesCacheCallCount) == 0
     }
@@ -222,7 +260,7 @@ extension PurchasesRewardVerificationTests {
     func testPollRewardVerificationDoesNotInvalidateCacheOnFailed() async {
         let poller = self.makeStubPoller(statuses: [.failed(reason: nil, message: nil)])
 
-        _ = await self.purchases.pollRewardVerification(clientTransactionID: "tx-1", poller: poller)
+        _ = await self.pollRewardVerification(clientTransactionID: "tx-1", poller: poller)
 
         expect(self.mockVirtualCurrencyManager.invalidateVirtualCurrenciesCacheCallCount) == 0
     }
@@ -232,7 +270,7 @@ extension PurchasesRewardVerificationTests {
         let before = self.backend.getCustomerInfoCallCount
         let poller = self.makeStubPoller(statuses: [.verified(.entitlement(reward))])
 
-        let result = await self.purchases.pollRewardVerification(clientTransactionID: "tx-1", poller: poller)
+        let result = await self.pollRewardVerification(clientTransactionID: "tx-1", poller: poller)
 
         expect(result.verifiedReward) == .entitlement(reward)
         expect(self.backend.getCustomerInfoCallCount) == before
@@ -247,7 +285,7 @@ extension PurchasesRewardVerificationTests {
             .verified(reward: .entitlement(reward), moreRewards: [], customerInfo: customerInfo)
         ])
 
-        let result = await self.purchases.pollRewardVerification(clientTransactionID: "tx-1", poller: poller)
+        let result = await self.pollRewardVerification(clientTransactionID: "tx-1", poller: poller)
 
         expect(result.verifiedReward) == .entitlement(reward)
         expect(self.backend.getCustomerInfoCallCount) == before
@@ -268,7 +306,7 @@ extension PurchasesRewardVerificationTests {
                       customerInfo: customerInfo)
         ])
 
-        let result = await self.purchases.pollRewardVerification(clientTransactionID: "tx-1", poller: poller)
+        let result = await self.pollRewardVerification(clientTransactionID: "tx-1", poller: poller)
 
         expect(result.moreRewards) == [.entitlement(entitlement)]
         expect(self.mockVirtualCurrencyManager.invalidateVirtualCurrenciesCacheCallCount) == 1
@@ -307,7 +345,7 @@ extension PurchasesRewardVerificationTests {
         let before = self.backend.getCustomerInfoCallCount
         let poller = self.makeStubPoller(statuses: [.verified(.virtualCurrency(reward))])
 
-        _ = await self.purchases.pollRewardVerification(clientTransactionID: "tx-1", poller: poller)
+        _ = await self.pollRewardVerification(clientTransactionID: "tx-1", poller: poller)
 
         expect(self.backend.getCustomerInfoCallCount) == before
     }
@@ -322,7 +360,7 @@ extension PurchasesRewardVerificationTests {
                       customerInfo: nil)
         ])
 
-        let result = await self.purchases.pollRewardVerification(clientTransactionID: "tx-1", poller: poller)
+        let result = await self.pollRewardVerification(clientTransactionID: "tx-1", poller: poller)
 
         expect(self.mockVirtualCurrencyManager.invalidateVirtualCurrenciesCacheCallCount) == 1
         expect(self.backend.getCustomerInfoCallCount) == before
@@ -341,10 +379,11 @@ extension PurchasesRewardVerificationTests {
         ) { identityManager.mockAppUserID = newAppUserID }
         let poller = makePoller(statusPoller: statusPoller, sleeper: RecordingSleeper())
 
-        _ = await self.purchases.pollRewardVerification(clientTransactionID: "tx-1", poller: poller)
+        _ = await self.pollRewardVerification(clientTransactionID: "tx-1", poller: poller)
 
         expect(try self.customerInfoManager.cachedCustomerInfo(appUserID: originalAppUserID)) == customerInfo
         expect(try self.customerInfoManager.cachedCustomerInfo(appUserID: newAppUserID)).to(beNil())
+        await expect(self.purchasesDelegate.customerInfo).toNever(equal(customerInfo), until: .milliseconds(200))
     }
 
 }
@@ -387,7 +426,7 @@ extension PurchasesRewardVerificationTests {
         let reward = try XCTUnwrap(VirtualCurrencyReward(code: "coins", amount: 3))
         let poller = self.makeStubPoller(statuses: [.verified(.virtualCurrency(reward))])
 
-        _ = await self.purchases.pollRewardVerification(clientTransactionID: "tx-1", poller: poller)
+        _ = await self.pollRewardVerification(clientTransactionID: "tx-1", poller: poller)
 
         await expect { try await self.mockEventsManager.trackedAdEvents }.toEventually(beEmpty())
     }
@@ -397,7 +436,7 @@ extension PurchasesRewardVerificationTests {
         let reward = try XCTUnwrap(VirtualCurrencyReward(code: "coins", amount: 3))
         let poller = self.makeStubPoller(statuses: [.verified(.virtualCurrency(reward))])
 
-        _ = await self.purchases.pollRewardVerification(
+        _ = await self.pollRewardVerification(
             clientTransactionID: "tx-1",
             trackingMetadata: self.makeTrackingMetadata(),
             poller: poller
@@ -423,7 +462,7 @@ extension PurchasesRewardVerificationTests {
         let reward = try XCTUnwrap(VirtualCurrencyReward(code: "coins", amount: 3))
         let poller = self.makeStubPoller(statuses: [.verified(.virtualCurrency(reward))])
 
-        _ = await self.purchases.pollRewardVerification(
+        _ = await self.pollRewardVerification(
             clientTransactionID: "tx-1",
             trackingMetadata: self.makeTrackingMetadata(),
             poller: poller
@@ -446,7 +485,7 @@ extension PurchasesRewardVerificationTests {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
         let poller = self.makeStubPoller(statuses: [.verified(.noReward)])
 
-        _ = await self.purchases.pollRewardVerification(
+        _ = await self.pollRewardVerification(
             clientTransactionID: "tx-1",
             trackingMetadata: self.makeTrackingMetadata(),
             poller: poller
@@ -468,7 +507,7 @@ extension PurchasesRewardVerificationTests {
                       customerInfo: nil)
         ])
 
-        _ = await self.purchases.pollRewardVerification(
+        _ = await self.pollRewardVerification(
             clientTransactionID: "tx-1",
             trackingMetadata: self.makeTrackingMetadata(),
             poller: poller
@@ -491,7 +530,7 @@ extension PurchasesRewardVerificationTests {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
         let poller = self.makeStubPoller(statuses: [.failed(reason: "no_reward_rule", message: "nope")])
 
-        _ = await self.purchases.pollRewardVerification(
+        _ = await self.pollRewardVerification(
             clientTransactionID: "tx-1",
             trackingMetadata: self.makeTrackingMetadata(),
             poller: poller
@@ -511,7 +550,7 @@ extension PurchasesRewardVerificationTests {
         let poller = self.makeStubPoller(statuses: [.pending, .verified(.noReward)])
 
         let task = Task {
-            await self.purchases.pollRewardVerification(
+            await self.pollRewardVerification(
                 clientTransactionID: "tx-1",
                 trackingMetadata: self.makeTrackingMetadata(),
                 poller: poller
