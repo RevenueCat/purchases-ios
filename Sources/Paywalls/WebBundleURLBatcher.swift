@@ -20,14 +20,22 @@ protocol WebBundleURLBatcherType: Sendable {
 
 }
 
-/// Selects web-view entry URLs in the order a customer is likely to see them, then publishes one
-/// batch per screen to ``WebBundleEventBus``.
+extension WebBundleURLBatcherType {
+
+    /// Extracts and publishes web-bundle URLs from an already decoded workflow.
+    @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
+    func publishWebBundles(in workflow: PublishedWorkflow) async {
+        await self.publish(WebBundleURLBatcher.screenURLBatches(in: workflow))
+    }
+
+}
+
+/// Publishes caller-ordered web-view entry URL batches one screen at a time to ``WebBundleEventBus``.
 ///
 /// Each batch is every web-view URL on that screen so the receiver can cache a complete screen
-/// instead of a partial one. Batches are sent in cache-priority order: current offering, then each
-/// placement's offering, then the placement fallback. Prefetch-only workflows are not included.
-/// Within a workflow, the initial screen is first, its single-step fallback is second, then the
-/// remaining reachable screens follow in breadth-first order.
+/// instead of a partial one. Callers determine cross-workflow cache priority. Within a workflow,
+/// ``screenURLBatches(in:)`` puts the initial screen first, its single-step fallback second, then
+/// the remaining reachable screens in breadth-first order.
 actor WebBundleURLBatcher: WebBundleURLBatcherType {
 
     static let shared = WebBundleURLBatcher()

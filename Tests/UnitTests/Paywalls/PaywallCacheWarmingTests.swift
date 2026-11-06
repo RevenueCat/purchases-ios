@@ -706,6 +706,82 @@ final class PaywallCacheWarmingTests: TestCase {
             .union(Self.localizedImageRequests("localized-es")))
     }
 
+    func testStartWorkflowAssetPrewarmingReturnsBeforeDownloadsComplete() async throws {
+        let fileRepository = BlockingCacheWarmingFileRepository()
+        let cache = PaywallCacheWarming(
+            introEligibiltyChecker: self.eligibilityChecker,
+            fileRepository: fileRepository
+        )
+        let workflow = PublishedWorkflow(
+            id: "workflow",
+            displayName: "Test",
+            initialStepId: "step",
+            singleStepFallbackId: nil,
+            steps: [:],
+            screens: ["screen": Self.workflowScreen(components: [
+                .image(.init(source: Self.cacheWarmingImage("image")))
+            ])]
+        )
+
+        let optionalTask = await cache.startWorkflowAssetPrewarming(
+            workflow: workflow,
+            uiConfig: Self.emptyUIConfig
+        )
+        let task = try XCTUnwrap(optionalTask)
+        await expect { await fileRepository.requestStarted }.toEventually(beTrue())
+
+        let completedBeforeRelease = await fileRepository.requestCompleted
+        expect(completedBeforeRelease) == false
+        await fileRepository.completeRequest()
+        await task.value
+        let completedAfterRelease = await fileRepository.requestCompleted
+        expect(completedAfterRelease) == true
+    }
+
+    func testStartWorkflowAssetPrewarmingDoesNotQueueDifferentWorkflows() async throws {
+        let fileRepository = BlockingCacheWarmingFileRepository()
+        let cache = PaywallCacheWarming(
+            introEligibiltyChecker: self.eligibilityChecker,
+            fileRepository: fileRepository
+        )
+        let workflow = { (id: String) in
+            PublishedWorkflow(
+                id: id,
+                displayName: "Test",
+                initialStepId: "step",
+                singleStepFallbackId: nil,
+                steps: [:],
+                screens: ["screen": Self.workflowScreen(components: [
+                    .image(.init(source: Self.cacheWarmingImage(id)))
+                ])]
+            )
+        }
+        let firstWorkflow = workflow("first")
+        let secondWorkflow = workflow("second")
+
+        let optionalFirstTask = await cache.startWorkflowAssetPrewarming(
+            workflow: firstWorkflow,
+            uiConfig: Self.emptyUIConfig
+        )
+        let firstTask = try XCTUnwrap(optionalFirstTask)
+        await expect { await fileRepository.requestCount }.toEventually(equal(1))
+
+        let optionalSecondTask = await cache.startWorkflowAssetPrewarming(
+            workflow: secondWorkflow,
+            uiConfig: Self.emptyUIConfig
+        )
+        let secondTask = try XCTUnwrap(optionalSecondTask)
+        await expect { await fileRepository.requestCount }.toEventually(equal(2))
+
+        await cache.prewarmWorkflowAssets(workflow: secondWorkflow, uiConfig: Self.emptyUIConfig)
+        let requestCount = await fileRepository.requestCount
+        expect(requestCount) == 2
+
+        await fileRepository.completeRequests()
+        await firstTask.value
+        await secondTask.value
+    }
+
     func testWorkflowAssetPrewarmingDownloadsLocalizedVideosForPreferredLocaleOnly() async {
         let requests = await self.localizedVideoPrewarmingRequests(preferredLocale: "es_ES")
 
@@ -1602,6 +1678,37 @@ private actor MockCacheWarmingFileRepository: FileRepositoryType {
     ) async throws -> OutputURL {
         self.requests.append(.init(url: url, checksum: checksum))
         return url
+    }
+
+}
+
+private actor BlockingCacheWarmingFileRepository: FileRepositoryType {
+
+    var requestStarted: Bool { return self.requestCount > 0 }
+    private(set) var requestCount = 0
+    private(set) var requestCompleted = false
+    private var continuations: [CheckedContinuation<Void, Never>] = []
+
+    nonisolated func prefetch(urls: [InputURL]) {}
+
+    func generateOrGetCachedFileURL(
+        for url: InputURL,
+        withChecksum checksum: Checksum?
+    ) async throws -> OutputURL {
+        self.requestCount += 1
+        await withCheckedContinuation { self.continuations.append($0) }
+        self.requestCompleted = true
+        return url
+    }
+
+    func completeRequest() {
+        guard !self.continuations.isEmpty else { return }
+        self.continuations.removeFirst().resume()
+    }
+
+    func completeRequests() {
+        self.continuations.forEach { $0.resume() }
+        self.continuations.removeAll()
     }
 
 }

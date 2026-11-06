@@ -922,10 +922,8 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
     /// Prewarming reads its fonts from `uiConfig`, not from the workflow's screens, so a screenless
     /// offering workflow would still download every app font if it were scheduled here.
     func testTerminalOfferingWorkflowDoesNotScheduleAssetPrewarming() async throws {
-        guard #available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *) else {
-            // Without this the assertion would pass vacuously: nothing prewarms below iOS 15.
-            throw XCTSkip("prewarmWorkflowAssets requires iOS 15+")
-        }
+        // Without this the assertion would pass vacuously: nothing prewarms below iOS 15.
+        try requireWorkflowPrewarmingAvailability()
 
         let cache = MockPaywallCacheWarming()
         self.workflowManager = WorkflowManager(
@@ -942,9 +940,7 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
     }
 
     func testResolvedWorkflowSchedulesAssetPrewarming() async throws {
-        guard #available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *) else {
-            throw XCTSkip("prewarmWorkflowAssets requires iOS 15+")
-        }
+        try requireWorkflowPrewarmingAvailability()
 
         let cache = MockPaywallCacheWarming()
         self.workflowManager = WorkflowManager(

@@ -28,7 +28,7 @@ actor WorkflowPrewarmingDecodeCoordinator {
         let configGeneration: Int
     }
 
-    private let decodeLimiter: DecodeLimiter
+    private let decodeLimiter: AsyncConcurrencyLimiter
     private var inFlightDecodes: [DecodeID: InFlightDecode] = [:]
 #if DEBUG
     // Used by tests to track callers waiting for a decode.
@@ -36,7 +36,7 @@ actor WorkflowPrewarmingDecodeCoordinator {
 #endif
 
     init(maxConcurrentDecodes: Int = 4) {
-        self.decodeLimiter = .init(maxConcurrentDecodes: maxConcurrentDecodes)
+        self.decodeLimiter = .init(maxConcurrentOperations: maxConcurrentDecodes)
     }
 
     /// Shares only active work from the same config generation. Completed graphs are released instead of becoming
@@ -62,10 +62,9 @@ actor WorkflowPrewarmingDecodeCoordinator {
         let identifier = UUID()
         let decodeLimiter = self.decodeLimiter
         let task = Task {
-            await decodeLimiter.acquire()
-            let result = await provider.decodeCachedWorkflowForAssetPrewarming(workflowId: workflowId)
-            await decodeLimiter.release()
-            return result
+            return await decodeLimiter.perform {
+                await provider.decodeCachedWorkflowForAssetPrewarming(workflowId: workflowId)
+            }
         }
         self.inFlightDecodes[decodeID] = InFlightDecode(identifier: identifier, task: task)
 
@@ -75,36 +74,4 @@ actor WorkflowPrewarmingDecodeCoordinator {
         }
         return result
     }
-
-    private actor DecodeLimiter {
-
-        private var availablePermits: Int
-        private var waiters: [CheckedContinuation<Void, Never>] = []
-
-        init(maxConcurrentDecodes: Int) {
-            self.availablePermits = max(1, maxConcurrentDecodes)
-        }
-
-        func acquire() async {
-            guard self.availablePermits == 0 else {
-                self.availablePermits -= 1
-                return
-            }
-
-            await withCheckedContinuation { continuation in
-                self.waiters.append(continuation)
-            }
-        }
-
-        func release() {
-            guard !self.waiters.isEmpty else {
-                self.availablePermits += 1
-                return
-            }
-
-            self.waiters.removeFirst().resume()
-        }
-
-    }
-
 }

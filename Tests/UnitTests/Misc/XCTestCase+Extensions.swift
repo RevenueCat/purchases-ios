@@ -39,6 +39,12 @@ func XCTAsyncUnwrap<T: Sendable>(
     )
 }
 
+func requireWorkflowPrewarmingAvailability() throws {
+    guard #available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *) else {
+        throw XCTSkip("Workflow prewarming requires iOS 15+")
+    }
+}
+
 // `Nimble.throwAssertion` crashes when called from watchOS
 // This avoids that by failing to compile instead.
 @available(watchOS, unavailable)
