@@ -12,7 +12,7 @@
 
 import Foundation
 
-/// Production wiring: `Purchases.shared.fetchRewardVerificationStatus(clientTransactionID:)`,
+/// Production wiring: `Purchases.shared.fetchRewardVerificationStatus(clientTransactionID:adUnitID:appUserID:)`,
 /// which throws a structured ``BackendError`` so the poller can reuse the SDK's retry
 /// classification (``BackendError/isTransient``).
 internal protocol RewardVerificationStatusPolling: Sendable {
