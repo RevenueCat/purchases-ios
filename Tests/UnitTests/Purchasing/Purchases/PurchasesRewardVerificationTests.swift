@@ -49,7 +49,6 @@ final class PurchasesRewardVerificationTests: BasePurchasesTests {
     ) async -> RewardVerificationResult {
         await self.purchases.pollRewardVerification(
             clientTransactionID: clientTransactionID,
-            appUserID: self.identityManager.currentAppUserID,
             trackingMetadata: trackingMetadata,
             poller: poller
         )
@@ -381,6 +380,7 @@ extension PurchasesRewardVerificationTests {
 
         _ = await self.pollRewardVerification(clientTransactionID: "tx-1", poller: poller)
 
+        expect(statusPoller.receivedAppUserIDs) == [originalAppUserID]
         expect(try self.customerInfoManager.cachedCustomerInfo(appUserID: originalAppUserID)) == customerInfo
         expect(try self.customerInfoManager.cachedCustomerInfo(appUserID: newAppUserID)).to(beNil())
         await expect(self.purchasesDelegate.customerInfo).toNever(equal(customerInfo), until: .milliseconds(200))
@@ -392,13 +392,15 @@ private final class UserSwitchingStatusPoller: RewardVerificationStatusPolling, 
 
     private let status: RewardVerificationPollStatus
     private let onPoll: () -> Void
+    private(set) var receivedAppUserIDs: [String] = []
 
     init(status: RewardVerificationPollStatus, onPoll: @escaping () -> Void) {
         self.status = status
         self.onPoll = onPoll
     }
 
-    func pollStatus(clientTransactionID: String) async throws -> RewardVerificationPollStatus {
+    func pollStatus(clientTransactionID: String, appUserID: String) async throws -> RewardVerificationPollStatus {
+        self.receivedAppUserIDs.append(appUserID)
         self.onPoll()
         return self.status
     }

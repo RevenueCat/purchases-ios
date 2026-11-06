@@ -26,7 +26,7 @@ final class RewardVerificationPollerTests: TestCase {
         let sleeper = RecordingSleeper()
         let sut = makePoller(statusPoller: statusPoller, sleeper: sleeper)
 
-        let outcome = await sut.run(clientTransactionID: "tx-1")
+        let outcome = await sut.run(clientTransactionID: "tx-1", appUserID: "user-1")
 
         guard case let .verified(adReward, _, _) = outcome, let earnedReward = adReward.virtualCurrency else {
             return XCTFail("Expected .verified(.virtualCurrency), got \(outcome)")
@@ -41,7 +41,7 @@ final class RewardVerificationPollerTests: TestCase {
         let sleeper = RecordingSleeper()
         let sut = makePoller(statusPoller: statusPoller, sleeper: sleeper)
 
-        let outcome = await sut.run(clientTransactionID: "tx-1")
+        let outcome = await sut.run(clientTransactionID: "tx-1", appUserID: "user-1")
 
         guard case .failed(.backendRejected(nil, nil)) = outcome else {
             return XCTFail("Expected .failed(.backendRejected(nil, nil)), got \(outcome)")
@@ -58,7 +58,7 @@ final class RewardVerificationPollerTests: TestCase {
         let sleeper = RecordingSleeper()
         let sut = makePoller(statusPoller: statusPoller, sleeper: sleeper)
 
-        let outcome = await sut.run(clientTransactionID: "tx-1")
+        let outcome = await sut.run(clientTransactionID: "tx-1", appUserID: "user-1")
 
         guard case let .failed(.backendRejected(reason, message)) = outcome else {
             return XCTFail("Expected .failed(.backendRejected), got \(outcome)")
@@ -76,7 +76,7 @@ final class RewardVerificationPollerTests: TestCase {
         let sleeper = RecordingSleeper()
         let sut = makePoller(statusPoller: statusPoller, sleeper: sleeper)
 
-        let outcome = await sut.run(clientTransactionID: "tx-1")
+        let outcome = await sut.run(clientTransactionID: "tx-1", appUserID: "user-1")
 
         guard case .failed(.backendRejected("no_access", nil)) = outcome else {
             return XCTFail("Expected .failed(.backendRejected(\"no_access\", nil)), got \(outcome)")
@@ -88,7 +88,7 @@ final class RewardVerificationPollerTests: TestCase {
         let sleeper = RecordingSleeper()
         let sut = makePoller(statusPoller: statusPoller, sleeper: sleeper)
 
-        let outcome = await sut.run(clientTransactionID: "tx-1")
+        let outcome = await sut.run(clientTransactionID: "tx-1", appUserID: "user-1")
 
         guard case .verified(.noReward, _, _) = outcome else {
             return XCTFail("Expected .verified(.noReward), got \(outcome)")
@@ -102,7 +102,7 @@ final class RewardVerificationPollerTests: TestCase {
         let sleeper = RecordingSleeper()
         let sut = makePoller(statusPoller: statusPoller, sleeper: sleeper, maxAttempts: 10)
 
-        let outcome = await sut.run(clientTransactionID: "tx-1")
+        let outcome = await sut.run(clientTransactionID: "tx-1", appUserID: "user-1")
 
         guard case .failed(.exhaustedPending) = outcome else {
             return XCTFail("Expected .failed(.exhaustedPending), got \(outcome)")
@@ -118,7 +118,7 @@ final class RewardVerificationPollerTests: TestCase {
         let sleeper = RecordingSleeper()
         let sut = makePoller(statusPoller: statusPoller, sleeper: sleeper, maxAttempts: 10)
 
-        let outcome = await sut.run(clientTransactionID: "tx-1")
+        let outcome = await sut.run(clientTransactionID: "tx-1", appUserID: "user-1")
 
         guard case .verified(.noReward, _, _) = outcome else {
             return XCTFail("Expected .verified(.noReward), got \(outcome)")
@@ -134,7 +134,7 @@ final class RewardVerificationPollerTests: TestCase {
         let sleeper = RecordingSleeper()
         let sut = makePoller(statusPoller: statusPoller, sleeper: sleeper, maxAttempts: 10)
 
-        let outcome = await sut.run(clientTransactionID: "tx-1")
+        let outcome = await sut.run(clientTransactionID: "tx-1", appUserID: "user-1")
 
         guard case .failed(.backendRejected) = outcome else {
             return XCTFail("Expected .failed(.backendRejected), got \(outcome)")
@@ -148,7 +148,7 @@ final class RewardVerificationPollerTests: TestCase {
         let sleeper = RecordingSleeper()
         let sut = makePoller(statusPoller: statusPoller, sleeper: sleeper)
 
-        let outcome = await sut.run(clientTransactionID: "tx-1")
+        let outcome = await sut.run(clientTransactionID: "tx-1", appUserID: "user-1")
 
         guard case .verified(.noReward, _, _) = outcome else {
             return XCTFail("Expected .verified(.noReward), got \(outcome)")
@@ -164,7 +164,7 @@ final class RewardVerificationPollerTests: TestCase {
         let sleeper = RecordingSleeper()
         let sut = makePoller(statusPoller: statusPoller, sleeper: sleeper, maxAttempts: 5)
 
-        let outcome = await sut.run(clientTransactionID: "tx-1")
+        let outcome = await sut.run(clientTransactionID: "tx-1", appUserID: "user-1")
 
         guard case .failed(.unexpectedResponse) = outcome else {
             return XCTFail("Expected .failed(.unexpectedResponse), got \(outcome)")
@@ -179,7 +179,7 @@ final class RewardVerificationPollerTests: TestCase {
         let sleeper = RecordingSleeper()
         let sut = makePoller(statusPoller: statusPoller, sleeper: sleeper, maxAttempts: 3)
 
-        let outcome = await sut.run(clientTransactionID: "tx-1")
+        let outcome = await sut.run(clientTransactionID: "tx-1", appUserID: "user-1")
 
         guard case .failed(.exhaustedPending) = outcome else {
             return XCTFail("Expected .failed(.exhaustedPending), got \(outcome)")
@@ -196,7 +196,7 @@ final class RewardVerificationPollerTests: TestCase {
         let sleeper = RecordingSleeper()
         let sut = makePoller(statusPoller: statusPoller, sleeper: sleeper)
 
-        let outcome = await sut.run(clientTransactionID: "tx-1")
+        let outcome = await sut.run(clientTransactionID: "tx-1", appUserID: "user-1")
 
         guard case .verified(.noReward, _, _) = outcome else {
             return XCTFail("Expected .verified(.noReward), got \(outcome)")
@@ -214,7 +214,7 @@ final class RewardVerificationPollerTests: TestCase {
         let sleeper = RecordingSleeper()
         let sut = makePoller(statusPoller: statusPoller, sleeper: sleeper)
 
-        let outcome = await sut.run(clientTransactionID: "tx-1")
+        let outcome = await sut.run(clientTransactionID: "tx-1", appUserID: "user-1")
 
         guard case .verified(.noReward, _, _) = outcome else {
             return XCTFail("Expected .verified(.noReward), got \(outcome)")
@@ -230,7 +230,7 @@ final class RewardVerificationPollerTests: TestCase {
         let sleeper = RecordingSleeper()
         let sut = makePoller(statusPoller: statusPoller, sleeper: sleeper, maxAttempts: 5)
 
-        let outcome = await sut.run(clientTransactionID: "tx-1")
+        let outcome = await sut.run(clientTransactionID: "tx-1", appUserID: "user-1")
 
         guard case .failed(.exhaustedTransient) = outcome else {
             return XCTFail(
@@ -255,7 +255,7 @@ final class RewardVerificationPollerTests: TestCase {
         let sleeper = RecordingSleeper()
         let sut = makePoller(statusPoller: statusPoller, sleeper: sleeper, maxAttempts: 5)
 
-        let outcome = await sut.run(clientTransactionID: "tx-1")
+        let outcome = await sut.run(clientTransactionID: "tx-1", appUserID: "user-1")
 
         guard case .failed(.exhaustedPending) = outcome else {
             return XCTFail("Expected .failed(.exhaustedPending), got \(outcome)")
@@ -277,7 +277,7 @@ final class RewardVerificationPollerTests: TestCase {
             ])
             let sut = makePoller(statusPoller: statusPoller, sleeper: RecordingSleeper())
 
-            let outcome = await sut.run(clientTransactionID: "tx-1")
+            let outcome = await sut.run(clientTransactionID: "tx-1", appUserID: "user-1")
 
             guard case .verified(.noReward, _, _) = outcome else {
                 return XCTFail("Expected .verified for transient error \(error), got \(outcome)")
@@ -296,7 +296,7 @@ final class RewardVerificationPollerTests: TestCase {
         let sleeper = RecordingSleeper()
         let sut = makePoller(statusPoller: statusPoller, sleeper: sleeper)
 
-        let outcome = await sut.run(clientTransactionID: "tx-1")
+        let outcome = await sut.run(clientTransactionID: "tx-1", appUserID: "user-1")
 
         guard case .verified(.noReward, _, _) = outcome else {
             return XCTFail("Expected .verified(.noReward), got \(outcome)")
@@ -313,7 +313,7 @@ final class RewardVerificationPollerTests: TestCase {
         let sleeper = RecordingSleeper()
         let sut = makePoller(statusPoller: statusPoller, sleeper: sleeper)
 
-        let outcome = await sut.run(clientTransactionID: "tx-1")
+        let outcome = await sut.run(clientTransactionID: "tx-1", appUserID: "user-1")
 
         guard case .verified(.noReward, _, _) = outcome else {
             return XCTFail("Expected .verified(.noReward), got \(outcome)")
@@ -329,7 +329,7 @@ final class RewardVerificationPollerTests: TestCase {
         let sleeper = RecordingSleeper()
         let sut = makePoller(statusPoller: statusPoller, sleeper: sleeper)
 
-        let outcome = await sut.run(clientTransactionID: "tx-1")
+        let outcome = await sut.run(clientTransactionID: "tx-1", appUserID: "user-1")
 
         guard case .failed(.terminalError) = outcome else {
             return XCTFail("Expected .failed(.terminalError), got \(outcome)")
@@ -343,7 +343,7 @@ final class RewardVerificationPollerTests: TestCase {
         let sleeper = RecordingSleeper()
         let sut = makePoller(statusPoller: statusPoller, sleeper: sleeper)
 
-        let outcome = await sut.run(clientTransactionID: "tx-1")
+        let outcome = await sut.run(clientTransactionID: "tx-1", appUserID: "user-1")
 
         guard case .failed(.terminalError) = outcome else {
             return XCTFail("Expected .failed(.terminalError), got \(outcome)")
@@ -356,7 +356,7 @@ final class RewardVerificationPollerTests: TestCase {
         let sleeper = RecordingSleeper()
         let sut = makePoller(statusPoller: statusPoller, sleeper: sleeper)
 
-        let outcome = await sut.run(clientTransactionID: "tx-1")
+        let outcome = await sut.run(clientTransactionID: "tx-1", appUserID: "user-1")
 
         guard case .failed(.terminalError) = outcome else {
             return XCTFail("Expected .failed(.terminalError), got \(outcome)")
@@ -373,7 +373,7 @@ final class RewardVerificationPollerTests: TestCase {
         let sleeper = RecordingSleeper()
         let sut = makePoller(statusPoller: statusPoller, sleeper: sleeper)
 
-        let outcome = await sut.run(clientTransactionID: "tx-1")
+        let outcome = await sut.run(clientTransactionID: "tx-1", appUserID: "user-1")
 
         guard case .verified(.noReward, _, _) = outcome else {
             return XCTFail("Expected .verified(.noReward), got \(outcome)")
@@ -388,7 +388,7 @@ final class RewardVerificationPollerTests: TestCase {
         let sleeper = RecordingSleeper()
         let sut = makePoller(statusPoller: statusPoller, sleeper: sleeper)
 
-        let outcome = await sut.run(clientTransactionID: "tx-1")
+        let outcome = await sut.run(clientTransactionID: "tx-1", appUserID: "user-1")
 
         guard case .failed(.terminalError) = outcome else {
             return XCTFail("Expected .failed(.terminalError), got \(outcome)")
@@ -403,7 +403,7 @@ final class RewardVerificationPollerTests: TestCase {
         let sleeper = RecordingSleeper()
         let sut = makePoller(statusPoller: statusPoller, sleeper: sleeper)
 
-        let outcome = await sut.run(clientTransactionID: "tx-1")
+        let outcome = await sut.run(clientTransactionID: "tx-1", appUserID: "user-1")
 
         guard case .failed(.terminalError) = outcome else {
             return XCTFail("Expected .failed(.terminalError), got \(outcome)")
@@ -419,7 +419,7 @@ final class RewardVerificationPollerTests: TestCase {
         let sleeper = RecordingSleeper()
         let sut = makePoller(statusPoller: statusPoller, sleeper: sleeper)
 
-        let outcome = await sut.run(clientTransactionID: "tx-1")
+        let outcome = await sut.run(clientTransactionID: "tx-1", appUserID: "user-1")
 
         guard case .failed(.terminalError) = outcome else {
             return XCTFail("Expected .failed(.terminalError), got \(outcome)")
@@ -436,7 +436,7 @@ final class RewardVerificationPollerTests: TestCase {
         let sleeper = RecordingSleeper()
         let sut = makePoller(statusPoller: statusPoller, sleeper: sleeper)
 
-        let outcome = await sut.run(clientTransactionID: "tx-1")
+        let outcome = await sut.run(clientTransactionID: "tx-1", appUserID: "user-1")
 
         guard case .failed(.cancelled) = outcome else {
             return XCTFail("Expected .failed(.cancelled), got \(outcome)")
@@ -451,7 +451,7 @@ final class RewardVerificationPollerTests: TestCase {
         let sleeper = RecordingSleeper()
         let sut = makePoller(statusPoller: statusPoller, sleeper: sleeper)
 
-        let outcome = await sut.run(clientTransactionID: "tx-1")
+        let outcome = await sut.run(clientTransactionID: "tx-1", appUserID: "user-1")
 
         guard case .failed(.terminalError) = outcome else {
             return XCTFail("Expected .failed(.terminalError), got \(outcome)")
@@ -465,7 +465,7 @@ final class RewardVerificationPollerTests: TestCase {
         let sut = makePoller(statusPoller: statusPoller, sleeper: sleeper, maxAttempts: 10)
 
         let task = Task<RewardVerification.Outcome, Never> {
-            await sut.run(clientTransactionID: "tx-1")
+            await sut.run(clientTransactionID: "tx-1", appUserID: "user-1")
         }
         task.cancel()
         let outcome = await task.value
@@ -488,7 +488,7 @@ final class RewardVerificationPollerTests: TestCase {
         let sut = makePoller(statusPoller: statusPoller, sleeper: sleeper)
 
         let task = Task<RewardVerification.Outcome, Never> {
-            await sut.run(clientTransactionID: "tx-1")
+            await sut.run(clientTransactionID: "tx-1", appUserID: "user-1")
         }
         // Cancel only once the poll is in flight, so cancellation interrupts a started request.
         while !started.value {
@@ -508,7 +508,7 @@ final class RewardVerificationPollerTests: TestCase {
         let sleeper = ThrowingSleeper(error: PollerSentinelError())
         let sut = makePoller(statusPoller: statusPoller, sleeper: sleeper)
 
-        let outcome = await sut.run(clientTransactionID: "tx-1")
+        let outcome = await sut.run(clientTransactionID: "tx-1", appUserID: "user-1")
 
         guard case .verified(.noReward, _, _) = outcome else {
             return XCTFail("Expected .verified(.noReward) after sleeper failure was swallowed, got \(outcome)")
@@ -524,7 +524,7 @@ final class RewardVerificationPollerTests: TestCase {
         let sleeper = RecordingSleeper()
         let sut = makePoller(statusPoller: statusPoller, sleeper: sleeper, maxAttempts: 0)
 
-        let outcome = await sut.run(clientTransactionID: "tx-1")
+        let outcome = await sut.run(clientTransactionID: "tx-1", appUserID: "user-1")
 
         guard case .failed(.exhaustedPending) = outcome else {
             return XCTFail("Expected .failed(.exhaustedPending), got \(outcome)")
@@ -538,7 +538,7 @@ final class RewardVerificationPollerTests: TestCase {
         let sleeper = RecordingSleeper()
         let sut = makePoller(statusPoller: statusPoller, sleeper: sleeper, maxAttempts: 1)
 
-        let outcome = await sut.run(clientTransactionID: "tx-1")
+        let outcome = await sut.run(clientTransactionID: "tx-1", appUserID: "user-1")
 
         guard case .failed(.exhaustedPending) = outcome else {
             return XCTFail("Expected .failed(.exhaustedPending), got \(outcome)")
@@ -576,7 +576,7 @@ final class RewardVerificationPollerTests: TestCase {
             maxAttempts: 10
         )
 
-        _ = await sut.run(clientTransactionID: "tx-1")
+        _ = await sut.run(clientTransactionID: "tx-1", appUserID: "user-1")
 
         XCTAssertEqual(sleeper.delays.count, 9)
         for delay in sleeper.delays {
@@ -600,7 +600,7 @@ final class RewardVerificationPollerTests: TestCase {
             maxAttempts: 5
         )
 
-        _ = await sut.run(clientTransactionID: "tx-1")
+        _ = await sut.run(clientTransactionID: "tx-1", appUserID: "user-1")
 
         XCTAssertEqual(counter.value, 4)
         XCTAssertEqual(sleeper.delays.count, 4)

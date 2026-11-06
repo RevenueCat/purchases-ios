@@ -2154,13 +2154,11 @@ extension Purchases {
         clientTransactionID: String,
         trackingMetadata: RewardedAdTrackingMetadata? = nil
     ) async -> RewardVerificationResult {
-        let appUserID = self.appUserID
-        return await self.pollRewardVerification(
+        await self.pollRewardVerification(
             clientTransactionID: clientTransactionID,
-            appUserID: appUserID,
             trackingMetadata: trackingMetadata,
             captureMethod: .manual,
-            poller: RewardVerification.Poller.makeDefault(adUnitID: trackingMetadata?.adUnitId, appUserID: appUserID)
+            poller: RewardVerification.Poller.makeDefault(adUnitID: trackingMetadata?.adUnitId)
         )
     }
 
@@ -2171,21 +2169,16 @@ extension Purchases {
         trackingMetadata: RewardedAdTrackingMetadata?,
         captureMethod: AdEventCaptureMethod
     ) async -> RewardVerificationResult {
-        let appUserID = self.appUserID
-        return await self.pollRewardVerification(
+        await self.pollRewardVerification(
             clientTransactionID: clientTransactionID,
-            appUserID: appUserID,
             trackingMetadata: trackingMetadata,
             captureMethod: captureMethod,
-            poller: RewardVerification.Poller.makeDefault(adUnitID: trackingMetadata?.adUnitId, appUserID: appUserID)
+            poller: RewardVerification.Poller.makeDefault(adUnitID: trackingMetadata?.adUnitId)
         )
     }
 
-    /// `appUserID` is captured once by the caller so the poll requests and the cached `CustomerInfo`
-    /// always refer to the same user, even if `logIn` lands mid-poll.
     internal func pollRewardVerification(
         clientTransactionID: String,
-        appUserID: String,
         trackingMetadata: RewardedAdTrackingMetadata? = nil,
         captureMethod: AdEventCaptureMethod = .manual,
         poller: RewardVerification.Poller
@@ -2195,7 +2188,10 @@ extension Purchases {
             captureMethod: captureMethod
         )
 
-        let outcome = await poller.run(clientTransactionID: clientTransactionID)
+        // Captured once so the poll requests and the cached `CustomerInfo` always refer to the same
+        // user, even if `logIn` lands mid-poll.
+        let appUserID = self.appUserID
+        let outcome = await poller.run(clientTransactionID: clientTransactionID, appUserID: appUserID)
         self.trackRewardOutcome(
             outcome,
             trackingMetadata: trackingMetadata,

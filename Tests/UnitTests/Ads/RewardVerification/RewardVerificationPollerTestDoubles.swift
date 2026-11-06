@@ -25,7 +25,7 @@ final class StubStatusPoller: RewardVerificationStatusPolling, @unchecked Sendab
         self.statuses = statuses
     }
 
-    func pollStatus(clientTransactionID: String) async throws -> RewardVerificationPollStatus {
+    func pollStatus(clientTransactionID: String, appUserID: String) async throws -> RewardVerificationPollStatus {
         self.receivedIDs.append(clientTransactionID)
         guard !self.statuses.isEmpty else {
             XCTFail("Unexpected extra pollStatus call for id=\(clientTransactionID)")
@@ -44,7 +44,7 @@ final class ThrowingStatusPoller: RewardVerificationStatusPolling, @unchecked Se
         self.error = error
     }
 
-    func pollStatus(clientTransactionID: String) async throws -> RewardVerificationPollStatus {
+    func pollStatus(clientTransactionID: String, appUserID: String) async throws -> RewardVerificationPollStatus {
         self.callCount += 1
         throw self.error
     }
@@ -55,7 +55,7 @@ final class HangingStatusPoller: RewardVerificationStatusPolling, @unchecked Sen
 
     private(set) var callCount = 0
 
-    func pollStatus(clientTransactionID: String) async throws -> RewardVerificationPollStatus {
+    func pollStatus(clientTransactionID: String, appUserID: String) async throws -> RewardVerificationPollStatus {
         self.callCount += 1
         try await Task.sleep(nanoseconds: UInt64.max)
         return .pending
@@ -79,7 +79,7 @@ final class CancelThenSucceedStatusPoller: RewardVerificationStatusPolling, @unc
         self.successStatus = successStatus
     }
 
-    func pollStatus(clientTransactionID: String) async throws -> RewardVerificationPollStatus {
+    func pollStatus(clientTransactionID: String, appUserID: String) async throws -> RewardVerificationPollStatus {
         self.callCount += 1
         self.started.value = true
         // Wait for cancellation cooperatively *without* throwing, then resolve successfully.
@@ -104,7 +104,7 @@ final class ScriptedStatusPoller: RewardVerificationStatusPolling, @unchecked Se
         self.steps = steps
     }
 
-    func pollStatus(clientTransactionID: String) async throws -> RewardVerificationPollStatus {
+    func pollStatus(clientTransactionID: String, appUserID: String) async throws -> RewardVerificationPollStatus {
         self.callCount += 1
         guard !self.steps.isEmpty else {
             XCTFail("Unexpected extra pollStatus call for id=\(clientTransactionID)")
