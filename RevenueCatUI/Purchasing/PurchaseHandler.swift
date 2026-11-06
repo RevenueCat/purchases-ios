@@ -1384,9 +1384,13 @@ private extension PurchaseHandler {
     @MainActor
     var presentationContext: PresentationContext? {
         #if canImport(UIKit) && !os(watchOS)
-        return self.presentationWindow.flatMap(PresentationContext.init(window:))
+        return self.presentationWindow.flatMap {
+            PresentationContext(window: $0, allowsDefaultPresentationFallback: true)
+        }
         #elseif canImport(AppKit)
-        return self.presentationWindow.map(PresentationContext.init(window:))
+        return self.presentationWindow.map {
+            PresentationContext(window: $0, allowsDefaultPresentationFallback: true)
+        }
         #else
         return nil
         #endif

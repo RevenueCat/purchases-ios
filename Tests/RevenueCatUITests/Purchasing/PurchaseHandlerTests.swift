@@ -146,6 +146,7 @@ class PurchaseHandlerTests: TestCase {
 
         XCTAssertTrue(purchases.lastPresentationContext?.window === window)
         XCTAssertTrue(purchases.lastPresentationContext?.scene === scene)
+        XCTAssertEqual(purchases.lastPresentationContext?.allowsDefaultPresentationFallback, true)
     }
 
     func testMappedPurchasesPreservePresentationContext() async throws {
@@ -1159,6 +1160,7 @@ final class PurchaseHandlerMacOSTests: TestCase {
         try await handler.purchase(package: TestData.packageWithIntroOffer)
 
         XCTAssertTrue(purchases.lastPresentationContext?.window === window)
+        XCTAssertEqual(purchases.lastPresentationContext?.allowsDefaultPresentationFallback, true)
     }
 
     func testMappedPurchasesPreservePresentationContext() async throws {
