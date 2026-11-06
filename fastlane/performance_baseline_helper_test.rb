@@ -72,7 +72,7 @@ class PerformanceBaselineHelperTest < Minitest::Test
   def test_pr_merge_gate_requires_the_memory_benchmark
     config = YAML.safe_load(File.read(File.join(ROOT, '.circleci/default_config.yml')), aliases: true)
     jobs = config.fetch('workflows').fetch('run-all-tests').fetch('jobs')
-    gate = jobs.find { |job| job.is_a?(Hash) && job.values.first['name'] == 'all-tasks-passed' }
+    gate = jobs.find { |job| job.is_a?(Hash) && job.values.first['name'] == 'full-suite-not-requested' }
     assert_includes gate.values.first.fetch('requires'), 'performance-tests'
   end
 

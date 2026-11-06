@@ -2458,10 +2458,34 @@ jobs:
       state:
         type: enum
         enum: [success, pending]
+      unless_full_suite_approved:
+        type: boolean
+        default: false
     docker:
       - image: cimg/base:stable
     resource_class: small
     steps:
+      - when:
+          condition: << parameters.unless_full_suite_approved >>
+          steps:
+            - run:
+                name: Halt if approve-full-tests was already approved
+                command: |
+                  approval=$(curl --fail --silent --retry 5 \
+                    -H "Circle-Token: ${CIRCLECI_API_TOKEN}" \
+                    "https://circleci.com/api/v2/workflow/${CIRCLE_WORKFLOW_ID}/job" \
+                    | jq -r '.items[] | select(.name == "approve-full-tests") | .status')
+                  case "$approval" in
+                    success)
+                      echo "Full suite already requested, leaving the gate to it"
+                      circleci-agent step halt
+                      ;;
+                    on_hold) ;;
+                    *)
+                      echo "Unexpected approve-full-tests status '${approval}', not posting"
+                      exit 1
+                      ;;
+                  esac
       - run:
           name: Post ci/all-tests-gate status (<< parameters.state >>)
           environment:
@@ -2590,6 +2614,23 @@ workflows:
       - post-gate-status:
           name: full-suite-not-requested
           state: success
+          unless_full_suite_approved: true
+          requires:
+            - performance-tests
+            - performance-automation-tests
+            - lint
+            - check-api-changes
+            - run-test-ios-27
+            - build-samplecat
+            - build-purchase-tester
+            - pod-lib-lint
+            - run-revenuecat-ui-ios-27
+            - run-revenuecat-ui-ios-26
+            - emerge_purchases_ui_snapshot_tests
+            - binary_size_analysis
+            - build-tv-watch-mac-and-visionos
+            - revenuecat-admob-tests
+            - revenuecat-ads-tests
 
       # =============================================================
       # Hold gate for the Full Test Suite
@@ -2760,21 +2801,8 @@ workflows:
           name: all-tasks-passed
           state: success
           requires:
+            # Reduced Test Suite, through full-suite-not-requested
             - full-suite-started
-            # Reduced Test Suite
-            - performance-tests
-            - performance-automation-tests
-            - lint
-            - check-api-changes
-            - run-test-ios-27
-            - build-samplecat
-            - build-purchase-tester
-            - pod-lib-lint
-            - run-revenuecat-ui-ios-27
-            - run-revenuecat-ui-ios-26
-            - emerge_purchases_ui_snapshot_tests
-            - binary_size_analysis
-            - build-tv-watch-mac-and-visionos
             # Full Test Suite
             - backend-integration-tests-SK1
             - backend-integration-tests-SK2
