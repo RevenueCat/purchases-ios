@@ -463,7 +463,11 @@ final class CheckpointsManagerTests: TestCase {
     func testHasEntitlementReadsTheDeliveredCustomerNotTheFlow() throws {
         let pro = try XCTUnwrap(Self.customerInfo(activeEntitlements: ["pro"]).entitlements.active["pro"])
         let result = CheckpointResult(
-            flow: FlowResult(obtainedEntitlements: [ObtainedEntitlement(entitlementInfo: pro)], obtainedProducts: []),
+            flow: FlowResult(
+                obtainedEntitlements: [ObtainedEntitlement(entitlementInfo: pro)],
+                obtainedProducts: [],
+                unverifiedAdReward: nil
+            ),
             customer: try Self.customerInfo(activeEntitlements: [])
         )
 
@@ -861,6 +865,58 @@ final class CheckpointsManagerTests: TestCase {
         XCTAssertEqual(presenter.receivedParams?.adIdentifier, "test-ad-identifier")
         XCTAssertEqual(presenter.receivedParams?.mediator, MediatorName(rawValue: "admob"))
         XCTAssertEqual(presenter.receivedParams?.adFormat, .interstitial)
+        XCTAssertEqual(presenter.receivedParams?.rewardVerificationEnabled, true)
+    }
+
+    func testClientReportedAdStepIsPresentedWithoutRewardVerification() async throws {
+        let presenter = MockAdPresenter()
+        let adStep = Self.adStep(adFormat: .rewarded, rewardVerificationEnabled: false)
+        let manager = CheckpointsManager(
+            resolveCheckpoint: { _, _ in .matchedAd(adStep) },
+            workflowPresenter: MockWorkflowPresenter()
+        )
+        manager.adPresenter = presenter
+
+        _ = try await manager.executeCheckpoint(identifier: "extra_life", params: .init())
+
+        XCTAssertEqual(presenter.receivedParams?.rewardVerificationEnabled, false)
+    }
+
+    func testShownAdWithAnUnverifiedRewardDeliversItInTheFlowResult() async throws {
+        let reward = UnverifiedAdReward(type: "coins", amount: 5)
+        let presenter = MockAdPresenter()
+        presenter.result = .shown(unverifiedRewardType: "coins", amount: 5)
+        let adStep = Self.adStep(adFormat: .rewarded, rewardVerificationEnabled: false)
+        let manager = CheckpointsManager(
+            resolveCheckpoint: { _, _ in .matchedAd(adStep) },
+            workflowPresenter: MockWorkflowPresenter()
+        )
+        manager.adPresenter = presenter
+
+        let result = await manager.checkpointForCallback(identifier: "extra_life", params: .init())
+
+        guard case let .completed(checkpointResult) = result else {
+            return XCTFail("Expected a completed callback")
+        }
+        XCTAssertEqual(checkpointResult.flow?.unverifiedAdReward, reward)
+    }
+
+    func testShownAdWithoutAnUnverifiedRewardDeliversNone() async throws {
+        let presenter = MockAdPresenter()
+        presenter.result = .shown
+        let manager = CheckpointsManager(
+            resolveCheckpoint: { _, _ in .matchedAd(Self.adStep(adFormat: .rewarded)) },
+            workflowPresenter: MockWorkflowPresenter()
+        )
+        manager.adPresenter = presenter
+
+        let result = await manager.checkpointForCallback(identifier: "extra_life", params: .init())
+
+        guard case let .completed(checkpointResult) = result else {
+            return XCTFail("Expected a completed callback")
+        }
+        let flow = try XCTUnwrap(checkpointResult.flow)
+        XCTAssertNil(flow.unverifiedAdReward)
     }
 
     func testSequentialAdCheckpointsOfDifferentFormatsEachPresentAfterThePreviousCompletes() async throws {
@@ -1573,9 +1629,15 @@ final class CheckpointsManagerTests: TestCase {
 
     private static func adStep(
         adIdentifier: String = "test-ad-identifier",
-        adFormat: AdFormat = .interstitial
+        adFormat: AdFormat = .interstitial,
+        rewardVerificationEnabled: Bool = true
     ) -> ResolvedAdStep {
-        return ResolvedAdStep(adIdentifier: adIdentifier, mediator: MediatorName(rawValue: "admob"), adFormat: adFormat)
+        return ResolvedAdStep(
+            adIdentifier: adIdentifier,
+            mediator: MediatorName(rawValue: "admob"),
+            adFormat: adFormat,
+            rewardVerificationEnabled: rewardVerificationEnabled
+        )
     }
 
     /// A shown ad completes the checkpoint with no customer information of its own.

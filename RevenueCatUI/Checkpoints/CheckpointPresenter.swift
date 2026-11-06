@@ -127,7 +127,7 @@ final class CheckpointPresenter: CheckpointPresenterType {
     func presentAd(
         _ presentation: AdPresentationRequest,
         adPresenter: AdPresenter
-    ) async throws -> CheckpointPresentationOutcome {
+    ) async throws -> (outcome: CheckpointPresentationOutcome, unverifiedAdReward: UnverifiedAdReward?) {
         guard let token = self.slot.claim() else {
             throw CheckpointError.operationAlreadyInProgress
         }
@@ -140,7 +140,7 @@ final class CheckpointPresenter: CheckpointPresenterType {
         guard let error = result.error else {
             // A verified reward refreshes the cached customer before the presenter completes, so the result
             // reads the cache like any flow that produced no customer of its own.
-            return .completed(customerInfo: nil)
+            return (.completed(customerInfo: nil), result.unverifiedReward)
         }
 
         await self.presentStartupError(
@@ -149,7 +149,7 @@ final class CheckpointPresenter: CheckpointPresenterType {
             customVariables: presentation.customVariables,
             handler: presentation.errorPresentationHandler
         )
-        return .failed
+        return (.failed, nil)
     }
 
     /// Bridges an ad presenter's completion callback into the checkpoint lifecycle.
@@ -285,7 +285,7 @@ protocol CheckpointPresenterType: AnyObject {
     func presentAd(
         _ presentation: AdPresentationRequest,
         adPresenter: AdPresenter
-    ) async throws -> CheckpointPresentationOutcome
+    ) async throws -> (outcome: CheckpointPresentationOutcome, unverifiedAdReward: UnverifiedAdReward?)
 
 }
 

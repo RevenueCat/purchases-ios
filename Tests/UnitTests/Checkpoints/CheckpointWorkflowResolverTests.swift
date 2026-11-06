@@ -1219,6 +1219,32 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
         XCTAssertEqual(Self.resolvedAd(resolution)?.adFormat, AdFormat(rawValue: "some_future_format"))
     }
 
+    func testAdStepVerifiesRewardsUnlessTheyAreClientReported() async throws {
+        let expectations: [(wire: String?, rewardVerificationEnabled: Bool)] = [
+            (nil, true),
+            ("server_side", true),
+            ("some_future_mode", true),
+            ("client_reported", false)
+        ]
+
+        for (wire, rewardVerificationEnabled) in expectations {
+            self.stubAdWorkflow(
+                adIdentifier: "ad_unit_1",
+                mediator: "admob",
+                adFormat: "rewarded",
+                rewardVerification: wire
+            )
+
+            let resolution = try await self.resolve()
+
+            XCTAssertEqual(
+                Self.resolvedAd(resolution)?.rewardVerificationEnabled,
+                rewardVerificationEnabled,
+                "wire value '\(wire ?? "nil")'"
+            )
+        }
+    }
+
     func testAdStepWithoutAnAdFormatResolvesConfigurationUnavailable() async throws {
         self.stubAdWorkflow(adIdentifier: "ad_unit_1", mediator: "admob", adFormat: nil)
 
@@ -1265,6 +1291,7 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
         adIdentifier: String?,
         mediator: String?,
         adFormat: String? = "interstitial",
+        rewardVerification: String? = nil,
         initialStepID: String? = nil,
         extraSteps: [String: WorkflowStep] = [:]
     ) {
@@ -1279,6 +1306,9 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
         }
         if let adFormat {
             paramValues["ad_format"] = .string(adFormat)
+        }
+        if let rewardVerification {
+            paramValues["reward_verification"] = .string(rewardVerification)
         }
         step.paramValues = paramValues
 

@@ -21,6 +21,10 @@ import UIKit
 /// the customer earns the reward, RevenueCat verifies it server-side and grants the configured virtual
 /// currency or entitlement before the checkpoint completes, so its result reflects what was granted.
 ///
+/// When the ad step does not verify rewards (`AdPresentationParams.rewardVerificationEnabled` is `false`), the ad
+/// is presented without reward verification and RevenueCat grants nothing. The reward AdMob reports on the device
+/// reaches the app, unverified, as `FlowResult.unverifiedAdReward`.
+///
 /// The checkpoint identifier is used as the tracking placement. Failures are reported as `NSError`s in
 /// the `RevenueCatAdMob.RewardedPresentationError` domain, or as the underlying AdMob error.
 @_spi(CheckpointsInternal)
@@ -46,7 +50,8 @@ public final class AdMobRewardedInterstitialPresenter: AdPresenter {
         presentation.start(
             adUnitID: params.adIdentifier,
             mediator: params.mediator,
-            placement: params.checkpointIdentifier
+            placement: params.checkpointIdentifier,
+            rewardVerificationEnabled: params.rewardVerificationEnabled
         ) { [weak self, weak presentation] outcome in
             if let presentation {
                 self?.activePresentations.remove(presentation)

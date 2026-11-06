@@ -65,6 +65,10 @@ private func checkFlowResultAPI(_ result: FlowResult) {
     let _: Bool = result.didObtainEntitlement("pro")
     let _: ObtainedProduct? = result.obtainedProduct("monthly")
     let _: Bool = result.didObtainProduct("monthly")
+
+    let unverifiedAdReward: UnverifiedAdReward? = result.unverifiedAdReward
+    let _: String? = unverifiedAdReward?.type
+    let _: Decimal? = unverifiedAdReward?.amount
 }
 
 @MainActor
@@ -157,6 +161,7 @@ private func checkAdPresentationAPI(
 
     let error: PublicError = NSError(domain: "", code: 0)
     let _: AdPresentationResult = .shown
+    let _: AdPresentationResult = .shown(unverifiedRewardType: "coins", amount: 5)
     let _: AdPresentationResult = .failed(error: error)
     let _: Bool = AdPresentationResult.shown == AdPresentationResult.shown
 }
@@ -172,6 +177,7 @@ private final class CheckpointAPIAdPresenter: AdPresenter {
         let _: String = params.adIdentifier
         let _: MediatorName = params.mediator
         let _: AdFormat = params.adFormat
+        let _: Bool = params.rewardVerificationEnabled
         completion(.shown)
     }
 

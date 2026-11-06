@@ -295,7 +295,8 @@ final class CheckpointOutcomeBehaviorTests: TestCase {
                 .matchedAd(ResolvedAdStep(
                     adIdentifier: "ad-unit",
                     mediator: MediatorName(rawValue: "admob"),
-                    adFormat: .interstitial
+                    adFormat: .interstitial,
+                    rewardVerificationEnabled: true
                 ))
             }
         )
@@ -319,7 +320,8 @@ final class CheckpointOutcomeBehaviorTests: TestCase {
                 .matchedAd(ResolvedAdStep(
                     adIdentifier: "ad-unit",
                     mediator: MediatorName(rawValue: "admob"),
-                    adFormat: .interstitial
+                    adFormat: .interstitial,
+                    rewardVerificationEnabled: true
                 ))
             }
         )
@@ -519,7 +521,7 @@ private final class FailingCheckpointPresenter: CheckpointPresenterType {
     func presentAd(
         _ presentation: AdPresentationRequest,
         adPresenter: AdPresenter
-    ) async throws -> CheckpointPresentationOutcome {
+    ) async throws -> (outcome: CheckpointPresentationOutcome, unverifiedAdReward: UnverifiedAdReward?) {
         throw self.error
     }
 
@@ -550,8 +552,8 @@ private final class OutcomeCheckpointPresenter: CheckpointPresenterType {
     func presentAd(
         _ presentation: AdPresentationRequest,
         adPresenter: AdPresenter
-    ) async throws -> CheckpointPresentationOutcome {
-        return self.outcome
+    ) async throws -> (outcome: CheckpointPresentationOutcome, unverifiedAdReward: UnverifiedAdReward?) {
+        return (self.outcome, nil)
     }
 
 }
@@ -592,8 +594,8 @@ private final class TerminalErrorCheckpointPresenter: CheckpointPresenterType {
     func presentAd(
         _ presentation: AdPresentationRequest,
         adPresenter: AdPresenter
-    ) async throws -> CheckpointPresentationOutcome {
-        return .failed
+    ) async throws -> (outcome: CheckpointPresentationOutcome, unverifiedAdReward: UnverifiedAdReward?) {
+        return (.failed, nil)
     }
 
 }

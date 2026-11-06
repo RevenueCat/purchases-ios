@@ -83,7 +83,7 @@ final class CheckpointsManager {
 
         guard CheckpointIdentifierValidator.isValid(identifier) else {
             Logger.error(CheckpointIdentifierValidator.invalidIdentifierLogMessage(identifier))
-            return .init(outcome: .nothingPresented)
+            return .init(outcome: .nothingPresented, unverifiedAdReward: nil)
         }
 
         let resolution = try await self.resolveCheckpoint(identifier, params)
@@ -97,6 +97,7 @@ final class CheckpointsManager {
         )
     }
 
+    // swiftlint:disable:next function_body_length
     private func executeCheckpoint(
         identifier: String,
         params: CheckpointCallParams,
@@ -118,7 +119,8 @@ final class CheckpointsManager {
             )
             return .init(
                 outcome: try await self.checkpointPresenter.presentWorkflow(presentation),
-                availableProducts: workflow.offerings.all.values.flatMap(\.availablePackages).map(\.storeProduct)
+                availableProducts: workflow.offerings.all.values.flatMap(\.availablePackages).map(\.storeProduct),
+                unverifiedAdReward: nil
             )
         case let .matchedOffering(offering, _):
             return .init(
@@ -133,26 +135,29 @@ final class CheckpointsManager {
                     globalPaywallPresenter: globalPaywallPresenter,
                     localPaywallPresentationHandler: params.localPaywallPresentationHandler
                 ),
-                availableProducts: offering.availablePackages.map(\.storeProduct)
+                availableProducts: offering.availablePackages.map(\.storeProduct),
+                unverifiedAdReward: nil
             )
         case let .matchedAd(adStep):
             guard let adPresenter = self.adPresenter else {
                 Logger.warning(Strings.checkpoint_ad_step_without_ad_presenter(checkpointIdentifier: identifier))
-                return .init(outcome: .nothingPresented)
+                return .init(outcome: .nothingPresented, unverifiedAdReward: nil)
             }
             let request = AdPresentationRequest(
                 params: .init(
                     checkpointIdentifier: identifier,
                     adIdentifier: adStep.adIdentifier,
                     mediator: adStep.mediator,
-                    adFormat: adStep.adFormat
+                    adFormat: adStep.adFormat,
+                    rewardVerificationEnabled: adStep.rewardVerificationEnabled
                 ),
                 customVariables: params.customVariables,
                 errorPresentationHandler: errorPresentationHandler
             )
-            return .init(outcome: try await self.checkpointPresenter.presentAd(request, adPresenter: adPresenter))
+            let presentation = try await self.checkpointPresenter.presentAd(request, adPresenter: adPresenter)
+            return .init(outcome: presentation.outcome, unverifiedAdReward: presentation.unverifiedAdReward)
         case .noAction:
-            return .init(outcome: .nothingPresented)
+            return .init(outcome: .nothingPresented, unverifiedAdReward: nil)
         }
     }
 
@@ -245,13 +250,15 @@ final class CheckpointsManager {
                 return .completed(self.checkpointResult(
                     customerInfo: customerInfo,
                     customerInfoBefore: customerInfoBefore,
-                    availableProducts: execution.availableProducts
+                    availableProducts: execution.availableProducts,
+                    unverifiedAdReward: execution.unverifiedAdReward
                 ))
             case let .synchronizationFailed(error):
                 return .synchronizationFailed(error, fallback: self.checkpointResult(
                     customerInfo: nil,
                     customerInfoBefore: customerInfoBefore,
-                    availableProducts: execution.availableProducts
+                    availableProducts: execution.availableProducts,
+                    unverifiedAdReward: execution.unverifiedAdReward
                 ))
             case .backedOut, .failed, .nothingPresented:
                 return .suppressed
@@ -295,7 +302,8 @@ private extension CheckpointsManager {
     private func checkpointResult(
         customerInfo: CustomerInfo?,
         customerInfoBefore: CustomerInfo,
-        availableProducts: [StoreProduct]
+        availableProducts: [StoreProduct],
+        unverifiedAdReward: UnverifiedAdReward?
     ) -> CheckpointResult {
         let customer = customerInfo ?? self.cachedCustomerInfoProvider() ?? customerInfoBefore
         let obtainedEntitlements = customer
@@ -306,7 +314,8 @@ private extension CheckpointsManager {
         return CheckpointResult(
             flow: FlowResult(
                 obtainedEntitlements: Set(obtainedEntitlements),
-                obtainedProducts: Set(obtainedProducts)
+                obtainedProducts: Set(obtainedProducts),
+                unverifiedAdReward: unverifiedAdReward
             ),
             customer: customer
         )
@@ -407,10 +416,16 @@ private struct CheckpointExecutionResult {
 
     let outcome: CheckpointPresentationOutcome
     let availableProducts: [StoreProduct]
+    let unverifiedAdReward: UnverifiedAdReward?
 
-    init(outcome: CheckpointPresentationOutcome, availableProducts: [StoreProduct] = []) {
+    init(
+        outcome: CheckpointPresentationOutcome,
+        availableProducts: [StoreProduct] = [],
+        unverifiedAdReward: UnverifiedAdReward?
+    ) {
         self.outcome = outcome
         self.availableProducts = availableProducts
+        self.unverifiedAdReward = unverifiedAdReward
     }
 
 }
