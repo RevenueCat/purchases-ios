@@ -112,15 +112,18 @@ actor DefaultPaywallFontsManager: PaywallFontManagerType {
     private let fileManager: FontsFileManaging
     private let session: FontDownloadSession
     private let registrar: FontRegistrar
+    private let assetURLResolver: @Sendable (URL) async -> [URL]
 
     init(
         fileManager: FontsFileManaging = DefaultFontFileManager(),
         session: FontDownloadSession = URLSession.shared,
-        registrar: FontRegistrar = SystemFontRegistry()
+        registrar: FontRegistrar = SystemFontRegistry(),
+        assetURLResolver: @escaping @Sendable (URL) async -> [URL] = { await Purchases.paywallAssetDownloadURLs($0) }
     ) {
         self.fileManager = fileManager
         self.session = session
         self.registrar = registrar
+        self.assetURLResolver = assetURLResolver
         do {
             self.fontsDirectory = try DefaultPaywallFontsManager.fontsDirectory(fileManager: fileManager)
         } catch {
@@ -147,23 +150,7 @@ actor DefaultPaywallFontsManager: PaywallFontManagerType {
 
         if !fileManager.fileExists(atPath: destination.path) {
             Logger.verbose(Strings.paywalls.triggering_font_download(fontURL: remoteURL))
-            let (data, urlResponse) = try await session.data(from: remoteURL)
-
-            guard let httpResponse = urlResponse as? HTTPURLResponse else {
-                throw FontsManagerError.invalidResponse
-            }
-
-            let httpStatusCode = HTTPStatusCode(rawValue: httpResponse.statusCode)
-            guard httpStatusCode.isSuccessfulResponse else {
-                throw FontsManagerError.downloadError(httpStatusCode)
-            }
-
-            let expectedHash = font.hash
-            let actualHash = data.md5String
-            guard actualHash == expectedHash else {
-                throw FontsManagerError.hashValidationError(expected: expectedHash, actual: actualHash)
-            }
-
+            let data = try await self.downloadFont(font)
             try fileManager.write(data, to: destination)
             Logger.debug(Strings.paywalls.font_downloaded_sucessfully(name: font.name, fontURL: remoteURL))
         }
@@ -172,6 +159,30 @@ actor DefaultPaywallFontsManager: PaywallFontManagerType {
     }
 
     // MARK: - Private
+
+    private func downloadFont(_ font: DownloadableFont) async throws -> Data {
+        let candidates = await self.assetURLResolver(font.url)
+        let urls = candidates.isEmpty ? [font.url] : candidates
+        for (index, url) in urls.enumerated() {
+            do {
+                try Task.checkCancellation()
+                let (data, response) = try await self.session.data(from: url)
+                try Task.checkCancellation()
+                guard let response = response as? HTTPURLResponse else {
+                    throw FontsManagerError.invalidResponse
+                }
+                let status = HTTPStatusCode(rawValue: response.statusCode)
+                guard status.isSuccessfulResponse else { throw FontsManagerError.downloadError(status) }
+                guard data.md5String == font.hash else {
+                    throw FontsManagerError.hashValidationError(expected: font.hash, actual: data.md5String)
+                }
+                return data
+            } catch {
+                if PaywallAssetURLResolver.isCancellation(error) || index == urls.count - 1 { throw error }
+            }
+        }
+        throw FontsManagerError.invalidResponse
+    }
 
     /// Whether a font face with this name is already available to the process.
     private static func fontFaceExists(named fontName: String) -> Bool {

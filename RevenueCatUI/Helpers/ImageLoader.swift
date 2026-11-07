@@ -6,7 +6,7 @@
 //
 
 import Foundation
-import RevenueCat
+@_spi(Internal) import RevenueCat
 
 #if canImport(UIKit)
 import UIKit
@@ -56,14 +56,19 @@ final class ImageLoader: ObservableObject {
     }
 
     private let urlSession: URLSessionType
+    private let assetURLResolver: (URL) async -> [URL]
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     convenience init() {
         self.init(urlSession: Purchases.paywallImageDownloadSession)
     }
 
-    init(urlSession: URLSessionType) {
+    init(
+        urlSession: URLSessionType,
+        assetURLResolver: @escaping (URL) async -> [URL] = Purchases.paywallAssetDownloadURLs
+    ) {
         self.urlSession = urlSession
+        self.assetURLResolver = assetURLResolver
     }
 
     @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
@@ -83,16 +88,30 @@ final class ImageLoader: ObservableObject {
     /// - Returns: `nil` if the Task was cancelled.
     @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
     private func loadImage(_ url: URL) async -> ValueWithURL? {
+        let candidates = await self.assetURLResolver(url)
+        let urls = candidates.isEmpty ? [url] : candidates
+        var result: ValueWithURL = .failure(.invalidImage)
+        for downloadURL in urls {
+            if Task.isCancelled { return nil }
+            result = await self.loadImage(url, from: downloadURL)
+            if Task.isCancelled { return nil }
+            if case .success = result { return result }
+            if case .failure(.responseError(let error)) = result,
+               error.domain == NSURLErrorDomain, error.code == NSURLErrorCancelled {
+                return nil
+            }
+        }
+        return result
+    }
+
+    @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
+    private func loadImage(_ url: URL, from downloadURL: URL) async -> ValueWithURL {
         do {
             let (data, response) = try await self
                 .urlSession
-                .data(for: .init(url: url, cachePolicy: .returnCacheDataElseLoad))
+                .data(for: .init(url: downloadURL, cachePolicy: .returnCacheDataElseLoad))
 
-            do {
-                try Task.checkCancellation()
-            } catch {
-                return nil
-            }
+            try Task.checkCancellation()
 
             if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode != 200 {
                 return .failure(.badResponse(.init(.badServerResponse)))
@@ -102,6 +121,8 @@ final class ImageLoader: ObservableObject {
             return await Task<ValueWithURL, Never>
                 .detached(priority: .medium) { data.toImage(url: url) }
                 .value
+        } catch is CancellationError {
+            return .failure(.responseError(URLError(.cancelled) as NSError))
         } catch let error {
             return .failure(.responseError(error as NSError))
         }

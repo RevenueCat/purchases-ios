@@ -12,6 +12,154 @@ import XCTest
 
 final class RemoteConfigSourceProviderTests: TestCase {
 
+    func testAssetRoutingReadsCachedConfigWithoutStartingARefresh() async throws {
+        let manager = MockRemoteConfigManager()
+        manager.stubbedTopics[.sources] = Self.assetOverrides()
+        let url = try XCTUnwrap(URL(string: "https://assets.pawwalls.com/image.heic"))
+
+        let resolved = await PaywallAssetURLResolver.resolve(url, manager: manager)
+
+        XCTAssertEqual(resolved.first?.host, "assets.8-lives-cat.io")
+        XCTAssertEqual(manager.invokedTopicCount, 0)
+        XCTAssertEqual(manager.invokedRefreshRemoteConfigCount, 0)
+    }
+
+    func testAssetRoutingObservesConfigRollbackOnNextDownload() async throws {
+        let manager = MockRemoteConfigManager()
+        manager.stubbedTopics[.sources] = Self.assetOverrides()
+        let url = try XCTUnwrap(URL(string: "https://assets.pawwalls.com/image.heic"))
+        let switched = await PaywallAssetURLResolver.resolve(url, manager: manager)
+        XCTAssertNotEqual(switched, [url])
+
+        manager.stubbedTopics[.sources] = [
+            "assets": .init(content: ["base_url_sources": .object([:])])
+        ]
+        let rolledBack = await PaywallAssetURLResolver.resolve(url, manager: manager)
+        XCTAssertEqual(rolledBack, [url])
+    }
+
+    func testAssetRoutingDoesNotUseConfigFromAnInvalidatedGeneration() async throws {
+        let manager = MockRemoteConfigManager()
+        manager.stubbedTopics[.sources] = Self.assetOverrides()
+        var generation = 0
+        manager.onConfigGenerationRead = {
+            generation += 1
+            manager.configGeneration = generation
+        }
+        defer { manager.onConfigGenerationRead = nil }
+        let url = try XCTUnwrap(URL(string: "https://assets.pawwalls.com/image.heic"))
+
+        let resolved = await PaywallAssetURLResolver.resolve(url, manager: manager)
+
+        XCTAssertEqual(resolved, [url])
+    }
+
+    func testAssetOverridePreservesEncodedPathQueryAndFragment() throws {
+        let url = try XCTUnwrap(URL(string: "https://assets.pawwalls.com/a%2Fb%20c.heic?q=a%2Fb#preview"))
+        let resolved = PaywallAssetURLResolver.resolve(url, sources: Self.assetOverrides())
+        XCTAssertEqual(
+            resolved.first?.absoluteString,
+            "https://assets.8-lives-cat.io/a%2Fb%20c.heic?q=a%2Fb#preview"
+        )
+    }
+
+    func testFontOverrideUsesItsOwnDestination() throws {
+        let url = try XCTUnwrap(URL(string: "https://fonts.pawwalls.com/123_font.ttf"))
+        XCTAssertEqual(
+            PaywallAssetURLResolver.resolve(url, sources: Self.assetOverrides()).first?.absoluteString,
+            "https://fonts.8-lives-cat.io/123_font.ttf"
+        )
+    }
+
+    func testMissingAndRemovedAssetOverridesKeepOriginalURL() throws {
+        let url = try XCTUnwrap(URL(string: "https://assets.pawwalls.com/image.heic"))
+        XCTAssertEqual(PaywallAssetURLResolver.resolve(url, sources: nil), [url])
+        XCTAssertEqual(PaywallAssetURLResolver.resolve(url, sources: [:]), [url])
+        XCTAssertNotEqual(PaywallAssetURLResolver.resolve(url, sources: Self.assetOverrides()), [url])
+        XCTAssertEqual(PaywallAssetURLResolver.resolve(url, sources: [
+            "assets": .init(content: ["base_url_sources": .object([:])])
+        ]), [url])
+    }
+
+    func testAssetOverridesLeaveUnmirroredAndExternalOriginsAlone() throws {
+        for value in [
+            "https://video.pawwalls.com/video.mp4",
+            "https://example.com/image.heic",
+            "https://assets.pawwalls.com.evil.example/image.heic",
+            "https://assets.pawwalls.com:8443/image.heic",
+            "https://user:password@assets.pawwalls.com/image.heic",
+            "http://assets.pawwalls.com/image.heic",
+            "file:///image.heic"
+        ] {
+            let url = try XCTUnwrap(URL(string: value))
+            XCTAssertEqual(PaywallAssetURLResolver.resolve(url, sources: Self.assetOverrides()), [url], value)
+        }
+    }
+
+    func testMalformedAndNonOriginDestinationsKeepOriginalURL() throws {
+        let url = try XCTUnwrap(URL(string: "https://assets.pawwalls.com/image.heic"))
+        for value in [
+            "http://cdn.example.com", "file:///tmp", "not-a-url",
+            "https://cdn.example.com/prefix", "https://cdn.example.com?query=true",
+            "https://cdn.example.com#fragment", "https://user:password@cdn.example.com",
+            "https://cdn.example.com:8443"
+        ] {
+            let sources: RemoteConfiguration.ConfigTopic = [
+                "assets": .init(content: ["base_url_sources": .object([
+                    "https://assets.pawwalls.com": .array([.string(value)])
+                ])])
+            ]
+            XCTAssertEqual(PaywallAssetURLResolver.resolve(url, sources: sources), [url], value)
+        }
+    }
+
+    private static func assetOverrides() -> RemoteConfiguration.ConfigTopic {
+        return ["assets": .init(content: ["base_url_sources": .object([
+            "https://assets.pawwalls.com": .array([.string("https://assets.8-lives-cat.io")]),
+            "https://fonts.pawwalls.com": .array([.string("https://fonts.8-lives-cat.io")])
+        ])])]
+    }
+
+    func testConfiguredOrderCanMakeCloudflarePrimaryAndPreservesFallbackPaths() throws {
+        let url = try XCTUnwrap(URL(string: "https://assets.pawwalls.com/a%2Fb.heic?q=a%2Fb#preview"))
+        let sources: RemoteConfiguration.ConfigTopic = [
+            "assets": .init(content: ["base_url_sources": .object([
+                "https://assets.pawwalls.com": .array([
+                    .string("https://ASSETS.8-lives-cat.io:443/"),
+                    .string("https://assets.8-lives-cat.io"),
+                    .string("http://invalid.example"),
+                    .string("https://assets.pawwalls.com")
+                ])
+            ])])
+        ]
+        XCTAssertEqual(PaywallAssetURLResolver.resolve(url, sources: sources).map(\.absoluteString), [
+            "https://assets.8-lives-cat.io/a%2Fb.heic?q=a%2Fb#preview",
+            url.absoluteString
+        ])
+    }
+
+    func testIconDownloadsUseTheirOwnOrderedSources() throws {
+        let url = try XCTUnwrap(URL(string: "https://icons.pawwalls.com/icons/check.png"))
+        let sources: RemoteConfiguration.ConfigTopic = [
+            "assets": .init(content: ["base_url_sources": .object([
+                "https://icons.pawwalls.com": .array([.string("https://icons.8-lives-cat.io")])
+            ])])
+        ]
+        XCTAssertEqual(PaywallAssetURLResolver.resolve(url, sources: sources).first?.absoluteString,
+                       "https://icons.8-lives-cat.io/icons/check.png")
+    }
+
+    func testEmptyOrWronglyTypedSourceListsKeepOriginalURL() throws {
+        let url = try XCTUnwrap(URL(string: "https://assets.pawwalls.com/image.heic"))
+        let values: [AnyDecodable] = [.array([]), .array([.bool(true)]), .string("https://assets.8-lives-cat.io")]
+        for value in values {
+            let sources: RemoteConfiguration.ConfigTopic = [
+                "assets": .init(content: ["base_url_sources": .object(["https://assets.pawwalls.com": value])])
+            ]
+            XCTAssertEqual(PaywallAssetURLResolver.resolve(url, sources: sources), [url])
+        }
+    }
+
     // MARK: - Initial selection
 
     func testCurrentApiSourceFallsBackToEmbeddedDefaultWhenTopicHasNoSources() {
