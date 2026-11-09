@@ -699,11 +699,21 @@ struct LoadedPaywallsV2View: View {
     }
 
     private var packageSelectionContext: PackageSelectionContext {
+        return self.makePackageSelectionContext(
+            stateValues: self.paywallStateValues,
+            stateDefaults: self.paywallStateDefaults
+        )
+    }
+
+    private func makePackageSelectionContext(
+        stateValues: [String: PaywallComponent.ConditionValue],
+        stateDefaults: [String: PaywallComponent.ConditionValue]
+    ) -> PackageSelectionContext {
         return PackageSelectionContext(
             condition: self.screenCondition,
             customVariables: self.customVariables,
-            stateValues: self.paywallStateValues,
-            stateDefaults: self.paywallStateDefaults,
+            stateValues: stateValues,
+            stateDefaults: stateDefaults,
             windowSize: self.paywallWindowSize,
             isEligibleForIntroOffer: { [introOfferEligibilityContext] in
                 introOfferEligibilityContext.isEligible(package: $0)
@@ -726,13 +736,13 @@ struct LoadedPaywallsV2View: View {
     ///
     /// Scoped to packages outside the tabs; a tab's own selection is reconciled in
     /// `LoadedTabsComponentView`.
-    private func reconcileSelection() {
+    private func reconcileSelection(in context: PackageSelectionContext? = nil) {
         guard !self.selectedPackageContext.isPresentingSheet else { return }
         let packageValidator = self.paywallState.viewModelFactory.packageValidator
 
         guard let resolved = packageValidator.reconciledSelection(
             current: self.selectedPackageContext.package,
-            in: self.packageSelectionContext,
+            in: context ?? self.packageSelectionContext,
             offerEligibilityLoading: self.offerEligibilityLoading,
             offerEligibilityAvailability: self.offerEligibilityAvailability
         ) else {
@@ -850,11 +860,18 @@ struct LoadedPaywallsV2View: View {
             .onChangeOf(self.paywallWindowSize) { _ in
                 self.reconcileSelection()
             }
-            .onChangeOf(self.paywallStateValues) { _ in
-                self.reconcileSelection()
+            // On iOS 16, the callback can capture the previous environment snapshot.
+            .onChangeOf(self.paywallStateValues) { values in
+                self.reconcileSelection(in: self.makePackageSelectionContext(
+                    stateValues: values,
+                    stateDefaults: self.paywallStateDefaults
+                ))
             }
-            .onChangeOf(self.paywallStateDefaults) { _ in
-                self.reconcileSelection()
+            .onChangeOf(self.paywallStateDefaults) { defaults in
+                self.reconcileSelection(in: self.makePackageSelectionContext(
+                    stateValues: self.paywallStateValues,
+                    stateDefaults: defaults
+                ))
             }
         }
     }
