@@ -178,7 +178,6 @@ final class TabControlDiscountTests: TestCase {
         do {
             try VNImageRequestHandler(cgImage: cgImage).perform([request])
             let strings = request.results?.compactMap { $0.topCandidates(1).first?.string } ?? []
-            print("RENDERED TEXT: \(strings)")
             return strings.contains(text)
         } catch {
             XCTFail("Text recognition failed: \(error)")
