@@ -3093,8 +3093,7 @@ workflows:
             pattern: "^(release/.*|main)$"
             value: << pipeline.git.branch >>
     jobs:
-      - run-paywall-accessibility-ui-tests:
-          <<: *only-main-branch
+      - run-paywall-accessibility-ui-tests
       - check-api-changes:
           context:
             - slack-secrets-ios
