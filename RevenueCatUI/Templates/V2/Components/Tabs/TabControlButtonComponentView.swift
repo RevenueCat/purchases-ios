@@ -77,6 +77,9 @@ struct TabControlButtonComponentView: View {
                 viewModel: self.viewModel.stackViewModel,
                 onDismiss: self.onDismiss
             )
+            .environmentObject(
+                self.tabControlContext.textPackageContextsByTabId[self.viewModel.component.tabId] ?? self.packageContext
+            )
             .environment(\.componentViewState, self.selectedState)
         }
         .onAppear {
