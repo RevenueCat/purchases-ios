@@ -79,7 +79,11 @@ import UIKit
         }
 
         let unit = module.makeInterstitial(placementID: self.placementID)
-        unit.onEvent = { [weak self] event in self?.handle(event) }
+        // A replaced unit can still have callbacks in flight; they must not act on the new ad.
+        unit.onEvent = { [weak self, weak unit] event in
+            guard let self, let unit, unit === self.unit else { return }
+            self.handle(event)
+        }
         self.unit = unit
         self.impressionID = UUID().uuidString
         self.state = .loading
@@ -167,9 +171,8 @@ import UIKit
         }
     }
 
-    // Prebid's expiry timer runs until the creative is on screen, so it can still fire right after `present`.
     private func handleExpiry() {
-        guard self.state == .loaded || self.state == .presenting else { return }
+        guard self.state == .loaded else { return }
 
         self.finish()
         self.delegate?.interstitialDidExpire(self)

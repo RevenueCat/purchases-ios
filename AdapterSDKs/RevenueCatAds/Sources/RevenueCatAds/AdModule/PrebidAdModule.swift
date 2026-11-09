@@ -137,7 +137,7 @@ extension PrebidInterstitial: InterstitialAdUnitDelegate {
     }
 
     nonisolated func interstitialWillPresentAd(_ interstitial: InterstitialRenderingAdUnit) {
-        // Prebid Mobile 3.3.1 fires its impression trackers internally on display but never surfaces
+        // Prebid Mobile 3.4.1 fires its impression trackers internally on display but never surfaces
         // an impression callback for rendering interstitials, so presentation is the closest signal.
         self.deliver(.presented, .impression)
     }

@@ -18,7 +18,7 @@ let package = Package(
     ],
     dependencies: [
         .package(name: "purchases-ios", path: "../.."),
-        .package(url: "https://github.com/prebid/prebid-mobile-ios.git", "3.3.1"..<"4.0.0")
+        .package(url: "https://github.com/prebid/prebid-mobile-ios.git", "3.4.1"..<"4.0.0")
     ],
     targets: [
         .target(
