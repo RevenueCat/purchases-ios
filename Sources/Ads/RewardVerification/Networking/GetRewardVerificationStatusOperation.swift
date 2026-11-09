@@ -108,7 +108,10 @@ private extension GetRewardVerificationStatusOperation {
             ) { callback in
                 callback.completion(
                     response
-                        .map { $0.body }
+                        .map {
+                            $0.body.copy(with: $0.verificationResult.result,
+                                         httpResponseOriginalSource: $0.originalSource)
+                        }
                         .mapError(BackendError.networkError)
                 )
             }

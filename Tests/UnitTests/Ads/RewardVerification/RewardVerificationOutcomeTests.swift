@@ -20,7 +20,7 @@ final class RewardVerificationOutcomeTests: TestCase {
         let reward = try XCTUnwrap(VirtualCurrencyReward(code: "coins", amount: 5))
         let outcome = RewardVerification.Outcome.verified(.virtualCurrency(reward))
 
-        guard case let .verified(adReward, moreRewards) = outcome, let captured = adReward.virtualCurrency else {
+        guard case let .verified(adReward, moreRewards, _) = outcome, let captured = adReward.virtualCurrency else {
             return XCTFail("Expected .verified(.virtualCurrency), got \(outcome)")
         }
         XCTAssertEqual(captured, reward)
@@ -32,7 +32,7 @@ final class RewardVerificationOutcomeTests: TestCase {
     func testVerifiedCarriesNoRewardPayload() {
         let outcome = RewardVerification.Outcome.verified(.noReward)
 
-        guard case .verified(.noReward, _) = outcome else {
+        guard case .verified(.noReward, _, _) = outcome else {
             return XCTFail("Expected .verified(.noReward), got \(outcome)")
         }
     }
@@ -40,7 +40,7 @@ final class RewardVerificationOutcomeTests: TestCase {
     func testVerifiedCarriesUnsupportedRewardPayload() {
         let outcome = RewardVerification.Outcome.verified(.unsupportedReward)
 
-        guard case .verified(.unsupportedReward, _) = outcome else {
+        guard case .verified(.unsupportedReward, _, _) = outcome else {
             return XCTFail("Expected .verified(.unsupportedReward), got \(outcome)")
         }
     }
@@ -64,10 +64,11 @@ final class RewardVerificationOutcomeTests: TestCase {
         let entitlement = try XCTUnwrap(EntitlementReward(identifier: "pro", expiresAt: Date()))
         let outcome = RewardVerification.Outcome.verified(
             reward: .virtualCurrency(primary),
-            moreRewards: [.entitlement(entitlement)]
+            moreRewards: [.entitlement(entitlement)],
+            customerInfo: nil
         )
 
-        guard case let .verified(adReward, moreRewards) = outcome else {
+        guard case let .verified(adReward, moreRewards, _) = outcome else {
             return XCTFail("Expected .verified, got \(outcome)")
         }
         XCTAssertEqual(adReward.virtualCurrency, primary)
