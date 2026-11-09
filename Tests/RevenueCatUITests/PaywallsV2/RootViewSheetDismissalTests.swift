@@ -23,7 +23,9 @@ final class RootViewSheetDismissalTests: TestCase {
         let snapshot = TestData.monthlyPackage
         let result = RootView.restoredPackageAfterSheetDismissal(
             packageBeforeOpeningSheet: snapshot,
-            defaultPackage: TestData.annualPackage
+            defaultPackage: TestData.annualPackage,
+            sheetSelectedPackage: TestData.annualPackage,
+            hasNonSheetPackages: true
         )
         expect(result?.identifier) == snapshot.identifier
     }
@@ -32,7 +34,9 @@ final class RootViewSheetDismissalTests: TestCase {
         let defaultPackage = TestData.annualPackage
         let result = RootView.restoredPackageAfterSheetDismissal(
             packageBeforeOpeningSheet: nil,
-            defaultPackage: defaultPackage
+            defaultPackage: defaultPackage,
+            sheetSelectedPackage: TestData.monthlyPackage,
+            hasNonSheetPackages: true
         )
         expect(result?.identifier) == defaultPackage.identifier
     }
@@ -40,9 +44,22 @@ final class RootViewSheetDismissalTests: TestCase {
     func testReturnsNilWhenSnapshotAndDefaultAreNil() {
         let result = RootView.restoredPackageAfterSheetDismissal(
             packageBeforeOpeningSheet: nil,
-            defaultPackage: nil
+            defaultPackage: nil,
+            sheetSelectedPackage: nil,
+            hasNonSheetPackages: true
         )
         expect(result).to(beNil())
+    }
+
+    func testKeepsSheetSelectionWhenRootHasNoPackages() {
+        let selectedInSheet = TestData.annualPackage
+        let result = RootView.restoredPackageAfterSheetDismissal(
+            packageBeforeOpeningSheet: TestData.monthlyPackage,
+            defaultPackage: TestData.monthlyPackage,
+            sheetSelectedPackage: selectedInSheet,
+            hasNonSheetPackages: false
+        )
+        expect(result?.identifier) == selectedInSheet.identifier
     }
 
 }
@@ -92,7 +109,9 @@ extension RootViewSheetDismissalTests {
             package: RootView.restoredPackageAfterSheetDismissal(
                 packageBeforeOpeningSheet: snapshot,
                 defaultPackage: fixture.state.viewModelFactory.packageValidator
-                    .defaultSelectedPackage(in: .provisional)
+                    .defaultSelectedPackage(in: .provisional),
+                sheetSelectedPackage: sheetContext.package,
+                hasNonSheetPackages: true
             ),
             variableContext: variables,
             isReconcile: true

@@ -800,7 +800,8 @@ struct LoadedPaywallsV2View: View {
                 ComponentsView(
                     componentViewModels: [.root(paywallState.rootViewModel)],
                     onDismiss: self.onDismiss,
-                    defaultPackage: self.defaultPackage
+                    defaultPackage: self.defaultPackage,
+                    hasNonSheetPackages: !self.paywallState.viewModelFactory.packageValidator.packages.isEmpty
                 )
                 .fixMacButtons()
                 .environment(\.closeWorkflowAction, self.closeWorkflowAction ?? self.onDismiss)

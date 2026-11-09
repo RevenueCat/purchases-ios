@@ -35,6 +35,7 @@ struct RootView: View {
     private let viewModel: RootViewModel
     private let onDismiss: () -> Void
     private let defaultPackage: Package?
+    private let hasNonSheetPackages: Bool
 
     @State private var overlaidHeaderHeight: CGFloat = 0
     @State private var nativeHeaderCollapsed = false
@@ -44,11 +45,13 @@ struct RootView: View {
     internal init(
         viewModel: RootViewModel,
         onDismiss: @escaping () -> Void,
-        defaultPackage: Package?
+        defaultPackage: Package?,
+        hasNonSheetPackages: Bool = true
     ) {
         self.viewModel = viewModel
         self.onDismiss = onDismiss
         self.defaultPackage = defaultPackage
+        self.hasNonSheetPackages = hasNonSheetPackages
     }
 
     // enforce filling the height of the screen to ensure headers and footers
@@ -153,17 +156,23 @@ struct RootView: View {
         }
         .environment(\.paywallRootStackIsZLayer, self.paywallRootStackIsZLayer)
         .onPreferenceChange(NativePaywallCollapsedHeaderKey.self) { self.nativeHeaderCollapsed = $0 }
-        .modifier(RootPackageSelectionSheetModifier(defaultPackage: self.defaultPackage))
+        .modifier(RootPackageSelectionSheetModifier(
+            defaultPackage: self.defaultPackage,
+            hasNonSheetPackages: self.hasNonSheetPackages
+        ))
         // The body owns this resolution; sheets and footers have independent layout roots.
         .environment(\.paywallHeroLayout, nil)
     }
 
-    /// Restores the selection from before the sheet opened, falling back to the page default
-    /// when no package was selected.
+    /// Keeps the sheet selection when no package is rendered outside the sheet. Otherwise restores
+    /// the selection from before the sheet opened, falling back to the page default.
     static func restoredPackageAfterSheetDismissal(
         packageBeforeOpeningSheet: Package?,
-        defaultPackage: Package?
+        defaultPackage: Package?,
+        sheetSelectedPackage: Package?,
+        hasNonSheetPackages: Bool
     ) -> Package? {
+        guard hasNonSheetPackages else { return sheetSelectedPackage }
         return packageBeforeOpeningSheet ?? defaultPackage
     }
 
@@ -193,6 +202,7 @@ struct RootPackageSelectionSheetModifier: ViewModifier {
     @State private var packageSelectionSheetComponentName: String?
     @State private var packageBeforeOpeningSheet: Package?
     let defaultPackage: Package?
+    let hasNonSheetPackages: Bool
 
     func body(content: Content) -> some View {
         content
@@ -241,14 +251,18 @@ struct RootPackageSelectionSheetModifier: ViewModifier {
                 self.packageSelectionSheetComponentName = newValue.sheet.name
             } else {
                 // Reset package selection when sheet is dismissed; snapshot sheet name before clear for analytics.
-                let selectionInSheetContext = self.packageContext.package
+                let selectionInSheetContext = self.sheetPackageContext?.package
                 let restoredPackage = RootView.restoredPackageAfterSheetDismissal(
                     packageBeforeOpeningSheet: self.packageBeforeOpeningSheet,
-                    defaultPackage: self.defaultPackage
+                    defaultPackage: self.defaultPackage,
+                    sheetSelectedPackage: selectionInSheetContext,
+                    hasNonSheetPackages: self.hasNonSheetPackages
                 )
                 self.packageContext.update(
                     package: restoredPackage,
-                    variableContext: self.variableContextBeforeOpeningSheet ?? self.packageContext.variableContext,
+                    variableContext: self.hasNonSheetPackages
+                        ? self.variableContextBeforeOpeningSheet ?? self.packageContext.variableContext
+                        : self.sheetPackageContext?.variableContext ?? self.packageContext.variableContext,
                     isReconcile: true
                 )
                 self.packageContext.presentedSheetContext = nil
