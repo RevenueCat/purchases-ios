@@ -26,7 +26,7 @@ import UIKit
 
     }
 
-    /// Identifies the ad slot on
+    /// Identifies where the ad is shown in your app. RevenueCat uses it for reporting, so keep it stable.
     public let placementID: String
 
     /// Receives the ad's presentation events (presented, impression, click, dismissal, expiry, failures).
