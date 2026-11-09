@@ -44,7 +44,8 @@ final class NestedBillingTabsUITests: XCTestCase {
         line: UInt = #line
     ) {
         let card = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", billingID)).firstMatch
-        XCTAssertTrue(card.waitForExistence(timeout: 5), "Missing \(billingID) card", file: file, line: line)
+        XCTAssertTrue(card.exists || card.waitForExistence(timeout: 5),
+                      "Missing \(billingID) card", file: file, line: line)
         XCTAssertTrue(card.isHittable, file: file, line: line)
 
         let selected = app.staticTexts.matching(NSPredicate(format: "label BEGINSWITH 'Selected '")).firstMatch
@@ -53,6 +54,7 @@ final class NestedBillingTabsUITests: XCTestCase {
             let price = String(selected.label.dropFirst("Selected ".count))
             return !price.isEmpty && card.label.contains(price)
         }
+        if selectionMatches.evaluate(with: nil) { return }
         XCTAssertEqual(
             XCTWaiter.wait(for: [XCTNSPredicateExpectation(predicate: selectionMatches, object: nil)], timeout: 5),
             .completed,

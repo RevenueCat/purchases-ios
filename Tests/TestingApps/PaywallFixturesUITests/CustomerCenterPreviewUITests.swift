@@ -39,7 +39,7 @@ final class CustomerCenterPreviewUITests: XCTestCase {
         for configured in [false, true] {
             let app = launch(mode: "legacy", configured: configured)
             let button = app.descendants(matching: .any).matching(identifier: "Contact support").firstMatch
-            XCTAssertTrue(button.waitForExistence(timeout: 10), app.debugDescription)
+            XCTAssertTrue(button.exists || button.waitForExistence(timeout: 10), app.debugDescription)
             button.tap()
             assertEvent("mailto:support@example.invalid", in: app)
             XCTAssertEqual(app.webViews.count, 0)
@@ -188,13 +188,14 @@ final class CustomerCenterPreviewUITests: XCTestCase {
         app.launchEnvironment["PREVIEW_ACTION_OUTCOME"] = outcome
         app.launchEnvironment["PREVIEW_CONFIGURE_SDK"] = configured ? "1" : "0"
         app.launch()
-        XCTAssertTrue(app.staticTexts[configured ? "SDK configured" : "SDK unconfigured"].waitForExistence(timeout: 15))
+        let status = app.staticTexts[configured ? "SDK configured" : "SDK unconfigured"]
+        XCTAssertTrue(status.exists || status.waitForExistence(timeout: 15))
         return app
     }
 
     private func openPreview(_ app: XCUIApplication) {
         let button = app.buttons["Open preview"]
-        XCTAssertTrue(button.waitForExistence(timeout: 10), app.debugDescription)
+        XCTAssertTrue(button.exists || button.waitForExistence(timeout: 10), app.debugDescription)
         button.tap()
     }
 
