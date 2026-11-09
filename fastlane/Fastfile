@@ -994,7 +994,8 @@ platform :ios do
         "-only-testing:RevenueCatUITests/NativePaywallUIKitTests " \
         "-only-testing:RevenueCatUITests/NativePaywallWorkflowTests " \
         "-only-testing:RevenueCatUITests/ButtonComponentViewTests " \
-        "-only-testing:RevenueCatUITests/WorkflowPresenterTests"
+        "-only-testing:RevenueCatUITests/WorkflowPresenterTests/testWorkflowRestoreTracksCompletionBeforeUIKitReportsDismissal " \
+        "-only-testing:RevenueCatUITests/WorkflowPresenterTests/testMatchedOfferingRestoreTracksCompletionBeforeUIKitReportsDismissal"
     else
       "-testPlan #{test_plan}"
     end
