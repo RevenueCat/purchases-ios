@@ -1132,6 +1132,7 @@ final class WorkflowPresenterTests: TestCase {
             XCTAssertFalse(handler.hasPurchasedInSession)
             dispose?()
             dispose = nil
+            await expect(controller.presentationBridgeForTesting.hasActiveWorkflow).toEventually(beFalse())
             for task in tasks.value { await task.value }
             let names = events.value.map { event in
                 switch event {

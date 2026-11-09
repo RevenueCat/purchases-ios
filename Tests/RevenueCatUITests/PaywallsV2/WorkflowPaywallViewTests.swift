@@ -1299,7 +1299,7 @@ extension WorkflowPaywallViewTests {
 
         dispose?()
         dispose = nil
-        expect(offeringProvider.displayedOffering).to(beNil())
+        await expect(offeringProvider.displayedOffering).toEventually(beNil())
     }
 
     @MainActor
@@ -1439,7 +1439,7 @@ extension WorkflowPaywallViewTests {
 
             dispose?()
             dispose = nil
-            expect(provider.displayedOffering).to(beNil())
+            await expect(provider.displayedOffering).toEventually(beNil())
         }
     }
 
@@ -1461,7 +1461,10 @@ extension WorkflowPaywallViewTests {
         )
         first.presentationBridge = bridge
         replacement.presentationBridge = bridge
-        var disposeFirst: (() -> Void)? = try PaywallView(configuration: first).addToHierarchy()
+        var firstDidDisappear = false
+        var disposeFirst: (() -> Void)? = try PaywallView(configuration: first)
+            .onDisappear { firstDidDisappear = true }
+            .addToHierarchy()
         defer { disposeFirst?() }
         await expect(bridge.displayedOffering?.identifier).toEventually(equal(firstOffering.identifier))
         var disposeReplacement: (() -> Void)? = try PaywallView(configuration: replacement).addToHierarchy()
@@ -1470,11 +1473,12 @@ extension WorkflowPaywallViewTests {
 
         disposeFirst?()
         disposeFirst = nil
+        await expect(firstDidDisappear).toEventually(beTrue())
 
         expect(bridge.displayedOffering?.identifier) == replacementOffering.identifier
         disposeReplacement?()
         disposeReplacement = nil
-        expect(bridge.displayedOffering).to(beNil())
+        await expect(bridge.displayedOffering).toEventually(beNil())
     }
 
     @MainActor
@@ -1496,7 +1500,10 @@ extension WorkflowPaywallViewTests {
             introEligibility: .producing(eligibility: .eligible), purchaseHandler: .mock()
         )
         replacement.presentationBridge = bridge
-        var disposeWorkflow: (() -> Void)? = try workflow.addToHierarchy()
+        var workflowDidDisappear = false
+        var disposeWorkflow: (() -> Void)? = try workflow
+            .onDisappear { workflowDidDisappear = true }
+            .addToHierarchy()
         defer { disposeWorkflow?() }
         expect(bridge.displayedOffering?.identifier) == context.initialOffering.identifier
         var disposeReplacement: (() -> Void)? = try PaywallView(configuration: replacement).addToHierarchy()
@@ -1505,11 +1512,12 @@ extension WorkflowPaywallViewTests {
 
         disposeWorkflow?()
         disposeWorkflow = nil
+        await expect(workflowDidDisappear).toEventually(beTrue())
 
         expect(bridge.displayedOffering?.identifier) == replacementOffering.identifier
         disposeReplacement?()
         disposeReplacement = nil
-        expect(bridge.displayedOffering).to(beNil())
+        await expect(bridge.displayedOffering).toEventually(beNil())
     }
 
     @MainActor
@@ -1547,7 +1555,7 @@ extension WorkflowPaywallViewTests {
 
         dispose?()
         dispose = nil
-        expect(provider.displayedOffering).to(beNil())
+        await expect(provider.displayedOffering).toEventually(beNil())
     }
 
     @MainActor
@@ -1579,7 +1587,7 @@ extension WorkflowPaywallViewTests {
 
             dispose?()
             dispose = nil
-            expect(provider.displayedOffering).to(beNil())
+            await expect(provider.displayedOffering).toEventually(beNil())
         }
     }
 
