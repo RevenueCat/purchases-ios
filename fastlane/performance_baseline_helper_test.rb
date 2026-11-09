@@ -72,8 +72,20 @@ class PerformanceBaselineHelperTest < Minitest::Test
   def test_pr_merge_gate_requires_the_memory_benchmark
     config = YAML.safe_load(File.read(File.join(ROOT, '.circleci/default_config.yml')), aliases: true)
     jobs = config.fetch('workflows').fetch('run-all-tests').fetch('jobs')
-    gate = jobs.find { |job| job.is_a?(Hash) && job.key?('all-tasks-passed') }
-    assert_includes gate.fetch('all-tasks-passed').fetch('requires'), 'performance-tests'
+    gate = jobs.find { |job| job.is_a?(Hash) && job.values.first['name'] == 'full-suite-not-requested' }
+    assert_includes gate.values.first.fetch('requires'), 'performance-tests'
+  end
+
+  def test_merge_gate_posts_pending_after_the_default_success_and_success_last
+    config = YAML.safe_load(File.read(File.join(ROOT, '.circleci/default_config.yml')), aliases: true)
+    jobs = config.fetch('workflows').fetch('run-all-tests').fetch('jobs')
+    gates = jobs.select { |job| job.is_a?(Hash) && job.key?('post-gate-status') }.to_h { |job| [job['post-gate-status']['name'], job['post-gate-status']] }
+    assert_equal 'success', gates.fetch('full-suite-not-requested').fetch('state')
+    assert_equal true, gates.fetch('full-suite-not-requested').fetch('unless_full_suite_approved')
+    assert_equal 'pending', gates.fetch('full-suite-started').fetch('state')
+    assert_equal %w[approve-full-tests full-suite-not-requested], gates.fetch('full-suite-started').fetch('requires').sort
+    assert_equal 'success', gates.fetch('all-tasks-passed').fetch('state')
+    assert_includes gates.fetch('all-tasks-passed').fetch('requires'), 'full-suite-started'
   end
 
   def test_requested_job_enables_record_and_push_with_boolean_parameters
