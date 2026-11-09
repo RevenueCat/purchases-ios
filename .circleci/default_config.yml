@@ -1755,7 +1755,7 @@ jobs:
           when: always
 
   run-paywall-accessibility-ui-tests:
-    description: "Assert paywall accessibility labels against the real accessibility tree"
+    description: "Run the paywall fixture UI tests"
     executor:
       name: macos-executor
       xcode_version: "27.0.0"
@@ -1774,6 +1774,9 @@ jobs:
             bundle exec fastlane paywall_accessibility_ui_tests
           environment:
             SCAN_DEVICE: iPhone 17 (27.0)
+            SCAN_XCARGS: -collect-test-diagnostics never
+            SCAN_PARALLEL_TESTING: "true"
+            SCAN_CONCURRENT_WORKERS: "2"
           no_output_timeout: 15m
       - store_test_results:
           path: fastlane/test_output
@@ -3090,6 +3093,7 @@ workflows:
             pattern: "^(release/.*|main)$"
             value: << pipeline.git.branch >>
     jobs:
+      - run-paywall-accessibility-ui-tests
       - check-api-changes:
           context:
             - slack-secrets-ios
@@ -3218,6 +3222,7 @@ workflows:
           state: success
           requires:
             - check-api-changes
+            - run-paywall-accessibility-ui-tests
             - run-all-maestro-e2e-tests
             - run-workflow-maestro-tests
             - run-sdk-update-test

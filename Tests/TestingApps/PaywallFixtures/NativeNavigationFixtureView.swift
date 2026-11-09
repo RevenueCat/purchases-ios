@@ -27,11 +27,19 @@ struct NativeNavigationFixtureView: View {
 
     var body: some View {
         NavigationStack(path: self.$path) {
-            if self.dismissed {
+            if self.presentation != "push" {
+                VStack {
+                    if self.dismissed {
+                        Text("Paywall dismissed")
+                    }
+                    Button("Show native paywall") {
+                        self.dismissed = false
+                        self.modalPresented = true
+                    }
+                }
+                .navigationTitle("Fixture host")
+            } else if self.dismissed {
                 Text("Paywall dismissed")
-            } else if self.presentation != "push" {
-                Button("Show native paywall") { self.modalPresented = true }
-                    .navigationTitle("Fixture host")
             } else {
                 NavigationLink("Show native paywall", value: true)
                 .navigationDestination(for: Bool.self) { _ in
