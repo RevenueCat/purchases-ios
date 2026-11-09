@@ -127,9 +127,10 @@ final class NativeNavigationUITests: XCTestCase {
     }
 
     private func assertCarouselCloseDismisses(native: Bool) {
+        let app = self.launch("native_inline_sheet", presentation: "sheet", carouselNative: native)
         for page in 1...5 {
-            let app = self.launch("native_inline_sheet", presentation: "sheet", carouselNative: native)
             self.assertVisible(app.staticTexts["Carousel page 1"], in: app)
+            XCTAssertFalse(app.staticTexts["Paywall dismissed"].exists, app.debugDescription)
             for previous in 1..<page {
                 let title = app.staticTexts["Carousel page \(previous)"]
                 let origin = app.coordinate(withNormalizedOffset: .zero)
@@ -150,7 +151,11 @@ final class NativeNavigationUITests: XCTestCase {
             }
             close.tap()
             self.assertVisible(app.staticTexts["Paywall dismissed"], in: app)
-            app.terminate()
+            if page < 5 {
+                let showPaywall = app.buttons["Show native paywall"]
+                self.assertVisible(showPaywall, in: app)
+                showPaywall.tap()
+            }
         }
     }
 
@@ -277,7 +282,7 @@ final class NativeNavigationUITests: XCTestCase {
     }
 
     private func assertNativeControls(in app: XCUIApplication, back: Bool, close: Bool) {
-        let ready = XCTNSPredicateExpectation(predicate: NSPredicate { _, _ in
+        let ready = NSPredicate { _, _ in
             let backButton = app.buttons[self.backIdentifier]
             let closeButton = app.buttons[self.closeIdentifier]
             return app.buttons.matching(identifier: self.backIdentifier).count == (back ? 1 : 0)
@@ -285,8 +290,10 @@ final class NativeNavigationUITests: XCTestCase {
                 && (!back || (backButton.isEnabled && backButton.isHittable))
                 && (!close || (closeButton.isEnabled && closeButton.isHittable))
                 && (!(back || close) || !app.buttons["BackButton"].exists)
-        }, object: nil)
-        XCTAssertEqual(XCTWaiter.wait(for: [ready], timeout: 10), .completed, app.debugDescription)
+        }
+        if ready.evaluate(with: nil) { return }
+        let expectation = XCTNSPredicateExpectation(predicate: ready, object: nil)
+        XCTAssertEqual(XCTWaiter.wait(for: [expectation], timeout: 10), .completed, app.debugDescription)
     }
 
     private func launch(
@@ -303,12 +310,13 @@ final class NativeNavigationUITests: XCTestCase {
         }
         app.launch()
         let showPaywall = app.buttons["Show native paywall"]
-        XCTAssertTrue(showPaywall.waitForExistence(timeout: 30), app.debugDescription)
+        XCTAssertTrue(showPaywall.exists || showPaywall.waitForExistence(timeout: 30), app.debugDescription)
         showPaywall.tap()
         return app
     }
 
     private func assertVisible(_ element: XCUIElement, in app: XCUIApplication) {
+        if element.exists && element.isHittable { return }
         let visible = XCTNSPredicateExpectation(predicate: NSPredicate(format: "exists == true AND hittable == true"),
                                                object: element)
         XCTAssertEqual(XCTWaiter.wait(for: [visible], timeout: 10), .completed, app.debugDescription)

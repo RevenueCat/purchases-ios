@@ -50,6 +50,7 @@ final class CarouselTabsUITests: XCTestCase {
         let centered = NSPredicate { _, _ in
             Self.centeredPage(label, in: app) != nil
         }
+        if centered.evaluate(with: nil) { return }
         let result = XCTWaiter.wait(
             for: [XCTNSPredicateExpectation(predicate: centered, object: nil)],
             timeout: 5
