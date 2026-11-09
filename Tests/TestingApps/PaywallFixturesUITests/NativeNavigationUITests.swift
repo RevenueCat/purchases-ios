@@ -127,9 +127,10 @@ final class NativeNavigationUITests: XCTestCase {
     }
 
     private func assertCarouselCloseDismisses(native: Bool) {
+        let app = self.launch("native_inline_sheet", presentation: "sheet", carouselNative: native)
         for page in 1...5 {
-            let app = self.launch("native_inline_sheet", presentation: "sheet", carouselNative: native)
             self.assertVisible(app.staticTexts["Carousel page 1"], in: app)
+            XCTAssertFalse(app.staticTexts["Paywall dismissed"].exists, app.debugDescription)
             for previous in 1..<page {
                 let title = app.staticTexts["Carousel page \(previous)"]
                 let origin = app.coordinate(withNormalizedOffset: .zero)
@@ -150,7 +151,11 @@ final class NativeNavigationUITests: XCTestCase {
             }
             close.tap()
             self.assertVisible(app.staticTexts["Paywall dismissed"], in: app)
-            app.terminate()
+            if page < 5 {
+                let showPaywall = app.buttons["Show native paywall"]
+                self.assertVisible(showPaywall, in: app)
+                showPaywall.tap()
+            }
         }
     }
 
