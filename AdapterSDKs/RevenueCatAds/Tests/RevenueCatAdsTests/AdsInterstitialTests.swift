@@ -74,6 +74,16 @@ final class AdsInterstitialTests: TestCase {
         XCTAssertEqual(self.delegate.events, [])
     }
 
+    func testLoadWhileLoadedKeepsTheCurrentAd() async throws {
+        try await self.loadSuccessfully()
+
+        try await self.interstitial.load()
+
+        XCTAssertEqual(self.module.interstitials.count, 1)
+        XCTAssertEqual(self.interstitial.state, .loaded)
+        XCTAssertEqual(self.delegate.events, [])
+    }
+
     func testLoadWhileLoadingFailsWithInvalidState() async throws {
         let task = Task { try await self.interstitial.load() }
         await self.waitUntil { self.interstitial.state == .loading }
