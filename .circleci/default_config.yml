@@ -2884,8 +2884,7 @@ workflows:
       - make-release:
           context: github-bot-public
           requires:
-            # TODO: restore after Nov 7, 2026, once CocoaPods trunk is writable again.
-            # - push-revenuecatui-pod
+            - push-revenuecatui-pod
             - deploy-to-spm
             - docs-deploy
           <<: *release-tags
