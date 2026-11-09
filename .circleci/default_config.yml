@@ -2512,6 +2512,7 @@ workflows:
       - generate-swiftinterface:
           context:
             - slack-secrets-ios
+            - github-bot-public
 
   generate-snapshot:
     when: << pipeline.parameters.generate_snapshots >>
@@ -2612,6 +2613,7 @@ workflows:
           context:
             - slack-secrets
       - post-gate-status:
+          context: github-bot-public
           name: full-suite-not-requested
           state: success
           unless_full_suite_approved: true
@@ -2638,6 +2640,7 @@ workflows:
       - approve-full-tests:
           type: approval
       - post-gate-status:
+          context: github-bot-public
           name: full-suite-started
           state: pending
           requires:
@@ -2798,6 +2801,7 @@ workflows:
       # Summary gate: blocks merge until all jobs pass
       # =============================================================
       - post-gate-status:
+          context: github-bot-public
           name: all-tasks-passed
           state: success
           requires:
@@ -2848,12 +2852,14 @@ workflows:
             - deploy-to-spm
           <<: *release-tags
       - make-admob-release:
+          context: github-bot-public
           requires:
             - deploy-to-purchases-ios-admob
           <<: *release-tags
       - docs-deploy:
           <<: *release-tags
       - make-release:
+          context: github-bot-public
           requires:
             # TODO: restore after Nov 7, 2026, once CocoaPods trunk is writable again.
             # - push-revenuecatui-pod
@@ -2875,6 +2881,7 @@ workflows:
             - make-release
           <<: *release-tags
       - revenuecat/merge-release-pr:
+          context: github-bot-public
           repo_name: purchases-ios
           requires:
             - make-release
@@ -2896,6 +2903,7 @@ workflows:
         - equal: [true, << pipeline.parameters.version_file_changed >>]
     jobs:
       - prepare-next-version:
+          context: github-bot-public
           <<: *only-main-branch
 
   danger:
@@ -2920,7 +2928,8 @@ workflows:
         - equal: [scheduled_pipeline, << pipeline.trigger_source >>]
         - equal: ["release-train", << pipeline.schedule.name >>]
     jobs:
-      - release-train
+      - release-train:
+          context: github-bot-public
 
   remote-config-blob-monitor:
     when:
@@ -2981,7 +2990,8 @@ workflows:
     when:
       equal: [bump, << pipeline.parameters.action >>]
     jobs:
-      - release-train
+      - release-train:
+          context: github-bot-public
 
   record-and-upload-paywalls-v2-snapshots:
     when:
@@ -3005,13 +3015,15 @@ workflows:
     when:
       equal: [update_paywall_templates, << pipeline.parameters.action >>]
     jobs:
-      - update-paywall-preview-resources-commit
+      - update-paywall-preview-resources-commit:
+          context: github-bot-public
 
   update-error-codes:
     when:
       equal: [update_error_codes, << pipeline.parameters.action >>]
     jobs:
       - revenuecat/update-error-codes:
+          context: github-bot-public
           platform: ios
           outputs: "ErrorCode.swift:Sources/Generated/ErrorCode.swift"
           commit_paths: "Sources/Generated/ErrorCode.swift,api"
@@ -3176,6 +3188,7 @@ workflows:
       # All tests gate for release branches
       # =============================================================
       - post-gate-status:
+          context: github-bot-public
           name: all-tests-succeeded
           state: success
           requires:
@@ -3227,6 +3240,7 @@ workflows:
           type: approval
           <<: *release-branches
       - revenuecat/tag-current-branch:
+          context: github-bot-public
           requires:
             - wait-for-pr-approval
             - release-checks
@@ -3234,6 +3248,7 @@ workflows:
           <<: *release-branches
 
       - post-gate-status:
+          context: github-bot-public
           name: all-tasks-passed
           state: success
           requires:
