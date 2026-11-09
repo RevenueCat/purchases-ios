@@ -53,8 +53,8 @@ struct TintColorSchemeModifier: ViewModifier {
     var tintColorScheme: DisplayableColorScheme
 
     func body(content: Content) -> some View {
-        if case .hex = self.tintColorScheme.effectiveColor(for: self.colorScheme), !self.tintColorScheme.hasError {
-            content.tint(self.tintColorScheme.toDynamicColor(with: self.colorScheme))
+        if let color = self.tintColorScheme.solidColor(for: self.colorScheme) {
+            content.tint(color)
         } else {
             content
         }
@@ -70,6 +70,17 @@ extension View {
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+fileprivate extension DisplayableColorScheme {
+    /// The color to apply for a solid (hex) scheme, or `nil` for gradients and colors with errors.
+    func solidColor(for colorScheme: ColorScheme) -> Color? {
+        guard case .hex = self.effectiveColor(for: colorScheme), !self.hasError else {
+            return nil
+        }
+        return self.toDynamicColor(with: colorScheme)
+    }
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 fileprivate extension View {
     @ViewBuilder
     func foregroundColorScheme(
@@ -80,10 +91,10 @@ fileprivate extension View {
         case .hex:
             // Do not apply a clear text color
             // Use the default color
-            if color.hasError {
-                self
+            if let solidColor = color.solidColor(for: colorScheme) {
+                self.foregroundColor(solidColor)
             } else {
-                self.foregroundColor(color.toDynamicColor(with: colorScheme))
+                self
             }
         case .linear(let degrees, _):
             self.overlay {
