@@ -13,7 +13,7 @@ final class RewardedPresentationTests: AdapterTestCase {
     private static let adUnitID = "ca-app-pub-test/rewarded"
     private static let formats: [RewardedPresentation.Format] = [.rewarded, .rewardedInterstitial]
 
-    func testDismissalWithoutEarningRewardCompletesWithShown() throws {
+    func testDismissalWithoutEarningRewardCompletesWithRewardNotEarned() throws {
         for format in Self.formats {
             let fakeAd = FakeRewardedAd()
             let presentation = self.makePresentation(format: format, loadResult: .success(fakeAd))
@@ -25,7 +25,7 @@ final class RewardedPresentationTests: AdapterTestCase {
             presentation.adDidDismissFullScreenContent(PresentingAdStub())
 
             XCTAssertEqual(recorder.outcomes.count, 1, "\(format)")
-            XCTAssertTrue(try XCTUnwrap(recorder.outcomes.first).isShown, "\(format)")
+            XCTAssertTrue(try XCTUnwrap(recorder.outcomes.first).isRewardNotEarned, "\(format)")
         }
     }
 
@@ -81,7 +81,7 @@ final class RewardedPresentationTests: AdapterTestCase {
         }
     }
 
-    func testFailedVerificationStillCompletesWithShown() throws {
+    func testFailedVerificationCompletesWithRewardNotEarned() throws {
         for format in Self.formats {
             let fakeAd = FakeRewardedAd()
             let presentation = self.makePresentation(format: format, loadResult: .success(fakeAd))
@@ -95,7 +95,7 @@ final class RewardedPresentationTests: AdapterTestCase {
             fakeAd.completeVerification(.failed)
 
             XCTAssertEqual(recorder.outcomes.count, 1, "\(format)")
-            XCTAssertTrue(try XCTUnwrap(recorder.outcomes.first).isShown, "\(format)")
+            XCTAssertTrue(try XCTUnwrap(recorder.outcomes.first).isRewardNotEarned, "\(format)")
         }
     }
 
@@ -238,6 +238,11 @@ final class RewardedPresentationTests: AdapterTestCase {
 
     func testOutcomeMapsToAdPresentationResult() {
         XCTAssertEqual(RewardedPresentation.Outcome.shown.presentationResult, AdPresentationResult.shown)
+        XCTAssertEqual(
+            RewardedPresentation.Outcome.rewardNotEarned.presentationResult,
+            AdPresentationResult.rewardNotEarned
+        )
+        XCTAssertNotEqual(AdPresentationResult.rewardNotEarned, AdPresentationResult.shown)
 
         let error = NSError(domain: "gma", code: 1)
         XCTAssertEqual(
@@ -344,6 +349,11 @@ private extension RewardedPresentation.Outcome {
 
     var isShown: Bool {
         if case .shown = self { return true }
+        return false
+    }
+
+    var isRewardNotEarned: Bool {
+        if case .rewardNotEarned = self { return true }
         return false
     }
 

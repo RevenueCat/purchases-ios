@@ -444,7 +444,7 @@ final class WebBundleURLBatcherTests: TestCase {
             )
         )
 
-        let urls = WebBundleURLBatcher.orderedWebViewURLs(
+        let batches = WebBundleURLBatcher.orderedScreenURLBatches(
             offerings: offerings,
             workflowsByOfferingId: [
                 "default": shared,
@@ -452,10 +452,10 @@ final class WebBundleURLBatcherTests: TestCase {
             ]
         )
 
-        expect(urls.map(\.url.absoluteString)) == ["https://example.com/shared"]
+        expect(batches.map { $0.map(\.url.absoluteString) }) == [["https://example.com/shared"]]
     }
 
-    func testInlineV2TreeIsUsedWhenOfferingHasNoWorkflow() {
+    func testInlineV2TreeIsIgnoredWhenOfferingHasNoWorkflow() {
         let offering = Self.offering(
             id: "default",
             webViewURL: "https://example.com/inline"
@@ -467,7 +467,7 @@ final class WebBundleURLBatcherTests: TestCase {
             workflowsByOfferingId: [:]
         )
 
-        expect(urls.map(\.url.absoluteString)) == ["https://example.com/inline"]
+        expect(urls).to(beEmpty())
     }
 
     func testV1OnlyOfferingContributesNothing() {
@@ -553,8 +553,7 @@ final class WebBundleURLBatcherTests: TestCase {
 
         await self.batcher.publish(
             offerings: offerings,
-            workflowsByOfferingId: ["default": workflow],
-            workflowBackedOfferingIds: ["default"]
+            workflowsByOfferingId: ["default": workflow]
         )
 
         expect(received) == [
@@ -570,7 +569,7 @@ final class WebBundleURLBatcherTests: TestCase {
         ]
     }
 
-    func testInlineOfferingIsOneScreenBatch() async {
+    func testInlineOfferingIsNotPublished() async {
         let offering = Self.offering(id: "default", webViewURLs: [
             "https://example.com/1",
             "https://example.com/2",
@@ -586,17 +585,10 @@ final class WebBundleURLBatcherTests: TestCase {
 
         await self.batcher.publish(
             offerings: offerings,
-            workflowsByOfferingId: [:],
-            workflowBackedOfferingIds: []
+            workflowsByOfferingId: [:]
         )
 
-        expect(received) == [
-            .receivedAssetURLs([
-                Self.url("https://example.com/1"),
-                Self.url("https://example.com/2"),
-                Self.url("https://example.com/3")
-            ])
-        ]
+        expect(received).to(beEmpty())
     }
 
     func testPresentedWorkflowIsPublishedEveryTime() async throws {
@@ -612,8 +604,7 @@ final class WebBundleURLBatcherTests: TestCase {
 
         await self.batcher.publish(
             offerings: offerings,
-            workflowsByOfferingId: ["default": current],
-            workflowBackedOfferingIds: ["default"]
+            workflowsByOfferingId: ["default": current]
         )
         await self.batcher.publishPresentedWorkflow(presented)
         await self.batcher.publishPresentedWorkflow(presented)
@@ -638,8 +629,7 @@ final class WebBundleURLBatcherTests: TestCase {
 
         await self.batcher.publish(
             offerings: offerings,
-            workflowsByOfferingId: ["default": initial],
-            workflowBackedOfferingIds: ["default"]
+            workflowsByOfferingId: ["default": initial]
         )
         await self.batcher.publishPresentedWorkflow(refreshed)
 

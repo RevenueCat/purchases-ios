@@ -40,7 +40,7 @@ extension View {
             self
         case let .fill(minMax):
             self
-                .frame(minWidth: 0, maxWidth: .infinity, alignment: alignment)
+                .fill(.horizontal, alignment: alignment)
                 .applyWidthLimits(minMax, alignment: alignment)
         case .fixed(let value):
             self
@@ -58,7 +58,7 @@ extension View {
             self
         case let .fill(minMax):
             self
-                .frame(minHeight: 0, maxHeight: .infinity, alignment: alignment)
+                .fill(.vertical, alignment: alignment)
                 .applyHeightLimits(minMax, alignment: alignment)
         case .fixed(let value):
             self
@@ -66,6 +66,31 @@ extension View {
         case let .relative(_, minMax):
             // WIP: Maybe handle % value here
             self.applyHeightLimits(minMax, alignment: alignment)
+        }
+    }
+
+    /// Takes all the space proposed along `axis`, like `.frame(minWidth: 0, maxWidth: .infinity)`.
+    ///
+    /// iOS 17 places a frame's content three times under an unbounded proposal, such as a `ScrollView`'s, and
+    /// every nested Fill stack multiplies that until the paywall hangs. ``FillLayout`` places it once.
+    @ViewBuilder
+    func fill(_ axis: Axis, alignment: Alignment) -> some View {
+        if #available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, *) {
+            self.fillFrame(axis, alignment: alignment)
+        } else if #available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *) {
+            FillLayout(axis: axis, alignment: alignment) { self }
+        } else {
+            self.fillFrame(axis, alignment: alignment)
+        }
+    }
+
+    @ViewBuilder
+    private func fillFrame(_ axis: Axis, alignment: Alignment) -> some View {
+        switch axis {
+        case .horizontal:
+            self.frame(minWidth: 0, maxWidth: .infinity, alignment: alignment)
+        case .vertical:
+            self.frame(minHeight: 0, maxHeight: .infinity, alignment: alignment)
         }
     }
 
@@ -93,6 +118,41 @@ extension View {
         } else {
             self
         }
+    }
+
+}
+
+/// Lays out its single subview like `.frame(minWidth: 0, maxWidth: .infinity, alignment:)` along `axis`.
+@available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
+private struct FillLayout {
+
+    let axis: Axis
+    let alignment: Alignment
+
+}
+
+@available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
+extension FillLayout: Layout {
+
+    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
+        let size = subviews.first?.sizeThatFits(proposal) ?? .zero
+        return self.axis == .horizontal
+            ? CGSize(width: proposal.width ?? size.width, height: size.height)
+            : CGSize(width: size.width, height: proposal.height ?? size.height)
+    }
+
+    // By size, not `dimensions(in:)`: a stack's alignment guides lay out its whole subtree again.
+    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
+        guard let subview = subviews.first else { return }
+        let size = subview.sizeThatFits(proposal)
+        let horizontal = self.alignment.horizontal
+        let vertical = self.alignment.vertical
+        let xFraction: CGFloat = horizontal == .leading ? 0 : horizontal == .trailing ? 1 : 0.5
+        let yFraction: CGFloat = vertical == .top ? 0 : vertical == .bottom ? 1 : 0.5
+        subview.place(at: CGPoint(x: bounds.minX + xFraction * (bounds.width - size.width),
+                                  y: bounds.minY + yFraction * (bounds.height - size.height)),
+                      anchor: .topLeading,
+                      proposal: proposal)
     }
 
 }

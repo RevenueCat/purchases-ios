@@ -1160,15 +1160,33 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
     }
 
     func testVerifyPurchaseDoesntGrantEntitlementsAfter429RetriesExhausted() async throws {
-        // Ensure that the each time POST /receipt is called, we mock a 429 error
-        var stubbedRequestCount = 0
+        // Ensure that each time POST /receipt is called, we mock a 429 error.
+        // Track the purchase-initiated request by nonce so a separate receipt post from an SK1 queue
+        // redelivery does not get counted as part of the original request's retry sequence.
+        let purchaseRequest: Atomic<(nonce: String?, retryCounts: [String])> = .init((nil, []))
         let host = try XCTUnwrap(HTTPRequest.Path.serverHostURL.host)
-        stub(condition: isHost(host) && isPath("/v1/receipts")) { _ in
-            stubbedRequestCount += 1
+        stub(condition: isHost(host) && isPath("/v1/receipts")) { request in
+            let requestBody = request.ohhttpStubs_httpBody.flatMap {
+                try? JSONSerialization.jsonObject(with: $0) as? [String: Any]
+            }
+
+            if requestBody?["initiation_source"] as? String == "purchase",
+               let nonce = request.value(forHTTPHeaderField: HTTPClient.RequestHeader.nonce.rawValue),
+               let retryCount = request.value(forHTTPHeaderField: HTTPClient.RequestHeader.retryCount.rawValue) {
+                purchaseRequest.modify {
+                    if $0.nonce == nil {
+                        $0.nonce = nonce
+                    }
+                    if $0.nonce == nonce {
+                        $0.retryCounts.append(retryCount)
+                    }
+                }
+            }
+
             return Self.emptyTooManyRequestsResponse()
         }
 
-        let product = try await self.monthlyPackage.storeProduct
+        let product = try await self.product("com.revenuecat.monthly_4.99.1_week_intro")
         do {
             _ = try await self.purchases.purchase(product: product)
             fail("Expected purchases.purchase to fail after exhausting retry count with 429 responses")
@@ -1176,7 +1194,8 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
             expect(error).to(matchError(ErrorCode.unknownError))
         }
 
-        expect(stubbedRequestCount).to(equal(4)) // 1 original request + 3 retries
+        expect(purchaseRequest.value.nonce).toNot(beNil())
+        expect(purchaseRequest.value.retryCounts) == ["0", "1", "2", "3"]
     }
 
     func testVerifyPurchaseDoesntRetryIfIsRetryableHeaderIsFalse() async throws {

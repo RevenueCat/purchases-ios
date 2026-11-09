@@ -11,6 +11,7 @@
 #
 
 require_relative 'api_diff_helper'
+require_relative 'performance_baseline_helper'
 require 'rexml/document'
 require 'json'
 require 'open3'
@@ -1769,6 +1770,13 @@ platform :ios do
     workflow_url = "https://app.circleci.com/pipelines/github/RevenueCat/#{REPO_NAME}/#{number}"
 
     UI.important "Workflow: #{workflow_url}"
+  end
+
+  desc "Push updated performance baselines to the PR branch"
+  lane :push_performance_baselines do
+    Dir.chdir(File.expand_path('..', __dir__)) do
+      PerformanceBaselineHelper.push
+    end
   end
 
   desc "Creates a new PR after new snapshot files were generated"

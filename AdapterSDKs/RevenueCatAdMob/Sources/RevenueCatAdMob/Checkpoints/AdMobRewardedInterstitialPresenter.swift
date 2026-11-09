@@ -19,7 +19,9 @@ import UIKit
 /// configured ad unit through `RewardedInterstitialAd.loadAndTrack` (so the usual RevenueCat ad events are
 /// tracked), enables RevenueCat reward verification, and presents it from the topmost view controller. Once
 /// the customer earns the reward, RevenueCat verifies it server-side and grants the configured virtual
-/// currency or entitlement before the checkpoint completes, so its result reflects what was granted.
+/// currency or entitlement before the checkpoint completes, so its result reflects what was granted. The
+/// checkpoint passes only on a verified reward: an ad closed early, or a reward that fails verification,
+/// gates like a dismissed paywall.
 ///
 /// The checkpoint identifier is used as the tracking placement. Failures are reported as `NSError`s in
 /// the `RevenueCatAdMob.RewardedPresentationError` domain, or as the underlying AdMob error.

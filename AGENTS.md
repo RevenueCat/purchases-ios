@@ -130,6 +130,42 @@ Tests use **XCTest**, **Nimble**, **swift-snapshot-testing**, and **OHHTTPStubs*
 
 Before you add or change a test, read [Contributing/TESTING.md](Contributing/TESTING.md).
 
+### Performance tests
+
+- Add memory benchmarks in `Tests/PerformanceTests/`. Keep setup outside the measurement interval.
+- Use fixed fixtures. Verify that each iteration completes the expected work.
+- Set the tolerance in each test. Keep the measured baseline in `Baselines.json`.
+- Verify that a known memory regression fails before you use a benchmark as evidence.
+- Keep the Xcode version, simulator, and workload consistent with the baseline.
+- Never record a new baseline automatically after a failure.
+
+The `performance-tests` CI job runs on each PR branch push. It uses Xcode 27.0.0, an iPhone 17 simulator with iOS 27.0, and Release configuration. It does not need an API key.
+
+The workflow fixture is the published revision 24 of `[performance-benchmark-1]` (`wff675a07c6c8b4540`) in [project 6627e5bc](https://app.revenuecat.com/projects/6627e5bc/paywalls). It contains seven screens and its UI configuration. The benchmark loads `Tests/PerformanceTests/Fixtures/performance-benchmark-1-revision-24.json` without duplicate workflows or screens.
+
+Export an approved published revision with:
+
+```sh
+mafdet workflow content --project-id 6627e5bc --workflow-id wff675a07c6c8b4540 \
+  --output /tmp/performance-benchmark-1.json
+```
+
+Keep the export unchanged. Include the revision in its filename. Review the fixture and record a new baseline after an intentional workload change.
+
+For a local comparison:
+
+```sh
+xcodebuild test -workspace RevenueCat-Tuist.xcworkspace -scheme PerformanceTests \
+  -destination 'platform=iOS Simulator,name=iPhone 17,OS=27.0' \
+  -parallel-testing-enabled NO ENABLE_TESTABILITY=YES CODE_SIGNING_ALLOWED=NO
+```
+
+To update the baseline on a PR, comment `@RCGitBot please test record-performance`. The job records the measurements and pushes only `Baselines.json` to the PR branch. It stops if the branch changed during the run. Review the baseline diff before you merge.
+
+To record a candidate baseline, start a CircleCI pipeline with `action=record_performance_baselines`. Download the `Baselines.json` artifact. Review its measurements and workload hash before you update the checked-in file. The job does not commit the file.
+
+For local record mode, prefix the command with `TEST_RUNNER_RECORD_PERFORMANCE_BASELINES=1`. Use the same test selection for record and comparison runs. CI runs the full `PerformanceTests` target. Disable record mode before you compare results.
+
 ## Development Workflow
 
 For environment setup, see **`Contributing/CONTRIBUTING.md`**. For code style, see **`Contributing/SwiftStyleGuide.swift`**.

@@ -346,6 +346,7 @@ struct PaywallsV2View: View {
         .environment(\.urlOpenedNotifier, URLOpenedNotifier { [purchaseHandler] url in
             purchaseHandler.signalURLOpened(url)
         })
+        .environment(\.sessionPurchaseResult, self.purchaseHandler.sessionPurchaseResult)
         .environmentObject(self.purchaseHandler)
         .environmentObject(self.introOfferEligibilityContext)
         .environmentObject(self.paywallPromoOfferCache)
@@ -748,7 +749,7 @@ struct LoadedPaywallsV2View: View {
         )
     }
 
-    private var selectedPackageIsVisible: Bool {
+    private func selectedPackageIsVisible() -> Bool {
         guard let package = self.selectedPackageContext.package else { return false }
         return self.paywallState.viewModelFactory.packageValidator.couldBeRendering(
             package,
