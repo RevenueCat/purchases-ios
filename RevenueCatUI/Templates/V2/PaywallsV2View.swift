@@ -346,6 +346,7 @@ struct PaywallsV2View: View {
         .environment(\.urlOpenedNotifier, URLOpenedNotifier { [purchaseHandler] url in
             purchaseHandler.signalURLOpened(url)
         })
+        .environment(\.sessionPurchaseResult, self.purchaseHandler.sessionPurchaseResult)
         .environmentObject(self.purchaseHandler)
         .environmentObject(self.introOfferEligibilityContext)
         .environmentObject(self.paywallPromoOfferCache)
@@ -724,6 +725,7 @@ struct LoadedPaywallsV2View: View {
     /// Scoped to packages outside the tabs; a tab's own selection is reconciled in
     /// `LoadedTabsComponentView`.
     private func reconcileSelection() {
+        guard !self.selectedPackageContext.isPresentingSheet else { return }
         let packageValidator = self.paywallState.viewModelFactory.packageValidator
 
         guard let resolved = packageValidator.reconciledSelection(
@@ -744,6 +746,16 @@ struct LoadedPaywallsV2View: View {
                     .showZeroDecimalPlacePrices
             ),
             isReconcile: true
+        )
+    }
+
+    private func selectedPackageIsVisible() -> Bool {
+        guard let package = self.selectedPackageContext.package else { return false }
+        return self.paywallState.viewModelFactory.packageValidator.couldBeRendering(
+            package,
+            in: self.packageSelectionContext,
+            offerEligibilityLoading: self.offerEligibilityLoading,
+            offerEligibilityAvailability: self.offerEligibilityAvailability
         )
     }
 
@@ -812,11 +824,15 @@ struct LoadedPaywallsV2View: View {
                 alignment: .top
             )
             .environment(\.selectedPackageId, self.selectedPackageContext.package?.identifier)
+            .environment(\.selectedPackageIsVisible, self.selectedPackageIsVisible)
             .environment(\.planSelectionDefaultPackage, self.defaultPackage)
             .environmentObject(self.selectedPackageContext)
             .edgesIgnoringSafeArea(.bottom)
             .onAppear {
                 self.reconcileSelection()
+            }
+            .onChangeOf(self.selectedPackageContext.isPresentingSheet) { isPresenting in
+                if !isPresenting { self.reconcileSelection() }
             }
             // Each eligibility result can independently flip package visibility.
             .onChangeOf(self.offerEligibilityLoading) { _ in
@@ -893,7 +909,8 @@ extension PaywallsV2View {
 //                throw PackageGroupValidationError.noAvailablePackages("No available packages found")
 //            }
 
-            let packageInfos = factory.packageValidator.packageInfos.map { info in
+            let allPackageInfos = factory.packageValidator.packageInfos + factory.sheetPackageValidator.packageInfos
+            let packageInfos = allPackageInfos.map { info in
                 return (package: info.package, promotionalOfferProductCode: info.promotionalOfferProductCode)
             }
 

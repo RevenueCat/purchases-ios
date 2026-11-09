@@ -28,8 +28,8 @@ import Foundation
     /// this ad through the matching format's loader.
     public let adFormat: AdFormat
 
-    /// Whether RevenueCat verifies the reward of a rewarded ad. When `false`, the reward the ad network reports on
-    /// the device reaches the app unverified. Interstitial ads ignore it.
+    /// Whether RevenueCat verifies the reward of a rewarded ad. When `false`, RevenueCat grants nothing, and the
+    /// checkpoint passes once the ad network reports the reward on the device. Interstitial ads ignore it.
     public let rewardVerificationEnabled: Bool
 
     /// Creates a resolved ad step.

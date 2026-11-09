@@ -83,15 +83,60 @@ final class DangerousSettingsTests: TestCase {
         expect(settings.customEntitlementComputation) == false
     }
 
-    // MARK: - Internal settings
+}
 
-    func testUsesRemoteConfigAPISourcesIsDisabledByDefault() {
-        expect(DangerousSettings.Internal.default.usesRemoteConfigAPISources) == false
+final class SimulatedHostFailuresTests: TestCase {
+
+    private static let primaryHost = "api.revenuecat.com"
+    private static let backupHost = "api.rc-backup.com"
+
+    func testNoneModeFailsNoHost() {
+        expect(SimulatedHostFailures.Mode.none.hostFailures) == SimulatedHostFailures.none
     }
 
-    func testUsesRemoteConfigAPISourcesCanBeEnabled() {
-        let internalSettings = DangerousSettings.Internal(usesRemoteConfigAPISources: true)
-        expect(internalSettings.usesRemoteConfigAPISources) == true
+    func testPrimaryUnreachableModeTakesThePrimarySourceDown() {
+        expect(SimulatedHostFailures.Mode.primaryUnreachable.hostFailures) == .init(
+            serverErrorHosts: [],
+            unreachableHosts: [Self.primaryHost]
+        )
+    }
+
+    func testPrimaryServerErrorModeKeepsThePrimarySourceHealthy() {
+        expect(SimulatedHostFailures.Mode.primaryServerError.hostFailures) == .init(
+            serverErrorHosts: [Self.primaryHost],
+            unreachableHosts: []
+        )
+    }
+
+    func testAllUnreachableModeTakesEverySourceDown() {
+        expect(SimulatedHostFailures.Mode.allUnreachable.hostFailures) == .init(
+            serverErrorHosts: [],
+            unreachableHosts: [Self.primaryHost, Self.backupHost]
+        )
+    }
+
+    func testOnlyUnreachableHostsFailTheirHealthChecks() throws {
+        let strategy = ForceServerErrorStrategy.simulating {
+            .init(serverErrorHosts: ["erroring.rc-test.com"], unreachableHosts: ["down.rc-test.com"])
+        }
+
+        expect(strategy.healthCheckAction(try XCTUnwrap(URL(string: "https://down.rc-test.com/")))) == .fakeUnhealthy
+        expect(strategy.healthCheckAction(try XCTUnwrap(URL(string: "https://erroring.rc-test.com/"))))
+            == .performHealthCheck
+        expect(strategy.healthCheckAction(try XCTUnwrap(URL(string: "https://other.rc-test.com/"))))
+            == .performHealthCheck
+    }
+
+    func testHealthChecksUseTheFailuresCurrentAtCheckTime() throws {
+        let failures: Atomic<SimulatedHostFailures> = .init(SimulatedHostFailures.none)
+        let strategy = ForceServerErrorStrategy.simulating { failures.value }
+        let url = try XCTUnwrap(URL(string: "https://down.rc-test.com/"))
+
+        expect(strategy.healthCheckAction(url)) == .performHealthCheck
+
+        failures.value = SimulatedHostFailures(serverErrorHosts: [], unreachableHosts: ["down.rc-test.com"])
+
+        expect(strategy.healthCheckAction(url)) == .fakeUnhealthy
     }
 
 }

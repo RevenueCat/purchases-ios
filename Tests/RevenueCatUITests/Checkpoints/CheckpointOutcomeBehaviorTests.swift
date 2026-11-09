@@ -521,7 +521,7 @@ private final class FailingCheckpointPresenter: CheckpointPresenterType {
     func presentAd(
         _ presentation: AdPresentationRequest,
         adPresenter: AdPresenter
-    ) async throws -> (outcome: CheckpointPresentationOutcome, unverifiedAdReward: UnverifiedAdReward?) {
+    ) async throws -> CheckpointPresentationOutcome {
         throw self.error
     }
 
@@ -552,8 +552,8 @@ private final class OutcomeCheckpointPresenter: CheckpointPresenterType {
     func presentAd(
         _ presentation: AdPresentationRequest,
         adPresenter: AdPresenter
-    ) async throws -> (outcome: CheckpointPresentationOutcome, unverifiedAdReward: UnverifiedAdReward?) {
-        return (self.outcome, nil)
+    ) async throws -> CheckpointPresentationOutcome {
+        return self.outcome
     }
 
 }
@@ -594,8 +594,8 @@ private final class TerminalErrorCheckpointPresenter: CheckpointPresenterType {
     func presentAd(
         _ presentation: AdPresentationRequest,
         adPresenter: AdPresenter
-    ) async throws -> (outcome: CheckpointPresentationOutcome, unverifiedAdReward: UnverifiedAdReward?) {
-        return (.failed, nil)
+    ) async throws -> CheckpointPresentationOutcome {
+        return .failed
     }
 
 }

@@ -463,11 +463,7 @@ final class CheckpointsManagerTests: TestCase {
     func testHasEntitlementReadsTheDeliveredCustomerNotTheFlow() throws {
         let pro = try XCTUnwrap(Self.customerInfo(activeEntitlements: ["pro"]).entitlements.active["pro"])
         let result = CheckpointResult(
-            flow: FlowResult(
-                obtainedEntitlements: [ObtainedEntitlement(entitlementInfo: pro)],
-                obtainedProducts: [],
-                unverifiedAdReward: nil
-            ),
+            flow: FlowResult(obtainedEntitlements: [ObtainedEntitlement(entitlementInfo: pro)], obtainedProducts: []),
             customer: try Self.customerInfo(activeEntitlements: [])
         )
 
@@ -882,41 +878,44 @@ final class CheckpointsManagerTests: TestCase {
         XCTAssertEqual(presenter.receivedParams?.rewardVerificationEnabled, false)
     }
 
-    func testShownAdWithAnUnverifiedRewardDeliversItInTheFlowResult() async throws {
-        let reward = UnverifiedAdReward(type: "coins", amount: 5)
+    func testResolvedAdWithoutAnEarnedRewardBacksOut() async throws {
         let presenter = MockAdPresenter()
-        presenter.result = .shown(unverifiedRewardType: "coins", amount: 5)
-        let adStep = Self.adStep(adFormat: .rewarded, rewardVerificationEnabled: false)
-        let manager = CheckpointsManager(
-            resolveCheckpoint: { _, _ in .matchedAd(adStep) },
-            workflowPresenter: MockWorkflowPresenter()
-        )
-        manager.adPresenter = presenter
-
-        let result = await manager.checkpointForCallback(identifier: "extra_life", params: .init())
-
-        guard case let .completed(checkpointResult) = result else {
-            return XCTFail("Expected a completed callback")
-        }
-        XCTAssertEqual(checkpointResult.flow?.unverifiedAdReward, reward)
-    }
-
-    func testShownAdWithoutAnUnverifiedRewardDeliversNone() async throws {
-        let presenter = MockAdPresenter()
-        presenter.result = .shown
+        presenter.result = .rewardNotEarned
         let manager = CheckpointsManager(
             resolveCheckpoint: { _, _ in .matchedAd(Self.adStep(adFormat: .rewarded)) },
             workflowPresenter: MockWorkflowPresenter()
         )
         manager.adPresenter = presenter
 
-        let result = await manager.checkpointForCallback(identifier: "extra_life", params: .init())
+        let execution = try await manager.executeCheckpoint(identifier: "extra_life", params: .init())
 
-        guard case let .completed(checkpointResult) = result else {
-            return XCTFail("Expected a completed callback")
+        guard case .backedOut = execution else {
+            return XCTFail("Expected the checkpoint to back out like a dismissed paywall")
         }
-        let flow = try XCTUnwrap(checkpointResult.flow)
-        XCTAssertNil(flow.unverifiedAdReward)
+    }
+
+    func testResolvedAdWithoutAnEarnedRewardDoesNotPassTheCheckpoint() async throws {
+        let presenter = MockAdPresenter()
+        presenter.result = .rewardNotEarned
+        var errorPresentations = 0
+        let manager = CheckpointsManager(
+            resolveCheckpoint: { _, _ in .matchedAd(Self.adStep(adFormat: .rewarded)) },
+            workflowPresenter: MockWorkflowPresenter()
+        )
+        manager.adPresenter = presenter
+
+        let result = await manager.checkpointForCallback(
+            identifier: "extra_life",
+            params: .init(errorPresenter: { _, completion in
+                errorPresentations += 1
+                completion.complete()
+            })
+        )
+
+        guard case .suppressed = result else {
+            return XCTFail("Expected the callback to be suppressed")
+        }
+        XCTAssertEqual(errorPresentations, 0, "An unearned reward is not an error to present")
     }
 
     func testSequentialAdCheckpointsOfDifferentFormatsEachPresentAfterThePreviousCompletes() async throws {

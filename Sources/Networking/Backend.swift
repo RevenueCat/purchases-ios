@@ -49,8 +49,7 @@ class Backend {
         // list and one health-check cache; handle tokens keep concurrent unhealthy reports from double-advancing it.
         let internalSettings = systemInfo.dangerousSettings.internalSettings
         let apiSourceFailover = apiSourceProvider.map {
-            APISourceFailover(usesRemoteConfigAPISources: internalSettings.usesRemoteConfigAPISources,
-                              sourceProvider: $0,
+            APISourceFailover(sourceProvider: $0,
                               healthChecker: SourceHealthChecker(internalSettings: internalSettings))
         }
         let factory = BackendLanesFactory(systemInfo: systemInfo,
@@ -315,8 +314,7 @@ extension Backend {
         return self.config.httpClient.requestTimeoutManager.timeout(host: nil,
                                                                     isFallbackHostRequest: false,
                                                                     endpointSupportsFallbackURLs: false,
-                                                                    isProxied: false,
-                                                                    reTieredTimeoutsEnabled: true)
+                                                                    isProxied: false)
     }
 
     var offlineCustomerInfoEnabled: Bool {

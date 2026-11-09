@@ -28,11 +28,11 @@ internal protocol RewardedPresentableAd: AnyObject {
         rewardVerificationCompleted: @escaping @MainActor (RewardVerificationResult) -> Void
     )
 
-    /// Presents the ad without RevenueCat reward verification, reporting the reward AdMob gives on the device.
+    /// Presents the ad without RevenueCat reward verification, reporting when AdMob gives the reward on the device.
     @MainActor
     func presentWithoutRewardVerification(
         from viewController: UIViewController,
-        userDidEarnReward: @escaping @MainActor (UnverifiedAdReward) -> Void
+        userDidEarnReward: @escaping @MainActor () -> Void
     )
 
 }
@@ -43,11 +43,11 @@ extension GoogleMobileAds.RewardedAd: RewardedPresentableAd {
     @MainActor
     func presentWithoutRewardVerification(
         from viewController: UIViewController,
-        userDidEarnReward: @escaping @MainActor (UnverifiedAdReward) -> Void
+        userDidEarnReward: @escaping @MainActor () -> Void
     ) {
         self.present(from: viewController, userDidEarnRewardHandler: {
             Tracking.Adapter.shared.trackRewardEarnedWithoutVerification(for: self)
-            userDidEarnReward(UnverifiedAdReward(type: self.adReward.type, amount: self.adReward.amount.decimalValue))
+            userDidEarnReward()
         })
     }
 
@@ -59,11 +59,11 @@ extension GoogleMobileAds.RewardedInterstitialAd: RewardedPresentableAd {
     @MainActor
     func presentWithoutRewardVerification(
         from viewController: UIViewController,
-        userDidEarnReward: @escaping @MainActor (UnverifiedAdReward) -> Void
+        userDidEarnReward: @escaping @MainActor () -> Void
     ) {
         self.present(from: viewController, userDidEarnRewardHandler: {
             Tracking.Adapter.shared.trackRewardEarnedWithoutVerification(for: self)
-            userDidEarnReward(UnverifiedAdReward(type: self.adReward.type, amount: self.adReward.amount.decimalValue))
+            userDidEarnReward()
         })
     }
 
@@ -109,8 +109,9 @@ internal enum RewardedPresentationError: Error, CustomNSError {
 /// verification started, its result has arrived — so the checkpoint never resolves underneath a visible ad
 /// and never resolves while a reward is still being verified.
 ///
-/// Without reward verification, RevenueCat grants nothing: the reward AdMob reports is kept and delivered,
-/// unverified, with the outcome once the ad is dismissed.
+/// The checkpoint passes only on an earned reward: one RevenueCat verified or, without reward verification,
+/// one AdMob reported on the device, for which RevenueCat grants nothing. Closing the ad early, or a reward that
+/// fails verification, keeps the customer in front of the checkpoint like a dismissed paywall would.
 @available(iOS 15.0, *)
 @MainActor
 internal final class RewardedPresentation: NSObject, GoogleMobileAds.FullScreenContentDelegate {
@@ -139,19 +140,20 @@ internal final class RewardedPresentation: NSObject, GoogleMobileAds.FullScreenC
 
     enum Outcome {
 
-        case shown(UnverifiedAdReward?)
+        case shown
+        case rewardNotEarned
         case failed(NSError)
 
-        /// A verified reward reaches the app through the refreshed customer info, and an unverified one through
-        /// the result. A reward that failed verification is only logged: the customer watched the ad in full, so
-        /// the checkpoint still passes rather than presenting an error for an ad that was shown.
+        /// A verified reward reaches the app through the refreshed customer info. A reward that failed
+        /// verification is logged and gates like an unearned one: the ad was shown, so it is not an error to
+        /// present, but nothing was granted, so the checkpoint must not pass.
         @MainActor
         var presentationResult: AdPresentationResult {
             switch self {
-            case let .shown(unverifiedReward?):
-                return .shown(unverifiedRewardType: unverifiedReward.type, amount: unverifiedReward.amount)
-            case .shown(nil):
+            case .shown:
                 return .shown
+            case .rewardNotEarned:
+                return .rewardNotEarned
             case let .failed(error):
                 return .failed(error: error)
             }
@@ -177,7 +179,7 @@ internal final class RewardedPresentation: NSObject, GoogleMobileAds.FullScreenC
     private var isDismissed = false
     private var isAwaitingVerification = false
     private var isVerificationSettled = false
-    private var unverifiedReward: UnverifiedAdReward?
+    private var isRewardEarned = false
 
     init(
         format: Format,
@@ -234,8 +236,8 @@ internal final class RewardedPresentation: NSObject, GoogleMobileAds.FullScreenC
             if rewardVerificationEnabled {
                 self.presentWithRewardVerification(loadedAd, from: viewController, adUnitID: adUnitID)
             } else {
-                loadedAd.presentWithoutRewardVerification(from: viewController) { [weak self] reward in
-                    self?.unverifiedReward = reward
+                loadedAd.presentWithoutRewardVerification(from: viewController) { [weak self] in
+                    self?.isRewardEarned = true
                 }
             }
         }
@@ -279,6 +281,9 @@ internal final class RewardedPresentation: NSObject, GoogleMobileAds.FullScreenC
                         adUnitID: adUnitID
                     ))
                 }
+                // Non-nil means verification succeeded; a verified result with nothing granted
+                // still passes, like client-reported mode.
+                self.isRewardEarned = result.verifiedReward != nil
                 self.isVerificationSettled = true
                 self.finishIfSettled()
             }
@@ -290,7 +295,7 @@ internal final class RewardedPresentation: NSObject, GoogleMobileAds.FullScreenC
 
         guard !self.isAwaitingVerification || self.isVerificationSettled else { return }
 
-        self.finish(.shown(self.unverifiedReward))
+        self.finish(self.isRewardEarned ? .shown : .rewardNotEarned)
     }
 
     private func finish(_ outcome: Outcome) {

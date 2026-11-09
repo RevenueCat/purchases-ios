@@ -29,8 +29,8 @@ class APISourcesStoreKit1IntegrationTests: APISourcesStoreKit2IntegrationTests {
 
 }
 
-/// Runs core SDK flows against the real backend with the `usesRemoteConfigAPISources` dangerous setting
-/// enabled, so eligible requests resolve their host through the remote config API sources.
+/// Runs core SDK flows against the real backend without a proxy, so eligible requests resolve their host
+/// through the remote config API sources.
 class APISourcesStoreKit2IntegrationTests: BaseAPISourcesIntegrationTests {
 
     override class var storeKitVersion: StoreKitVersion { .storeKit2 }
@@ -162,15 +162,13 @@ class APISourcesExhaustedIntegrationTests: BaseAPISourcesIntegrationTests {
 
 }
 
-/// Configures `Purchases` with API sources enabled and a `ForceServerErrorStrategy` that records the API source
+/// Configures `Purchases` without a proxy and with a `ForceServerErrorStrategy` that records the API source
 /// each request attempt resolved.
 class BaseAPISourcesIntegrationTests: BaseStoreKitIntegrationTests {
 
     static let remoteConfigPath = HTTPRequest.Path.remoteConfig(domain: RemoteConfiguration.defaultDomain)
 
     let apiSourceRecorder = APISourceRecorder()
-
-    override var usesRemoteConfigAPISources: Bool { return true }
 
     // A proxy pins every request to itself, bypassing API sources.
     override var proxyURL: String? { return nil }

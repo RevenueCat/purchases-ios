@@ -32,20 +32,12 @@ public struct FlowResult: Sendable {
     /// read before presenting the flow: a renewal or a repeat purchase counts.
     public let obtainedProducts: Set<ObtainedProduct>
 
-    /// The reward the customer earned from a rewarded ad step that does not verify rewards, if any.
-    ///
-    /// The ad network reported this reward on the device. RevenueCat did not verify it and granted nothing for it:
-    /// your app decides whether to grant it.
-    public let unverifiedAdReward: UnverifiedAdReward?
-
     init(
         obtainedEntitlements: Set<ObtainedEntitlement>,
-        obtainedProducts: Set<ObtainedProduct>,
-        unverifiedAdReward: UnverifiedAdReward?
+        obtainedProducts: Set<ObtainedProduct>
     ) {
         self.obtainedEntitlements = obtainedEntitlements
         self.obtainedProducts = obtainedProducts
-        self.unverifiedAdReward = unverifiedAdReward
     }
 
     /// Returns the entitlement with `identifier` that was obtained while the flow was presented.
@@ -120,28 +112,6 @@ public struct ObtainedProduct: Hashable, Sendable {
     /// Hashes the product identifier and billing plan.
     public func hash(into hasher: inout Hasher) {
         hasher.combine(self.product.id)
-    }
-
-}
-
-/// A reward the customer earned from a rewarded ad shown by a checkpoint.
-///
-/// The ad network reported this reward on the device. RevenueCat did not verify it and granted nothing for it:
-/// your app decides whether to grant it.
-@_spi(InviteOnlyCheckpointsApi)
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-public struct UnverifiedAdReward: Hashable, Sendable {
-
-    /// The reward type configured for the ad unit in the ad network, such as `"coins"`.
-    public let type: String
-
-    /// The reward amount configured for the ad unit in the ad network.
-    public let amount: Decimal
-
-    /// Creates an unverified ad reward.
-    @_spi(Internal) public init(type: String, amount: Decimal) {
-        self.type = type
-        self.amount = amount
     }
 
 }

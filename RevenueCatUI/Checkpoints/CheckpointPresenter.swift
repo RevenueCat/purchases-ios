@@ -127,7 +127,7 @@ final class CheckpointPresenter: CheckpointPresenterType {
     func presentAd(
         _ presentation: AdPresentationRequest,
         adPresenter: AdPresenter
-    ) async throws -> (outcome: CheckpointPresentationOutcome, unverifiedAdReward: UnverifiedAdReward?) {
+    ) async throws -> CheckpointPresentationOutcome {
         guard let token = self.slot.claim() else {
             throw CheckpointError.operationAlreadyInProgress
         }
@@ -137,19 +137,22 @@ final class CheckpointPresenter: CheckpointPresenterType {
             params: presentation.params,
             presenter: adPresenter
         )
-        guard let error = result.error else {
+        switch result.kind {
+        case .shown:
             // A verified reward refreshes the cached customer before the presenter completes, so the result
             // reads the cache like any flow that produced no customer of its own.
-            return (.completed(customerInfo: nil), result.unverifiedReward)
+            return .completed(customerInfo: nil)
+        case .rewardNotEarned:
+            return .backedOut
+        case let .failed(error):
+            await self.presentStartupError(
+                error,
+                checkpointIdentifier: presentation.params.checkpointIdentifier,
+                customVariables: presentation.customVariables,
+                handler: presentation.errorPresentationHandler
+            )
+            return .failed
         }
-
-        await self.presentStartupError(
-            error,
-            checkpointIdentifier: presentation.params.checkpointIdentifier,
-            customVariables: presentation.customVariables,
-            handler: presentation.errorPresentationHandler
-        )
-        return (.failed, nil)
     }
 
     /// Bridges an ad presenter's completion callback into the checkpoint lifecycle.
@@ -285,7 +288,7 @@ protocol CheckpointPresenterType: AnyObject {
     func presentAd(
         _ presentation: AdPresentationRequest,
         adPresenter: AdPresenter
-    ) async throws -> (outcome: CheckpointPresentationOutcome, unverifiedAdReward: UnverifiedAdReward?)
+    ) async throws -> CheckpointPresentationOutcome
 
 }
 

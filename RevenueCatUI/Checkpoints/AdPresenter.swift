@@ -61,9 +61,8 @@ public struct AdPresentationParams {
     /// Whether RevenueCat verifies the reward of a rewarded ad. Interstitial ads ignore it.
     ///
     /// When `false`, the presenter must not enable RevenueCat reward verification, and RevenueCat grants nothing for
-    /// the ad. The presenter reports the reward the ad network gives on the device with
-    /// ``AdPresentationResult/shown(unverifiedRewardType:amount:)``, so that the app receives it unverified as
-    /// ``FlowResult/unverifiedAdReward``.
+    /// the ad. The presenter reports ``AdPresentationResult/shown`` only if the ad network reported the reward on
+    /// the device, and ``AdPresentationResult/rewardNotEarned`` otherwise.
     public let rewardVerificationEnabled: Bool
 
     /// Creates presentation context for an ad step selected by a checkpoint.
@@ -98,33 +97,37 @@ public struct AdPresentationParams {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public struct AdPresentationResult: Equatable, Sendable {
 
-    /// The ad was shown and dismissed.
-    public static let shown = AdPresentationResult(error: nil, unverifiedReward: nil)
+    /// The ad was shown and dismissed. For a rewarded ad, the customer watched it through and the server
+    /// confirmed it, or, when ``AdPresentationParams/rewardVerificationEnabled`` is `false`, the ad network
+    /// reported the reward on the device.
+    ///
+    /// The checkpoint passes.
+    public static let shown = AdPresentationResult(kind: .shown)
 
-    /// The ad was shown and dismissed, and the customer earned a reward that the ad network reported on the device.
+    /// A rewarded ad was dismissed before the customer earned its reward, or the reward could not be verified.
     ///
-    /// Report it only for an ad step that doesn't verify rewards (``AdPresentationParams/rewardVerificationEnabled``
-    /// is `false`). RevenueCat doesn't verify the reward or grant anything for it; the app receives it as
-    /// ``FlowResult/unverifiedAdReward``.
-    ///
-    /// - Parameters:
-    ///   - type: The reward type configured for the ad unit in the ad network, such as `"coins"`.
-    ///   - amount: The reward amount configured for the ad unit in the ad network.
-    public static func shown(unverifiedRewardType type: String, amount: Decimal) -> AdPresentationResult {
-        return AdPresentationResult(error: nil, unverifiedReward: UnverifiedAdReward(type: type, amount: amount))
-    }
+    /// The checkpoint does not pass, as when the customer closes a paywall.
+    public static let rewardNotEarned = AdPresentationResult(kind: .rewardNotEarned)
 
     /// The ad could not be shown, for example because it failed to load or the mediator had no fill.
+    ///
+    /// The checkpoint presents the error and does not pass.
     public static func failed(error: PublicError) -> AdPresentationResult {
-        return AdPresentationResult(error: error, unverifiedReward: nil)
+        return AdPresentationResult(kind: .failed(error))
     }
 
-    let error: PublicError?
-    let unverifiedReward: UnverifiedAdReward?
+    enum Kind: Equatable, Sendable {
 
-    private init(error: PublicError?, unverifiedReward: UnverifiedAdReward?) {
-        self.error = error
-        self.unverifiedReward = unverifiedReward
+        case shown
+        case rewardNotEarned
+        case failed(PublicError)
+
+    }
+
+    let kind: Kind
+
+    private init(kind: Kind) {
+        self.kind = kind
     }
 
 }

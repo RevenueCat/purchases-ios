@@ -664,12 +664,7 @@ private extension HTTPClient {
                 }
 
                 // A timeout on a non-fallback (main-source) request arms the per-host fail-fast memory.
-                // With API sources enabled this covers every main-source timeout; otherwise it stays
-                // limited to fallback-supporting endpoints, matching the legacy behavior.
-                if networkError?.isURLRequestTimeout == true,
-                    !request.targetsFallbackHost,
-                    self.systemInfo.dangerousSettings.internalSettings.usesRemoteConfigAPISources
-                        || request.httpRequest.path.supportsFallbackURLs {
+                if networkError?.isURLRequestTimeout == true, !request.targetsFallbackHost {
                     requestTimeoutResult = .mainSourceTimedOut
                 }
 
@@ -854,10 +849,7 @@ private extension HTTPClient {
             host: finalURLRequest.url?.host,
             isFallbackHostRequest: request.targetsFallbackHost,
             endpointSupportsFallbackURLs: request.httpRequest.path.supportsFallbackURLs,
-            isProxied: SystemInfo.proxyURL != nil,
-            // The re-tiered fail-fast timeouts for main-API requests only apply when API sources are
-            // enabled. Blob-source downloads opt in independently of this setting.
-            reTieredTimeoutsEnabled: self.systemInfo.dangerousSettings.internalSettings.usesRemoteConfigAPISources
+            isProxied: SystemInfo.proxyURL != nil
         )
 
         // swiftlint:disable:next redundant_void_return

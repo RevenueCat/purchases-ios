@@ -5,10 +5,11 @@
 //  Created by Nacho Soto on 7/27/23.
 //
 
-@_spi(Internal) import RevenueCat
 #if DEBUG
+@_spi(Internal) @testable import RevenueCat
 @_spi(Internal) @testable import RevenueCatUI
 #else
+@_spi(Internal) import RevenueCat
 @_spi(Internal) import RevenueCatUI
 #endif
 import SwiftUI
@@ -124,6 +125,14 @@ struct APIKeyDashboardList: View {
                     .toolbar {
                         ToolbarItem(placement: .automatic) {
                             HStack(spacing: 16) {
+                                #if DEBUG && !os(tvOS) && !os(watchOS)
+                                Menu {
+                                    SimulatedFailuresPicker()
+                                } label: {
+                                    Image(systemName: "exclamationmark.icloud")
+                                }
+                                #endif
+
                                 Button {
                                     isShowingVariablesEditor = true
                                 } label: {
@@ -776,3 +785,24 @@ private extension View {
         self.modifier(PresentPaywallIfNeededModifier(offering: offering))
     }
 }
+
+#if DEBUG && !os(tvOS) && !os(watchOS)
+/// Picks the API source outage the SDK simulates. The choice is persisted and applies from the next request.
+private struct SimulatedFailuresPicker: View {
+
+    @AppStorage(Configuration.simulatedFailuresModeKey)
+    private var mode: SimulatedHostFailures.Mode = .none
+
+    var body: some View {
+        Text("Applies from the next request. Ignored when a proxy URL is set.")
+
+        Picker("Simulated API failures", selection: self.$mode) {
+            ForEach(SimulatedHostFailures.Mode.allCases) { mode in
+                Text(mode.label).tag(mode)
+            }
+        }
+        .pickerStyle(.inline)
+    }
+
+}
+#endif

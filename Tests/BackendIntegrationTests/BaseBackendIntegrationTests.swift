@@ -69,7 +69,6 @@ class BaseBackendIntegrationTests: TestCase {
         return .enforced(Signing.loadPublicKey())
     }
     var enableReceiptFetchRetry: Bool = true
-    var usesRemoteConfigAPISources: Bool { return false }
 
     var apiKey: String { return Constants.apiKey }
     var proxyURL: String? { return Constants.proxyURL }

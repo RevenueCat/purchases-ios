@@ -222,7 +222,9 @@ private extension SheetPresentationPlanTests {
             ),
             colorScheme: .light
         )
-        return ResizingSheetHost(sheet: SheetViewModel(sheet: sheet, sheetStackViewModel: stackViewModel))
+        return ResizingSheetHost(sheet: SheetViewModel(
+            sheet: sheet, sheetStackViewModel: stackViewModel, packageValidator: nil
+        ))
     }
 
     /// A sheet whose only content is a carousel with one page of the given fixed height, painted red.
@@ -251,7 +253,7 @@ private extension SheetPresentationPlanTests {
             localizationProvider: .init(locale: Locale(identifier: "en_US"), localizedStrings: [:]),
             colorScheme: .light
         )
-        return SheetViewModel(sheet: sheet, sheetStackViewModel: stackViewModel)
+        return SheetViewModel(sheet: sheet, sheetStackViewModel: stackViewModel, packageValidator: nil)
     }
 
     /// Rows of the red carousel page, sampled at the horizontal center.

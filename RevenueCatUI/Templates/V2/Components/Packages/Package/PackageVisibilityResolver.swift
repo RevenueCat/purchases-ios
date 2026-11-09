@@ -19,16 +19,17 @@ import Foundation
 /// Resolves whether a package component is visible, running the same override pipeline for both the
 /// renderer (`PackageComponentView`) and default-package selection (`PackageValidator`).
 ///
-/// It is built straight from the component, so it carries no dependency on the package's stack. That
-/// lets the package be recorded for selection before its subtree is walked, keeping iOS's ordering
-/// pre-order like Android's `StyleFactory.recordPackage`.
+/// The factory adds containing stacks as their walks finish, so selection also excludes packages in
+/// hidden containers. The package can still be recorded before its subtree is walked, preserving
+/// document order without retaining the stack view models.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct PackageVisibilityResolver {
 
     private let componentVisible: Bool?
     private let uiConfigProvider: UIConfigProvider
     private let presentedOverrides: PresentedOverrides<PresentedPackagePartial>?
-    let dependsOnOfferEligibility: Bool
+    private var ancestorStacks: [(visible: Bool?, overrides: PresentedOverrides<PresentedStackPartial>?)] = []
+    private(set) var dependsOnOfferEligibility: Bool
 
     init(
         component: PaywallComponent.PackageComponent,
@@ -40,6 +41,13 @@ struct PackageVisibilityResolver {
         let presentedOverrides = component.overrides?.toPresentedOverrides(discardRules: discardRules)
         self.presentedOverrides = presentedOverrides
         self.dependsOnOfferEligibility = presentedOverrides?.contains(where: \.dependsOnOfferEligibility) ?? false
+    }
+
+    mutating func addAncestorStack(_ component: PaywallComponent.StackComponent, discardRules: Bool) {
+        let overrides = component.overrides?.toPresentedOverrides(discardRules: discardRules)
+        self.ancestorStacks.append((component.visible, overrides))
+        self.dependsOnOfferEligibility = self.dependsOnOfferEligibility
+            || overrides?.contains(where: \.dependsOnOfferEligibility) == true
     }
 
     // swiftlint:disable:next function_parameter_count
@@ -67,7 +75,18 @@ struct PackageVisibilityResolver {
             with: self.presentedOverrides
         )
 
-        return partial?.visible ?? self.componentVisible ?? true
+        guard partial?.visible ?? self.componentVisible ?? true else { return false }
+        return self.ancestorStacks.allSatisfy { ancestor in
+            let partial = PresentedStackPartial.buildPartial(
+                state: state,
+                condition: condition,
+                isEligibleForIntroOffer: isEligibleForIntroOffer,
+                isEligibleForPromoOffer: isEligibleForPromoOffer,
+                conditionContext: conditionContext,
+                with: ancestor.overrides
+            )
+            return partial?.visible ?? ancestor.visible ?? true
+        }
     }
 
 }

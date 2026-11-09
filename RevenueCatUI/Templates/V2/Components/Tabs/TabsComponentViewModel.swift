@@ -11,7 +11,6 @@
 //
 //  Created by Josh Holtz on 1/9/25.
 
-import Foundation
 @_spi(Internal) import RevenueCat
 import SwiftUI
 
@@ -33,26 +32,6 @@ class TabsComponentViewModel: OfferEligibilityVisibilityDependency {
     let tabContextNamesById: [String: String]
     let defaultTabId: String?
     let name: String?
-
-    /// Seeds presentation state once, shared by duplicate `ViewThatFits` branches.
-    var didSeedInitialState = false
-
-    @MainActor
-    private var appearedViewIDs: Set<UUID> = []
-
-    /// Only the first appearing copy restores the package. A later copy is a duplicate, while
-    /// appearing after every copy disappeared is a revisit that must restore the current tab.
-    @MainActor
-    func registerAppearance(id: UUID) -> Bool {
-        let isFirstAppearance = self.appearedViewIDs.isEmpty
-        self.appearedViewIDs.insert(id)
-        return isFirstAppearance
-    }
-
-    @MainActor
-    func unregisterAppearance(id: UUID) {
-        self.appearedViewIDs.remove(id)
-    }
 
     /// The `TabControlContext` shared by every `LoadedTabsComponentView` backed by this view
     /// model, so a `ViewThatFits` duplicate can't diverge from the tab the user actually selected.
@@ -198,6 +177,23 @@ class TabViewModel {
 
     func defaultSelectedPackage(in context: PackageSelectionContext) -> Package? {
         return self.packageValidator.defaultSelectedPackage(in: context)
+    }
+
+    func validatedSelection(
+        _ package: Package?,
+        in context: PackageSelectionContext,
+        offerEligibilityLoading: OfferEligibilityLoading,
+        offerEligibilityAvailability: OfferEligibilityAvailability
+    ) -> Package? {
+        guard let package,
+              self.packages.contains(where: { $0.identifier == package.identifier }),
+              self.packageValidator.couldBeRendering(
+                package,
+                in: context,
+                offerEligibilityLoading: offerEligibilityLoading,
+                offerEligibilityAvailability: offerEligibilityAvailability
+              ) else { return nil }
+        return package
     }
 
     func reconciledSelection(
