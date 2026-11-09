@@ -53,9 +53,8 @@ final class PrebidAdModule: AdModule {
 @MainActor
 final class PrebidInterstitial: NSObject, AdModuleInterstitial {
 
-    // The RevenueCat auction only configures the Equativ (`smartadserver`) bidder, and Prebid's
-    // rendering API does not expose the winning seat.
-    nonisolated static let networkName = "Equativ"
+    nonisolated static let bidderTargetingKey = "hb_bidder"
+    nonisolated static let fallbackNetworkName = ""
     // Prebid Server answers in its ad server currency, USD unless configured otherwise.
     nonisolated static let currency = "USD"
 
@@ -74,7 +73,7 @@ final class PrebidInterstitial: NSObject, AdModuleInterstitial {
 
     var isReady: Bool { self.adUnit.isReady }
 
-    var networkName: String { Self.networkName }
+    var networkName: String { Self.networkName(from: self.eventHandler.bidResponse) }
 
     var revenue: AdModuleRevenue? {
         guard let price = self.eventHandler.bidResponse?.winningBid?.price else { return nil }
@@ -87,6 +86,10 @@ final class PrebidInterstitial: NSObject, AdModuleInterstitial {
 
     func show(from viewController: UIViewController) {
         self.adUnit.show(from: viewController)
+    }
+
+    nonisolated static func networkName(from bidResponse: BidResponse?) -> String {
+        return bidResponse?.winningBid?.targetingInfo?[Self.bidderTargetingKey] ?? Self.fallbackNetworkName
     }
 
     nonisolated static func revenue(fromCPM cpm: Float) -> AdModuleRevenue? {

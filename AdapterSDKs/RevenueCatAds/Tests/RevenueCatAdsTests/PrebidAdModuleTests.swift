@@ -43,6 +43,29 @@ final class PrebidAdModuleTests: TestCase {
         XCTAssertEqual(Prebid.shared.customHeaders["Authorization"], "Bearer appl_two")
     }
 
+    func testNetworkNameIsTheWinningBidder() {
+        let response = BidResponse(jsonDictionary: [
+            "id": "response",
+            "seatbid": [[
+                "seat": "smartadserver",
+                "bid": [[
+                    "id": "1", "impid": "1", "price": 1.5,
+                    "ext": ["prebid": ["targeting": [
+                        "hb_pb": "1.50", "hb_bidder": "smartadserver", "hb_cache_id": "cache"
+                    ]]]
+                ]]
+            ]]
+        ])
+
+        XCTAssertEqual(response.winningBid?.price, 1.5)
+        XCTAssertEqual(PrebidInterstitial.networkName(from: response), "smartadserver")
+    }
+
+    func testNetworkNameFallsBackWhenThereIsNoWinningBid() {
+        XCTAssertEqual(PrebidInterstitial.networkName(from: nil), "")
+        XCTAssertEqual(PrebidInterstitial.networkName(from: BidResponse(jsonDictionary: [:])), "")
+    }
+
     func testNoContentResponseMapsToNoFill() {
         let error = PrebidInterstitial.adsError(from: PBMError.blankResponse())
 
