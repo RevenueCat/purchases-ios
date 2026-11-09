@@ -116,9 +116,8 @@ final class PresenterFactory {
 
     private var windows: [UIWindow] = []
 
-    func makePresenter() -> UIViewController {
+    func makePresenter(_ viewController: UIViewController = UIViewController()) -> UIViewController {
         let window = UIWindow(frame: UIScreen.main.bounds)
-        let viewController = UIViewController()
         window.rootViewController = viewController
         window.makeKeyAndVisible()
         self.windows.append(window)

@@ -158,6 +158,17 @@ final class AdsInterstitialTests: TestCase {
         XCTAssertEqual(self.interstitial.state, .loaded)
     }
 
+    func testPresentFromViewControllerInTransitionFailsAndKeepsAd() async throws {
+        try await self.loadSuccessfully()
+        let presenter = self.presenters.makePresenter(TransitioningViewController())
+
+        self.interstitial.present(from: presenter)
+
+        XCTAssertEqual(self.module.lastInterstitial?.showCallCount, 0)
+        XCTAssertEqual(self.delegate.events, [.failedToPresent(.presentFailed)])
+        XCTAssertEqual(self.interstitial.state, .loaded)
+    }
+
     func testCanPresentAfterFailedPresentation() async throws {
         try await self.loadSuccessfully()
         self.interstitial.present(from: UIViewController())
@@ -329,6 +340,13 @@ final class AdsInterstitialTests: TestCase {
         }
         XCTAssertTrue(condition(), "Condition not met")
     }
+
+}
+
+// UIKit sets `isBeingDismissed` only during a live transition, which a unit test cannot hold still.
+private final class TransitioningViewController: UIViewController {
+
+    override var isBeingDismissed: Bool { true }
 
 }
 

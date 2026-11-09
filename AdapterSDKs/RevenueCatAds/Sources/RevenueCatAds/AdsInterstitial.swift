@@ -107,7 +107,7 @@ import UIKit
 
     /// Presents the loaded ad. If the ad is not ready, the delegate receives
     /// ``AdsInterstitialDelegate/interstitial(_:didFailToPresentWithError:)`` with ``AdsError/Code/notReady``.
-    /// If `viewController` is not in a window or is already presenting, it receives ``AdsError/Code/presentFailed``
+    /// If `viewController` cannot present right now, it receives ``AdsError/Code/presentFailed``
     /// and the ad stays loaded. The instance stays alive until the ad is dismissed, so dropping your reference
     /// after this call is safe.
     public func present(from viewController: UIViewController) {
@@ -127,6 +127,10 @@ import UIKit
         }
         if viewController.presentedViewController != nil {
             self.failToPresent("The view controller is already presenting.")
+            return
+        }
+        if viewController.isBeingPresented || viewController.isBeingDismissed {
+            self.failToPresent("The view controller is in a transition.")
             return
         }
 
