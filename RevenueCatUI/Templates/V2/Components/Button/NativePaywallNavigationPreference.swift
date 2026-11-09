@@ -10,9 +10,7 @@ import SwiftUI
 @available(iOS 15.0, macOS 12.0, watchOS 8.0, *)
 extension PaywallComponentsData.PaywallComponentsConfig {
     var requestsNativeClose: Bool {
-        let discardRules = self.stack.containsUnsupportedConditions()
-            || self.header?.stack.containsUnsupportedConditions() == true
-            || self.stickyFooter?.stack.containsUnsupportedConditions() == true
+        let discardRules = self.containsUnsupportedConditions()
         return self.stack.requestsNativeClose(discardRules: discardRules)
             || self.header?.stack.requestsNativeClose(discardRules: discardRules) == true
             || self.stickyFooter?.stack.requestsNativeClose(discardRules: discardRules) == true

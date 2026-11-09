@@ -221,6 +221,28 @@ final class NativePaywallNavigationPreferenceTests: TestCase {
         XCTAssertFalse(self.requestsNativeNavigation(hidden))
     }
 
+    func testUnsupportedFooterRuleDiscardsNativeOverridesButPreservesBasePreference() throws {
+        let footer = PaywallComponent.StickyFooterComponent(
+            stack: .init(components: []),
+            layout: .normal,
+            overrides: [.init(extendedConditions: [.unsupported], properties: .init(layout: .hidden))]
+        )
+        for action in ["navigate_back", "close_workflow"] {
+            for nativeBase in [false, true] {
+                let fixture = try self.nativeOverrideFixture(
+                    actionType: action, nativeBase: nativeBase, nativeOverride: true
+                )
+                let config = PaywallComponentsData.PaywallComponentsConfig(
+                    stack: fixture.paywallComponents.data.componentsConfig.base.stack,
+                    stickyFooter: footer,
+                    background: .color(.init(light: .hex("#FFFFFF")))
+                )
+                XCTAssertEqual(config.requestsNativeClose, nativeBase,
+                               "An unsupported footer rule must discard conditional native preferences for \(action)")
+            }
+        }
+    }
+
     private func config(stack: PaywallComponent.StackComponent) -> PaywallComponentsData.PaywallComponentsConfig {
         .init(stack: stack, stickyFooter: nil, background: .color(.init(light: .hex("#FFFFFF"))))
     }

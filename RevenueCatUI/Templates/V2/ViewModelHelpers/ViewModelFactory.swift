@@ -44,11 +44,7 @@ struct ViewModelFactory {
         colorScheme: ColorScheme
     ) throws -> RootViewModel {
         // Compute global flag: if ANY component has unsupported conditions, discard all rule overrides
-        self.discardRules = componentsConfig.stack.containsUnsupportedConditions() ||
-            componentsConfig.header?.stack.containsUnsupportedConditions() == true ||
-            componentsConfig.stickyFooter.map {
-                PaywallComponent.stickyFooter($0).containsUnsupportedConditions()
-            } == true
+        self.discardRules = componentsConfig.containsUnsupportedConditions()
 
         let headerFirstItemMedia = componentsConfig.header.flatMap {
             !$0.stack.components.isEmpty
