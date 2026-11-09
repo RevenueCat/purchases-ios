@@ -2517,8 +2517,10 @@ workflows:
   generate-snapshot:
     when: << pipeline.parameters.generate_snapshots >>
     jobs:
-      - run-test-ios-27
-      - run-test-ios-26
+      - run-test-ios-27:
+          context: danger-bot
+      - run-test-ios-26:
+          context: danger-bot
       - run-test-ios-18-and-17
       - run-test-ios-16-and-15
       - run-test-tvos-and-macos
@@ -2574,13 +2576,16 @@ workflows:
       - lint:
           context:
             - slack-secrets
+            - danger-bot
       - check-api-changes:
           context:
             - slack-secrets-ios
             - slack-secrets
+            - danger-bot
       - run-test-ios-27:
           context:
             - slack-secrets
+            - danger-bot
       - build-samplecat:
           context:
             - slack-secrets
@@ -2684,6 +2689,7 @@ workflows:
             - approve-full-tests
           context:
             - slack-secrets
+            - danger-bot
       - run-test-ios-16-and-15:
           requires:
             - approve-full-tests
@@ -2918,6 +2924,7 @@ workflows:
             value: << pipeline.git.branch >>
     jobs:
       - danger:
+          context: danger-bot
           filters:
             branches:
               ignore: main
@@ -3073,6 +3080,7 @@ workflows:
           context:
             - slack-secrets-ios
             - slack-secrets
+            - danger-bot
       - run-all-maestro-e2e-tests:
           context:
             - e2e-tests
@@ -3165,12 +3173,15 @@ workflows:
       - lint:
           context:
             - slack-secrets
+            - danger-bot
       - run-test-ios-26:
           context:
             - slack-secrets
+            - danger-bot
       - run-test-ios-27:
           context:
             - slack-secrets
+            - danger-bot
       - pod-lib-lint:
           context:
             - slack-secrets
