@@ -191,7 +191,7 @@ extension View {
         } else {
             self
                 .centeredContent(axis)
-                .scrollable(if: true)
+                .scrollable(axis.scrollViewAxis, if: true)
         }
     }
 
