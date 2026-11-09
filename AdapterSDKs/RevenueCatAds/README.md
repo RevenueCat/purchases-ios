@@ -50,6 +50,8 @@ if interstitial.isReady {
 RevenueCat uses it for reporting and segmentation, so use consistent values across your app.
 
 An instance shows one ad per load. After the ad is dismissed, or loading fails, load it again.
+The instance stays alive while its ad is on screen, so you can replace your reference right after
+`present(from:)`.
 When no ad is available, `load()` throws `AdsError.Code.noFill`; treat it as normal and continue
 without an ad.
 

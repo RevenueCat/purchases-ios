@@ -43,6 +43,7 @@ import UIKit
     private let moduleProvider: () -> AdModule?
     private let tracker: InterstitialEventTracker
     private var unit: AdModuleInterstitial?
+    private var retainedWhilePresenting: AdsInterstitial?
     private var impressionID = ""
     private var loadContinuation: CheckedContinuation<Void, Error>?
     private var impressionRecorded = false
@@ -107,7 +108,8 @@ import UIKit
     /// Presents the loaded ad. If the ad is not ready, the delegate receives
     /// ``AdsInterstitialDelegate/interstitial(_:didFailToPresentWithError:)`` with ``AdsError/Code/notReady``.
     /// If `viewController` is not in a window or is already presenting, it receives ``AdsError/Code/presentFailed``
-    /// and the ad stays loaded.
+    /// and the ad stays loaded. The instance stays alive until the ad is dismissed, so dropping your reference
+    /// after this call is safe.
     public func present(from viewController: UIViewController) {
         guard self.isReady, let unit = self.unit else {
             self.delegate?.interstitial(
@@ -129,6 +131,7 @@ import UIKit
         }
 
         self.state = .presenting
+        self.retainedWhilePresenting = self
         unit.show(from: viewController)
     }
 
@@ -153,8 +156,7 @@ import UIKit
             self.state = .loaded
             self.resumeLoad(with: .success(()))
         case let .failedToLoad(error):
-            self.state = .idle
-            self.unit = nil
+            self.finish()
             self.resumeLoad(with: .failure(error))
         case .presented, .impression, .clicked, .dismissed, .expired:
             break
@@ -165,8 +167,7 @@ import UIKit
     private func handleExpiry() {
         guard self.state == .loaded || self.state == .presenting else { return }
 
-        self.state = .idle
-        self.unit = nil
+        self.finish()
         self.delegate?.interstitialDidExpire(self)
     }
 
@@ -186,12 +187,17 @@ import UIKit
             self.tracker.track(event, unit: unit, impressionID: self.impressionID)
             self.delegate?.interstitialDidRecordClick(self)
         case (.dismissed, .presenting), (.dismissed, .presented):
-            self.state = .idle
-            self.unit = nil
+            self.finish()
             self.delegate?.interstitialDidDismiss(self)
         default:
             break
         }
+    }
+
+    private func finish() {
+        self.state = .idle
+        self.unit = nil
+        self.retainedWhilePresenting = nil
     }
 
     private func failToPresent(_ message: String) {

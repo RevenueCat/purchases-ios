@@ -257,6 +257,43 @@ final class AdsInterstitialTests: TestCase {
         XCTAssertEqual(self.interstitial.state, .presented)
     }
 
+    func testPresentingAdOutlivesTheCallersReference() async throws {
+        self.module.interstitialEvent = .loaded
+        weak var weakInterstitial: AdsInterstitial?
+        try await {
+            let interstitial = AdsInterstitial(placementID: "placement", moduleProvider: { [module] in module })
+            interstitial.delegate = self.delegate
+            weakInterstitial = interstitial
+            try await interstitial.load()
+            interstitial.present(from: self.presenters.makePresenter())
+        }()
+        let unit = try XCTUnwrap(self.module.lastInterstitial)
+
+        XCTAssertNotNil(weakInterstitial, "The interstitial must stay alive until its ad is dismissed")
+        unit.emit(.presented)
+        unit.emit(.dismissed)
+
+        XCTAssertEqual(self.delegate.events, [.presented, .dismissed])
+        XCTAssertNil(weakInterstitial, "The interstitial must be released once its ad is dismissed")
+    }
+
+    func testPresentingAdIsReleasedOnExpiry() async throws {
+        self.module.interstitialEvent = .loaded
+        weak var weakInterstitial: AdsInterstitial?
+        try await {
+            let interstitial = AdsInterstitial(placementID: "placement", moduleProvider: { [module] in module })
+            interstitial.delegate = self.delegate
+            weakInterstitial = interstitial
+            try await interstitial.load()
+            interstitial.present(from: self.presenters.makePresenter())
+        }()
+
+        self.module.lastInterstitial?.emit(.expired)
+
+        XCTAssertEqual(self.delegate.events, [.expired])
+        XCTAssertNil(weakInterstitial)
+    }
+
     func testCanLoadAgainAfterDismissal() async throws {
         try await self.presentLoadedAd()
         self.module.lastInterstitial?.emit(.dismissed)
