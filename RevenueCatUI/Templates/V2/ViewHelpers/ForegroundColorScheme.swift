@@ -42,33 +42,6 @@ extension View {
     }
 }
 
-/// Tints a view with a solid color scheme. SwiftUI renders `Text` links in the tint color, ignoring the
-/// foreground color, so this keeps markdown links in the paywall's text color.
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-struct TintColorSchemeModifier: ViewModifier {
-
-    @Environment(\.colorScheme)
-    var colorScheme
-
-    var tintColorScheme: DisplayableColorScheme
-
-    func body(content: Content) -> some View {
-        if let color = self.tintColorScheme.solidColor(for: self.colorScheme) {
-            content.tint(color)
-        } else {
-            content
-        }
-    }
-
-}
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-extension View {
-    func tintColorScheme(_ colorScheme: DisplayableColorScheme) -> some View {
-        self.modifier(TintColorSchemeModifier(tintColorScheme: colorScheme))
-    }
-}
-
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 fileprivate extension DisplayableColorScheme {
     /// The color to apply for a solid (hex) scheme, or `nil` for gradients and colors with errors.
@@ -92,7 +65,8 @@ fileprivate extension View {
             // Do not apply a clear text color
             // Use the default color
             if let solidColor = color.solidColor(for: colorScheme) {
-                self.foregroundColor(solidColor)
+                // SwiftUI draws `Text` links in the tint color, so tint too to keep links in the text color.
+                self.foregroundColor(solidColor).tint(solidColor)
             } else {
                 self
             }

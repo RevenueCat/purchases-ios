@@ -154,7 +154,6 @@ struct TextComponentView: View {
                     .fixedSize(horizontal: false, vertical: true)
                     .multilineTextAlignment(style.textAlignment)
                     .foregroundColorScheme(style.color)
-                    .tintColorScheme(style.color)
                     .redacted(reason: shouldRedactWhileLoading ? .placeholder : self.redactionReasons)
                     .padding(style.padding)
                     .size(style.size,
