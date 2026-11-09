@@ -14,8 +14,6 @@ import Foundation
 /// Nothing else calls `Purchases.shared.adTracker`: production uses ``PurchasesAdTracking``, tests inject fakes.
 protocol AdTracking {
 
-    var isConfigured: Bool { get }
-
     func trackAdLoaded(_ data: AdLoaded)
     func trackAdDisplayed(_ data: AdDisplayed)
     func trackAdOpened(_ data: AdOpened)
@@ -25,8 +23,6 @@ protocol AdTracking {
 }
 
 final class PurchasesAdTracking: AdTracking {
-
-    var isConfigured: Bool { Purchases.isConfigured }
 
     func trackAdLoaded(_ data: AdLoaded) {
         Purchases.shared.adTracker.trackAdLoaded(data, captureMethod: .iosRevenueCatAds)

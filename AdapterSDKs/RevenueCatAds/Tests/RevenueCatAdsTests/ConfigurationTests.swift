@@ -175,7 +175,11 @@ final class AdsConfigureTests: TestCase {
         try self.configure(AdsConfiguration(apiKey: "appl_key"))
         self.module.interstitialEvent = .loaded
 
-        let interstitial = AdsInterstitial(placementID: "placement")
+        let interstitial = AdsInterstitial(
+            placementID: "placement",
+            moduleProvider: { RCAds.module },
+            tracking: FakeAdTracking()
+        )
         try await interstitial.load()
 
         XCTAssertEqual(self.module.lastInterstitial?.placementID, "placement")

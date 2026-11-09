@@ -161,31 +161,6 @@ final class AdsTrackingTests: TestCase {
         XCTAssertEqual(self.tracking.trackedEventCount, 1)
     }
 
-    func testNothingIsTrackedWhenPurchasesIsNotConfigured() async throws {
-        self.tracking.isConfigured = false
-
-        try await self.presentLoadedAd()
-        let unit = try XCTUnwrap(self.module.lastInterstitial)
-        unit.revenue = AdModuleRevenue(micros: 1_500, currency: "USD", precision: .exact)
-        unit.emit(.impression)
-        unit.emit(.clicked)
-        unit.emit(.dismissed)
-
-        XCTAssertEqual(self.tracking.trackedEventCount, 0)
-        XCTAssertEqual(self.interstitial.state, .idle)
-    }
-
-    func testDefaultTrackingIsUnconfiguredWithoutPurchases() async throws {
-        let interstitial = AdsInterstitial(placementID: "placement", moduleProvider: { self.module })
-        self.module.interstitialEvent = .loaded
-
-        try await interstitial.load()
-
-        XCTAssertFalse(Purchases.isConfigured)
-        XCTAssertFalse(PurchasesAdTracking().isConfigured)
-        XCTAssertTrue(interstitial.isReady)
-    }
-
     func testPrebidRevenueConvertsCPMToMicrosPerImpression() {
         let revenue = PrebidInterstitial.revenue(fromCPM: 1.37)
 

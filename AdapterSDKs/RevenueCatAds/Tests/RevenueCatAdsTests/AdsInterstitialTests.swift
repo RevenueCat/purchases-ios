@@ -23,7 +23,11 @@ final class AdsInterstitialTests: TestCase {
         self.module = FakeAdModule()
         self.delegate = RecordingDelegate()
         let module = self.module
-        self.interstitial = AdsInterstitial(placementID: "placement", moduleProvider: { module })
+        self.interstitial = AdsInterstitial(
+            placementID: "placement",
+            moduleProvider: { module },
+            tracking: FakeAdTracking()
+        )
         self.interstitial.delegate = self.delegate
     }
 
@@ -67,7 +71,11 @@ final class AdsInterstitialTests: TestCase {
     }
 
     func testLoadWithoutConfiguredModuleFailsWithNotConfigured() async {
-        let interstitial = AdsInterstitial(placementID: "placement", moduleProvider: { nil })
+        let interstitial = AdsInterstitial(
+            placementID: "placement",
+            moduleProvider: { nil },
+            tracking: FakeAdTracking()
+        )
         interstitial.delegate = self.delegate
 
         await XCTAssertThrowsAdsError(.notConfigured) { try await interstitial.load() }
@@ -282,7 +290,11 @@ final class AdsInterstitialTests: TestCase {
         self.module.interstitialEvent = .loaded
         weak var weakInterstitial: AdsInterstitial?
         try await {
-            let interstitial = AdsInterstitial(placementID: "placement", moduleProvider: { [module] in module })
+            let interstitial = AdsInterstitial(
+                placementID: "placement",
+                moduleProvider: { [module] in module },
+                tracking: FakeAdTracking()
+            )
             interstitial.delegate = self.delegate
             weakInterstitial = interstitial
             try await interstitial.load()

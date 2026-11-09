@@ -87,7 +87,6 @@ final class FakeAdModuleInterstitial: AdModuleInterstitial {
 
 final class FakeAdTracking: AdTracking {
 
-    var isConfigured = true
     private(set) var loaded: [AdLoaded] = []
     private(set) var displayed: [AdDisplayed] = []
     private(set) var opened: [AdOpened] = []

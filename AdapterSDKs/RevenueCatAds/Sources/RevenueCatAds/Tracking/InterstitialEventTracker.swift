@@ -19,11 +19,6 @@ struct InterstitialEventTracker {
     let tracking: AdTracking
 
     func track(_ event: AdModuleEvent, unit: AdModuleInterstitial, impressionID: String) {
-        guard self.tracking.isConfigured else {
-            Logger.debug(AdsTrackingStrings.purchases_not_configured(event: event.trackingName))
-            return
-        }
-
         switch event {
         case .loaded:
             self.tracking.trackAdLoaded(AdLoaded(
@@ -88,26 +83,9 @@ struct InterstitialEventTracker {
 
 }
 
-private extension AdModuleEvent {
-
-    var trackingName: String {
-        switch self {
-        case .loaded: return "loaded"
-        case .failedToLoad: return "failed_to_load"
-        case .presented: return "displayed"
-        case .impression: return "revenue"
-        case .clicked: return "opened"
-        case .dismissed: return "dismissed"
-        case .expired: return "expired"
-        }
-    }
-
-}
-
 // swiftlint:disable identifier_name
 enum AdsTrackingStrings {
 
-    case purchases_not_configured(event: String)
     case revenue_unavailable(placementID: String)
 
 }
@@ -117,8 +95,6 @@ extension AdsTrackingStrings: LogMessage {
 
     var description: String {
         switch self {
-        case let .purchases_not_configured(event):
-            return "Purchases is not configured. Skipping ad \(event) tracking."
         case let .revenue_unavailable(placementID):
             return "No bid price for the ad in placement \(placementID). Skipping ad revenue tracking."
         }
