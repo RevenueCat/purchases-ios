@@ -29,7 +29,7 @@ class PurchaseButtonCollector {
 struct ViewModelFactory {
 
     let packageValidator = PackageValidator()
-    /// Sheet inventory is still needed for offer loading, but never for page or tab selection.
+    /// Sheet inventory also provides the initial selection when the page has no packages.
     let sheetPackageValidator = PackageValidator()
 
     /// When true, all rule-based overrides are discarded globally across all components.
