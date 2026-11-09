@@ -8,6 +8,9 @@ version: 2.1
 
 # Pipeline parameters — all implicitly forwarded from config.yml by CircleCI.
 parameters:
+  backfill_cocoapods:
+    type: boolean
+    default: false
   action:
     type: string
     default: default
@@ -2472,6 +2475,23 @@ jobs:
           command: echo "All tasks passed"
 
 workflows:
+  # Publish corrected metadata from this branch, retaining the original source tags.
+  backfill-cocoapods:
+    when:
+      and:
+        - << pipeline.parameters.backfill_cocoapods >>
+        - equal: [default, << pipeline.parameters.action >>]
+        - equal:
+            - pallares/cocoapods-5.102.2-correction
+            - << pipeline.git.branch >>
+        - not:
+            equal: [scheduled_pipeline, << pipeline.trigger_source >>]
+    jobs:
+      - push-revenuecat-pod
+      - push-revenuecatui-pod:
+          requires:
+            - push-revenuecat-pod
+
   record-performance-baselines:
     when:
       equal: [record_performance_baselines, << pipeline.parameters.action >>]
@@ -2515,6 +2535,7 @@ workflows:
   run-all-tests:
     when:
       and:
+        - not: << pipeline.parameters.backfill_cocoapods >>
         - not:
             equal: [scheduled_pipeline, << pipeline.trigger_source >>]
         - not:
@@ -2793,8 +2814,10 @@ workflows:
 
   deploy-tag:
     when:
-      not:
-        equal: [scheduled_pipeline, << pipeline.trigger_source >>]
+      and:
+        - not: << pipeline.parameters.backfill_cocoapods >>
+        - not:
+            equal: [scheduled_pipeline, << pipeline.trigger_source >>]
     jobs:
       - push-revenuecat-pod:
           <<: *release-tags
@@ -2848,6 +2871,7 @@ workflows:
   snapshot-bump:
     when:
       and:
+        - not: << pipeline.parameters.backfill_cocoapods >>
         - not:
             equal: [scheduled_pipeline, << pipeline.trigger_source >>]
         - not:
@@ -2861,14 +2885,16 @@ workflows:
 
   danger:
     when:
-      or:
-        - not:
-            matches:
-              pattern: "^generated_(snapshots|swiftinterface)/.*"
-              value: << pipeline.git.branch >>
-        - matches:
-            pattern: "^generated_(snapshots|swiftinterface)/main-.*"
-            value: << pipeline.git.branch >>
+      and:
+        - not: << pipeline.parameters.backfill_cocoapods >>
+        - or:
+            - not:
+                matches:
+                  pattern: "^generated_(snapshots|swiftinterface)/.*"
+                  value: << pipeline.git.branch >>
+            - matches:
+                pattern: "^generated_(snapshots|swiftinterface)/main-.*"
+                value: << pipeline.git.branch >>
     jobs:
       - danger:
           filters:
@@ -3003,6 +3029,7 @@ workflows:
   release-or-main:
     when:
       and:
+        - not: << pipeline.parameters.backfill_cocoapods >>
         - not:
             equal: [scheduled_pipeline, << pipeline.trigger_source >>]
         - not:

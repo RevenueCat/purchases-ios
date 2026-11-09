@@ -8,6 +8,10 @@ orbs:
 # Pipeline parameters accepted via the API / CircleCI UI.
 # All parameters declared here are implicitly forwarded to default_config.yml.
 parameters:
+  # Manually opt in on the historical correction branch; never enabled by a push.
+  backfill_cocoapods:
+    type: boolean
+    default: false
   action:
     type: enum
     enum:
