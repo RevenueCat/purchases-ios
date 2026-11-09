@@ -41,8 +41,7 @@ public protocol PurchasesType: AnyObject {
     var storeFrontCountryCode: String? { get }
 
     /**
-     * The ``appUserID`` used by ``Purchases``.
-     * If not passed on initialization this will be generated and cached by ``Purchases``.
+     * Returns `true` if the current RevenueCat user is anonymous, `false` otherwise.
      */
     var isAnonymous: Bool { get }
 
