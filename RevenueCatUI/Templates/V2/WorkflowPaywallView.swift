@@ -278,6 +278,40 @@ struct WorkflowPaywallView: View {
         case navigateBack
     }
 
+    private final class PageActions: ObservableObject {
+
+        var view: WorkflowPaywallView?
+
+        lazy var onDismiss: () -> Void = { [weak self] in
+            self?.view?.handleDismiss()
+        }
+
+        lazy var triggerAction: (String) -> Bool = { [weak self] componentId in
+            return self?.view?.handleTriggeredNavigation(componentId: componentId) ?? false
+        }
+
+        lazy var navigateBack: () -> Void = { [weak self] in
+            self?.view?.handleDismiss(dismissalReason: .navigatedBack)
+        }
+
+        lazy var failedToLoadFont: UIConfigProvider.FailedToLoadFont = { [weak self] fontConfig in
+            self?.view?.purchaseHandler.failedToLoadFont(fontConfig)
+        }
+
+    }
+
+    // Own the callbacks outside their target view, so retaining the target cannot retain the owner.
+    private struct PageActionsHost<Content: View>: View {
+
+        @StateObject private var actions = PageActions()
+        let content: (PageActions) -> Content
+
+        var body: some View {
+            self.content(self.actions)
+        }
+
+    }
+
     private enum Constants {
         static let transitionDuration: Double = 0.25
         static let transitionStartDelayNanoseconds: UInt64 = 16_000_000
@@ -422,7 +456,16 @@ struct WorkflowPaywallView: View {
     }
 
     var body: some View {
-        GeometryReader { proxy in
+        PageActionsHost { pageActions in
+            self.workflowBody(pageActions: pageActions)
+        }
+    }
+
+    private func workflowBody(pageActions: PageActions) -> some View {
+        // Refresh the target without publishing a change to any of the mounted pages.
+        pageActions.view = self
+
+        return GeometryReader { proxy in
             let geometry = WorkflowTransitionGeometry(
                 size: proxy.size,
                 safeAreaInsets: proxy.safeAreaInsets
@@ -433,14 +476,14 @@ struct WorkflowPaywallView: View {
                 // The current and outgoing pages animate; the rest stay mounted but hidden
                 // off-screen, non-interactive.
                 ForEach(self.seenPages) { page in
-                    self.seenPageView(for: page, geometry: geometry)
+                    self.seenPageView(for: page, geometry: geometry, pageActions: pageActions)
                 }
 
                 if let skeletonPage = self.skeletonPage {
-                    self.skeletonPageView(for: skeletonPage, geometry: geometry)
+                    self.skeletonPageView(for: skeletonPage, geometry: geometry, pageActions: pageActions)
                 }
 
-                self.workflowHeaderOverlay(geometry: geometry)
+                self.workflowHeaderOverlay(geometry: geometry, pageActions: pageActions)
                     .zIndex(2)
 
             }
@@ -484,6 +527,7 @@ struct WorkflowPaywallView: View {
         // Must use exitOfferContext(for:currentStepId:), not context.exitOfferOffering, because
         // exitOfferOffering is not step-aware — it is non-nil for any step whenever configured.
         .onAppear {
+            pageActions.view = self
             self.presentationBridge.workflowDidAppear(onCompletion: self.completeAndDismiss)
             switch self.presentationState {
             case .displayingError(_, .endFlow):
@@ -514,6 +558,7 @@ struct WorkflowPaywallView: View {
             self.nativeButtonCoordinator?.activatePage(self.transitionState.currentPage?.id)
         }
         .onDisappear {
+            pageActions.view = nil
             self.nativeButtonCoordinator?.activatePage(nil)
             self.presentationBridge.workflowDidDisappear()
             self.trackCurrentWorkflowLeft()
@@ -576,10 +621,11 @@ struct WorkflowPaywallView: View {
     @ViewBuilder
     private func skeletonPageView(
         for page: RenderedPage,
-        geometry: WorkflowTransitionGeometry
+        geometry: WorkflowTransitionGeometry,
+        pageActions: PageActions
     ) -> some View {
         #if !os(tvOS)
-        self.pageView(for: page, isActive: false)
+        self.pageView(for: page, isActive: false, pageActions: pageActions)
             .frame(width: geometry.size.width, height: geometry.size.height)
             .transitionClipMask(geometry: geometry)
             .redacted(reason: .placeholder)
@@ -593,7 +639,8 @@ struct WorkflowPaywallView: View {
     @ViewBuilder
     private func seenPageView(
         for page: RenderedPage,
-        geometry: WorkflowTransitionGeometry
+        geometry: WorkflowTransitionGeometry,
+        pageActions: PageActions
     ) -> some View {
         // current and outgoing animate; every other seen page stays mounted but hidden off-screen
         // so its state is preserved until the user returns to it.
@@ -609,7 +656,7 @@ struct WorkflowPaywallView: View {
             geometry: geometry
         )
 
-        self.pageView(for: page, isActive: isCurrent)
+        self.pageView(for: page, isActive: isCurrent, pageActions: pageActions)
             .environment(\.nativePaywallPageID, page.id)
             .environment(
                 \.workflowRenderingContext,
@@ -639,7 +686,7 @@ struct WorkflowPaywallView: View {
             .accessibilityHidden(isHidden)
     }
 
-    private func pageView(for page: RenderedPage, isActive: Bool) -> some View {
+    private func pageView(for page: RenderedPage, isActive: Bool, pageActions: PageActions) -> some View {
         PaywallsV2View(
             paywallComponents: page.content.paywallComponents,
             offering: page.content.renderingOffering,
@@ -650,9 +697,9 @@ struct WorkflowPaywallView: View {
             workflowPackages: page.effectiveWorkflowPackageContext?.packages,
             workflowPromoOfferProductCodes: page.effectiveWorkflowPackageContext?.promoOfferCodesByPackageId,
             displayCloseButton: page.showCloseButton,
-            onDismiss: { self.handleDismiss() },
+            onDismiss: pageActions.onDismiss,
             closeWorkflowAction: self.onDismiss,
-            failedToLoadFont: self.failedToLoadFont,
+            failedToLoadFont: pageActions.failedToLoadFont,
             colorScheme: self.colorScheme,
             promoOfferCache: self.promoOfferCacheOwner.cache,
             introEligibilityContext: page.introOfferEligibilityContext,
@@ -670,16 +717,12 @@ struct WorkflowPaywallView: View {
             isWorkflowSingleStepFallback: page.isSingleStepFallback
         )
         .environment(\.workflowPackageContext, page.effectiveWorkflowPackageContext)
-        .environment(\.workflowTriggerAction, { componentId in
-            return self.handleTriggeredNavigation(componentId: componentId)
-        })
-        .environment(\.workflowNavigateBackHandler, {
-            self.handleDismiss(dismissalReason: .navigatedBack)
-        })
+        .environment(\.workflowTriggerAction, pageActions.triggerAction)
+        .environment(\.workflowNavigateBackHandler, pageActions.navigateBack)
     }
 
     @ViewBuilder
-    private func workflowHeaderOverlay(geometry: WorkflowTransitionGeometry) -> some View {
+    private func workflowHeaderOverlay(geometry: WorkflowTransitionGeometry, pageActions: PageActions) -> some View {
         if self.shouldRenderWorkflowHeaderOverlay {
             ZStack(alignment: .top) {
                 ForEach(self.displayedPages) { displayedPage in
@@ -691,9 +734,9 @@ struct WorkflowPaywallView: View {
                             introOfferEligibilityContext: displayedPage.page.introOfferEligibilityContext,
                             paywallPromoOfferCache: self.promoOfferCacheOwner.cache,
                             showZeroDecimalPlacePrices: self.showZeroDecimalPlacePrices,
-                            onDismiss: { self.handleDismiss() },
+                            onDismiss: pageActions.onDismiss,
                             closeWorkflowAction: self.onDismiss,
-                            failedToLoadFont: self.failedToLoadFont,
+                            failedToLoadFont: pageActions.failedToLoadFont,
                             colorScheme: self.colorScheme,
                             horizontalSizeClass: self.horizontalSizeClass,
                             headerOpacity: self.transitionState.headerButtonOpacity(
@@ -712,10 +755,6 @@ struct WorkflowPaywallView: View {
             .ignoresSafeArea(edges: .top)
             .allowsHitTesting(false)
         }
-    }
-
-    private func failedToLoadFont(_ fontConfig: UIConfig.FontsConfig) {
-        purchaseHandler.failedToLoadFont(fontConfig)
     }
 
     private func handleDismiss(dismissalReason: WorkflowDismissalReason = .close) {
