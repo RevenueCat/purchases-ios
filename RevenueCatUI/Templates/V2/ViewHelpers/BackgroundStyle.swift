@@ -31,20 +31,16 @@ struct BackgroundStyleModifier: ViewModifier {
     @Environment(\.colorScheme)
     var colorScheme
 
-    @State var size: CGSize?
-
     var backgroundStyle: BackgroundStyle?
     var alignment: Alignment
 
     func body(content: Content) -> some View {
         if let backgroundStyle {
             content
-                .onSizeChange { size = $0 }
                 .apply(
                     backgroundStyle: backgroundStyle,
                     colorScheme: colorScheme,
-                    alignment: alignment,
-                    size: size
+                    alignment: alignment
                 )
         } else {
             content
@@ -60,8 +56,7 @@ fileprivate extension View {
     func apply(
         backgroundStyle: BackgroundStyle,
         colorScheme: ColorScheme,
-        alignment: Alignment,
-        size: CGSize? = nil
+        alignment: Alignment
     ) -> some View {
         switch backgroundStyle {
         case .color(let color):

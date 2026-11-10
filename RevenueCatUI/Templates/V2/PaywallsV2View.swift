@@ -13,11 +13,41 @@ import SwiftUI
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private class PaywallStateManager: ObservableObject {
-    @Published var state: Result<PaywallState, Error>
 
-    init(state: Result<PaywallState, Error>) {
+    @Published var state: Result<PaywallState, Error>
+    let selectedPackageContext: PackageContext
+
+    init(
+        state: Result<PaywallState, Error>,
+        selectedPackageContextOverride: PackageContext?,
+        workflowDefaultPackage: Package?,
+        workflowPackages: [Package]?,
+        showZeroDecimalPlacePrices: Bool
+    ) {
         self.state = state
+
+        if let override = selectedPackageContextOverride {
+            self.selectedPackageContext = override
+        } else if case .success(let paywallState) = state {
+            self.selectedPackageContext = PaywallsV2View.makeSelectedPackageContext(
+                from: paywallState,
+                defaultPackage: PaywallsV2View.effectiveDefaultPackage(
+                    // Provisional: init has no environment. The loaded view reconciles with the render context.
+                    pageDefaultPackage: paywallState.viewModelFactory.packageValidator
+                        .defaultSelectedPackage(in: .provisional),
+                    workflowDefaultPackage: workflowDefaultPackage
+                ),
+                workflowPackages: workflowPackages,
+                showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
+            )
+        } else {
+            self.selectedPackageContext = .init(
+                package: nil,
+                variableContext: .init(packages: [], showZeroDecimalPlacePrices: showZeroDecimalPlacePrices)
+            )
+        }
     }
+
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -75,8 +105,12 @@ struct PaywallsV2View: View {
     @StateObject
     private var paywallStateManager: PaywallStateManager
 
-    @StateObject
-    private var selectedPackageContext: PackageContext
+    private var selectedPackageContext: PackageContext {
+        self.paywallStateManager.selectedPackageContext
+    }
+
+    @State
+    private var urlOpenedNotifier: URLOpenedNotifier
 
     private let paywallComponentsData: PaywallComponentsData
     private let uiConfigProvider: UIConfigProvider
@@ -172,6 +206,9 @@ struct PaywallsV2View: View {
         self.uiConfigProvider = uiConfigProvider
         self.offering = offering
         self.purchaseHandler = purchaseHandler
+        self._urlOpenedNotifier = .init(initialValue: URLOpenedNotifier { [purchaseHandler] url in
+            purchaseHandler.signalURLOpened(url)
+        })
         self.workflowDefaultPackage = workflowDefaultPackage
         self.workflowPackages = workflowPackages
         self.workflowPromoOfferProductCodes = workflowPromoOfferProductCodes
@@ -200,48 +237,28 @@ struct PaywallsV2View: View {
         let componentsConfig = paywallComponentsData.componentsConfig.base
 
         // The creation of the paywall view components can be intensive and should only be executed once.
-        // The instantiation of the PaywallStateManager needs to stay in the init of the wrappedValue
-        // because StateObject init is an autoclosure that will only get executed once.
-        // Note: paywallStateManager.state is created once; if it becomes dynamic, refresh selectedPackageContext.
-        let initialState = Self.createPaywallState(
-            componentsConfig: componentsConfig,
-            componentsLocalizations: paywallComponents.data.componentsLocalizations,
-            componentsVideoLocalizations: paywallComponents.data.componentsVideoLocalizations,
-            preferredLocales: purchaseHandler.preferredLocales,
-            defaultLocale: paywallComponents.data.defaultLocale,
-            uiConfigProvider: uiConfigProvider,
-            offering: offering,
-            introEligibilityChecker: introEligibilityChecker,
-            showZeroDecimalPlacePrices: showZeroDecimalPlacePrices,
-            colorScheme: colorScheme
-        )
+        // Keep both the component tree and its initial selection inside StateObject's autoclosure.
+        // Reinitializing this view must not build a tree that SwiftUI will immediately discard.
         self._paywallStateManager = .init(
-            wrappedValue: .init(state: initialState)
-        )
-
-        let selectedPackageContext: PackageContext
-        if let override = selectedPackageContextOverride {
-            selectedPackageContext = override
-        } else if case .success(let paywallState) = initialState {
-            selectedPackageContext = Self.makeSelectedPackageContext(
-                from: paywallState,
-                defaultPackage: Self.effectiveDefaultPackage(
-                    // Provisional: `init` has no environment, so variable/eligibility rules can't be
-                    // evaluated. `LoadedPaywallsV2View` reconciles once the body resolves the real context.
-                    pageDefaultPackage: paywallState.viewModelFactory.packageValidator
-                        .defaultSelectedPackage(in: .provisional),
-                    workflowDefaultPackage: workflowDefaultPackage
+            wrappedValue: .init(
+                state: Self.createPaywallState(
+                    componentsConfig: componentsConfig,
+                    componentsLocalizations: paywallComponents.data.componentsLocalizations,
+                    componentsVideoLocalizations: paywallComponents.data.componentsVideoLocalizations,
+                    preferredLocales: purchaseHandler.preferredLocales,
+                    defaultLocale: paywallComponents.data.defaultLocale,
+                    uiConfigProvider: uiConfigProvider,
+                    offering: offering,
+                    introEligibilityChecker: introEligibilityChecker,
+                    showZeroDecimalPlacePrices: showZeroDecimalPlacePrices,
+                    colorScheme: colorScheme
                 ),
+                selectedPackageContextOverride: selectedPackageContextOverride,
+                workflowDefaultPackage: workflowDefaultPackage,
                 workflowPackages: workflowPackages,
                 showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
             )
-        } else {
-            selectedPackageContext = .init(
-                package: nil,
-                variableContext: .init(packages: [], showZeroDecimalPlacePrices: showZeroDecimalPlacePrices)
-            )
-        }
-        self._selectedPackageContext = .init(wrappedValue: selectedPackageContext)
+        )
     }
 
     /// Maximum length of the fallback error message shown on screen, to avoid flooding it.
@@ -343,9 +360,7 @@ struct PaywallsV2View: View {
         .environment(\.screenCondition, ScreenCondition.from(self.horizontalSizeClass))
         .measurePaywallWindowSize()
         .environment(\.paywallWebViewStaticContext, webViewContext)
-        .environment(\.urlOpenedNotifier, URLOpenedNotifier { [purchaseHandler] url in
-            purchaseHandler.signalURLOpened(url)
-        })
+        .environment(\.urlOpenedNotifier, self.urlOpenedNotifier)
         .environment(\.sessionPurchaseResult, self.purchaseHandler.sessionPurchaseResult)
         .environmentObject(self.purchaseHandler)
         .environmentObject(self.introOfferEligibilityContext)
