@@ -58,7 +58,8 @@ public struct PaywallView: View {
 
     private var workflowPresentationErrorHandler: WorkflowPresentationErrorHandler?
 
-    private var workflowBackNavigationBridge: WorkflowBackNavigationBridge
+    @State
+    private var presentationBridge: PaywallPresentationBridge
 
     private var initializationError: NSError?
 
@@ -222,7 +223,7 @@ public struct PaywallView: View {
         self.promoOfferCache = configuration.promoOfferCache
         self.displaysPurchaseAndRestoreErrors = configuration.displaysPurchaseAndRestoreErrors
         self.workflowPresentationErrorHandler = configuration.workflowPresentationErrorHandler
-        self.workflowBackNavigationBridge = configuration.workflowBackNavigationBridge
+        self._presentationBridge = .init(initialValue: configuration.presentationBridge)
 
         self.initializationError = Self.checkForConfigurationConsistency(purchaseHandler: configuration.purchaseHandler)
     }
@@ -390,6 +391,9 @@ public struct PaywallView: View {
                     locale: purchaseHandler.preferredLocaleOverride ?? .current,
                     showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
                 )
+                .modifier(DisplayedOfferingRegistrationModifier(
+                    bridge: self.presentationBridge, offering: { self.offering }
+                ))
             #endif
             // Show the actually V2 paywall for full screen
             case .fullScreen:
@@ -402,7 +406,7 @@ public struct PaywallView: View {
                         displayCloseButton: self.displayCloseButton,
                         promoOfferCache: self.promoOfferCache,
                         onDismiss: self.dismissRequested,
-                        backNavigationBridge: self.workflowBackNavigationBridge,
+                        presentationBridge: self.presentationBridge,
                         onPresentationError: self.workflowPresentationErrorHandler
                     )
                     .modifier(NativePaywallNavigationModifier(
@@ -421,6 +425,9 @@ public struct PaywallView: View {
                         colorScheme: colorScheme,
                         promoOfferCache: self.promoOfferCache
                     )
+                    .modifier(DisplayedOfferingRegistrationModifier(
+                        bridge: self.presentationBridge, offering: { self.offering }
+                    ))
                     .modifier(NativePaywallNavigationModifier(
                         paywallComponents: paywallComponents, workflowContext: workflowContext
                     ))
@@ -448,6 +455,9 @@ public struct PaywallView: View {
                 showZeroDecimalPlacePrices: showZeroDecimalPlacePrices,
                 error: error
             )
+            .modifier(DisplayedOfferingRegistrationModifier(
+                bridge: self.presentationBridge, offering: { self.offering }
+            ))
         }
     }
 
@@ -480,6 +490,33 @@ private extension PaywallView {
 }
 
 // MARK: -
+
+/// Exposes this view's current offering through the presentation bridge while it is visible.
+/// Clears only this view's registration when it disappears.
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@available(tvOS, unavailable)
+struct DisplayedOfferingRegistrationModifier: ViewModifier {
+
+    private let bridge: PaywallPresentationBridge
+    private let offering: @MainActor () -> Offering?
+    @State private var registrationID = UUID()
+
+    init(bridge: PaywallPresentationBridge, offering: @escaping @MainActor () -> Offering?) {
+        self.bridge = bridge
+        self.offering = offering
+    }
+
+    func body(content: Content) -> some View {
+        content
+            .onAppear {
+                self.bridge.paywallDidAppear(id: self.registrationID, offering: self.offering)
+            }
+            .onDisappear {
+                self.bridge.paywallDidDisappear(id: self.registrationID)
+            }
+    }
+
+}
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @available(tvOS, unavailable)

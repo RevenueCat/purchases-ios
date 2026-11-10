@@ -1251,34 +1251,439 @@ extension WorkflowPaywallViewTests {
     /// distinguishes "the page was built from the route" from "only the navigator routed".
     @MainActor
     func testTheFirstPageIsBuiltFromTheStepTheInitialTriggerPicked() async throws {
+        let routedOffering = Offering(
+            identifier: "routed_offering",
+            serverDescription: "Routed offering",
+            availablePackages: [Self.makePackage(identifier: TestData.annualPackage.identifier,
+                                                 offeringId: "routed_offering")],
+            webCheckoutUrl: nil
+        )
         let context = try Self.makeContext(
             singleStepFallbackId: "step_terminal",
-            initialRouteStepId: "step_terminal"
+            initialRouteStepId: "step_terminal",
+            terminalScreenJSON: Self.makeScreenJSON(offeringId: routedOffering.identifier),
+            extraOfferings: [routedOffering]
         )
+        let offeringProvider = PaywallPresentationBridge()
+        let branchResolution: Atomic<CheckedContinuation<WorkflowStepID, Never>?> = .init(nil)
         let events: Atomic<[PaywallEvent]> = .init([])
         let view = WorkflowPaywallView(
             context: context,
             purchaseHandler: .mock(
-                resolveBranch: { _ in "step_terminal" },
+                resolveBranch: { _ in
+                    await withCheckedContinuation { continuation in
+                        branchResolution.modify { $0 = continuation }
+                    }
+                },
                 trackEvent: { event in events.modify { $0.append(event) } }
             ),
             introEligibilityChecker: .producing(eligibility: .eligible),
             showZeroDecimalPlacePrices: false,
             displayCloseButton: false,
             promoOfferCache: nil,
-            onDismiss: {}
+            onDismiss: {},
+            presentationBridge: offeringProvider
         )
 
-        let dispose = try view.addToHierarchy()
-        defer { dispose() }
+        var dispose: (() -> Void)? = try view.addToHierarchy()
+        defer { dispose?() }
+
+        await expect(branchResolution.value).toEventuallyNot(beNil(), timeout: .seconds(3))
+        expect(offeringProvider.displayedOffering).to(beNil())
+        branchResolution.value?.resume(returning: "step_terminal")
 
         await expect(events.value.compactMap { $0.data.paywallIdentifier })
             .toEventually(equal(["screen_terminal"]), timeout: .seconds(3))
+        expect(offeringProvider.displayedOffering?.identifier) == routedOffering.identifier
+        expect(offeringProvider.displayedOffering?.internalPaywallComponents?.data.id) == "screen_terminal"
+
+        dispose?()
+        dispose = nil
+        await expect(offeringProvider.displayedOffering).toEventually(beNil())
+    }
+
+    @MainActor
+    func testDisplayedOfferingFollowsRenderedForwardAndBackNavigation() async throws {
+        let nextOffering = Offering(
+            identifier: "next_offering", serverDescription: "Next", availablePackages: [], webCheckoutUrl: nil
+        )
+        let context = try Self.makeNavigationContext(nextOffering: nextOffering)
+        let provider = PaywallPresentationBridge()
+        let coordinator = NativePaywallCloseCoordinator()
+        let view = WorkflowPaywallView(
+            context: context, purchaseHandler: .mock(),
+            introEligibilityChecker: .producing(eligibility: .eligible),
+            showZeroDecimalPlacePrices: false, displayCloseButton: false, promoOfferCache: nil,
+            onDismiss: {}, presentationBridge: provider
+        )
+        .environment(\.nativePaywallCloseEnabled, true)
+        .environment(\.nativePaywallCloseCoordinator, coordinator)
+        let dispose = try view.addToHierarchy()
+        defer { dispose() }
+        expect(provider.displayedOffering?.identifier) == context.initialOffering.identifier
+        await expect(coordinator.action(for: .close)).toEventuallyNot(beNil())
+
+        let action = try XCTUnwrap(coordinator.action(for: .close))
+        try await action.perform()
+        await expect(provider.displayedOffering?.identifier).toEventually(equal(nextOffering.identifier))
+        expect(provider.displayedOffering?.internalPaywallComponents?.data.id) == "screen_terminal"
+
+        expect(provider.navigateBack()) == true
+        await expect(provider.displayedOffering?.identifier).toEventually(equal(context.initialOffering.identifier))
+        expect(provider.displayedOffering?.internalPaywallComponents?.data.id) == "screen_initial"
+    }
+
+    @MainActor
+    func testFailedNavigationKeepsTheRenderedOffering() async throws {
+        let unavailable = Offering(
+            identifier: "unavailable", serverDescription: "Unavailable", availablePackages: [], webCheckoutUrl: nil
+        )
+        let original = try Self.makeNavigationContext(nextOffering: unavailable)
+        let context = WorkflowContext(
+            workflow: original.workflow, uiConfig: original.uiConfig,
+            offerings: .init(
+                offerings: .preview(offerings: [original.initialOffering]), developerProvidedOffering: nil
+            ),
+            initialOffering: original.initialOffering, presentedOfferingContext: nil
+        )
+        let bridge = PaywallPresentationBridge()
+        let coordinator = NativePaywallCloseCoordinator()
+        var reportedBehavior: WorkflowPresentationErrorBehavior?
+        let view = WorkflowPaywallView(
+            context: context, purchaseHandler: .mock(),
+            introEligibilityChecker: .producing(eligibility: .eligible),
+            showZeroDecimalPlacePrices: false, displayCloseButton: false, promoOfferCache: nil,
+            onDismiss: { XCTFail("Invalid navigation must keep the current screen") },
+            presentationBridge: bridge, onPresentationError: { _, behavior in reportedBehavior = behavior }
+        )
+        .environment(\.nativePaywallCloseEnabled, true)
+        .environment(\.nativePaywallCloseCoordinator, coordinator)
+        let dispose = try view.addToHierarchy()
+        defer { dispose() }
+        await expect(coordinator.action(for: .close)).toEventuallyNot(beNil())
+        let action = try XCTUnwrap(coordinator.action(for: .close))
+
+        try await action.perform()
+
+        expect(reportedBehavior) == .keepCurrentScreen
+        expect(bridge.displayedOffering?.identifier) == original.initialOffering.identifier
+        expect(bridge.displayedOffering?.internalPaywallComponents?.data.id) == "screen_initial"
+    }
+
+    @MainActor
+    func testCompletionDismissesFromADeeperStepInsteadOfNavigatingBack() async throws {
+        let nextOffering = Offering(
+            identifier: "next_offering", serverDescription: "Next", availablePackages: [], webCheckoutUrl: nil
+        )
+        let context = try Self.makeNavigationContext(nextOffering: nextOffering)
+        let bridge = PaywallPresentationBridge()
+        let coordinator = NativePaywallCloseCoordinator()
+        var dismissalCount = 0
+        let view = WorkflowPaywallView(
+            context: context, purchaseHandler: .mock(),
+            introEligibilityChecker: .producing(eligibility: .eligible),
+            showZeroDecimalPlacePrices: false, displayCloseButton: false, promoOfferCache: nil,
+            onDismiss: { dismissalCount += 1 }, presentationBridge: bridge
+        )
+        .environment(\.nativePaywallCloseEnabled, true)
+        .environment(\.nativePaywallCloseCoordinator, coordinator)
+        let dispose = try view.addToHierarchy()
+        defer { dispose() }
+        await expect(coordinator.action(for: .close)).toEventuallyNot(beNil())
+
+        let action = try XCTUnwrap(coordinator.action(for: .close))
+        try await action.perform()
+        await expect(bridge.displayedOffering?.identifier).toEventually(equal(nextOffering.identifier))
+
+        expect(bridge.completeAndDismiss()) == true
+
+        expect(dismissalCount) == 1
+        expect(bridge.displayedOffering?.identifier) == nextOffering.identifier
+    }
+
+    @MainActor
+    func testStandaloneDisplayedOfferingUsesResolvedSelectionAndClearsOnDisappear() async throws {
+        let context = try Self.makeContext(singleStepFallbackId: nil)
+        let offering = context.initialOffering
+        let resolvedContext = try PurchaseHandler.makeWorkflowContext(
+            workflow: context.workflow,
+            uiConfig: context.uiConfig,
+            allOfferings: context.offerings.offerings,
+            presentedOfferingContext: nil,
+            developerProvidedOffering: nil
+        )
+        let (purchases, handler) = Self.makeEventRecordingPurchaseHandler(paywallEvents: .init([]))
+        purchases.cachedOfferings = .preview(offerings: [offering], currentOfferingID: offering.identifier)
+        let selections: [PaywallViewConfiguration.Content] = [
+            .defaultOffering,
+            .offeringIdentifier(offering.identifier, presentedOfferingContext: nil),
+            .offering(resolvedContext.initialOffering)
+        ]
+        for selection in selections {
+            let configuration = PaywallViewConfiguration(
+                content: selection,
+                introEligibility: .producing(eligibility: .eligible),
+                purchaseHandler: handler
+            )
+            let provider = configuration.presentationBridge
+            expect(provider.displayedOffering).to(beNil())
+
+            var dispose: (() -> Void)? = try PaywallView(configuration: configuration).addToHierarchy()
+            defer { dispose?() }
+            await expect(provider.displayedOffering?.identifier).toEventually(equal(offering.identifier))
+            let displayedPackages = provider.displayedOffering?.availablePackages.map(\.identifier)
+            expect(displayedPackages) == offering.availablePackages.map(\.identifier)
+            expect(provider.hasActiveWorkflow) == false
+            XCTAssertEqual(provider.displayedOffering?.internalPaywallComponents?.data.id,
+                           selection.passedOffering?.internalPaywallComponents?.data.id)
+
+            dispose?()
+            dispose = nil
+            await expect(provider.displayedOffering).toEventually(beNil())
+        }
+    }
+
+    @MainActor
+    func testDisappearingStandalonePaywallDoesNotClearItsReplacementOffering() async throws {
+        let context = try Self.makeContext(singleStepFallbackId: nil)
+        let firstOffering = context.initialOffering
+        let replacementOffering = Offering(
+            identifier: "replacement", serverDescription: "Replacement",
+            availablePackages: firstOffering.availablePackages, webCheckoutUrl: nil
+        )
+        let bridge = PaywallPresentationBridge()
+        var first = PaywallViewConfiguration(
+            offering: firstOffering, introEligibility: .producing(eligibility: .eligible), purchaseHandler: .mock()
+        )
+        var replacement = PaywallViewConfiguration(
+            offering: replacementOffering,
+            introEligibility: .producing(eligibility: .eligible), purchaseHandler: .mock()
+        )
+        first.presentationBridge = bridge
+        replacement.presentationBridge = bridge
+        var firstDidDisappear = false
+        var disposeFirst: (() -> Void)? = try PaywallView(configuration: first)
+            .onDisappear { firstDidDisappear = true }
+            .addToHierarchy()
+        defer { disposeFirst?() }
+        await expect(bridge.displayedOffering?.identifier).toEventually(equal(firstOffering.identifier))
+        var disposeReplacement: (() -> Void)? = try PaywallView(configuration: replacement).addToHierarchy()
+        defer { disposeReplacement?() }
+        await expect(bridge.displayedOffering?.identifier).toEventually(equal(replacementOffering.identifier))
+
+        disposeFirst?()
+        disposeFirst = nil
+        await expect(firstDidDisappear).toEventually(beTrue())
+
+        expect(bridge.displayedOffering?.identifier) == replacementOffering.identifier
+        disposeReplacement?()
+        disposeReplacement = nil
+        await expect(bridge.displayedOffering).toEventually(beNil())
+    }
+
+    @MainActor
+    func testDisappearingWorkflowDoesNotClearItsReplacementPaywallOffering() async throws {
+        let context = try Self.makeContext(singleStepFallbackId: nil)
+        let replacementOffering = Offering(
+            identifier: "replacement", serverDescription: "Replacement",
+            availablePackages: context.initialOffering.availablePackages, webCheckoutUrl: nil
+        )
+        let bridge = PaywallPresentationBridge()
+        let workflow = WorkflowPaywallView(
+            context: context, purchaseHandler: .mock(),
+            introEligibilityChecker: .producing(eligibility: .eligible),
+            showZeroDecimalPlacePrices: false, displayCloseButton: false, promoOfferCache: nil,
+            onDismiss: {}, presentationBridge: bridge
+        )
+        var replacement = PaywallViewConfiguration(
+            offering: replacementOffering,
+            introEligibility: .producing(eligibility: .eligible), purchaseHandler: .mock()
+        )
+        replacement.presentationBridge = bridge
+        var workflowDidDisappear = false
+        var disposeWorkflow: (() -> Void)? = try workflow
+            .onDisappear { workflowDidDisappear = true }
+            .addToHierarchy()
+        defer { disposeWorkflow?() }
+        expect(bridge.displayedOffering?.identifier) == context.initialOffering.identifier
+        var disposeReplacement: (() -> Void)? = try PaywallView(configuration: replacement).addToHierarchy()
+        defer { disposeReplacement?() }
+        await expect(bridge.displayedOffering?.identifier).toEventually(equal(replacementOffering.identifier))
+
+        disposeWorkflow?()
+        disposeWorkflow = nil
+        await expect(workflowDidDisappear).toEventually(beTrue())
+
+        expect(bridge.displayedOffering?.identifier) == replacementOffering.identifier
+        disposeReplacement?()
+        disposeReplacement = nil
+        await expect(bridge.displayedOffering).toEventually(beNil())
+    }
+
+    @MainActor
+    func testInjectedPaywallReportsRenderedOfferingInsteadOfInitialOffering() async throws {
+        let offering = Offering(
+            identifier: "routed_offering", serverDescription: "Routed", availablePackages: [], webCheckoutUrl: nil
+        )
+        let rawContext = try Self.makeContext(
+            singleStepFallbackId: "step_terminal",
+            initialRouteStepId: "step_terminal",
+            terminalScreenJSON: Self.makeScreenJSON(offeringId: offering.identifier),
+            extraOfferings: [offering]
+        )
+        let context = try PurchaseHandler.makeWorkflowContext(
+            workflow: rawContext.workflow,
+            uiConfig: rawContext.uiConfig,
+            allOfferings: rawContext.offerings.offerings,
+            presentedOfferingContext: nil,
+            developerProvidedOffering: nil
+        )
+        var configuration = PaywallViewConfiguration(
+            content: .offering(context.initialOffering),
+            introEligibility: .producing(eligibility: .eligible),
+            purchaseHandler: .mock(resolveBranch: { _ in "step_terminal" })
+        )
+        configuration.injectedWorkflowContext = context
+        let provider = configuration.presentationBridge
+        expect(provider.displayedOffering).to(beNil())
+        expect(context.initialOffering.identifier).notTo(equal(offering.identifier))
+
+        var dispose: (() -> Void)? = try PaywallView(configuration: configuration).addToHierarchy()
+        defer { dispose?() }
+        await expect(provider.displayedOffering?.identifier).toEventually(equal(offering.identifier))
+        expect(provider.displayedOffering?.internalPaywallComponents?.data.id) == "screen_terminal"
+
+        dispose?()
+        dispose = nil
+        await expect(provider.displayedOffering).toEventually(beNil())
+    }
+
+    @MainActor
+    func testWorkflowFooterReportsTheOfferingItsFallbackDisplays() async throws {
+        let rawContext = try Self.makeContext(singleStepFallbackId: nil)
+        let context = try PurchaseHandler.makeWorkflowContext(
+            workflow: rawContext.workflow,
+            uiConfig: rawContext.uiConfig,
+            allOfferings: rawContext.offerings.offerings,
+            presentedOfferingContext: nil,
+            developerProvidedOffering: nil
+        )
+        for mode in [PaywallViewMode.footer, .condensedFooter] {
+            var configuration = PaywallViewConfiguration(
+                content: .offering(context.initialOffering),
+                mode: mode,
+                introEligibility: .producing(eligibility: .eligible),
+                purchaseHandler: .mock()
+            )
+            configuration.injectedWorkflowContext = context
+            let provider = configuration.presentationBridge
+            var dispose: (() -> Void)? = try PaywallView(configuration: configuration).addToHierarchy()
+            defer { dispose?() }
+
+            expect(configuration.presentationBridge.hasActiveWorkflow) == false
+            await expect(provider.displayedOffering?.identifier).toEventually(equal(context.initialOffering.identifier))
+            let displayedProducts = provider.displayedOffering?.availablePackages.map(\.storeProduct.id)
+            expect(displayedProducts) == context.initialOffering.availablePackages.map(\.storeProduct.id)
+
+            dispose?()
+            dispose = nil
+            await expect(provider.displayedOffering).toEventually(beNil())
+        }
+    }
+
+    @MainActor
+    func testWorkflowContextWithoutComponentsReportsTheStandaloneFallbackOffering() async throws {
+        let context = try Self.makeContext(singleStepFallbackId: nil)
+        var configuration = PaywallViewConfiguration(
+            content: .offering(context.initialOffering),
+            introEligibility: .producing(eligibility: .eligible),
+            purchaseHandler: .mock()
+        )
+        configuration.injectedWorkflowContext = context
+        let provider = configuration.presentationBridge
+        let dispose = try PaywallView(configuration: configuration).addToHierarchy()
+        defer { dispose() }
+
+        expect(context.initialOffering.internalPaywallComponents).to(beNil())
+        expect(configuration.presentationBridge.hasActiveWorkflow) == false
+        await expect(provider.displayedOffering?.identifier).toEventually(equal(context.initialOffering.identifier))
+    }
+
+    @MainActor
+    func testRebuildingPaywallDoesNotRetainItsPurchaseHandlerAfterDismissal() async throws {
+        let context = try Self.makeContext(singleStepFallbackId: nil)
+        let activation = WorkflowPageActivation(isActive: true)
+        var handler: PurchaseHandler? = .mock()
+        weak var releasedHandler = handler
+        var didRebuild = false
+        var dispose: (() -> Void)? = try DisplayedOfferingRebuildHost(
+            activation: activation,
+            offering: context.initialOffering,
+            purchaseHandler: try XCTUnwrap(handler),
+            didRebuild: { didRebuild = true }
+        ).addToHierarchy()
+        defer { dispose?() }
+        handler = nil
+
+        activation.isActive = false
+        await expect(didRebuild).toEventually(beTrue())
+        dispose?()
+        dispose = nil
+
+        await expect(releasedHandler).toEventually(beNil())
+    }
+
+    @MainActor
+    func testRebuildingEmbeddedWorkflowReleasesItsPurchaseHandlerAfterDismissal() async throws {
+        let context = try Self.makeContext(singleStepFallbackId: "step_terminal")
+        var handler: PurchaseHandler? = .mock()
+        weak var releasedHandler = handler
+        var didRestore = false
+        var dispose: (() -> Void)? = try WorkflowPurchaseObserver(
+            purchaseHandler: try XCTUnwrap(handler), context: context
+        )
+        .onRestoreCompleted { _ in didRestore = true }
+        .addToHierarchy()
+        defer { dispose?() }
+        handler = nil
+
+        releasedHandler?.setRestored(TestData.customerInfo, success: false)
+        await expect(didRestore).toEventually(beTrue())
+        dispose?()
+        dispose = nil
+
+        await expect(releasedHandler).toEventually(beNil())
+    }
+
+    @MainActor
+    func testContentOnlyPaywallDoesNotReportTheInitialOffering() async throws {
+        let screenJSON = Self.makeScreenJSON()
+            .replacingOccurrences(of: "\"offering_identifier\": \"offering_test\",", with: "")
+        let rawContext = try Self.makeContext(singleStepFallbackId: nil, initialScreenJSON: screenJSON)
+        let context = try PurchaseHandler.makeWorkflowContext(
+            workflow: rawContext.workflow,
+            uiConfig: rawContext.uiConfig,
+            allOfferings: rawContext.offerings.offerings,
+            presentedOfferingContext: nil,
+            developerProvidedOffering: nil
+        )
+        var configuration = PaywallViewConfiguration(
+            content: .offering(context.initialOffering),
+            introEligibility: .producing(eligibility: .eligible),
+            purchaseHandler: .mock()
+        )
+        configuration.injectedWorkflowContext = context
+        let dispose = try PaywallView(configuration: configuration).addToHierarchy()
+        defer { dispose() }
+
+        expect(configuration.presentationBridge.hasActiveWorkflow) == true
+        expect(configuration.presentationBridge.displayedOffering).to(beNil())
     }
 
     /// A routed step that cannot render reports against the routed step, not the fallback.
     @MainActor
     func testAnUnrenderableRoutedFirstStepReportsThatStep() async throws {
+        let bridge = PaywallPresentationBridge()
         let context = try Self.makeContext(
             singleStepFallbackId: "step_terminal",
             initialRouteStepId: "step_terminal",
@@ -1291,12 +1696,14 @@ extension WorkflowPaywallViewTests {
             showZeroDecimalPlacePrices: false,
             displayCloseButton: false,
             promoOfferCache: nil,
-            onDismiss: {}
+            onDismiss: {},
+            presentationBridge: bridge
         )
         let dispose = try view.addToHierarchy()
         defer { dispose() }
 
         await expect(self.logger.messages).toEventuallyNot(beEmpty(), timeout: .seconds(3))
+        expect(bridge.displayedOffering).to(beNil())
         let expectedMessage = Strings.workflow_paywall_invalid_state(
             currentStepId: "step_terminal",
             screenId: "screen_terminal"
@@ -1962,6 +2369,26 @@ private final class OfferingBox {
 
 // MARK: - Callback test helpers
 
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private struct DisplayedOfferingRebuildHost: View {
+
+    @ObservedObject var activation: WorkflowPageActivation
+    let offering: Offering
+    let purchaseHandler: PurchaseHandler
+    let didRebuild: () -> Void
+
+    var body: some View {
+        PaywallView(configuration: .init(
+            offering: self.offering,
+            introEligibility: .producing(eligibility: .eligible),
+            purchaseHandler: self.purchaseHandler
+        ))
+        .opacity(self.activation.isActive ? 1 : 0.9)
+        .onChangeOf(self.activation.isActive) { _ in self.didRebuild() }
+    }
+
+}
+
 /// Mirrors the @StateObject role that PaywallView plays in production:
 /// WorkflowPaywallView stores purchaseHandler as a plain `let`, so it needs
 /// an observing parent to trigger re-renders when purchase state changes.
@@ -1987,6 +2414,27 @@ private struct WorkflowPurchaseObserver: View {
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private extension WorkflowPaywallViewTests {
+
+    static func makeNavigationContext(nextOffering: Offering) throws -> WorkflowContext {
+        let buttonJSON = """
+        { "type": "button", "id": "continue_button",
+          "action": { "type": "close_workflow", "use_native_if_possible": true },
+          "stack": \(Self.stackJSON(components: "[]")) }
+        """
+        let screenJSON = Self.makeScreenJSON().replacingOccurrences(
+            of: Self.stackJSON(components: "[]"), with: Self.stackJSON(components: "[\(buttonJSON)]")
+        )
+        return try Self.makeContext(
+            singleStepFallbackId: "step_terminal",
+            initialScreenJSON: screenJSON,
+            initialStepJSON: Self.workflowStepJSON(
+                id: "step_initial", screenId: "screen_initial",
+                componentId: "continue_button", destinationStepId: "step_terminal"
+            ),
+            terminalScreenJSON: Self.makeScreenJSON(offeringId: nextOffering.identifier),
+            extraOfferings: [nextOffering]
+        )
+    }
 
     /// Creates a two-step workflow (step_a, step_b) with initial_step_id set to stepId.
     /// Use this to exercise callbacks from a non-initial step without requiring navigation.

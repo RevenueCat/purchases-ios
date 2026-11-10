@@ -136,8 +136,8 @@ public class PaywallViewController: UIViewController {
 
     var workflowContextForTesting: WorkflowContext? { self.configuration.injectedWorkflowContext }
 
-    var workflowBackNavigationBridgeForTesting: WorkflowBackNavigationBridge {
-        return self.configuration.workflowBackNavigationBridge
+    var presentationBridgeForTesting: PaywallPresentationBridge {
+        return self.configuration.presentationBridge
     }
 
     func simulateWorkflowExitOfferUpdate(_ offering: Offering?) {
@@ -177,6 +177,17 @@ public class PaywallViewController: UIViewController {
 
     private var purchaseHandler: PurchaseHandler {
         return configuration.purchaseHandler
+    }
+
+    /// The offering on the currently rendered paywall, or nil while no offering is displayed.
+    var displayedOffering: Offering? {
+        return self.configuration.presentationBridge.displayedOffering
+    }
+
+    func completeAndDismiss() {
+        if !self.configuration.presentationBridge.completeAndDismiss() {
+            self.dismiss(animated: true)
+        }
     }
 
     /// The promo offer cache, shared with exit offer paywall to avoid race conditions.
@@ -235,6 +246,7 @@ public class PaywallViewController: UIViewController {
         introEligibility: TrialOrIntroEligibilityChecker? = nil,
         performPurchase: PerformPurchase? = nil,
         performRestore: PerformRestore? = nil,
+        purchaseHandler: PurchaseHandler? = nil,
         workflowPresentationErrorHandler: WorkflowPresentationErrorHandler? = nil
     ) {
         self.init(
@@ -249,6 +261,7 @@ public class PaywallViewController: UIViewController {
 
         var configuration = self.configuration
         configuration.introEligibility = introEligibility
+        configuration.purchaseHandler = purchaseHandler ?? configuration.purchaseHandler
         configuration.injectedWorkflowContext = workflowContext
         configuration.displaysPurchaseAndRestoreErrors = false
         configuration.workflowPresentationErrorHandler = workflowPresentationErrorHandler

@@ -993,7 +993,8 @@ platform :ios do
       "-only-testing:RevenueCatUITests/NativePaywallCloseButtonTests " \
         "-only-testing:RevenueCatUITests/NativePaywallUIKitTests " \
         "-only-testing:RevenueCatUITests/NativePaywallWorkflowTests " \
-        "-only-testing:RevenueCatUITests/ButtonComponentViewTests"
+        "-only-testing:RevenueCatUITests/ButtonComponentViewTests " \
+        "-only-testing:RevenueCatUITests/WorkflowPresenterTests"
     else
       "-testPlan #{test_plan}"
     end

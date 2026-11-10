@@ -291,7 +291,7 @@ struct WorkflowPaywallView: View {
     private let onDismiss: () -> Void
     private let onPresentationError: WorkflowPresentationErrorHandler?
 
-    @ObservedObject private var backNavigationBridge: WorkflowBackNavigationBridge
+    @StateObject private var presentationBridge: PaywallPresentationBridge
 
     @Environment(\.nativePaywallCloseCoordinator) private var nativeButtonCoordinator
 
@@ -332,7 +332,7 @@ struct WorkflowPaywallView: View {
         displayCloseButton: Bool,
         promoOfferCache: PaywallPromoOfferCache?,
         onDismiss: @escaping () -> Void,
-        backNavigationBridge: WorkflowBackNavigationBridge = WorkflowBackNavigationBridge(),
+        presentationBridge: PaywallPresentationBridge = PaywallPresentationBridge(),
         onPresentationError: WorkflowPresentationErrorHandler? = nil
     ) {
         self.context = context
@@ -341,7 +341,7 @@ struct WorkflowPaywallView: View {
         self.showZeroDecimalPlacePrices = showZeroDecimalPlacePrices
         self.displayCloseButton = displayCloseButton
         self.onDismiss = onDismiss
-        self._backNavigationBridge = .init(wrappedValue: backNavigationBridge)
+        self._presentationBridge = .init(wrappedValue: presentationBridge)
         self.onPresentationError = onPresentationError
         self._navigator = .init(wrappedValue: WorkflowNavigator(
             workflow: context.workflow,
@@ -466,6 +466,10 @@ struct WorkflowPaywallView: View {
 
             await self.animateTransition(id: activeTransitionID)
         }
+        .modifier(DisplayedOfferingRegistrationModifier(
+            bridge: self.presentationBridge,
+            offering: { self.transitionState.currentPage?.content.offering }
+        ))
         // Re-emitted on every step change because navigator is @StateObject with @Published
         // currentStepId. The exit offer is resolved synchronously from the context's offerings on the
         // triggering step; when the user navigates away the value becomes nil, clearing
@@ -480,7 +484,7 @@ struct WorkflowPaywallView: View {
         // Must use exitOfferContext(for:currentStepId:), not context.exitOfferOffering, because
         // exitOfferOffering is not step-aware — it is non-nil for any step whenever configured.
         .onAppear {
-            self.backNavigationBridge.workflowDidAppear()
+            self.presentationBridge.workflowDidAppear(onCompletion: self.completeAndDismiss)
             switch self.presentationState {
             case .displayingError(_, .endFlow):
                 self.exitOfferOfferingBinding.wrappedValue = nil
@@ -500,8 +504,8 @@ struct WorkflowPaywallView: View {
         }
         // This catches dismissal paths that do not pass through a workflow failure: close button,
         // post-purchase auto-dismiss, swipe-to-dismiss on a sheet, and programmatic parent dismiss.
-        // A late configuration failure tracks the same lifecycle immediately before showing its error;
-        // the coordinator's fire-once guards prevent this hook from duplicating those events later.
+        // Natural completion and late configuration failure track the same lifecycle before requesting dismissal
+        // or showing an error; the coordinator's fire-once guards prevent duplicate events when this hook runs later.
         .onChangeOf(self.transitionState.currentPage?.id) { pageID in
             self.nativeButtonCoordinator?.activatePage(pageID)
         }
@@ -511,10 +515,10 @@ struct WorkflowPaywallView: View {
         }
         .onDisappear {
             self.nativeButtonCoordinator?.activatePage(nil)
-            self.backNavigationBridge.workflowDidDisappear()
+            self.presentationBridge.workflowDidDisappear()
             self.trackCurrentWorkflowLeft()
         }
-        .onChangeOf(self.backNavigationBridge.hasPendingBackNavigationRequest) { isPending in
+        .onChangeOf(self.presentationBridge.hasPendingBackNavigationRequest) { isPending in
             guard isPending else { return }
             self.handlePendingBackNavigationRequest()
         }
@@ -638,7 +642,7 @@ struct WorkflowPaywallView: View {
     private func pageView(for page: RenderedPage, isActive: Bool) -> some View {
         PaywallsV2View(
             paywallComponents: page.content.paywallComponents,
-            offering: page.content.offering,
+            offering: page.content.renderingOffering,
             purchaseHandler: self.purchaseHandler,
             introEligibilityChecker: self.introEligibilityChecker,
             showZeroDecimalPlacePrices: self.showZeroDecimalPlacePrices,
@@ -726,7 +730,8 @@ struct WorkflowPaywallView: View {
         ) {
         case let .dismissWorkflow(reason):
             if self.purchaseHandler.hasPurchasedInSession {
-                self.markWorkflowCompletedInSession()
+                self.completeAndDismiss()
+                return
             }
             if reason == .navigatedBack {
                 self.workflowDismissalObserver?(.navigatedBack)
@@ -767,7 +772,7 @@ struct WorkflowPaywallView: View {
     }
 
     private func handlePendingBackNavigationRequest() {
-        guard self.backNavigationBridge.takePendingBackNavigationRequest(
+        guard self.presentationBridge.takePendingBackNavigationRequest(
             isTransitioning: self.transitionState.isTransitioning
         ) else {
             return
@@ -797,14 +802,17 @@ struct WorkflowPaywallView: View {
         return context.exitOfferContext(forStepId: currentStepId)
     }
 
-    private func markWorkflowCompletedInSession() {
+    private func completeAndDismiss() {
         self.hasCompletedWorkflowInSession = true
         self.workflowCompletedInSessionBinding.wrappedValue = true
+        // Enqueue terminal analytics before the host observes dismissal.
+        self.trackCurrentWorkflowLeft()
+        self.onDismiss()
     }
 
     /// Finishes the current step and, unless purchase or restore completed this presentation, records
-    /// workflow abandonment. Called both when the paywall goes away and when a reached step is found to be
-    /// unservable.
+    /// workflow abandonment. Called on natural completion, when the paywall goes away, and when a reached
+    /// step is found to be unservable.
     private func trackCurrentWorkflowLeft() {
         let hasRenderedPage = self.transitionState.currentPage != nil
         let completedInSession = Self.hasCompletedInSession(
@@ -992,14 +1000,12 @@ struct WorkflowPaywallView: View {
             )
         }
         #endif
-        let offering = WorkflowContext.renderingOffering(
-            baseOffering: context.offering(for: step),
-            paywallComponents: paywallComponents
-        )
-
         return .init(
             stepId: stepId,
-            content: .init(paywallComponents: paywallComponents, offering: offering),
+            content: .init(
+                paywallComponents: paywallComponents,
+                baseOffering: context.offering(for: step)
+            ),
             stepType: step.type,
             screenType: step.stepScreenType,
             isSingleStepFallback: stepId == context.workflow.singleStepFallbackId,
@@ -1221,8 +1227,21 @@ private struct DisplayedPage: Identifiable {
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private struct CurrentStepContent {
+
     let paywallComponents: Offering.PaywallComponents
-    let offering: Offering
+    let offering: Offering?
+    /// Rendering requires an offering even for content-only screens, which use a package-less placeholder.
+    let renderingOffering: Offering
+
+    init(paywallComponents: Offering.PaywallComponents, baseOffering: Offering?) {
+        let renderingOffering = WorkflowContext.renderingOffering(
+            baseOffering: baseOffering, paywallComponents: paywallComponents
+        )
+        self.paywallComponents = paywallComponents
+        self.offering = baseOffering.map { _ in renderingOffering }
+        self.renderingOffering = renderingOffering
+    }
+
 }
 
 /// A workflow configuration problem presented to the customer. Its code stays compatible with the SDK
@@ -1340,7 +1359,7 @@ private struct WorkflowHeaderOverlayPageView: View {
                     preferredLocales: purchaseHandler.preferredLocales,
                     defaultLocale: paywallComponents.data.defaultLocale,
                     uiConfigProvider: uiConfigProvider,
-                    offering: page.content.offering,
+                    offering: page.content.renderingOffering,
                     introEligibilityChecker: introEligibilityChecker,
                     showZeroDecimalPlacePrices: showZeroDecimalPlacePrices,
                     colorScheme: colorScheme
