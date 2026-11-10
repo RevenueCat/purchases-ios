@@ -381,7 +381,8 @@ private struct PackageResolutionSheetHost: View {
         }
             .modifier(RootPackageSelectionSheetModifier(
                 defaultPackage: self.fixture.state.viewModelFactory.packageValidator
-                    .defaultSelectedPackage(in: .provisional)
+                    .defaultSelectedPackage(in: .provisional),
+                hasNonSheetPackages: true
             ))
             .environment(\.sessionPurchaseResult, self.holder.purchaseResult)
             .environmentObject(self.fixture.context)
