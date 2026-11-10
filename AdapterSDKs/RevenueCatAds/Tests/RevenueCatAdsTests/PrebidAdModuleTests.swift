@@ -78,6 +78,74 @@ final class PrebidAdModuleTests: TestCase {
         XCTAssertEqual(error.code, .noFill)
     }
 
+    func testWillPresentDeliversPresentedThenImpression() {
+        let (interstitial, events) = self.makeRecordingInterstitial()
+
+        interstitial.interstitialWillPresentAd(self.anyAdUnit)
+
+        XCTAssertEqual(events.kinds, [.presented, .impression])
+    }
+
+    func testDelegateCallbacksMapToEvents() {
+        let (interstitial, events) = self.makeRecordingInterstitial()
+
+        interstitial.interstitialDidReceiveAd(self.anyAdUnit)
+        interstitial.interstitialDidExpireAd(self.anyAdUnit)
+        interstitial.interstitialDidClickAd(self.anyAdUnit)
+        interstitial.interstitialDidDismissAd(self.anyAdUnit)
+
+        XCTAssertEqual(events.kinds, [.loaded, .expired, .clicked, .dismissed])
+    }
+
+    func testFailToReceiveDeliversMappedError() {
+        let (interstitial, events) = self.makeRecordingInterstitial()
+
+        interstitial.interstitial(self.anyAdUnit, didFailToReceiveAdWithError: PBMError.noWinningBid())
+
+        guard case let .failedToLoad(error)? = events.received.first else {
+            return XCTFail("Expected failedToLoad, got \(events.kinds)")
+        }
+        XCTAssertEqual(error.code, .noFill)
+    }
+
+    // MARK: -
+
+    private var anyAdUnit: InterstitialRenderingAdUnit { InterstitialRenderingAdUnit(configID: "ignored") }
+
+    private func makeRecordingInterstitial() -> (PrebidInterstitial, RecordedEvents) {
+        let interstitial = PrebidInterstitial(placementID: "placement")
+        let events = RecordedEvents()
+        interstitial.onEvent = { events.received.append($0) }
+        return (interstitial, events)
+    }
+
+}
+
+@MainActor
+private final class RecordedEvents {
+
+    enum Kind: Equatable {
+
+        case loaded, failedToLoad, expired, presented, impression, clicked, dismissed
+
+    }
+
+    var received: [AdModuleEvent] = []
+
+    var kinds: [Kind] {
+        self.received.map { event in
+            switch event {
+            case .loaded: return .loaded
+            case .failedToLoad: return .failedToLoad
+            case .expired: return .expired
+            case .presented: return .presented
+            case .impression: return .impression
+            case .clicked: return .clicked
+            case .dismissed: return .dismissed
+            }
+        }
+    }
+
 }
 
 #endif
