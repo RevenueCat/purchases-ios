@@ -25,9 +25,9 @@ import Foundation
         public static let invalidState = Code(rawValue: "invalid_ad_state")
         /// `present(from:)` was called before an ad finished loading.
         public static let notReady = Code(rawValue: "ad_not_ready")
-        /// The view controller passed to `present(from:)` could not present. The ad stays loaded when the
-        /// refusal was known up front (no window, already presenting); when UIKit refused the presentation
-        /// itself the ad is discarded and must be loaded again.
+        /// The view controller passed to `present(from:)` could not present. When that was known up front
+        /// (no window, already presenting) the ad stays loaded; when the presentation was refused later the
+        /// ad has expired, so load again.
         public static let presentFailed = Code(rawValue: "ad_present_failed")
         /// The auction completed without a winning bid.
         public static let noFill = Code(rawValue: "ad_request_no_fill")

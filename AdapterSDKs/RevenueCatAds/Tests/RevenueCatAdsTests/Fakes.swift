@@ -57,8 +57,6 @@ final class FakeAdModuleInterstitial: AdModuleInterstitial {
     var revenue: AdModuleRevenue?
     var loadCallCount = 0
     var showCallCount = 0
-    /// Whether `show(from:)` presents a view controller, as the real SDK does once UIKit accepts.
-    var presentsOnShow = true
 
     /// Event emitted synchronously from `load()`, like a cached/instant response would.
     var eventOnLoad: AdModuleEvent?
@@ -76,9 +74,6 @@ final class FakeAdModuleInterstitial: AdModuleInterstitial {
 
     func show(from viewController: UIViewController) {
         self.showCallCount += 1
-        if self.presentsOnShow {
-            viewController.present(UIViewController(), animated: false)
-        }
     }
 
     func emit(_ event: AdModuleEvent) {

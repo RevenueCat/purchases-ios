@@ -182,10 +182,6 @@ final class AdsTrackingTests: TestCase {
         try await self.loadSuccessfully()
         self.interstitial.present(from: self.presenters.makePresenter())
         self.module.lastInterstitial?.emit(.presented)
-        for _ in 0..<1_000 where self.interstitial.state != .presented {
-            await Task.yield()
-        }
-        XCTAssertEqual(self.interstitial.state, .presented)
     }
 
 }

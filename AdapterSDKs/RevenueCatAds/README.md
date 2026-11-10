@@ -52,8 +52,9 @@ RevenueCat uses it for reporting and segmentation, so use consistent values acro
 An instance shows one ad per load. After the ad is dismissed, expires, or loading fails, load it again.
 Calling `load()` while an ad is already loaded returns immediately and keeps that ad.
 The instance stays alive while its ad is on screen, so you can replace your reference right after
-`present(from:)`. If the view controller cannot present, the delegate receives `AdsError.Code.presentFailed`;
-the ad stays loaded when that was known up front, and is discarded when UIKit refused the presentation.
+`present(from:)`. If the view controller cannot present, the delegate receives `AdsError.Code.presentFailed`
+and the ad stays loaded; if the presentation is refused later, the ad expires unshown and the delegate
+receives `presentFailed` then.
 When no ad is available, `load()` throws `AdsError.Code.noFill`; treat it as normal and continue
 without an ad.
 

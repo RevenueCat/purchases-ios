@@ -22,8 +22,6 @@ import UIKit
         case loading
         case loaded
         case presenting
-        /// The underlying SDK reported presenting; UIKit's answer is checked on the next run loop turn.
-        case confirmingPresentation
         case presented
 
     }
@@ -46,11 +44,9 @@ import UIKit
     private let tracker: InterstitialEventTracker
     private var unit: AdModuleInterstitial?
     private var retainedWhilePresenting: AdsInterstitial?
-    private weak var presenter: UIViewController?
     private var impressionID = ""
     private var loadContinuation: CheckedContinuation<Void, Error>?
     private var impressionRecorded = false
-    private var impressionPending = false
 
     /// Creates an interstitial for the given placement. Requires ``RCAds/configure(with:)`` before ``load()``.
     public convenience init(placementID: String) { // swiftlint:disable:this no_new_public_inits
@@ -73,7 +69,7 @@ import UIKit
     /// - Throws: ``AdsError``.
     public func load() async throws {
         switch self.state {
-        case .loading, .presenting, .confirmingPresentation, .presented:
+        case .loading, .presenting, .presented:
             throw AdsError(code: .invalidState, message: "Cannot load while the ad is \(self.state).")
         case .loaded:
             return
@@ -95,7 +91,6 @@ import UIKit
         self.impressionID = UUID().uuidString
         self.state = .loading
         self.impressionRecorded = false
-        self.impressionPending = false
 
         try await withCheckedThrowingContinuation { continuation in
             self.loadContinuation = continuation
@@ -119,9 +114,10 @@ import UIKit
 
     /// Presents the loaded ad. If the ad is not ready, the delegate receives
     /// ``AdsInterstitialDelegate/interstitial(_:didFailToPresentWithError:)`` with ``AdsError/Code/notReady``.
-    /// If `viewController` cannot present, it receives ``AdsError/Code/presentFailed``: the ad stays loaded
-    /// when that is known up front, and is discarded when UIKit refuses the presentation, so load again.
-    /// The instance stays alive until the ad is dismissed, so dropping your reference after this call is safe.
+    /// If `viewController` cannot present right now, it receives ``AdsError/Code/presentFailed``
+    /// and the ad stays loaded. If the presentation is refused after that, the ad expires unshown and the
+    /// delegate receives ``AdsError/Code/presentFailed`` then; load again. The instance stays alive until the
+    /// ad is dismissed, so dropping your reference after this call is safe.
     public func present(from viewController: UIViewController) {
         guard self.isReady, let unit = self.unit else {
             self.delegate?.interstitial(
@@ -131,7 +127,7 @@ import UIKit
             return
         }
 
-        // Refusals that can be seen up front keep the ad; the rest are caught in `confirmPresentation`.
+        // The underlying SDK never reports a refused presentation, so refuse the cases known up front.
         if viewController.viewIfLoaded?.window == nil {
             self.failToPresent("The view controller is not in a window.")
             return
@@ -142,7 +138,6 @@ import UIKit
         }
 
         self.state = .presenting
-        self.presenter = viewController
         self.retainedWhilePresenting = self
         unit.show(from: viewController)
     }
@@ -176,10 +171,18 @@ import UIKit
     }
 
     private func handleExpiry() {
-        guard self.state == .loaded else { return }
-
-        self.finish()
-        self.delegate?.interstitialDidExpire(self)
+        switch self.state {
+        case .loaded:
+            self.finish()
+            self.delegate?.interstitialDidExpire(self)
+        case .presenting:
+            // The underlying SDK only cancels expiry once the ad is displayed, so expiring here means
+            // the presentation was refused.
+            self.finish()
+            self.failToPresent("The presentation was refused.")
+        case .idle, .loading, .presented:
+            break
+        }
     }
 
     private func handlePresentationEvent(_ event: AdModuleEvent) {
@@ -187,21 +190,17 @@ import UIKit
 
         switch (event, self.state) {
         case (.presented, .presenting):
-            // The underlying SDK reports this right before asking UIKit, and never reports a refusal.
-            // UIKit records the presentation synchronously, so the next turn shows whether it happened.
-            self.state = .confirmingPresentation
-            DispatchQueue.main.async { [weak self, weak unit] in
-                guard let self, let unit, unit === self.unit else { return }
-                self.confirmPresentation(of: unit)
-            }
-        case (.impression, .confirmingPresentation):
-            self.impressionPending = true
-        case (.impression, .presented):
-            self.recordImpression(unit: unit)
+            self.state = .presented
+            self.tracker.track(event, unit: unit, impressionID: self.impressionID)
+            self.delegate?.interstitialDidPresent(self)
+        case (.impression, .presented) where !self.impressionRecorded:
+            self.impressionRecorded = true
+            self.tracker.track(event, unit: unit, impressionID: self.impressionID)
+            self.delegate?.interstitialDidRecordImpression(self)
         case (.clicked, .presented):
             self.tracker.track(event, unit: unit, impressionID: self.impressionID)
             self.delegate?.interstitialDidRecordClick(self)
-        case (.dismissed, .presenting), (.dismissed, .confirmingPresentation), (.dismissed, .presented):
+        case (.dismissed, .presenting), (.dismissed, .presented):
             self.finish()
             self.delegate?.interstitialDidDismiss(self)
         default:
@@ -209,37 +208,9 @@ import UIKit
         }
     }
 
-    private func confirmPresentation(of unit: AdModuleInterstitial) {
-        guard self.state == .confirmingPresentation else { return }
-
-        guard self.presenter?.presentedViewController != nil else {
-            // The underlying SDK has already consumed the ad, so it cannot be shown again.
-            self.finish()
-            self.failToPresent("The view controller refused the presentation.")
-            return
-        }
-
-        self.state = .presented
-        self.tracker.track(.presented, unit: unit, impressionID: self.impressionID)
-        self.delegate?.interstitialDidPresent(self)
-        if self.impressionPending {
-            self.recordImpression(unit: unit)
-        }
-    }
-
-    private func recordImpression(unit: AdModuleInterstitial) {
-        guard !self.impressionRecorded else { return }
-
-        self.impressionRecorded = true
-        self.impressionPending = false
-        self.tracker.track(.impression, unit: unit, impressionID: self.impressionID)
-        self.delegate?.interstitialDidRecordImpression(self)
-    }
-
     private func finish() {
         self.state = .idle
         self.unit = nil
-        self.presenter = nil
         self.retainedWhilePresenting = nil
     }
 
