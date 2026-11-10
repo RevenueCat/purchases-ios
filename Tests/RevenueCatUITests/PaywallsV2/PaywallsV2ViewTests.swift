@@ -12,9 +12,106 @@
 import Nimble
 @_spi(Internal) @testable import RevenueCat
 @_spi(Internal) @testable import RevenueCatUI
+import SwiftUI
 import XCTest
 
 #if !os(tvOS)
+
+#if os(iOS)
+
+@available(iOS 15.0, *)
+@MainActor
+final class PaywallsV2StateLifetimeTests: TestCase {
+
+    func testConstructingAnUnmountedViewDoesNotBuildTheComponentTree() {
+        _ = self.makeView()
+
+        XCTAssertEqual(self.componentTreeBuildCount, 0)
+    }
+
+    func testParentRedrawsDoNotRebuildTheComponentTree() throws {
+        let trigger = RedrawTrigger()
+        var initializationCount = 0
+        let view = ReinitializingPaywall(trigger: trigger) {
+            initializationCount += 1
+            return self.makeView()
+        }
+        let dispose = try view.addToHierarchy()
+        defer { dispose() }
+
+        XCTAssertEqual(self.componentTreeBuildCount, 1)
+        let initialCount = initializationCount
+
+        for _ in 0..<3 {
+            trigger.value += 1
+            RunLoop.main.run(until: Date().addingTimeInterval(0.1))
+        }
+
+        XCTAssertGreaterThanOrEqual(initializationCount, initialCount + 3)
+        XCTAssertEqual(self.componentTreeBuildCount, 1)
+    }
+
+    // An unsupported condition emits one warning each time createPaywallState builds a tree.
+    // This observes the real construction path without adding a test-only SDK accessor.
+    private var componentTreeBuildCount: Int {
+        self.logger.messages.filter {
+            $0.message == RevenueCatUI.Strings.paywall_contains_unsupported_condition.description
+        }.count
+    }
+
+    private func makeView() -> PaywallsV2View {
+        let components = Offering.PaywallComponents(
+            uiConfig: PreviewUIConfig.make(),
+            data: .init(
+                templateName: "components",
+                // swiftlint:disable:next force_unwrapping
+                assetBaseURL: URL(string: "https://assets.pawwalls.com")!,
+                componentsConfig: .init(base: .init(
+                    stack: .init(components: [
+                        .text(.init(text: "text", color: .init(light: .hex("#000000")), overrides: [
+                            .init(extendedConditions: [.unsupported], properties: .init())
+                        ]))
+                    ]),
+                    stickyFooter: nil,
+                    background: .color(.init(light: .hex("#FFFFFF")))
+                )),
+                componentsLocalizations: ["en_US": ["text": .string("Text")]],
+                revision: 1,
+                defaultLocaleIdentifier: "en_US"
+            )
+        )
+        return PaywallsV2View(
+            paywallComponents: components,
+            offering: TestData.offeringWithNoIntroOffer,
+            purchaseHandler: .mock(),
+            introEligibilityChecker: .producing(eligibility: .eligible),
+            showZeroDecimalPlacePrices: false,
+            onDismiss: {},
+            failedToLoadFont: { _ in },
+            colorScheme: .light
+        )
+    }
+
+    private final class RedrawTrigger: ObservableObject {
+
+        @Published var value = 0
+
+    }
+
+    private struct ReinitializingPaywall: View {
+
+        @ObservedObject var trigger: RedrawTrigger
+        let makeView: () -> PaywallsV2View
+
+        var body: some View {
+            self.makeView().padding(.bottom, CGFloat(self.trigger.value))
+        }
+
+    }
+
+}
+
+#endif
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 final class IntroEligibilityPackagesTests: TestCase {
