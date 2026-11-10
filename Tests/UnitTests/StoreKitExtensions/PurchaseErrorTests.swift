@@ -65,8 +65,8 @@ class PurchaseErrorTests: BaseErrorTests {
                              underlyingError: error)
     }
 
+    #if ENABLE_MULTISEAT_PURCHASES
     // These cases require the Xcode 27.3 SDK, which is detected by its StoreKit module version.
-    #if canImport(StoreKit, _version: 816.2.10)
     @available(iOS 27.3, tvOS 27.3, watchOS 27.3, macOS 27.3, visionOS 27.3, *)
     func testMultiSeatPurchaseDisabledError() throws {
         try AvailabilityChecks.iOS273APIAvailableOrSkipTest()
