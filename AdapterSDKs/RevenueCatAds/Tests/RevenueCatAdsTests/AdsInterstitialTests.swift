@@ -13,6 +13,7 @@ import XCTest
 final class AdsInterstitialTests: TestCase {
 
     private var module: FakeAdModule!
+    private var tracking: FakeAdTracking!
     private var delegate: RecordingDelegate!
     private var interstitial: AdsInterstitial!
     private var presenters: PresenterFactory!
@@ -21,12 +22,13 @@ final class AdsInterstitialTests: TestCase {
         try await super.setUp()
         self.presenters = PresenterFactory()
         self.module = FakeAdModule()
+        self.tracking = FakeAdTracking()
         self.delegate = RecordingDelegate()
         let module = self.module
         self.interstitial = AdsInterstitial(
             placementID: "placement",
             moduleProvider: { module },
-            tracking: FakeAdTracking()
+            tracking: self.tracking
         )
         self.interstitial.delegate = self.delegate
     }
@@ -176,15 +178,21 @@ final class AdsInterstitialTests: TestCase {
         XCTAssertEqual(self.interstitial.state, .loaded)
     }
 
-    func testPresentFromViewControllerInTransitionFailsAndKeepsAd() async throws {
+    func testRefusedPresentationFailsDiscardsAdAndAllowsReload() async throws {
         try await self.loadSuccessfully()
-        let presenter = self.presenters.makePresenter(TransitioningViewController())
+        let unit = try XCTUnwrap(self.module.lastInterstitial)
+        unit.presentsOnShow = false
 
-        self.interstitial.present(from: presenter)
+        self.interstitial.present(from: self.presenters.makePresenter())
+        unit.emit(.presented)
+        unit.emit(.impression)
+        XCTAssertEqual(self.delegate.events, [])
+        await self.waitUntil { self.interstitial.state == .idle }
 
-        XCTAssertEqual(self.module.lastInterstitial?.showCallCount, 0)
         XCTAssertEqual(self.delegate.events, [.failedToPresent(.presentFailed)])
-        XCTAssertEqual(self.interstitial.state, .loaded)
+        XCTAssertEqual(self.tracking.trackedEventCount, 1, "Only the load is tracked")
+        try await self.loadSuccessfully()
+        XCTAssertEqual(self.module.interstitials.count, 2)
     }
 
     func testCanPresentAfterFailedPresentation() async throws {
@@ -207,12 +215,15 @@ final class AdsInterstitialTests: TestCase {
 
         unit.emit(.presented)
         unit.emit(.impression)
+        XCTAssertEqual(self.delegate.events, [], "Nothing is reported until UIKit's answer is known")
+        await self.waitUntil { self.interstitial.state == .presented }
         unit.emit(.clicked)
         unit.emit(.dismissed)
 
         XCTAssertEqual(self.delegate.events, [.presented, .impression, .clicked, .dismissed])
         XCTAssertEqual(self.interstitial.state, .idle)
         XCTAssertFalse(self.interstitial.isReady)
+        XCTAssertEqual(self.tracking.displayed.count, 1)
     }
 
     func testPresentTwiceOnlyShowsOnce() async throws {
@@ -304,6 +315,7 @@ final class AdsInterstitialTests: TestCase {
 
         XCTAssertNotNil(weakInterstitial, "The interstitial must stay alive until its ad is dismissed")
         unit.emit(.presented)
+        await self.waitUntil { weakInterstitial?.state == .presented }
         unit.emit(.dismissed)
 
         XCTAssertEqual(self.delegate.events, [.presented, .dismissed])
@@ -325,33 +337,30 @@ final class AdsInterstitialTests: TestCase {
 
         await XCTAssertThrowsAdsError(.invalidState) { try await self.interstitial.load() }
     }
+}
 
-    // MARK: - Helpers
+// MARK: - Helpers
 
-    private func loadSuccessfully() async throws {
+private extension AdsInterstitialTests {
+
+    func loadSuccessfully() async throws {
         self.module.interstitialEvent = .loaded
         try await self.interstitial.load()
     }
 
-    private func presentLoadedAd() async throws {
+    func presentLoadedAd() async throws {
         try await self.loadSuccessfully()
         self.interstitial.present(from: self.presenters.makePresenter())
         self.module.lastInterstitial?.emit(.presented)
+        await self.waitUntil { self.interstitial.state == .presented }
     }
 
-    private func waitUntil(_ condition: () -> Bool) async {
+    func waitUntil(_ condition: () -> Bool) async {
         for _ in 0..<1_000 where !condition() {
             await Task.yield()
         }
         XCTAssertTrue(condition(), "Condition not met")
     }
-
-}
-
-// UIKit sets `isBeingDismissed` only during a live transition, which a unit test cannot hold still.
-private final class TransitioningViewController: UIViewController {
-
-    override var isBeingDismissed: Bool { true }
 
 }
 

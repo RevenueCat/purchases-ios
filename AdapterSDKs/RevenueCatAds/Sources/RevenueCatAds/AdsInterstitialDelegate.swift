@@ -15,7 +15,7 @@ import Foundation
 @_spi(Experimental) public protocol AdsInterstitialDelegate: AnyObject {
 
     /// `present(from:)` was called on an ad that is not ready (``AdsError/Code/notReady``), or from a view
-    /// controller that cannot present right now (``AdsError/Code/presentFailed``).
+    /// controller that could not present (``AdsError/Code/presentFailed``).
     func interstitial(_ interstitial: AdsInterstitial, didFailToPresentWithError error: AdsError)
 
     /// The loaded ad expired before being presented. Load again to get a new one.
