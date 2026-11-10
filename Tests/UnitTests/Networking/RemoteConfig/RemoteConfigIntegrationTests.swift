@@ -818,7 +818,7 @@ final class RemoteConfigIntegrationTests: TestCase {
         expect(self.remoteConfigCalls[1].headers[HTTPClient.RequestHeader.lastRefreshTime.rawValue]).to(beNil())
     }
 
-    func testInformationalFailedVerificationStillPersistsResponse() async throws {
+    func testInformationalFailedVerificationDoesNotPersistResponse() async throws {
         let blob = #"{"workflow":"informational"}"#.asData
         let ref = RCContainerTestData.blobRef(for: blob)
         let container = try Self.containerData(
@@ -826,11 +826,42 @@ final class RemoteConfigIntegrationTests: TestCase {
             contentElements: [(blob, .none)]
         )
 
-        await self.refresh(with: container, verificationResult: .failed(.unknown))
+        self.mockRemoteConfigResponse(body: container, verificationResult: .failed(.unknown))
 
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
+        await self.waitForRemoteConfigRequestCount(1)
+
+        expect(self.diskCache.read()).to(beNil())
+        expect(self.blobStore.cachedRefs()).to(beEmpty())
+    }
+
+    func testInformationalFailedVerificationKeepsPreviouslyPersistedConfiguration() async throws {
+        let cachedRef = RCContainerTestData.blobRef(for: "cached".asData)
+        let cachedContainer = try Self.containerData(topics: Self.workflowTopic(ref: cachedRef))
+        await self.refresh(with: cachedContainer)
+
+        let rejectedRef = RCContainerTestData.blobRef(for: "rejected".asData)
+        let rejectedConfiguration = RemoteConfiguration(
+            domain: RemoteConfiguration.defaultDomain,
+            manifest: "v1.1710000100.workflows:etag2",
+            activeTopics: [RemoteConfigTopic.workflows.wireName],
+            topics: .init(entries: [
+                RemoteConfigTopic.workflows.wireName: Self.workflowTopic(ref: rejectedRef)
+            ])
+        )
+        let rejectedContainer = RCContainerTestData.container(
+            config: try JSONEncoder.default.encode(rejectedConfiguration)
+        )
+        self.mockRemoteConfigResponse(body: rejectedContainer, verificationResult: .failed(.unknown))
+
+        self.manager.refreshRemoteConfig(fetchContext: .foreground, isAppBackgrounded: false)
+        await self.waitForRemoteConfigRequestCount(2)
+        let topic = await self.manager.committedTopicAfterInFlightRefresh(.workflows)
+
+        expect(topic?["default"]?.blobRef) == cachedRef
         expect(self.diskCache.read()?.manifest) == Self.manifest
-        let data = await self.manager.blobData(for: .workflows, itemKey: "default")
-        expect(data) == blob
+        expect(self.diskCache.read()?.topics.entries[RemoteConfigTopic.workflows.wireName]?["default"]?.blobRef)
+            == cachedRef
     }
 
     func testEnforcedVerificationFailureDoesNotPersistResponse() async throws {
