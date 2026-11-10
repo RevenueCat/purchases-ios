@@ -49,16 +49,14 @@ class WorkflowManager: WorkflowAssetPrewarmingType {
         workflowsConfigProvider: WorkflowsConfigProviderType,
         paywallCache: PaywallCacheWarmingType?,
         operationDispatcher: OperationDispatcher,
-        webBundleURLBatcher: WebBundleURLBatcherType = WebBundleURLBatcher.shared,
-        workflowPrewarmingDecodeCoordinator: WorkflowPrewarmingDecodeCoordinator = .init()
+        webBundleURLBatcher: WebBundleURLBatcherType = WebBundleURLBatcher.shared
     ) {
         self.workflowsConfigProvider = workflowsConfigProvider
         self.prewarmingCoordinator = .init(
             workflowsConfigProvider: workflowsConfigProvider,
             paywallCache: paywallCache,
             operationDispatcher: operationDispatcher,
-            webBundleURLBatcher: webBundleURLBatcher,
-            decodeCoordinator: workflowPrewarmingDecodeCoordinator
+            webBundleURLBatcher: webBundleURLBatcher
         )
     }
 

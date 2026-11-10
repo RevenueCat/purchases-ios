@@ -18,7 +18,6 @@ final class WorkflowPrewarmingCoordinator: @unchecked Sendable {
     private let paywallCache: PaywallCacheWarmingType?
     private let operationDispatcher: OperationDispatcher
     private let webBundleURLBatcher: WebBundleURLBatcherType
-    private let decodeCoordinator: WorkflowPrewarmingDecodeCoordinator
     private let webBundlePublicationTracker = WorkflowWebBundlePublicationTracker()
     private let backgroundPrewarmingLimiter = AsyncConcurrencyLimiter(maxConcurrentOperations: 1)
 
@@ -26,14 +25,12 @@ final class WorkflowPrewarmingCoordinator: @unchecked Sendable {
         workflowsConfigProvider: WorkflowsConfigProviderType,
         paywallCache: PaywallCacheWarmingType?,
         operationDispatcher: OperationDispatcher,
-        webBundleURLBatcher: WebBundleURLBatcherType,
-        decodeCoordinator: WorkflowPrewarmingDecodeCoordinator
+        webBundleURLBatcher: WebBundleURLBatcherType
     ) {
         self.workflowsConfigProvider = workflowsConfigProvider
         self.paywallCache = paywallCache
         self.operationDispatcher = operationDispatcher
         self.webBundleURLBatcher = webBundleURLBatcher
-        self.decodeCoordinator = decodeCoordinator
     }
 
     /// Ensures the provider has cached the selected workflows' raw body data before scheduling transient decoding,
@@ -124,7 +121,7 @@ private extension WorkflowPrewarmingCoordinator {
     ) async -> Task<Void, Never>? {
         guard shouldPrewarmAssets || shouldPublishWebBundles else { return nil }
 
-        switch await self.decodeCoordinator.decode(workflowId: workflowId, using: self.workflowsConfigProvider) {
+        switch await self.workflowsConfigProvider.decodeCachedWorkflowForAssetPrewarming(workflowId: workflowId) {
         case let .success(result):
             let assetPrewarmingTask = shouldPrewarmAssets
                 ? await self.paywallCache?.startWorkflowAssetPrewarming(
@@ -181,7 +178,7 @@ private extension WorkflowPrewarmingCoordinator {
 
     @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
     func decodeAndStartAssetPrewarming(_ workflowId: String) async -> Task<Void, Never>? {
-        switch await self.decodeCoordinator.decode(workflowId: workflowId, using: self.workflowsConfigProvider) {
+        switch await self.workflowsConfigProvider.decodeCachedWorkflowForAssetPrewarming(workflowId: workflowId) {
         case let .success(result):
             return await self.paywallCache?.startWorkflowAssetPrewarming(
                 workflow: result.workflow,

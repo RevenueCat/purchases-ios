@@ -38,8 +38,7 @@ class WorkflowPrewarmingCoordinatorTests: TestCase {
             workflowsConfigProvider: self.mockProvider,
             paywallCache: self.mockPaywallCache,
             operationDispatcher: self.mockOperationDispatcher,
-            webBundleURLBatcher: self.mockWebBundleURLBatcher,
-            decodeCoordinator: .init()
+            webBundleURLBatcher: self.mockWebBundleURLBatcher
         )
     }
 
@@ -104,8 +103,7 @@ class WorkflowPrewarmingCoordinatorTests: TestCase {
             workflowsConfigProvider: provider,
             paywallCache: paywallCache,
             operationDispatcher: self.mockOperationDispatcher,
-            webBundleURLBatcher: webBundleURLBatcher,
-            decodeCoordinator: .init()
+            webBundleURLBatcher: webBundleURLBatcher
         )
 
         await coordinator.schedulePrewarming(offerings: Self.offerings())
@@ -160,8 +158,7 @@ class WorkflowPrewarmingCoordinatorTests: TestCase {
             workflowsConfigProvider: provider,
             paywallCache: paywallCache,
             operationDispatcher: self.mockOperationDispatcher,
-            webBundleURLBatcher: webBundleURLBatcher,
-            decodeCoordinator: .init()
+            webBundleURLBatcher: webBundleURLBatcher
         )
         let offerings = Self.offerings(placements: .init(
             fallbackOfferingId: nil,
@@ -212,8 +209,7 @@ class WorkflowPrewarmingCoordinatorTests: TestCase {
             workflowsConfigProvider: provider,
             paywallCache: paywallCache,
             operationDispatcher: self.mockOperationDispatcher,
-            webBundleURLBatcher: self.mockWebBundleURLBatcher,
-            decodeCoordinator: .init()
+            webBundleURLBatcher: self.mockWebBundleURLBatcher
         )
         let offerings = Self.offerings(placements: .init(
             fallbackOfferingId: nil,
@@ -273,8 +269,7 @@ class WorkflowPrewarmingCoordinatorTests: TestCase {
             workflowsConfigProvider: provider,
             paywallCache: paywallCache,
             operationDispatcher: self.mockOperationDispatcher,
-            webBundleURLBatcher: webBundleURLBatcher,
-            decodeCoordinator: .init()
+            webBundleURLBatcher: webBundleURLBatcher
         )
 
         await coordinator.schedulePrewarming(offerings: Self.offerings())
@@ -312,8 +307,7 @@ class WorkflowPrewarmingCoordinatorTests: TestCase {
             workflowsConfigProvider: self.mockProvider,
             paywallCache: paywallCache,
             operationDispatcher: self.mockOperationDispatcher,
-            webBundleURLBatcher: self.mockWebBundleURLBatcher,
-            decodeCoordinator: .init()
+            webBundleURLBatcher: self.mockWebBundleURLBatcher
         )
         self.mockProvider.stubbedWorkflowIDsWithCachedBodyData = ["wf_1"]
         self.mockProvider.stubbedWorkflowIdForOfferingId = ["default": "wf_1"]
@@ -487,8 +481,7 @@ class WorkflowPrewarmingCoordinatorTests: TestCase {
             workflowsConfigProvider: self.mockProvider,
             paywallCache: self.mockPaywallCache,
             operationDispatcher: self.mockOperationDispatcher,
-            webBundleURLBatcher: WebBundleURLBatcher(eventBus: eventBus),
-            decodeCoordinator: .init()
+            webBundleURLBatcher: WebBundleURLBatcher(eventBus: eventBus)
         )
         self.mockProvider.stubbedWorkflowIdForOfferingId = ["workflow": "wf_1"]
         self.mockProvider.stubbedGetWorkflowResult = [
@@ -523,8 +516,7 @@ class WorkflowPrewarmingCoordinatorTests: TestCase {
             workflowsConfigProvider: provider,
             paywallCache: self.mockPaywallCache,
             operationDispatcher: self.mockOperationDispatcher,
-            webBundleURLBatcher: self.mockWebBundleURLBatcher,
-            decodeCoordinator: .init()
+            webBundleURLBatcher: self.mockWebBundleURLBatcher
         )
         let offerings = try Self.workflowAndInlineOfferings()
         await coordinator.schedulePrewarming(offerings: offerings)
@@ -550,13 +542,11 @@ class WorkflowPrewarmingCoordinatorTests: TestCase {
     func testConcurrentBackgroundPassesAreSerializedAndPublishWorkflowOncePerConfigGeneration() async throws {
         try requireWorkflowPrewarmingAvailability()
         let provider = BlockingWorkflowPrewarmingDecodeProvider(result: try Self.workflowDataResult(id: "wf_1"))
-        let decodeCoordinator = WorkflowPrewarmingDecodeCoordinator()
         let coordinator = WorkflowPrewarmingCoordinator(
             workflowsConfigProvider: provider,
             paywallCache: self.mockPaywallCache,
             operationDispatcher: self.mockOperationDispatcher,
-            webBundleURLBatcher: self.mockWebBundleURLBatcher,
-            decodeCoordinator: decodeCoordinator
+            webBundleURLBatcher: self.mockWebBundleURLBatcher
         )
         let offerings = Self.offerings()
         self.mockOperationDispatcher.forwardToOriginalDispatchOnWorkerThread = true
@@ -564,7 +554,6 @@ class WorkflowPrewarmingCoordinatorTests: TestCase {
             Task { await coordinator.schedulePrewarming(offerings: offerings) }
         }
 
-        await expect { await decodeCoordinator.activeRequestCount }.toEventually(equal(1))
         await expect(provider.decodeCount).toEventually(equal(1))
         await provider.releaseDecodes()
         for task in tasks {
@@ -635,7 +624,7 @@ class WorkflowPrewarmingCoordinatorTests: TestCase {
         expect(self.mockWebBundleURLBatcher.invokedPublishCount) == 0
     }
 
-    // MARK: - WorkflowPrewarmingDecodeCoordinator
+    // MARK: - Shared transient decoding
 
     func testPrewarmingAndWebBundlePublishingShareTransientDecode() async throws {
         try requireWorkflowPrewarmingAvailability()
@@ -643,13 +632,11 @@ class WorkflowPrewarmingCoordinatorTests: TestCase {
             id: "wf_1",
             webViewURLs: ["https://example.com/shared-decode"]
         ))
-        let decodeCoordinator = WorkflowPrewarmingDecodeCoordinator()
         let coordinator = WorkflowPrewarmingCoordinator(
             workflowsConfigProvider: provider,
             paywallCache: self.mockPaywallCache,
             operationDispatcher: self.mockOperationDispatcher,
-            webBundleURLBatcher: self.mockWebBundleURLBatcher,
-            decodeCoordinator: decodeCoordinator
+            webBundleURLBatcher: self.mockWebBundleURLBatcher
         )
 
         await coordinator.schedulePrewarming(offerings: Self.offerings())
@@ -657,7 +644,6 @@ class WorkflowPrewarmingCoordinatorTests: TestCase {
             await self.mockOperationDispatcher.invokeAllDispatchedAsyncWorkerThreadBlocks()
         }
 
-        await expect { await decodeCoordinator.activeRequestCount }.toEventually(equal(1))
         await expect(provider.decodeCount).toEventually(equal(1))
 
         await provider.releaseDecodes()
@@ -669,67 +655,6 @@ class WorkflowPrewarmingCoordinatorTests: TestCase {
         expect(Self.webBundleURLStrings(in: self.mockWebBundleURLBatcher.invokedPublishScreenURLBatches)) == [
             [["https://example.com/shared-decode"]]
         ]
-    }
-
-    func testWorkflowPrewarmingDecodeCoordinatorCoalescesConcurrentRequestsForSameWorkflow() async throws {
-        let provider = BlockingWorkflowPrewarmingDecodeProvider(result: try Self.workflowDataResult(id: "wf_1"))
-        let coordinator = WorkflowPrewarmingDecodeCoordinator()
-        let tasks = (0..<20).map { _ in
-            Task {
-                await coordinator.decode(workflowId: "wf_1", using: provider)
-            }
-        }
-
-        await expect { await coordinator.activeRequestCount }.toEventually(equal(20))
-        await expect(provider.decodeCount).toEventually(equal(1))
-        await provider.releaseDecodes()
-        for task in tasks {
-            let result = try await task.value.get()
-            expect(result.workflow.id) == "wf_1"
-        }
-
-        expect(provider.decodeCount) == 1
-    }
-
-    func testWorkflowPrewarmingDecodeCoordinatorDoesNotShareAcrossConfigGenerations() async throws {
-        let provider = BlockingWorkflowPrewarmingDecodeProvider(result: try Self.workflowDataResult(id: "wf_1"))
-        let coordinator = WorkflowPrewarmingDecodeCoordinator()
-        let first = Task {
-            await coordinator.decode(workflowId: "wf_1", using: provider)
-        }
-        await expect(provider.decodeCount).toEventually(equal(1))
-
-        provider.configGeneration = 1
-        let second = Task {
-            await coordinator.decode(workflowId: "wf_1", using: provider)
-        }
-
-        await expect(provider.decodeCount).toEventually(equal(2))
-        await provider.releaseDecodes()
-        _ = await (first.value, second.value)
-
-        expect(provider.decodeCount) == 2
-    }
-
-    func testWorkflowPrewarmingDecodeCoordinatorLimitsConcurrentDecodes() async throws {
-        let provider = BlockingWorkflowPrewarmingDecodeProvider(result: try Self.workflowDataResult(id: "resolved"))
-        let coordinator = WorkflowPrewarmingDecodeCoordinator(maxConcurrentDecodes: 4)
-        let tasks = (0..<10).map { index in
-            Task {
-                await coordinator.decode(workflowId: "wf_\(index)", using: provider)
-            }
-        }
-
-        await expect { await coordinator.activeRequestCount }.toEventually(equal(10))
-        await expect(provider.decodeCount).toEventually(equal(4))
-
-        await provider.releaseDecodes()
-        for task in tasks {
-            _ = await task.value
-        }
-
-        expect(provider.decodeCount) == 10
-        expect(provider.maxConcurrentDecodeCount) == 4
     }
 
     // MARK: - Helpers
