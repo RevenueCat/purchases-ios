@@ -861,6 +861,21 @@ final class CheckpointsManagerTests: TestCase {
         XCTAssertEqual(presenter.receivedParams?.adIdentifier, "test-ad-identifier")
         XCTAssertEqual(presenter.receivedParams?.mediator, MediatorName(rawValue: "admob"))
         XCTAssertEqual(presenter.receivedParams?.adFormat, .interstitial)
+        XCTAssertEqual(presenter.receivedParams?.rewardVerificationEnabled, true)
+    }
+
+    func testClientReportedAdStepIsPresentedWithoutRewardVerification() async throws {
+        let presenter = MockAdPresenter()
+        let adStep = Self.adStep(adFormat: .rewarded, rewardVerificationEnabled: false)
+        let manager = CheckpointsManager(
+            resolveCheckpoint: { _, _ in .matchedAd(adStep) },
+            workflowPresenter: MockWorkflowPresenter()
+        )
+        manager.adPresenter = presenter
+
+        _ = try await manager.executeCheckpoint(identifier: "extra_life", params: .init())
+
+        XCTAssertEqual(presenter.receivedParams?.rewardVerificationEnabled, false)
     }
 
     func testResolvedAdWithoutAnEarnedRewardBacksOut() async throws {
@@ -1671,9 +1686,15 @@ final class CheckpointsManagerTests: TestCase {
 
     private static func adStep(
         adIdentifier: String = "test-ad-identifier",
-        adFormat: AdFormat = .interstitial
+        adFormat: AdFormat = .interstitial,
+        rewardVerificationEnabled: Bool = true
     ) -> ResolvedAdStep {
-        return ResolvedAdStep(adIdentifier: adIdentifier, mediator: MediatorName(rawValue: "admob"), adFormat: adFormat)
+        return ResolvedAdStep(
+            adIdentifier: adIdentifier,
+            mediator: MediatorName(rawValue: "admob"),
+            adFormat: adFormat,
+            rewardVerificationEnabled: rewardVerificationEnabled
+        )
     }
 
     /// A shown ad completes the checkpoint with no customer information of its own.
