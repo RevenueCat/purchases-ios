@@ -201,6 +201,44 @@ struct NonLocalizedMarkdownText: View {
     }
 
     var markdownText: AttributedString? {
+        let key = MarkdownCache.Key(text: self.text, font: self.font, fontWeight: self.fontWeight)
+        if let hit = MarkdownCache.shared[key] {
+            return hit
+        }
+        guard let parsed = self.parseMarkdown() else { return nil }
+        MarkdownCache.shared[key] = parsed
+        return parsed
+    }
+
+    var body: some View {
+        Group {
+            if let markdownText = self.markdownText {
+                // Use markdown if we can successfully parse it
+                Text(markdownText)
+                    .environment(\.openURL, OpenURLAction { url in
+                        self.openLink(url)
+                        return .handled
+                    })
+                    .applyIfLet(self.spokenAccessibilityLabel) { view, label in
+                        view.accessibilityLabel(label)
+                    }
+                    .markdownLinkAccessibilityActions(
+                        Self.markdownLinks(in: markdownText),
+                        openLink: self.openLink
+                    )
+            } else {
+                // Display text as is because markdown is priority
+                Text(self.text)
+                    .font(self.font)
+                    .fontWeight(self.fontWeight)
+                    .applyIfLet(self.spokenAccessibilityLabel) { view, label in
+                        view.accessibilityLabel(label)
+                    }
+            }
+        }
+    }
+
+    private func parseMarkdown() -> AttributedString? {
         /*
          The intended behavior is:
          * If the font weight of the text is <= Bold, Markdown bold should be Bold
@@ -237,34 +275,6 @@ struct NonLocalizedMarkdownText: View {
         attrString = MarkdownUnderlineFormatter.apply(to: attrString)
 
         return attrString
-    }
-
-    var body: some View {
-        Group {
-            if let markdownText = self.markdownText {
-                // Use markdown if we can successfully parse it
-                Text(markdownText)
-                    .environment(\.openURL, OpenURLAction { url in
-                        self.openLink(url)
-                        return .handled
-                    })
-                    .applyIfLet(self.spokenAccessibilityLabel) { view, label in
-                        view.accessibilityLabel(label)
-                    }
-                    .markdownLinkAccessibilityActions(
-                        Self.markdownLinks(in: markdownText),
-                        openLink: self.openLink
-                    )
-            } else {
-                // Display text as is because markdown is priority
-                Text(self.text)
-                    .font(self.font)
-                    .fontWeight(self.fontWeight)
-                    .applyIfLet(self.spokenAccessibilityLabel) { view, label in
-                        view.accessibilityLabel(label)
-                    }
-            }
-        }
     }
 
     private func openLink(_ url: URL) {
@@ -350,6 +360,68 @@ private extension View {
         } else {
             self
         }
+    }
+
+}
+
+/// Bounds the number of retained strings, including changing countdown text.
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private final class MarkdownCache {
+
+    static let shared = MarkdownCache()
+
+    private let cache = NSCache<Key, Entry>()
+
+    private init() {
+        self.cache.countLimit = 256
+    }
+
+    subscript(key: Key) -> AttributedString? {
+        get { self.cache.object(forKey: key)?.value }
+        set {
+            if let newValue {
+                self.cache.setObject(Entry(value: newValue), forKey: key)
+            } else {
+                self.cache.removeObject(forKey: key)
+            }
+        }
+    }
+
+    final class Key: NSObject {
+
+        let text: String
+        let font: Font
+        let fontWeight: Font.Weight
+
+        init(text: String, font: Font, fontWeight: Font.Weight) {
+            self.text = text
+            self.font = font
+            self.fontWeight = fontWeight
+        }
+
+        override var hash: Int {
+            var hasher = Hasher()
+            hasher.combine(self.text)
+            hasher.combine(self.font)
+            hasher.combine(self.fontWeight)
+            return hasher.finalize()
+        }
+
+        override func isEqual(_ object: Any?) -> Bool {
+            guard let other = object as? Key else { return false }
+            return self.text == other.text && self.font == other.font && self.fontWeight == other.fontWeight
+        }
+
+    }
+
+    private final class Entry {
+
+        let value: AttributedString
+
+        init(value: AttributedString) {
+            self.value = value
+        }
+
     }
 
 }
