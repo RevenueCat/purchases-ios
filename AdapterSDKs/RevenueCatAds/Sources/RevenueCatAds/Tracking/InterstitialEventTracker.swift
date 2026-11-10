@@ -11,7 +11,7 @@ import Foundation
 
 /// Maps an interstitial's ``AdModuleEvent``s to RevenueCat ad events.
 ///
-/// Tracking is fire-and-forget and never affects the ad flow; it is skipped while `Purchases` is not configured.
+/// Tracking is fire-and-forget and never affects the ad flow.
 @MainActor
 struct InterstitialEventTracker {
 
