@@ -107,10 +107,15 @@ fileprivate extension View {
             self.background(alignment: alignment) {
                 ZStack {
                     VideoComponentView(viewModel: viewModel)
-                        // Enforces video clipping to the exact bounds of the view where .clipped does not
-                        .mask(self.overlay(content: {
-                            Color.black
-                        }))
+                        // Same clipping as the image background above.
+                        .frame(
+                            minWidth: 0,
+                            maxWidth: .infinity,
+                            minHeight: 0,
+                            maxHeight: .infinity,
+                            alignment: alignment
+                        )
+                        .clipped()
 
                     // Color overlay fills the full container, not just the video bounds.
                     // This matches the web builder behavior where overlays cover 100% of the viewport.

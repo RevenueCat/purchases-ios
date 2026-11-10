@@ -34,21 +34,60 @@ final class BackgroundStyleTests: TestCase {
                 .fill,
                 nil
             ))
-            .frame(width: 300, height: 400)
 
-        let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 300, height: 400))
-        window.backgroundColor = .white
-        window.rootViewController = UIHostingController(rootView: view)
-        window.makeKeyAndVisible()
+        let window = Self.host(view)
         defer {
             window.isHidden = true
             window.rootViewController = nil
         }
-        RunLoop.main.run(until: Date().addingTimeInterval(0.3))
 
         // Unclipped, the image scales to 100x400 and fills the whole column.
         XCTAssertEqual(try Self.redRowCount(in: window), 60)
         XCTAssertEqual(appearCount, 1)
+    }
+
+    /// Clipping a video background must not render the content a second time.
+    func testVideoBackgroundRendersContentOnce() throws {
+        let viewModel = VideoComponentViewModel.forBackground(
+            localizationProvider: .init(locale: Locale(identifier: "en_US"), localizedStrings: [:]),
+            uiConfigProvider: UIConfigProvider(uiConfig: PreviewUIConfig.make()),
+            component: .init(
+                source: .init(light: .init(
+                    width: 100,
+                    height: 400,
+                    url: try XCTUnwrap(URL(string: "https://assets.revenuecat.com/video.mp4")),
+                    checksum: nil,
+                    urlLowRes: nil,
+                    checksumLowRes: nil
+                )),
+                fitMode: .fill
+            )
+        )
+        var appearCount = 0
+        let view = Color.clear
+            .frame(width: 100, height: 60)
+            .onAppear { appearCount += 1 }
+            .backgroundStyle(.video(viewModel, nil))
+            .environmentObject(PackageContext(package: nil, variableContext: .init(packages: [])))
+            .environmentObject(IntroOfferEligibilityContext(introEligibilityChecker: BaseSnapshotTest.eligibleChecker))
+            .environmentObject(PaywallPromoOfferCache(subscriptionHistoryTracker: SubscriptionHistoryTracker()))
+
+        let window = Self.host(view)
+        defer {
+            window.isHidden = true
+            window.rootViewController = nil
+        }
+
+        XCTAssertEqual(appearCount, 1)
+    }
+
+    private static func host<Content: View>(_ view: Content) -> UIWindow {
+        let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 300, height: 400))
+        window.backgroundColor = .white
+        window.rootViewController = UIHostingController(rootView: view.frame(width: 300, height: 400))
+        window.makeKeyAndVisible()
+        RunLoop.main.run(until: Date().addingTimeInterval(0.3))
+        return window
     }
 
     private static func redImageURL(size: CGSize) throws -> URL {
