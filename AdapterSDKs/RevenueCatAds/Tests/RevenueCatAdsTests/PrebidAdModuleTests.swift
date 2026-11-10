@@ -9,6 +9,7 @@ import XCTest
 #if os(iOS) && canImport(PrebidMobile)
 @_spi(PBMInternal) import PrebidMobile
 @_spi(Experimental) @testable import RevenueCatAds
+import UIKit
 
 @MainActor
 final class PrebidAdModuleTests: TestCase {
@@ -41,6 +42,12 @@ final class PrebidAdModuleTests: TestCase {
         try module.initialize(with: second)
 
         XCTAssertEqual(Prebid.shared.customHeaders["Authorization"], "Bearer appl_two")
+    }
+
+    func testInterstitialRequestsTheScreenAsItsFormat() {
+        let interstitial = PrebidInterstitial(placementID: "placement")
+
+        XCTAssertEqual(interstitial.adSizes, [UIScreen.main.bounds.size])
     }
 
     func testNetworkNameIsTheWinningBidder() {

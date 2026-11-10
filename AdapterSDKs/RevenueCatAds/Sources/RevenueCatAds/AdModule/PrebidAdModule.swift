@@ -67,11 +67,14 @@ final class PrebidInterstitial: NSObject, AdModuleInterstitial {
         let eventHandler = PrebidBidCapturingEventHandler()
         self.eventHandler = eventHandler
         self.adUnit = InterstitialRenderingAdUnit(configID: placementID, eventHandler: eventHandler)
+        self.adUnit.bannerParameters.adSizes = [UIScreen.main.bounds.size]
         super.init()
         self.adUnit.delegate = self
     }
 
     var isReady: Bool { self.adUnit.isReady }
+
+    var adSizes: [CGSize]? { self.adUnit.bannerParameters.adSizes }
 
     var networkName: String { Self.networkName(from: self.eventHandler.bidResponse) }
 
