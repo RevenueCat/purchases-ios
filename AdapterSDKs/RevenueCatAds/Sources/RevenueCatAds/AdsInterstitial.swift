@@ -63,7 +63,8 @@ import UIKit
         self.tracker = InterstitialEventTracker(placementID: placementID, tracking: tracking)
     }
 
-    /// Loads an ad. Returns immediately if an ad is already loaded, so calling it again is safe.
+    /// Loads an ad. Returns immediately if an ad is already loaded. Calling it while a load is in progress or
+    /// the ad is being presented throws ``AdsError/Code/invalidState``.
     ///
     /// - Throws: ``AdsError``.
     public func load() async throws {
