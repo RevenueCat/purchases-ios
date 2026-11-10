@@ -91,6 +91,7 @@ final class WorkflowPrewarmingWorkload {
 
     func prepareIteration() async throws -> WorkflowPrewarmingIteration {
         let decodedScreens = Atomic<[String: Set<String>]>([:])
+        let operationDispatcher = PerformanceOperationDispatcher()
         let uiConfigProvider = UiConfigProvider(manager: self.manager)
         let provider = WorkflowsConfigProvider(
             manager: self.manager,
@@ -106,14 +107,17 @@ final class WorkflowPrewarmingWorkload {
         }
         let config = await uiConfigProvider.getUiConfig()
         _ = try XCTUnwrap(config)
+        let manager = WorkflowManager(
+            workflowsConfigProvider: provider,
+            paywallCache: nil,
+            operationDispatcher: operationDispatcher,
+            webBundleURLBatcher: WebBundleURLBatcher(eventBus: WebBundleEventBus())
+        )
+        let offerings = self.makeOfferings()
+        await manager.schedulePrewarming(offerings: offerings)
         return WorkflowPrewarmingIteration(
-            manager: WorkflowManager(
-                workflowsConfigProvider: provider,
-                paywallCache: nil,
-                operationDispatcher: .default,
-                webBundleURLBatcher: WebBundleURLBatcher(eventBus: WebBundleEventBus())
-            ),
-            offerings: self.makeOfferings(),
+            manager: manager,
+            operationDispatcher: operationDispatcher,
             decodedScreens: decodedScreens,
             expectedScreens: self.expectedScreens
         )
@@ -147,16 +151,44 @@ final class WorkflowPrewarmingWorkload {
 
 struct WorkflowPrewarmingIteration {
     let manager: WorkflowManager
-    let offerings: Offerings
+    let operationDispatcher: PerformanceOperationDispatcher
     let decodedScreens: Atomic<[String: Set<String>]>
     let expectedScreens: [String: Set<String>]
 
     func run() async {
-        await self.manager.publishWebBundleURLs(offerings: self.offerings)
+        await self.operationDispatcher.invokeDispatchedAsyncWorkerThreadBlock()
     }
 
     func validate() {
         XCTAssertEqual(self.decodedScreens.value, self.expectedScreens,
                        "Every workflow and screen must decode in every iteration.")
     }
+}
+
+final class PerformanceOperationDispatcher: OperationDispatcher, @unchecked Sendable {
+
+    private let dispatchedAsyncWorkerThreadBlocks: Atomic<[@Sendable () async -> Void]> = .init([])
+
+    @discardableResult
+    override func dispatchOnWorkerThread(
+        jitterableDelay delay: JitterableDelay = .none,
+        priority: TaskPriority = .background,
+        block: @escaping @Sendable () async -> Void
+    ) -> Task<Void, Never> {
+        self.dispatchedAsyncWorkerThreadBlocks.modify { $0.append(block) }
+        return Task {}
+    }
+
+    func invokeDispatchedAsyncWorkerThreadBlock() async {
+        let block = self.dispatchedAsyncWorkerThreadBlocks.modify { blocks -> (@Sendable () async -> Void)? in
+            guard !blocks.isEmpty else { return nil }
+            return blocks.removeFirst()
+        }
+        guard let block else {
+            XCTFail("Expected a scheduled workflow prewarming pass.")
+            return
+        }
+        await block()
+    }
+
 }
