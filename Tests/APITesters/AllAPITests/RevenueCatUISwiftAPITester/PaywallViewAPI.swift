@@ -911,6 +911,8 @@ func checkContextPurchaseAPI(offering: Offering) {
     }
     let restore: PerformRestore = { (success: true, error: nil) }
     let logic = MyAppPurchaseLogic(performPurchaseWithContext: purchase, performRestore: restore)
+    let makeLogic = MyAppPurchaseLogic.init(performPurchaseWithContext:performRestore:)
+    let _: MyAppPurchaseLogic = makeLogic(purchase, restore)
     let _: PerformPurchase = logic.performPurchase
     let _: PerformPurchaseWithContext = logic.performPurchaseWithContext
     let _ = PaywallView()
@@ -949,6 +951,31 @@ func checkContextPurchaseAPI(offering: Offering) {
     }, performRestore: restore)
     let _ = PaywallView { (success: true, error: nil) }
     let _ = PaywallView(offering: offering) { (success: true, error: nil) }
+}
+
+// Deliberately retain deprecation warnings here to exercise overload selection in ordinary client code.
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+func checkLegacyPurchaseOverloadPreferenceAPI(offering: Offering) {
+    let purchase: PerformPurchase = { _ in (userCancelled: true, error: nil) }
+    let restore: PerformRestore = { (success: true, error: nil) }
+    let makeLogic = MyAppPurchaseLogic.init
+    let _: MyAppPurchaseLogic = makeLogic(purchase, restore)
+    let _: MyAppPurchaseLogic = .init { _ in
+        (userCancelled: true, error: nil)
+    } performRestore: {
+        (success: true, error: nil)
+    }
+    let _: PaywallView = .init { _ in
+        (userCancelled: true, error: nil)
+    } performRestore: {
+        (success: true, error: nil)
+    }
+    let _: PaywallView = .init(offering: offering) { package in
+        let _: Package = package
+        return (userCancelled: true, error: nil)
+    } performRestore: {
+        (success: true, error: nil)
+    }
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
