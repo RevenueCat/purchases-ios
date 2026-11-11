@@ -18,6 +18,9 @@ final class WebViewSession: NSObject, ObservableObject, WKScriptMessageHandler {
     var onContentResize: (@MainActor (CGFloat?, CGFloat?) -> Void)?
     /// Invoked from ``resetForNewDocument()`` so the SwiftUI host can clear measured fit sizes.
     var onDocumentReset: (@MainActor () -> Void)?
+    /// Opens a validated `open_url` request; returns whether it was handed to an opener. Bound by the
+    /// SwiftUI host currently showing the web view. Without it, every request answers `opened: false`.
+    var onOpenURL: (@MainActor (URL, PaywallComponent.ButtonComponent.URLMethod) -> Bool)?
     private(set) var channelOpen = false
 
     /// Delivers a JS snippet to the web view. Returns `false` when the frame could not be handed
@@ -36,6 +39,7 @@ final class WebViewSession: NSObject, ObservableObject, WKScriptMessageHandler {
 
     private var lastAppliedWidth: CGFloat?
     private var lastAppliedHeight: CGFloat?
+    private var lastOpenedURLAt: Date?
     private var context: PaywallWebViewContext?
 
     init(
@@ -120,6 +124,8 @@ final class WebViewSession: NSObject, ObservableObject, WKScriptMessageHandler {
         switch type {
         case WebViewEnvelope.messageTypeResize:
             self.handleResize(envelope.payload)
+        case WebViewEnvelope.messageTypeOpenURL:
+            self.handleOpenURL(envelope)
         default:
             self.logRejected("unknown-message-type")
         }
@@ -207,6 +213,52 @@ final class WebViewSession: NSObject, ObservableObject, WKScriptMessageHandler {
         if appliedWidth != nil || appliedHeight != nil {
             self.onContentResize?(appliedWidth, appliedHeight)
         }
+    }
+
+    /// Always answers a well-formed request with `{ opened }`, never an `error` frame, so content can
+    /// fall back on `false` alone.
+    private func handleOpenURL(_ envelope: WebViewEnvelope.Envelope) {
+        guard envelope.kind == .request,
+              let id = envelope.id else {
+            self.logRejected("open-url-not-a-request")
+            return
+        }
+
+        let opened = self.openURL(payload: envelope.payload)
+        self.send(
+            .init(
+                kind: .response,
+                componentID: self.componentID,
+                type: WebViewEnvelope.messageTypeOpenURL,
+                id: id,
+                payload: ["opened": .bool(opened)]
+            ),
+            allowBeforeNavigation: false
+        )
+    }
+
+    private func openURL(payload: [String: PaywallWebViewValue]?) -> Bool {
+        guard let request = WebViewOpenURLRequest(payload: payload) else {
+            self.logRejected("open-url-invalid")
+            return false
+        }
+        guard let onOpenURL = self.onOpenURL else {
+            self.logRejected("open-url-no-opener")
+            return false
+        }
+
+        let now = self.dateProvider()
+        if let lastOpenedURLAt = self.lastOpenedURLAt,
+           now.timeIntervalSince(lastOpenedURLAt) < WebViewEnvelope.openURLMinimumInterval {
+            self.logRejected("open-url-throttled")
+            return false
+        }
+
+        guard onOpenURL(request.url, request.method) else {
+            return false
+        }
+        self.lastOpenedURLAt = now
+        return true
     }
 
     private func sendFitMessageIfNeeded() {

@@ -152,24 +152,69 @@ private struct HostedWebViewComponentView: View {
 
     let carouselDistance: Int
 
+    @Environment(\.openURL)
+    private var openURL
+
+    @Environment(\.urlOpenedNotifier)
+    private var urlOpenedNotifier
+
+    @State
+    private var inAppBrowserURL: URL?
+
     var body: some View {
-        if !self.instance.processTerminated, !self.instance.loadFailed {
-            WebViewRepresentable(
-                url: self.url,
-                instance: self.instance,
-                idStore: .shared,
-                carouselDistance: self.carouselDistance
+        Group {
+            if !self.instance.processTerminated, !self.instance.loadFailed {
+                WebViewRepresentable(
+                    url: self.url,
+                    instance: self.instance,
+                    idStore: .shared,
+                    carouselDistance: self.carouselDistance
+                )
+                // The host callbacks and coordinator belong to this instance for their entire lifetime.
+                .id(ObjectIdentifier(self.instance))
+                .webViewSize(
+                    self.size,
+                    measuredWidth: self.instance.measuredWidth,
+                    measuredHeight: self.instance.measuredHeight
+                )
+                // Content can momentarily overflow the exact frame mid-resize (fit axes animate through
+                // placeholder -> measured); never paint outside the component's box.
+                .clipped()
+            }
+        }
+        // The instance can be shared by several hosts (e.g. carousel copies); the one that appeared
+        // last presents the in-app browser.
+        .onAppear { self.bindOpenURL() }
+        #if canImport(SafariServices) && canImport(UIKit)
+        .sheet(isPresented: .isNotNil(self.$inAppBrowserURL)) {
+            let url = self.inAppBrowserURL!
+            SafariView(url: url)
+                .onAppear { self.urlOpenedNotifier(url) }
+        }
+        #endif
+    }
+
+    private func bindOpenURL() {
+        let openURL = self.openURL
+        let inAppBrowserURL = self.$inAppBrowserURL
+        let urlOpenedNotifier = self.urlOpenedNotifier
+        self.instance.session.onOpenURL = { url, method in
+            #if canImport(SafariServices) && canImport(UIKit)
+            let method = method
+            #else
+            // No in-app browser sheet here (see `.sheet` above).
+            let method: PaywallComponent.ButtonComponent.URLMethod = method == .inAppBrowser
+                ? .externalBrowser
+                : method
+            #endif
+            Browser.navigateTo(
+                url: url,
+                method: method,
+                openURL: openURL,
+                inAppBrowserURL: inAppBrowserURL,
+                onURLOpened: urlOpenedNotifier.callAsFunction
             )
-            // The host callbacks and coordinator belong to this instance for their entire lifetime.
-            .id(ObjectIdentifier(self.instance))
-            .webViewSize(
-                self.size,
-                measuredWidth: self.instance.measuredWidth,
-                measuredHeight: self.instance.measuredHeight
-            )
-            // Content can momentarily overflow the exact frame mid-resize (fit axes animate through
-            // placeholder -> measured); never paint outside the component's box.
-            .clipped()
+            return true
         }
     }
 
