@@ -20,7 +20,7 @@ extension DefaultCheckpointWorkflowResolver {
     static let mediatorParam = "mediator"
     static let adFormatParam = "ad_format"
     static let rewardVerificationParam = "reward_verification"
-    static let clientReportedRewardVerification = "client_reported"
+    static let noRewardVerification = "none"
 
     func resolveAdStep(
         _ rule: CheckpointRule,
@@ -40,7 +40,7 @@ extension DefaultCheckpointWorkflowResolver {
     /// Serves a workflow whose only step is a terminal `ad` step as an ad the app owns.
     ///
     /// Only `ad_identifier`, `mediator` and `ad_format` are validated. `reward_verification` turns reward
-    /// verification off only when it is `client_reported`: a missing or unknown value keeps it on, as for steps
+    /// verification off only when it is `none`: a missing or unknown value keeps it on, as for steps
     /// saved before the param existed. Anything else the step happens to carry is ignored rather than treated as
     /// unservable, since a step of this kind renders nothing.
     static func resolveAd(_ rule: CheckpointRule, step: WorkflowStep) -> CheckpointResolution {
@@ -59,7 +59,7 @@ extension DefaultCheckpointWorkflowResolver {
             mediator: Self.normalizedMediator(mediator),
             adFormat: AdFormat(rawValue: adFormat),
             rewardVerificationEnabled: Self.stringParam(Self.rewardVerificationParam, in: step)
-                != Self.clientReportedRewardVerification
+                != Self.noRewardVerification
         ))
     }
 

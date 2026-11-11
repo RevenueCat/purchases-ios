@@ -1219,12 +1219,12 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
         XCTAssertEqual(Self.resolvedAd(resolution)?.adFormat, AdFormat(rawValue: "some_future_format"))
     }
 
-    func testAdStepVerifiesRewardsUnlessTheyAreClientReported() async throws {
+    func testAdStepVerifiesRewardsUnlessVerificationIsNone() async throws {
         let expectations: [(wire: String?, rewardVerificationEnabled: Bool)] = [
             (nil, true),
             ("server_side", true),
             ("some_future_mode", true),
-            ("client_reported", false)
+            ("none", false)
         ]
 
         for (wire, rewardVerificationEnabled) in expectations {

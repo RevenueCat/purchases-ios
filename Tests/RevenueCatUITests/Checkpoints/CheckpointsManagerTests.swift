@@ -864,7 +864,7 @@ final class CheckpointsManagerTests: TestCase {
         XCTAssertEqual(presenter.receivedParams?.rewardVerificationEnabled, true)
     }
 
-    func testClientReportedAdStepIsPresentedWithoutRewardVerification() async throws {
+    func testUnverifiedAdStepIsPresentedWithoutRewardVerification() async throws {
         let presenter = MockAdPresenter()
         let adStep = Self.adStep(adFormat: .rewarded, rewardVerificationEnabled: false)
         let manager = CheckpointsManager(
