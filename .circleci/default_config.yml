@@ -26,6 +26,9 @@ parameters:
   version_file_changed:
     type: boolean
     default: false
+  khepri_ref:
+    type: string
+    default: ""
   requested_jobs:
     type: string
     default: ""
@@ -591,6 +594,32 @@ commands:
           fingerprint: "SHA256:UYi3gsOInLRPZy6MPho7Yr/YK1VmjDvPGo7sJvIcnPM"
 
 jobs:
+  run-rules-engine-conformance-tests:
+    executor:
+      name: macos-executor
+      xcode_version: "26.6"
+    steps:
+      - checkout
+      - revenuecat/setup-git-credentials
+      - revenuecat/trust-github-key
+      - run:
+          name: Check conformance downloader
+          command: python3 scripts/rules_engine/test_download_predicate_conformance_fixtures.py
+      - run:
+          name: Download Khepri conformance cases
+          environment:
+            KHEPRI_REF: << pipeline.parameters.khepri_ref >>
+          command: bash scripts/rules_engine/download_predicate_conformance_fixtures.sh "$KHEPRI_REF" Tests/UnitTests/RulesEngine/PredicateFixtures/predicate_conformance_v1.json
+      - install-dependencies
+      - run:
+          name: Run predicate conformance tests
+          command: bundle exec fastlane test_rules_engine_conformance
+          no_output_timeout: 15m
+      - store_test_results:
+          path: fastlane/test_output/xctest/rules-engine-conformance
+      - store_artifacts:
+          path: fastlane/test_output/xctest/rules-engine-conformance
+
   pod-lib-lint:
     executor:
       name: macos-executor

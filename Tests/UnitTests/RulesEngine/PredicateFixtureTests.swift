@@ -32,7 +32,10 @@ struct PredicateFixtureTests {
     /// fixtures are added or removed.
     @Test
     func fixtureCountMatchesExpected() {
-        let expectedCount = 681
+        let downloadedFixture = PredicateConformanceFixtureLoader.repoFixturesDirectoryURL()
+            .appendingPathComponent("predicate_conformance_v1.json")
+        let downloadedCount = (try? PredicateConformanceFixtureLoader.loadCases(from: downloadedFixture))?.count ?? 0
+        let expectedCount = 681 + downloadedCount
         #expect(
             Self.fixtures.count == expectedCount,
             "Expected \(expectedCount) fixtures, loaded \(Self.fixtures.count)"

@@ -37,6 +37,9 @@ parameters:
   bump_with_fallback_pr_lookup:
     type: boolean
     default: false
+  khepri_ref:
+    type: string
+    default: ""
   # Set via CircleCI API by the GitHub Action when a PR comment like
   # "@RCGitBot please test <job1> <job2> <job3>" is posted.
   requested_jobs:
