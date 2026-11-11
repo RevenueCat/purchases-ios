@@ -22,6 +22,56 @@ import XCTest
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 class TextComponentLocalizationTests: TestCase {
 
+    func testLiteralTextDoesNotDependOnPackageOrSelection() throws {
+        let viewModel = try self.makeObservationViewModel(text: "Subscribe")
+        XCTAssertFalse(viewModel.dependsOnPackageContext)
+        XCTAssertFalse(viewModel.dependsOnComponentViewState || viewModel.dependsOnSelectedPackageId)
+    }
+
+    func testPackageVariablesDependOnPackageContext() throws {
+        for text in ["{{ product.price }}", "{{ product.offer_price | uppercase }}", "{{ price }}"] {
+            let viewModel = try self.makeObservationViewModel(text: text)
+            XCTAssertTrue(viewModel.dependsOnPackageContext, text)
+            XCTAssertFalse(viewModel.dependsOnComponentViewState || viewModel.dependsOnSelectedPackageId, text)
+        }
+    }
+
+    func testVariablesInInactiveOverridesDependOnPackageContext() throws {
+        let viewModel = try self.makeObservationViewModel(
+            text: "Subscribe",
+            overrides: [.init(conditions: [.expanded], properties: .init(text: "price_key"))]
+        )
+        XCTAssertTrue(viewModel.dependsOnPackageContext)
+        XCTAssertFalse(viewModel.dependsOnComponentViewState || viewModel.dependsOnSelectedPackageId)
+    }
+
+    func testEligibilityOverridesDependOnPackageContextEvenWithoutVariables() throws {
+        for condition in [PaywallComponent.ExtendedCondition.introOffer, .promoOfferCondition(
+            operator: .equals, value: false
+        )] {
+            let viewModel = try self.makeObservationViewModel(
+                text: "Subscribe",
+                overrides: [.init(extendedConditions: [condition], properties: .init(visible: false))]
+            )
+            XCTAssertTrue(viewModel.dependsOnPackageContext)
+            XCTAssertFalse(viewModel.dependsOnComponentViewState || viewModel.dependsOnSelectedPackageId)
+        }
+    }
+
+    func testSelectionOverridesObserveSelectionWithoutPackageContext() throws {
+        for condition in [PaywallComponent.ExtendedCondition.selected, .selectedPackage(
+            operator: .in, packages: [TestData.annualPackage.identifier]
+        )] {
+            let viewModel = try self.makeObservationViewModel(
+                text: "Subscribe",
+                overrides: [.init(extendedConditions: [condition], properties: .init(visible: false))]
+            )
+            XCTAssertFalse(viewModel.dependsOnPackageContext)
+            XCTAssertEqual(viewModel.dependsOnComponentViewState, condition == .selected)
+            XCTAssertEqual(viewModel.dependsOnSelectedPackageId, condition != .selected)
+        }
+    }
+
     // MARK: - Missing Localization Tests
 
     /// When a text_lid has no localization entry, the view model should not throw
@@ -475,6 +525,20 @@ class TextComponentLocalizationTests: TestCase {
         decoder.keyDecodingStrategy = .convertFromSnakeCase
         let uiConfig = try decoder.decode(UIConfig.self, from: jsonData)
         return UIConfigProvider(uiConfig: uiConfig)
+    }
+
+    private func makeObservationViewModel(
+        text: String,
+        overrides: PaywallComponent.ComponentOverrides<PaywallComponent.PartialTextComponent>? = nil
+    ) throws -> TextComponentViewModel {
+        return try TextComponentViewModel(
+            localizationProvider: .init(locale: .current, localizedStrings: [
+                "text_key": .string(text),
+                "price_key": .string("{{ product.price }}")
+            ]),
+            uiConfigProvider: Self.createUIConfigProvider(),
+            component: .init(text: "text_key", color: Self.black, overrides: overrides)
+        )
     }
 
     private func makeConditionalVisibilityViewModel() throws -> TextComponentViewModel {
