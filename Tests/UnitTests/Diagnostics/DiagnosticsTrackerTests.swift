@@ -245,6 +245,7 @@ class DiagnosticsTrackerTests: TestCase {
                                                backendErrorCode: 7121,
                                                resultOrigin: .cache,
                                                verificationResult: .verified,
+                                               signatureVersion: nil,
                                                responseRequestDate: nil,
                                                isRetry: false,
                                                connectionErrorReason: .noNetwork)
@@ -266,6 +267,22 @@ class DiagnosticsTrackerTests: TestCase {
                   timestamp: Self.eventTimestamp1,
                   diagnosticsSessionId: DiagnosticsTracker.diagnosticsSessionID)
         ])
+    }
+
+    func testTracksSignatureVersion() async {
+        let event = await self.trackHTTPResponse(
+            verificationResult: .verified,
+            signatureVersion: 2,
+            requestDate: nil
+        )
+
+        expect(event.properties.signatureVersion) == 2
+    }
+
+    func testDoesNotTrackSignatureVersionForUnsignedResponses() async {
+        let event = await self.trackHTTPResponse(verificationResult: .notRequested, requestDate: nil)
+
+        expect(event.properties.signatureVersion).to(beNil())
     }
 
     func testTracksVerificationFailureReasonAndPositiveClockOffset() async {
@@ -1043,6 +1060,7 @@ private extension DiagnosticsTrackerTests {
 
     func trackHTTPResponse(
         verificationResult: SignatureVerificationResult,
+        signatureVersion: Int? = nil,
         requestDate: Date?
     ) async -> DiagnosticsEvent {
         self.tracker.trackHttpRequestPerformed(endpointName: "mock_endpoint",
@@ -1053,6 +1071,7 @@ private extension DiagnosticsTrackerTests {
                                                backendErrorCode: nil,
                                                resultOrigin: .backend,
                                                verificationResult: verificationResult,
+                                               signatureVersion: signatureVersion,
                                                responseRequestDate: requestDate,
                                                isRetry: false,
                                                connectionErrorReason: nil)

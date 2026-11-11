@@ -740,6 +740,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
 
         expect(headers).toNot(beEmpty())
         expect(headers?.keys).toNot(contain(HTTPClient.RequestHeader.nonce.rawValue))
+        expect(headers?.keys).toNot(contain(HTTPClient.RequestHeader.signatureVersion.rawValue))
     }
 
     func testGetRequestDoesNotContainPostParametersHeader() {
@@ -3343,6 +3344,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
             .notRequested,
             nil,
             false,
+            nil,
             nil
         )))
     }
@@ -3384,7 +3386,8 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
             .notRequested,
             nil,
             false,
-            .other
+            .other,
+            nil
         )))
     }
 
@@ -3426,7 +3429,8 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
             .notRequested,
             nil,
             false,
-            .timeout
+            .timeout,
+            nil
         )))
     }
 
@@ -3468,7 +3472,8 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
             .notRequested,
             nil,
             false,
-            .noNetwork
+            .noNetwork,
+            nil
         )))
     }
 
@@ -3523,7 +3528,8 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
             .notRequested,
             nil,
             false,
-            .other
+            .other,
+            nil
         )))
         expect(trackedParams1).to(matchTrackParams((
             "get_product_entitlement_mapping",
@@ -3536,6 +3542,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
             .notRequested,
             nil,
             false,
+            nil,
             nil
         )))
     }
@@ -4522,8 +4529,8 @@ extension HTTPClientTests {
 // swiftlint:disable line_length
 
 private func matchTrackParams(
-    _ data: (String, String?, TimeInterval, Bool, Int, Int?, HTTPResponseOrigin?, SignatureVerificationResult, Date?, Bool, ConnectionErrorReason?)
-) -> Nimble.Predicate<(String, String?, TimeInterval, Bool, Int, Int?, HTTPResponseOrigin?, SignatureVerificationResult, Date?, Bool, ConnectionErrorReason?)> {
+    _ data: (String, String?, TimeInterval, Bool, Int, Int?, HTTPResponseOrigin?, SignatureVerificationResult, Date?, Bool, ConnectionErrorReason?, Int?)
+) -> Nimble.Predicate<(String, String?, TimeInterval, Bool, Int, Int?, HTTPResponseOrigin?, SignatureVerificationResult, Date?, Bool, ConnectionErrorReason?, Int?)> {
     return .init {
         let other = try $0.evaluate()
         let timeInterval = other?.2 ?? -1
@@ -4537,7 +4544,8 @@ private func matchTrackParams(
                        other?.7 == data.7 &&
                        other?.8 == data.8 &&
                        other?.9 == data.9 &&
-                       other?.10 == data.10)
+                       other?.10 == data.10 &&
+                       other?.11 == data.11)
 
         return .init(bool: matches, message: .fail("Diagnostics tracked params do not match"))
     }

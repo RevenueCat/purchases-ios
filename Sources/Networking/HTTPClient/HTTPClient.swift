@@ -207,6 +207,7 @@ extension HTTPClient {
         case lastRefreshTime = "X-RC-Last-Refresh-Time"
         case postParameters = "X-Post-Params-Hash"
         case headerParametersForSignature = "X-Headers-Hash"
+        case signatureVersion = "X-Signature-Version"
         case sandbox = "X-Is-Sandbox"
         case retryCount = "X-Retry-Count"
 
@@ -438,6 +439,9 @@ private extension HTTPClient {
 
         /// Verification context captured before an enforced-verification failure becomes a `NetworkError`.
         let verificationDiagnostics: VerificationDiagnostics?
+
+        /// Version of the `X-Signature` header the backend returned, if any.
+        let signatureVersion: Int?
     }
 
     struct VerificationDiagnostics {
@@ -488,12 +492,14 @@ private extension HTTPClient {
                requestStartTime: Date) -> ResponseContext {
         if let networkError = networkError {
             return .init(result: .failure(NetworkError(networkError, dnsChecker: self.dnsChecker)),
-                         verificationDiagnostics: nil)
+                         verificationDiagnostics: nil,
+                         signatureVersion: nil)
         }
 
         guard let httpURLResponse = urlResponse as? HTTPURLResponse else {
             return .init(result: .failure(.unexpectedResponse(urlResponse)),
-                         verificationDiagnostics: nil)
+                         verificationDiagnostics: nil,
+                         signatureVersion: nil)
         }
 
         let statusCode: HTTPStatusCode = .init(rawValue: httpURLResponse.statusCode)
@@ -598,8 +604,14 @@ private extension HTTPClient {
             .asOptionalResult?
             .convertUnsuccessfulResponseToError()
 
+        let signatureVersion = HTTPResponse<Data?>.value(
+            forCaseInsensitiveHeaderField: .signature,
+            in: httpURLResponse.allHeaderFields
+        ).map { $0.hasPrefix(Signing.signatureVersion2Prefix) ? 2 : 1 }
+
         return .init(result: result,
-                     verificationDiagnostics: verificationDiagnostics)
+                     verificationDiagnostics: verificationDiagnostics,
+                     signatureVersion: signatureVersion)
     }
 
     // swiftlint:disable:next function_parameter_count function_body_length
@@ -967,6 +979,7 @@ private extension HTTPClient {
                                                              backendErrorCode: nil,
                                                              resultOrigin: response.origin,
                                                              verificationResult: response.verificationResult,
+                                                             signatureVersion: responseContext.signatureVersion,
                                                              responseRequestDate: response.requestDate,
                                                              isRetry: request.retried,
                                                              connectionErrorReason: nil)
@@ -987,6 +1000,7 @@ private extension HTTPClient {
                                                              backendErrorCode: backendErrorCode,
                                                              resultOrigin: nil,
                                                              verificationResult: verificationResult,
+                                                             signatureVersion: responseContext.signatureVersion,
                                                              responseRequestDate: verificationDiagnostics?.requestDate,
                                                              isRetry: request.retried,
                                                              connectionErrorReason: .init(from: error))
@@ -1252,6 +1266,8 @@ extension HTTPRequest {
 
         if verificationMode.isEnabled,
            self.path.supportsSignatureVerification {
+            result += [HTTPClient.RequestHeader.signatureVersion.rawValue: "2"]
+
             let headerParametersSignature = HTTPClient.headerParametersForSignatureHeader(
                 with: result,
                 path: self.path

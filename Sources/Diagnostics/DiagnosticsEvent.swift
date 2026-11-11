@@ -92,6 +92,7 @@ struct DiagnosticsEvent: Codable, Equatable {
     struct Properties: Codable, Equatable {
         let verificationResult: String?
         let verificationFailureReason: String?
+        let signatureVersion: Int?
         let verificationDeviceClockOffsetMinutes: Int?
         let endpointName: String?
         let host: String?
@@ -134,6 +135,7 @@ struct DiagnosticsEvent: Codable, Equatable {
 
         init(verificationResult: String? = nil,
              verificationFailureReason: String? = nil,
+             signatureVersion: Int? = nil,
              verificationDeviceClockOffsetMinutes: Int? = nil,
              endpointName: String? = nil,
              host: String? = nil,
@@ -175,6 +177,7 @@ struct DiagnosticsEvent: Codable, Equatable {
              connectionErrorReason: ConnectionErrorReason? = nil) {
             self.verificationResult = verificationResult
             self.verificationFailureReason = verificationFailureReason
+            self.signatureVersion = signatureVersion
             self.verificationDeviceClockOffsetMinutes = verificationDeviceClockOffsetMinutes
             self.endpointName = endpointName
             self.host = host
