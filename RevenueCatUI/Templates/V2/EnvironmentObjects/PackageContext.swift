@@ -20,7 +20,7 @@ import SwiftUI
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 class PackageContext: ObservableObject {
 
-    struct VariableContext {
+    struct VariableContext: Equatable {
 
         let mostExpensivePricePerMonth: StoreProduct.MonthlyPrice?
         /// Used by the absolute and offer discount variables without truncating to two decimal places.
