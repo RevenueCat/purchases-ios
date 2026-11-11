@@ -167,16 +167,21 @@ extension BaseStoreKitIntegrationTests {
         file: FileString = #file,
         line: UInt = #line
     ) async throws {
-        let expectedCount = Self.storeKitVersion == .storeKit1 ? nil : 1
-        try await self.verifySpecificTransactionIsEventuallyFinished(
-            transaction,
-            count: expectedCount,
-            file: file,
-            line: line
-        )
-
-        if Self.storeKitVersion == .storeKit1 {
+        switch Self.storeKitVersion {
+        case .storeKit1:
+            try await self.verifySpecificTransactionIsEventuallyFinished(
+                transaction,
+                count: nil,
+                file: file,
+                line: line
+            )
             await self.verifyTransactionIsEventuallyRemovedFromSK1Queue(transaction, file: file, line: line)
+        case .storeKit2:
+            try await self.verifySpecificTransactionIsEventuallyFinished(
+                transaction,
+                file: file,
+                line: line
+            )
         }
     }
 
