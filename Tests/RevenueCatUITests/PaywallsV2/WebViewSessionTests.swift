@@ -3,7 +3,6 @@
 //
 
 @_spi(Internal) import RevenueCat
-@_spi(Internal) import RevenueCat
 @testable import RevenueCatUI
 import XCTest
 // swiftlint:disable force_try
