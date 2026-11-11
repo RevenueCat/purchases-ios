@@ -26,7 +26,6 @@ struct AdCheckpointView: View {
     @Environment(UserViewModel.self) private var userViewModel
 
     @State private var adKind = AdKind.interstitial
-    @State private var isRunning = false
     @State private var status = "Pick an ad kind and run the checkpoint."
     @State private var balances: [String: Int] = [:]
 
@@ -44,7 +43,6 @@ struct AdCheckpointView: View {
                 }
                 .pickerStyle(.segmented)
                 Button("Run checkpoint \"\(adKind.checkpointIdentifier)\"", action: runCheckpoint)
-                    .disabled(isRunning)
             } footer: {
                 Text("Create a checkpoint with this identifier in the dashboard and give it an ad step.")
             }
@@ -78,19 +76,18 @@ struct AdCheckpointView: View {
     }
 
     private func runCheckpoint() {
-        isRunning = true
-        status = "Running…"
         let identifier = adKind.checkpointIdentifier
+        // A checkpoint only reports back when it passes. Closing a rewarded ad early, or having no ad
+        // presenter registered, leaves this status as it is.
+        status = "Running \"\(identifier)\". Closing the ad early reports nothing, and the checkpoint stays here."
 
         Purchases.shared.checkpoint(
             identifier,
             errorPresenter: { params, completion in
-                isRunning = false
                 status = "\"\(identifier)\" failed: \(params.error.localizedDescription)"
                 completion.complete()
             },
             { result in
-                isRunning = false
                 status = result.flow == nil
                     ? "\"\(identifier)\" passed without presenting anything. Is it configured?"
                     : "\"\(identifier)\" passed."
