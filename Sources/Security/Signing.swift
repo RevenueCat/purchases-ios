@@ -108,15 +108,17 @@ final class Signing: SigningType {
 
     static let signatureVersion2Prefix = "v2."
 
+    static func signatureVersion(of signature: String) -> Int {
+        return signature.hasPrefix(Self.signatureVersion2Prefix) ? 2 : 1
+    }
+
     func verificationResult(
         for signature: String,
         with parameters: SignatureParameters,
         publicKey: Signing.PublicKey
     ) -> SignatureVerificationResult {
-        let decodesPath = signature.hasPrefix(Self.signatureVersion2Prefix)
-        let encodedSignature = decodesPath
-            ? String(signature.dropFirst(Self.signatureVersion2Prefix.count))
-            : signature
+        let decodesPath = Self.signatureVersion(of: signature) == 2
+        let encodedSignature = decodesPath ? String(signature.dropFirst(Self.signatureVersion2Prefix.count)) : signature
         guard let signature = Data(base64Encoded: encodedSignature) else {
             Logger.warn(Strings.signing.signature_not_base64(signature))
             return .failed(.invalidSignatureFormat)
@@ -293,16 +295,13 @@ extension Signing.SignatureParameters {
 
     func asData(decodesPath: Bool) -> Data {
         let nonce: Data = self.nonce ?? .init()
-        var relativePath: String
+        let relativePath: String
         if useFallbackPath, let fallbackRelativePath = self.path.fallbackRelativePath {
             relativePath = fallbackRelativePath
         } else {
             relativePath = self.iamEnabled ? self.path.relativeIAMPath : self.path.relativePath
         }
-        if decodesPath {
-            relativePath = relativePath.removingPercentEncoding ?? relativePath
-        }
-        let path: Data = relativePath.asData
+        let path: Data = (decodesPath ? relativePath.removingPercentEncoding ?? relativePath : relativePath).asData
         let postParameterHash: Data = self.requestBody?.postParameterHeader?.asData ?? .init()
         let headerParametersHash: Data = HTTPRequest.headerParametersForSignatureHeader(
             headers: self.requestHeaders,

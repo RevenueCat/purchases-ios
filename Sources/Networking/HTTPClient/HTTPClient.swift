@@ -440,7 +440,6 @@ private extension HTTPClient {
         /// Verification context captured before an enforced-verification failure becomes a `NetworkError`.
         let verificationDiagnostics: VerificationDiagnostics?
 
-        /// Version of the `X-Signature` header the backend returned, if any.
         let signatureVersion: Int?
     }
 
@@ -604,10 +603,8 @@ private extension HTTPClient {
             .asOptionalResult?
             .convertUnsuccessfulResponseToError()
 
-        let signatureVersion = HTTPResponse<Data?>.value(
-            forCaseInsensitiveHeaderField: .signature,
-            in: httpURLResponse.allHeaderFields
-        ).map { $0.hasPrefix(Signing.signatureVersion2Prefix) ? 2 : 1 }
+        let signatureVersion = httpURLResponse.value(forHTTPHeaderField: ResponseHeader.signature.rawValue)
+            .map(Signing.signatureVersion(of:))
 
         return .init(result: result,
                      verificationDiagnostics: verificationDiagnostics,
