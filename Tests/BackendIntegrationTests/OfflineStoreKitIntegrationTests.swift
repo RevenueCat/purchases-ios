@@ -577,7 +577,7 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
 
         // 6. Ensure transactions are finished
         try await self.verifyTransactionWasFinished(transaction)
-        self.verifyTransactionWasFinishedForProductIdentifier(Self.consumable10Coins, count: nil)
+        try await self.verifyTransactionWasFinishedForProductIdentifier(Self.consumable10Coins, count: nil)
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)

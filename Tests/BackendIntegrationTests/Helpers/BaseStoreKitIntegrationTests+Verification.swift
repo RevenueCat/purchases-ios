@@ -230,13 +230,17 @@ extension BaseStoreKitIntegrationTests {
         count: Int? = 1,
         file: FileString = #file,
         line: UInt = #line
-    ) {
+    ) async throws {
         let expectedLogRegexPattern = Self.finishingTransactionLogRegexPattern(productIdentifier: productIdentifier)
-        self.logger.verifyMessageWasLogged(regexPattern: expectedLogRegexPattern,
-                                           level: .info,
-                                           expectedCount: count,
-                                           file: file,
-                                           line: line)
+        try await self.logger.verifyMessageIsEventuallyLogged(
+            regexPattern: expectedLogRegexPattern,
+            level: .info,
+            expectedCount: count,
+            timeout: .seconds(5),
+            pollInterval: .milliseconds(100),
+            file: file,
+            line: line
+        )
     }
 
     func verifyNoTransactionsWereFinished(
