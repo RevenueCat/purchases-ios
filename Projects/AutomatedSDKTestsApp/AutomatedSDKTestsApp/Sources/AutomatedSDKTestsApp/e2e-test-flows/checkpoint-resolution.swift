@@ -5,9 +5,9 @@
 //  Copyright © 2026 RevenueCat, Inc. All rights reserved.
 //
 
-import SwiftUI
 import RevenueCat
 @_spi(InviteOnlyCheckpointsApi) import RevenueCatUI
+import SwiftUI
 
 extension E2ETestFlowView {
     /// Hits the `checkpoint_identifier` launch argument once through the public API, with an app-owned

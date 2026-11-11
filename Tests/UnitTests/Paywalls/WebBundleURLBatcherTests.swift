@@ -379,120 +379,22 @@ final class WebBundleURLBatcherTests: TestCase {
 
     // MARK: - URL selection
 
-    func testWorkedExampleWarmOrder() throws {
-        let paywall = try Self.linearWorkflow(
-            id: "wf_paywall",
-            firstURLs: ["https://example.com/paywall/first"],
-            secondURLs: ["https://example.com/paywall/second"]
-        )
-        let onboarding = try Self.singleScreenWorkflow(
-            id: "wf_onboarding",
-            url: "https://example.com/onboarding/welcome"
-        )
-
-        let offerings = Self.offerings(
-            currentOfferingID: "default",
-            offeringIDs: ["default", "onboarding"],
-            placements: .init(
-                fallbackOfferingId: "default",
-                offeringIdsByPlacement: [
-                    "onboarding": "onboarding",
-                    "settings": nil
-                ]
-            )
-        )
-
-        let urls = WebBundleURLBatcher.orderedWebViewURLs(
-            offerings: offerings,
-            workflowsByOfferingId: [
-                "default": paywall,
-                "onboarding": onboarding
-            ]
-        )
-
-        expect(urls.map(\.url.absoluteString)) == [
-            "https://example.com/paywall/first",
-            "https://example.com/paywall/second",
-            "https://example.com/onboarding/welcome"
-        ]
-    }
-
-    func testWorkflowForOfferingOutsideTargetListIsNotSelected() throws {
-        let other = try Self.singleScreenWorkflow(id: "wf_other", url: "https://example.com/other")
-        let current = try Self.singleScreenWorkflow(id: "wf_current", url: "https://example.com/current")
-
-        let offerings = Self.offerings(currentOfferingID: "default", offeringIDs: ["default", "other"])
-        let urls = WebBundleURLBatcher.orderedWebViewURLs(
-            offerings: offerings,
-            workflowsByOfferingId: [
-                "default": current,
-                "other": other
-            ]
-        )
-
-        expect(urls.map(\.url.absoluteString)) == ["https://example.com/current"]
-    }
-
-    func testSameWorkflowBehindSeveralOfferingsIsEnqueuedOnce() throws {
-        let shared = try Self.singleScreenWorkflow(id: "wf_shared", url: "https://example.com/shared")
-        let offerings = Self.offerings(
-            currentOfferingID: "default",
-            offeringIDs: ["default", "onboarding"],
-            placements: .init(
-                fallbackOfferingId: nil,
-                offeringIdsByPlacement: ["onboarding": "onboarding"]
-            )
-        )
-
-        let batches = WebBundleURLBatcher.orderedScreenURLBatches(
-            offerings: offerings,
-            workflowsByOfferingId: [
-                "default": shared,
-                "onboarding": shared
-            ]
-        )
-
-        expect(batches.map { $0.map(\.url.absoluteString) }) == [["https://example.com/shared"]]
-    }
-
-    func testInlineV2TreeIsIgnoredWhenOfferingHasNoWorkflow() {
-        let offering = Self.offering(
-            id: "default",
-            webViewURL: "https://example.com/inline"
-        )
-        let offerings = Self.offerings(currentOfferingID: "default", offerings: [offering])
-
-        let urls = WebBundleURLBatcher.orderedWebViewURLs(
-            offerings: offerings,
-            workflowsByOfferingId: [:]
-        )
-
-        expect(urls).to(beEmpty())
-    }
-
-    func testV1OnlyOfferingContributesNothing() {
-        let offerings = Self.offerings(currentOfferingID: "default", offeringIDs: ["default"])
-        let urls = WebBundleURLBatcher.orderedWebViewURLs(
-            offerings: offerings,
-            workflowsByOfferingId: [:]
-        )
-        expect(urls).to(beEmpty())
-    }
-
-    func testDuplicateURLsKeepFirstOccurrence() throws {
-        let workflow = try Self.linearWorkflow(
+    func testScreenBatchesDeduplicateURLsWithinEachScreen() throws {
+        let workflow = try Self.singleScreenWorkflow(
             id: "wf",
-            firstURLs: ["https://example.com/same"],
-            secondURLs: ["https://example.com/same"]
-        )
-        let offerings = Self.offerings(currentOfferingID: "default", offeringIDs: ["default"])
-
-        let urls = WebBundleURLBatcher.orderedWebViewURLs(
-            offerings: offerings,
-            workflowsByOfferingId: ["default": workflow]
+            urls: [
+                "https://example.com/first",
+                "https://example.com/second",
+                "https://example.com/first"
+            ]
         )
 
-        expect(urls.map(\.url.absoluteString)) == ["https://example.com/same"]
+        let batches = WebBundleURLBatcher.screenURLBatches(in: workflow)
+
+        expect(batches.map { $0.urls.map(\.url.absoluteString) }) == [[
+            "https://example.com/first",
+            "https://example.com/second"
+        ]]
     }
 
     func testScreenBatchesKeepEveryURLOnAScreenTogether() throws {
@@ -508,14 +410,9 @@ final class WebBundleURLBatcherTests: TestCase {
                 "https://example.com/second/b"
             ]
         )
-        let offerings = Self.offerings(currentOfferingID: "default", offeringIDs: ["default"])
+        let batches = WebBundleURLBatcher.screenURLBatches(in: workflow)
 
-        let batches = WebBundleURLBatcher.orderedScreenURLBatches(
-            offerings: offerings,
-            workflowsByOfferingId: ["default": workflow]
-        )
-
-        expect(batches.map { $0.map(\.url.absoluteString) }) == [
+        expect(batches.map { $0.urls.map(\.url.absoluteString) }) == [
             [
                 "https://example.com/first/a",
                 "https://example.com/first/b",
@@ -530,112 +427,42 @@ final class WebBundleURLBatcherTests: TestCase {
 
     // MARK: - Publishing
 
-    func testPublishSendsOneBatchPerScreenInVisitOrder() async throws {
-        let workflow = try Self.linearWorkflow(
-            id: "wf",
-            firstURLs: [
-                "https://example.com/first/a",
-                "https://example.com/first/b",
-                "https://example.com/first/c"
-            ],
-            secondURLs: [
-                "https://example.com/second/a",
-                "https://example.com/second/b"
-            ]
-        )
-        let offerings = Self.offerings(currentOfferingID: "default", offeringIDs: ["default"])
-
+    func testPublishSendsEachBatchInOrder() async {
+        let batches = [
+            WebBundleScreenURLBatch(urls: [Self.url("https://example.com/first")]),
+            WebBundleScreenURLBatch(urls: [Self.url("https://example.com/second")])
+        ]
         var received: [WebBundleEvent] = []
         self.bus.publisher
             .dropFirst()
             .sink { received.append($0) }
             .store(in: &self.cancellables)
 
-        await self.batcher.publish(
-            offerings: offerings,
-            workflowsByOfferingId: ["default": workflow]
-        )
+        await self.batcher.publish(batches)
 
         expect(received) == [
-            .receivedAssetURLs([
-                Self.url("https://example.com/first/a"),
-                Self.url("https://example.com/first/b"),
-                Self.url("https://example.com/first/c")
-            ]),
-            .receivedAssetURLs([
-                Self.url("https://example.com/second/a"),
-                Self.url("https://example.com/second/b")
-            ])
+            .receivedAssetURLs([Self.url("https://example.com/first")]),
+            .receivedAssetURLs([Self.url("https://example.com/second")])
         ]
     }
 
-    func testInlineOfferingIsNotPublished() async {
-        let offering = Self.offering(id: "default", webViewURLs: [
-            "https://example.com/1",
-            "https://example.com/2",
-            "https://example.com/3"
-        ])
-        let offerings = Self.offerings(currentOfferingID: "default", offerings: [offering])
-
-        var received: [WebBundleEvent] = []
-        self.bus.publisher
-            .dropFirst()
-            .sink { received.append($0) }
-            .store(in: &self.cancellables)
-
-        await self.batcher.publish(
-            offerings: offerings,
-            workflowsByOfferingId: [:]
-        )
-
-        expect(received).to(beEmpty())
-    }
-
-    func testPresentedWorkflowIsPublishedEveryTime() async throws {
+    func testScreenURLBatchesArePublishedEveryTime() async throws {
         let current = try Self.singleScreenWorkflow(id: "wf_current", url: "https://example.com/current")
         let presented = try Self.singleScreenWorkflow(id: "wf_presented", url: "https://example.com/presented")
-        let offerings = Self.offerings(currentOfferingID: "default", offeringIDs: ["default"])
-
         var received: [WebBundleEvent] = []
         self.bus.publisher
             .dropFirst()
             .sink { received.append($0) }
             .store(in: &self.cancellables)
 
-        await self.batcher.publish(
-            offerings: offerings,
-            workflowsByOfferingId: ["default": current]
-        )
-        await self.batcher.publishPresentedWorkflow(presented)
-        await self.batcher.publishPresentedWorkflow(presented)
+        await self.batcher.publish(WebBundleURLBatcher.screenURLBatches(in: current))
+        await self.batcher.publish(WebBundleURLBatcher.screenURLBatches(in: presented))
+        await self.batcher.publish(WebBundleURLBatcher.screenURLBatches(in: presented))
 
         expect(received) == [
             .receivedAssetURLs([Self.url("https://example.com/current")]),
             .receivedAssetURLs([Self.url("https://example.com/presented")]),
             .receivedAssetURLs([Self.url("https://example.com/presented")])
-        ]
-    }
-
-    func testPresentedWorkflowPublishesChangedURLsForAnExistingWorkflowID() async throws {
-        let initial = try Self.singleScreenWorkflow(id: "wf_current", url: "https://example.com/initial")
-        let refreshed = try Self.singleScreenWorkflow(id: "wf_current", url: "https://example.com/refreshed")
-        let offerings = Self.offerings(currentOfferingID: "default", offeringIDs: ["default"])
-
-        var received: [WebBundleEvent] = []
-        self.bus.publisher
-            .dropFirst()
-            .sink { received.append($0) }
-            .store(in: &self.cancellables)
-
-        await self.batcher.publish(
-            offerings: offerings,
-            workflowsByOfferingId: ["default": initial]
-        )
-        await self.batcher.publishPresentedWorkflow(refreshed)
-
-        expect(received) == [
-            .receivedAssetURLs([Self.url("https://example.com/initial")]),
-            .receivedAssetURLs([Self.url("https://example.com/refreshed")])
         ]
     }
 
@@ -656,10 +483,14 @@ private extension WebBundleURLBatcherTests {
     }
 
     static func singleScreenWorkflow(id: String, url: String) throws -> PublishedWorkflow {
+        return try self.singleScreenWorkflow(id: id, urls: [url])
+    }
+
+    static func singleScreenWorkflow(id: String, urls: [String]) throws -> PublishedWorkflow {
         return try self.workflowFromJSON(
             id: id,
             screensJSON: """
-            "\(self.firstScreenId)": \(self.screenJSON(name: "Screen", url: url))
+            "\(self.firstScreenId)": \(self.screenJSON(name: "Screen", urls: urls))
             """,
             stepsJSON: """
             "\(self.firstStepId)": {

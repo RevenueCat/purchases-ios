@@ -1,5 +1,5 @@
-import SwiftUI
 @testable import RevenueCat
+import SwiftUI
 #if DEBUG && targetEnvironment(simulator)
 import StoreKit
 import StoreKitTest
@@ -105,7 +105,7 @@ struct RcMaestroApp: App {
             UserDefaults.standard.bool(forKey: "maestro_storekit_warmup")
     }
     #endif
-    
+
     /*
      Parses the launch argument with the e2e test flow to run
      */
@@ -113,7 +113,7 @@ struct RcMaestroApp: App {
         guard let string = UserDefaults.standard.dictionaryRepresentation()["e2e_test_flow"] as? String else {
             return nil
         }
-        
+
         return E2ETestFlow(rawValue: string)
     }
 }
