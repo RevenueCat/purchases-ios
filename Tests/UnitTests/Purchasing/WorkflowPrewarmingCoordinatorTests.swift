@@ -549,9 +549,15 @@ class WorkflowPrewarmingCoordinatorTests: TestCase {
             webBundleURLBatcher: self.mockWebBundleURLBatcher
         )
         let offerings = Self.offerings()
-        self.mockOperationDispatcher.forwardToOriginalDispatchOnWorkerThread = true
-        let tasks = (0..<20).map { _ in
-            Task { await coordinator.schedulePrewarming(offerings: offerings) }
+        self.mockOperationDispatcher.forwardToOriginalDispatchOnWorkerThread = false
+        self.mockOperationDispatcher.shouldInvokeDispatchOnWorkerThreadBlock = false
+
+        for _ in 0..<20 {
+            await coordinator.schedulePrewarming(offerings: offerings)
+        }
+
+        let tasks = self.mockOperationDispatcher.dispatchedAsyncWorkerThreadBlocks.map { block in
+            Task { await block() }
         }
 
         await expect(provider.decodeCount).toEventually(equal(1))
@@ -560,7 +566,8 @@ class WorkflowPrewarmingCoordinatorTests: TestCase {
             await task.value
         }
 
-        await expect(self.mockWebBundleURLBatcher.invokedPublishCount).toEventually(equal(1))
+        expect(provider.decodeCount) == 1
+        expect(self.mockWebBundleURLBatcher.invokedPublishCount) == 1
     }
 
     func testPublishWebBundleURLsPublishesWorkflowAgainForNewConfigGeneration() async throws {

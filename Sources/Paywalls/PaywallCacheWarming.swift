@@ -291,23 +291,6 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
         }
     }
 
-    /// Immediately pre-downloads assets from an already presented workflow.
-    func prewarmWorkflowAssets(workflow: PublishedWorkflow, uiConfig: UIConfig) async {
-        guard let request = self.prepareWorkflowAssetPrewarming(
-            workflow: workflow,
-            uiConfig: uiConfig
-        ) else { return }
-
-        let task = Task { [weak self] in
-            await self?.executeWorkflowAssetPrewarming(request)
-        }
-        await withTaskCancellationHandler {
-            await task.value
-        } onCancel: {
-            task.cancel()
-        }
-    }
-
     private func executeWorkflowAssetPrewarming(_ request: WorkflowAssetPrewarmingRequest) async {
         await withTaskGroup(of: Void.self) { group in
             for source in request.imageURLs {

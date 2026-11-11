@@ -7,28 +7,18 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  AsyncConcurrencyLimiter.swift
+//  AsyncSemaphore.swift
 //
 //  Created by Rick van der Linden on 11/4/26.
 
-/// Limits concurrent asynchronous operations, admitting waiters in first-in, first-out order.
-actor AsyncConcurrencyLimiter {
+/// An asynchronous counting semaphore that admits waiters in first-in, first-out order.
+actor AsyncSemaphore {
 
     private var availablePermits: Int
     private var waiters: [CheckedContinuation<Void, Never>] = []
 
-    init(maxConcurrentOperations: Int) {
-        self.availablePermits = max(1, maxConcurrentOperations)
-    }
-
-    /// Runs an operation after acquiring a permit and always releases it when the operation completes.
-    func perform<Value: Sendable>(
-        _ operation: @Sendable () async -> Value
-    ) async -> Value {
-        await self.acquire()
-        let value = await operation()
-        self.release()
-        return value
+    init(value: Int) {
+        self.availablePermits = max(1, value)
     }
 
     /// Runs a non-returning operation unless its task was canceled while waiting for a permit.

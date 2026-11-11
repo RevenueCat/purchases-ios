@@ -12,14 +12,14 @@
 //  Created by Rick van der Linden on 11/3/26.
 
 /// Coordinates workflow body caching, transient decoding, web-bundle publication, and asset prewarming.
-final class WorkflowPrewarmingCoordinator: @unchecked Sendable {
+final class WorkflowPrewarmingCoordinator: Sendable {
 
     private let workflowsConfigProvider: WorkflowsConfigProviderType
     private let paywallCache: PaywallCacheWarmingType?
     private let operationDispatcher: OperationDispatcher
     private let webBundleURLBatcher: WebBundleURLBatcherType
     private let webBundlePublicationTracker = WorkflowWebBundlePublicationTracker()
-    private let backgroundPrewarmingLimiter = AsyncConcurrencyLimiter(maxConcurrentOperations: 1)
+    private let backgroundPrewarmingLimiter = AsyncSemaphore(value: 1)
 
     init(
         workflowsConfigProvider: WorkflowsConfigProviderType,

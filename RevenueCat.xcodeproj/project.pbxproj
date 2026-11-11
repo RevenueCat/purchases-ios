@@ -335,7 +335,7 @@
 		2DAC5F7B26F13D1400C5258F /* UnitTestsConfiguration.storekit in Resources */ = {isa = PBXBuildFile; fileRef = 2D43017726EBFD7100BAB891 /* UnitTestsConfiguration.storekit */; };
 		2DC19195255F36D10039389A /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DC19194255F36D10039389A /* Logger.swift */; };
 		2DC5623024EC63730031F69B /* OperationDispatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DDA3E4624DB0B5400EDFE5B /* OperationDispatcher.swift */; };
-		AC1C0A112F00000000000002 /* AsyncConcurrencyLimiter.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC1C0A112F00000000000001 /* AsyncConcurrencyLimiter.swift */; };
+		AC1C0A112F00000000000002 /* AsyncSemaphore.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC1C0A112F00000000000001 /* AsyncSemaphore.swift */; };
 		2DC5623224EC63730031F69B /* TransactionsFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3597020F24BF6A710010506E /* TransactionsFactory.swift */; };
 		2DD58DD827F240EB000FDFE3 /* EmptyFile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DD58DD727F240EB000FDFE3 /* EmptyFile.swift */; };
 		2DD9F4BE274EADC20031AE2C /* Purchases+async.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DD9F4BD274EADC20031AE2C /* Purchases+async.swift */; };
@@ -2222,7 +2222,7 @@
 		2DD6E58B2C544D2D0068E695 /* PurchaseTesterStoreKitConfiguration.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = PurchaseTesterStoreKitConfiguration.storekit; sourceTree = "<group>"; };
 		2DD9F4BD274EADC20031AE2C /* Purchases+async.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Purchases+async.swift"; sourceTree = "<group>"; };
 		2DDA3E4624DB0B5400EDFE5B /* OperationDispatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OperationDispatcher.swift; sourceTree = "<group>"; };
-		AC1C0A112F00000000000001 /* AsyncConcurrencyLimiter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AsyncConcurrencyLimiter.swift; sourceTree = "<group>"; };
+		AC1C0A112F00000000000001 /* AsyncSemaphore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AsyncSemaphore.swift; sourceTree = "<group>"; };
 		2DDE559A24C8B5E300DCB087 /* verifyReceiptSample1.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = verifyReceiptSample1.txt; sourceTree = "<group>"; };
 		2DDE559B24C8B5E300DCB087 /* base64encodedreceiptsample1.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = base64encodedreceiptsample1.txt; sourceTree = "<group>"; };
 		2DDF41A724F6F37C005BC22D /* AppleReceipt.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppleReceipt.swift; sourceTree = "<group>"; };
@@ -6348,7 +6348,7 @@
 		57F3C0CB29B7A0B10004FD7E /* Concurrency */ = {
 			isa = PBXGroup;
 			children = (
-				AC1C0A112F00000000000001 /* AsyncConcurrencyLimiter.swift */,
+				AC1C0A112F00000000000001 /* AsyncSemaphore.swift */,
 				167D67082EA151C400B4503F /* SynchronizedLargeItemCache.swift */,
 				4487A0C02E9000000000000C /* AsyncSleeper.swift */,
 				57A0FBEF2749C0C2009E2FC3 /* Atomic.swift */,
@@ -8538,7 +8538,7 @@
 				F575858D26C088FE00C12B97 /* OfferingsManager.swift in Sources */,
 				678DA8034D806EABC46A0960 /* WorkflowManager.swift in Sources */,
 				A17C34D12FABCDEF00000004 /* WorkflowPrewarmingCoordinator.swift in Sources */,
-				AC1C0A112F00000000000002 /* AsyncConcurrencyLimiter.swift in Sources */,
+				AC1C0A112F00000000000002 /* AsyncSemaphore.swift in Sources */,
 				BR0000000000000000000101 /* BranchResolver.swift in Sources */,
 				B34605CB279A6E380031CA74 /* PostReceiptDataOperation.swift in Sources */,
 				4FFCED882AA941D200118EF4 /* FeatureEventsRequest.swift in Sources */,
