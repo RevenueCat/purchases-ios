@@ -169,6 +169,7 @@ extension BaseStoreKitIntegrationTests {
     ) async throws {
         switch Self.storeKitVersion {
         case .storeKit1:
+            // StoreKit 1 can deliver duplicate updates, so verify at least one finish request and actual queue removal.
             try await self.verifySpecificTransactionIsEventuallyFinished(
                 transaction,
                 count: nil,
