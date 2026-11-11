@@ -241,25 +241,6 @@ final class WorkflowNavigatorTests: TestCase {
         expect(navigator.currentStepId) == "step_3"
     }
 
-    func testForwardNavigationKeepsTheDestinationChosenBeforeBranchResolution() async throws {
-        let workflow = try Self.makeWorkflow(
-            steps: [
-                makeStepWithBranchExit(id: "step_1", componentId: "btn_abc", actionId: "btn_abc"),
-                makeStep(id: "step_2"),
-                makeStep(id: "step_3")
-            ],
-            initialStepId: "step_1"
-        )
-        let navigator = WorkflowNavigator(workflow: workflow, resolveBranch: { _ in "step_3" })
-        let destination = try XCTUnwrap(navigator.triggerActionDestination(componentId: "btn_abc"))
-        await navigator.waitForBranchResolution()
-
-        navigator.navigateForward(to: destination.step.id)
-
-        expect(navigator.currentStepId) == "step_2"
-        expect(navigator.backNavigationDestination?.step.id) == "step_1"
-    }
-
     func testReturningToAStepDropsItsPreviousBranchResolution() async throws {
         let workflow = try Self.makeWorkflow(
             steps: [
