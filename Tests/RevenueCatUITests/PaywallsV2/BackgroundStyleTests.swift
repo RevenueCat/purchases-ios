@@ -42,7 +42,8 @@ final class BackgroundStyleTests: TestCase {
         }
 
         // Unclipped, the image scales to 100x400 and fills the whole column.
-        XCTAssertEqual(try Self.redRowCount(in: window), 60)
+        // Allow one row for antialiased edges when older iOS versions position the view between pixels.
+        XCTAssertEqual(try Self.redRowCount(in: window), 60, accuracy: 1)
         XCTAssertEqual(appearCount, 1)
     }
 
