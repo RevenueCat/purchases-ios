@@ -281,12 +281,13 @@ public class PaywallViewController: UIViewController {
     /// - Parameter shouldBlockTouchEvents: Whether to interecept all touch events propagated through this VC.
     /// - Parameter dismissRequestedHandler: If this is not set, the paywall will close itself automatically
     /// after a successful purchase. Otherwise use this handler to handle dismissals of the paywall.
+    @available(*, deprecated, message: "Use the initializer with performPurchaseWithContext instead.")
     public convenience init(
         offering: Offering? = nil,
         fonts: PaywallFontProvider,
         displayCloseButton: Bool = false,
         shouldBlockTouchEvents: Bool = false,
-        performPurchase: PerformPurchase? = nil,
+        performPurchase: PerformPurchase?,
         performRestore: PerformRestore? = nil,
         dismissRequestedHandler: ((_ controller: PaywallViewController) -> Void)? = nil
     ) {
@@ -312,6 +313,7 @@ public class PaywallViewController: UIViewController {
     /// `.with(purchasesAreCompletedBy: .myApp)`.
     /// - Parameter dismissRequestedHandler: If this is not set, the paywall will close itself automatically
     /// after a successful purchase. Otherwise use this handler to handle dismissals of the paywall.
+    @available(*, deprecated, message: "Use the initializer with purchaseHandlerWithContext instead.")
     @objc
     public convenience init(
         offering: Offering? = nil,
@@ -332,13 +334,13 @@ public class PaywallViewController: UIViewController {
         )
     }
 
-    /// Creates a paywall with custom purchase logic that receives the selected promotional offer.
+    /// Creates a paywall with optional custom purchase logic that receives the selected promotional offer.
     /// - Parameters:
     ///   - offering: The offering to display, or `nil` to use the current offering.
     ///   - fonts: The font provider for the paywall.
     ///   - displayCloseButton: Whether to display a close button.
     ///   - shouldBlockTouchEvents: Whether to intercept touches propagated through this controller.
-    ///   - performPurchaseWithContext: The callback responsible for applying the selected offer.
+    ///   - performPurchaseWithContext: An optional callback responsible for applying the selected offer.
     ///   - performRestore: The callback that restores purchases.
     ///   - dismissRequestedHandler: Called when the paywall requests dismissal.
     public convenience init(
@@ -346,7 +348,7 @@ public class PaywallViewController: UIViewController {
         fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
         displayCloseButton: Bool = false,
         shouldBlockTouchEvents: Bool = false,
-        performPurchaseWithContext: @escaping PerformPurchaseWithContext,
+        performPurchaseWithContext: PerformPurchaseWithContext? = nil,
         performRestore: PerformRestore? = nil,
         dismissRequestedHandler: ((_ controller: PaywallViewController) -> Void)? = nil
     ) {

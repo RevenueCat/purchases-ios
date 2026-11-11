@@ -101,14 +101,6 @@ func paywallViewControllerAPI(_ delegate: Delegate,
                                                     purchaseHandler: purchaseHandler,
                                                     dismissRequestedHandler: dismissRequestedHandler)
 
-    let purchaseWithContext: PerformPurchaseWithContext = { _ in (userCancelled: false, error: nil) }
-    let _ = PaywallViewController(performPurchaseWithContext: purchaseWithContext)
-    let _ = PaywallViewController(offering: offering, fonts: fontProvider,
-                                 performPurchaseWithContext: purchaseWithContext,
-                                 performRestore: performRestore)
-    let _ = PaywallFooterViewController(performPurchaseWithContext: purchaseWithContext,
-                                       performRestore: { (success: true, error: nil) })
-
     controller.update(with: offering!)
     controller.update(with: "offering_identifier")
     controller.updateFont(with: "Papyrus")
@@ -121,6 +113,25 @@ func paywallViewControllerAPI(_ delegate: Delegate,
 
     // Objective-C compatible methods
     controller.setCustomVariable("Jane", forKey: "player_name")
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+func checkContextPaywallViewControllerAPI(offering: Offering?, fontProvider: PaywallFontProvider) {
+    let purchase: PerformPurchaseWithContext = { _ in (userCancelled: false, error: nil) }
+    let restore: PerformRestore = { (success: true, error: nil) }
+    let _ = PaywallViewController()
+    let _ = PaywallViewController(offering: offering)
+    let _ = PaywallViewController(fonts: fontProvider)
+    let _ = PaywallViewController(offering: offering, fonts: fontProvider, performRestore: restore)
+    let _ = PaywallViewController(performPurchaseWithContext: nil)
+    let _ = PaywallViewController(fonts: fontProvider, performPurchaseWithContext: nil, performRestore: restore)
+    let optionalPurchase: PerformPurchaseWithContext? = purchase
+    let _ = PaywallViewController(offering: offering, fonts: fontProvider,
+                                 performPurchaseWithContext: optionalPurchase, performRestore: restore)
+    let _ = PaywallViewController(performPurchaseWithContext: purchase)
+    let _ = PaywallViewController(offering: offering, fonts: fontProvider,
+                                 performPurchaseWithContext: purchase, performRestore: restore)
+    let _ = PaywallFooterViewController(performPurchaseWithContext: purchase, performRestore: restore)
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)

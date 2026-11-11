@@ -57,6 +57,7 @@ public struct MyAppPurchaseLogic {
 
     /// Initializes the struct with blocks that are executed when
     /// ``Purchases/purchasesAreCompletedBy`` is ``PurchasesAreCompletedBy/myApp``.
+    @available(*, deprecated, message: "Use the initializer with performPurchaseWithContext instead.")
     public init(performPurchase: @escaping PerformPurchase, performRestore: @escaping PerformRestore) {
         self.performPurchase = performPurchase
         self.performPurchaseWithContext = { context in await performPurchase(context.package) }

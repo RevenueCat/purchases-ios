@@ -81,10 +81,11 @@ public struct PaywallView: View {
     /// an error will be displayed.
     /// - Warning: `Purchases` must have been configured prior to displaying it.
     /// If you want to handle that, you can use ``init(offering:)`` instead.
+    @available(*, deprecated, message: "Use the initializer with performPurchaseWithContext instead.")
     public init(
         fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
         displayCloseButton: Bool = false,
-        performPurchase: PerformPurchase? = nil,
+        performPurchase: PerformPurchase?,
         performRestore: PerformRestore? = nil
     ) {
         let purchaseHandler = PurchaseHandler.default(performPurchase: performPurchase, performRestore: performRestore)
@@ -107,11 +108,12 @@ public struct PaywallView: View {
     /// due to invalid data, a default paywall will be displayed.
     /// - Note: Specifying this parameter means that it will ignore the offering configured in an active experiment.
     /// - Warning: `Purchases` must have been configured prior to displaying it.
+    @available(*, deprecated, message: "Use the initializer with performPurchaseWithContext instead.")
     public init(
         offering: Offering,
         fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
         displayCloseButton: Bool = false,
-        performPurchase: PerformPurchase? = nil,
+        performPurchase: PerformPurchase?,
         performRestore: PerformRestore? = nil
     ) {
         let purchaseHandler = PurchaseHandler.default(performPurchase: performPurchase, performRestore: performRestore)
@@ -126,16 +128,22 @@ public struct PaywallView: View {
         )
     }
 
-    /// Displays the current offering using custom purchase logic that receives the selected offer.
+    /// Create a view to display the paywall in `Offerings.current`.
     /// - Parameters:
     ///   - fonts: The font provider for the paywall.
     ///   - displayCloseButton: Whether to display a close button.
-    ///   - performPurchaseWithContext: The callback responsible for applying the selected promotional offer.
-    ///   - performRestore: The callback that restores purchases.
+    ///   - performPurchaseWithContext: An optional callback responsible for applying the selected promotional offer.
+    ///     Only used when `purchasesAreCompletedBy` is `.myApp`.
+    ///   - performRestore: An optional callback that restores purchases. Only used when `purchasesAreCompletedBy`
+    ///     is `.myApp`.
+    /// - Note: If loading the current `Offering` fails (if the user is offline, for example),
+    /// an error will be displayed.
+    /// - Warning: `Purchases` must have been configured prior to displaying it.
+    /// If you want to handle that, you can use ``init(offering:)`` instead.
     public init(
         fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
         displayCloseButton: Bool = false,
-        performPurchaseWithContext: @escaping PerformPurchaseWithContext,
+        performPurchaseWithContext: PerformPurchaseWithContext? = nil,
         performRestore: PerformRestore? = nil
     ) {
         self.init(configuration: .init(
@@ -146,18 +154,23 @@ public struct PaywallView: View {
         ))
     }
 
-    /// Displays an offering using custom purchase logic that receives the selected offer.
+    /// Create a view to display the paywall in a given `Offering`.
     /// - Parameters:
     ///   - offering: The offering to display, overriding the current offering and experiment assignment.
     ///   - fonts: The font provider for the paywall.
     ///   - displayCloseButton: Whether to display a close button.
-    ///   - performPurchaseWithContext: The callback responsible for applying the selected promotional offer.
-    ///   - performRestore: The callback that restores purchases.
+    ///   - performPurchaseWithContext: An optional callback responsible for applying the selected promotional offer.
+    ///     Only used when `purchasesAreCompletedBy` is `.myApp`.
+    ///   - performRestore: An optional callback that restores purchases. Only used when `purchasesAreCompletedBy`
+    ///     is `.myApp`.
+    /// - Note: If `offering` does not have a current paywall (`hasPaywall == false`), or it fails to load
+    /// due to invalid data, a default paywall will be displayed.
+    /// - Warning: `Purchases` must have been configured prior to displaying it.
     public init(
         offering: Offering,
         fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
         displayCloseButton: Bool = false,
-        performPurchaseWithContext: @escaping PerformPurchaseWithContext,
+        performPurchaseWithContext: PerformPurchaseWithContext? = nil,
         performRestore: PerformRestore? = nil
     ) {
         self.init(configuration: .init(

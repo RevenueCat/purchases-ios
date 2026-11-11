@@ -40,6 +40,7 @@ public final class PaywallFooterViewController: PaywallViewController {
     /// - Important: `performPurchase` and `performRestore` are only used when `Purchases`
     /// has been configured with `.with(purchasesAreCompletedBy: .myApp)`. Otherwise,
     /// the default purchase and restore implementations are used and these closures are ignored.
+    @available(*, deprecated, message: "Use the initializer with performPurchaseWithContext instead.")
     public init(
         offering: Offering? = nil,
         performPurchase: @escaping PerformPurchase,
@@ -106,6 +107,7 @@ public final class PaywallFooterViewController: PaywallViewController {
     /// - Important: `purchaseHandler` is only used when `Purchases` has been configured with
     /// `.with(purchasesAreCompletedBy: .myApp)`. Otherwise, the default purchase and restore
     /// implementations are used and the handler is ignored.
+    @available(*, deprecated, message: "Use the initializer with purchaseHandlerWithContext instead.")
     @objc
     public init(
         offering: Offering? = nil,

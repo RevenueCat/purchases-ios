@@ -913,16 +913,43 @@ func checkContextPurchaseAPI(offering: Offering) {
     let logic = MyAppPurchaseLogic(performPurchaseWithContext: purchase, performRestore: restore)
     let _: PerformPurchase = logic.performPurchase
     let _: PerformPurchaseWithContext = logic.performPurchaseWithContext
+    let _ = PaywallView()
+    let _ = PaywallView(offering: offering)
+    let _ = PaywallView(fonts: DefaultPaywallFontProvider(), displayCloseButton: true)
+    let _ = PaywallView(performRestore: restore)
+    let _ = PaywallView(offering: offering, performRestore: restore)
+    let _ = PaywallView(performPurchaseWithContext: nil, performRestore: restore)
+    let _ = PaywallView(offering: offering, performPurchaseWithContext: nil)
+    let optionalPurchase: PerformPurchaseWithContext? = purchase
+    let _ = PaywallView(performPurchaseWithContext: optionalPurchase)
+    let _ = PaywallView(offering: offering, performPurchaseWithContext: optionalPurchase, performRestore: restore)
     let _ = PaywallView(performPurchaseWithContext: purchase, performRestore: restore)
     let _ = PaywallView(offering: offering, performPurchaseWithContext: purchase)
-    let _ = PaywallView(performPurchase: { _ in (userCancelled: true, error: nil) })
-    let _ = PaywallView(performRestore: restore)
-    let _ = PaywallView(offering: offering, performPurchase: nil, performRestore: nil)
-    let _ = PaywallView { _ in (userCancelled: true, error: nil) }
-    let _ = MyAppPurchaseLogic(performPurchase: { _ in (userCancelled: true, error: nil) }, performRestore: restore)
     let _ = PaywallView(performPurchaseWithContext: { _ in (userCancelled: true, error: nil) })
     let _ = Text("").presentPaywallIfNeeded(requiredEntitlementIdentifier: "pro", myAppPurchaseLogic: logic)
     let _ = Text("").paywallFooter(myAppPurchaseLogic: logic)
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@available(*, deprecated) // Ignore expected warnings while checking legacy source compatibility.
+func checkLegacyPurchaseAPI(offering: Offering) {
+    let restore: PerformRestore = { (success: true, error: nil) }
+    let _ = PaywallView(performPurchase: { _ in (userCancelled: true, error: nil) })
+    let _ = PaywallView(performPurchase: nil, performRestore: restore)
+    let _ = PaywallView(offering: offering, performPurchase: nil, performRestore: nil)
+    let _ = PaywallView { _ in (userCancelled: true, error: nil) }
+    let _ = PaywallView { (package: Package) in
+        (userCancelled: true, error: nil)
+    }
+    let _ = PaywallView { package in
+        let _: String = package.storeProduct.productIdentifier
+        return (userCancelled: true, error: nil)
+    }
+    let _ = PaywallView(offering: offering) { package in
+        let _: String = package.storeProduct.productIdentifier
+        return (userCancelled: true, error: nil)
+    }
+    let _ = MyAppPurchaseLogic(performPurchase: { _ in (userCancelled: true, error: nil) }, performRestore: restore)
 }
 
 private struct CustomFontProvider: PaywallFontProvider {
