@@ -107,6 +107,7 @@ final class WorkflowPresenter: NSObject, WorkflowPresenterType {
 
     private let productEntitlementMappingProvider: CheckpointsManager.ProductEntitlementMappingProvider
     private let presentationStarter: PresentationStarter?
+    private let appUserIDProvider: @MainActor () -> String
     private var presentationState: PresentationState?
     private var pendingContinuation: Continuation?
     private weak var presentedViewController: PaywallViewController?
@@ -114,10 +115,12 @@ final class WorkflowPresenter: NSObject, WorkflowPresenterType {
 
     init(
         productEntitlementMappingProvider: @escaping CheckpointsManager.ProductEntitlementMappingProvider,
-        presentationStarter: PresentationStarter? = nil
+        presentationStarter: PresentationStarter? = nil,
+        appUserIDProvider: @escaping @MainActor () -> String = { "" }
     ) {
         self.productEntitlementMappingProvider = productEntitlementMappingProvider
         self.presentationStarter = presentationStarter
+        self.appUserIDProvider = appUserIDProvider
         super.init()
     }
 
@@ -330,6 +333,7 @@ extension WorkflowPresenter {
         return CheckpointGateContext(
             initialAppUserID: presentation.initialAppUserID,
             initialActiveEntitlementIdentifiers: presentation.initialActiveEntitlementIdentifiers,
+            currentAppUserID: self.appUserIDProvider,
             onOutcomeChanged: { [weak self] outcome in
                 guard let self, self.presentationState?.id == presentationID else { return }
                 self.stage(.gateOutcome(outcome))
@@ -497,7 +501,8 @@ extension WorkflowPresenter: PaywallViewControllerDelegate {}
 final class WorkflowPresenter: WorkflowPresenterType {
 
     init(
-        productEntitlementMappingProvider _: @escaping CheckpointsManager.ProductEntitlementMappingProvider = { nil }
+        productEntitlementMappingProvider _: @escaping CheckpointsManager.ProductEntitlementMappingProvider = { nil },
+        appUserIDProvider: @escaping @MainActor () -> String = { "" }
     ) {}
 
     func present(_ presentation: WorkflowPresentationRequest) async throws -> CheckpointPresentationOutcome {
