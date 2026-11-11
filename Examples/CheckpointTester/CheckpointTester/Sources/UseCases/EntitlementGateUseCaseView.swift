@@ -98,16 +98,14 @@ struct EntitlementGateUseCaseView: View {
 
     @MainActor
     private func handle(_ result: CheckpointResult) {
-        guard let flow = result.flow else {
-            self.status = "No completed flow. Content remains locked."
-            return
+        self.activeEntitlementIdentifiers = Self.activeEntitlementIdentifiers(from: result.customer)
+        if self.hasAccess {
+            self.status = "The customer has access. Content unlocked."
+        } else {
+            self.status = result.flow == nil
+                ? "No completed flow. Content remains locked."
+                : "Checkpoint completed without an active entitlement. Content remains locked."
         }
-
-        let obtained = flow.obtainedEntitlements.map(\.entitlementInfo.identifier).sorted()
-        self.activeEntitlementIdentifiers = Array(Set(self.activeEntitlementIdentifiers + obtained)).sorted()
-        self.status = obtained.isEmpty
-            ? "Checkpoint completed without an active entitlement. Content remains locked."
-            : "Obtained: \(obtained.joined(separator: ", "))."
     }
 
     private var entitlementCheckpointCustomVariables: [String: CustomVariableValue] {

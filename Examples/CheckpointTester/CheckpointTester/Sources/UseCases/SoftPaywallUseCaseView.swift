@@ -70,13 +70,13 @@ struct SoftPaywallUseCaseView: View {
             paywallPresenter: self.model.localPaywallPresenter,
             errorPresenter: self.model.localErrorPresenter
         ) { result in
+            self.isSubscriber = !result.customer.entitlements.active.isEmpty
             guard let flow = result.flow else {
                 self.status = "No completed flow. Content remains available."
                 return
             }
 
             let obtained = flow.obtainedEntitlements.map(\.entitlementInfo.identifier).sorted()
-            self.isSubscriber = self.isSubscriber || !obtained.isEmpty
             self.status = obtained.isEmpty
                 ? "Checkpoint completed. Content remains available."
                 : "Obtained: \(obtained.joined(separator: ", "))."
