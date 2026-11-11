@@ -916,6 +916,10 @@ func checkContextPurchaseAPI(offering: Offering) {
     let _ = PaywallView(performPurchaseWithContext: purchase, performRestore: restore)
     let _ = PaywallView(offering: offering, performPurchaseWithContext: purchase)
     let _ = PaywallView(performPurchase: { _ in (userCancelled: true, error: nil) })
+    let _ = PaywallView(performRestore: restore)
+    let _ = PaywallView(offering: offering, performPurchase: nil, performRestore: nil)
+    let _ = PaywallView { _ in (userCancelled: true, error: nil) }
+    let _ = MyAppPurchaseLogic(performPurchase: { _ in (userCancelled: true, error: nil) }, performRestore: restore)
     let _ = PaywallView(performPurchaseWithContext: { _ in (userCancelled: true, error: nil) })
     let _ = Text("").presentPaywallIfNeeded(requiredEntitlementIdentifier: "pro", myAppPurchaseLogic: logic)
     let _ = Text("").paywallFooter(myAppPurchaseLogic: logic)

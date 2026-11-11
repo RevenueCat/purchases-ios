@@ -11,10 +11,10 @@
 //  
 //  Created by Nacho Soto on 7/31/23.
 
+import Foundation
 import RevenueCat
-import SwiftUI
-
 import StoreKit
+import SwiftUI
 
 // swiftlint:disable file_length
 
@@ -47,6 +47,7 @@ public typealias WebCheckoutOpenedHandler = @MainActor @Sendable () -> Void
 public typealias URLOpenedHandler = @MainActor @Sendable (_ url: URL) -> Void
 
 /// A closure used to perform custom purchase logic implemented by your app.
+/// To receive the paywall's selected promotional offer, use ``PerformPurchaseWithContext``.
 /// - Parameters:
 ///   - package: The package to be purchased.
 /// - Returns: A tuple indicating whether the user cancelled the operation and
@@ -79,6 +80,7 @@ public final class PaywallPurchaseContext: NSObject, Sendable {
 }
 
 /// A closure that performs a custom purchase using the package and offer selected by the paywall.
+/// Used when ``Purchases/purchasesAreCompletedBy`` is ``PurchasesAreCompletedBy/myApp``.
 /// - Parameter context: The package and optional signed promotional offer to purchase.
 /// - Returns: Whether the user cancelled and any error encountered, matching ``PerformPurchase``.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)

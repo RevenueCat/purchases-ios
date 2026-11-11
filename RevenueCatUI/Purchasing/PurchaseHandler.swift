@@ -898,10 +898,12 @@ extension PurchaseHandler {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension PurchaseHandler {
 
+    #if !os(tvOS)
     static func `default`(myAppPurchaseLogic: MyAppPurchaseLogic?) -> Self {
         return .default(performRestore: myAppPurchaseLogic?.performRestore,
                         performPurchaseWithContext: myAppPurchaseLogic?.performPurchaseWithContext)
     }
+    #endif
 
     // MARK: - Purchase
 

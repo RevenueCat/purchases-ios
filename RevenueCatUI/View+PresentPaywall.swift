@@ -38,7 +38,7 @@ extension PaywallPresentationMode {
 
 }
 
-/// Contains the `PerformPurchase` and `PerformRestore` blocks that are executed when
+/// Contains the purchase and restore callbacks that are executed when
 /// ``Purchases/purchasesAreCompletedBy`` is ``PurchasesAreCompletedBy/myApp``.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public struct MyAppPurchaseLogic {
