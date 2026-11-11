@@ -972,7 +972,9 @@ extension PurchaseHandler {
         Logger.debug(Strings.executing_external_purchase_logic)
 
         guard let externalPurchaseMethod = self.performPurchaseWithContext else {
-            throw PaywallError.performPurchaseAndRestoreHandlersNotDefined(missingBlocks: "performPurchase is")
+            throw PaywallError.performPurchaseAndRestoreHandlersNotDefined(
+                missingBlocks: "performPurchaseWithContext is"
+            )
         }
 
         self.packageBeingPurchased = package

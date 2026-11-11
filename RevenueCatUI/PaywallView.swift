@@ -277,9 +277,9 @@ public struct PaywallView: View {
             if purchaseHandler.performPurchaseWithContext == nil || purchaseHandler.performRestore == nil {
                 let missingBlocks: String
                 if purchaseHandler.performPurchaseWithContext == nil && purchaseHandler.performRestore == nil {
-                    missingBlocks = "performPurchase and performRestore are"
+                    missingBlocks = "performPurchaseWithContext and performRestore are"
                 } else if purchaseHandler.performPurchaseWithContext == nil {
-                    missingBlocks = "performPurchase is"
+                    missingBlocks = "performPurchaseWithContext is"
                 } else {
                     missingBlocks = "performRestore is"
                 }
