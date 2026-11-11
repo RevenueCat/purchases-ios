@@ -5,7 +5,7 @@
 The app demonstrates how application behavior can respond to checkpoint results:
 
 - configuring `Purchases`;
-- keeping premium content locked unless the customer in the checkpoint result has an active entitlement;
+- keeping premium content locked unless a checkpoint returns purchased or restored;
 - presenting a soft paywall without blocking its content;
 - completing an onboarding flow regardless of the checkpoint result;
 - skipping a checkpoint when `CustomerInfo` already contains an active entitlement;
