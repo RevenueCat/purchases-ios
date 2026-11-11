@@ -334,6 +334,7 @@ public class PaywallViewController: UIViewController {
         )
     }
 
+    // Keep existing trailing-closure calls bound to the legacy initializer.
     /// Creates a paywall with optional custom purchase logic that receives the selected promotional offer.
     /// - Parameters:
     ///   - offering: The offering to display, or `nil` to use the current offering.
@@ -343,6 +344,7 @@ public class PaywallViewController: UIViewController {
     ///   - performPurchaseWithContext: An optional callback responsible for applying the selected offer.
     ///   - performRestore: The callback that restores purchases.
     ///   - dismissRequestedHandler: Called when the paywall requests dismissal.
+    @_disfavoredOverload
     public convenience init(
         offering: Offering? = nil,
         fonts: PaywallFontProvider = DefaultPaywallFontProvider(),

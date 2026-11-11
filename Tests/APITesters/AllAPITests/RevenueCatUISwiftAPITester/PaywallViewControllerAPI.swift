@@ -132,6 +132,54 @@ func checkContextPaywallViewControllerAPI(offering: Offering?, fontProvider: Pay
     let _ = PaywallViewController(offering: offering, fonts: fontProvider,
                                  performPurchaseWithContext: purchase, performRestore: restore)
     let _ = PaywallFooterViewController(performPurchaseWithContext: purchase, performRestore: restore)
+    let _ = PaywallViewController(offering: offering, performPurchaseWithContext: { _ in
+        (userCancelled: true, error: nil)
+    }) {
+        (success: true, error: nil)
+    }
+    let _ = PaywallViewController(offering: offering, fonts: fontProvider, performPurchaseWithContext: { _ in
+        (userCancelled: true, error: nil)
+    }) {
+        (success: true, error: nil)
+    } dismissRequestedHandler: { _ in }
+    let _ = PaywallFooterViewController(offering: offering, performPurchaseWithContext: { _ in
+        (userCancelled: true, error: nil)
+    }) {
+        (success: true, error: nil)
+    }
+    let _ = PaywallFooterViewController(offering: offering, performPurchaseWithContext: { _ in
+        (userCancelled: true, error: nil)
+    }) {
+        (success: true, error: nil)
+    } dismissRequestedHandler: { _ in }
+    let _ = PaywallViewController { controller in controller.dismiss(animated: true) }
+    let _ = PaywallViewController(fonts: fontProvider) { controller in controller.dismiss(animated: true) }
+    let _ = PaywallFooterViewController { controller in controller.dismiss(animated: true) }
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+@available(*, deprecated) // Ignore expected warnings while checking legacy source compatibility.
+func checkLegacyControllerTrailingClosuresAPI(offering: Offering?, fontProvider: PaywallFontProvider) {
+    let _ = PaywallViewController(offering: offering, fonts: fontProvider) { _ in
+        (userCancelled: true, error: nil)
+    } performRestore: {
+        (success: true, error: nil)
+    }
+    let _ = PaywallViewController(offering: offering, fonts: fontProvider) { _ in
+        (userCancelled: true, error: nil)
+    } performRestore: {
+        (success: true, error: nil)
+    } dismissRequestedHandler: { _ in }
+    let _ = PaywallFooterViewController(offering: offering) { _ in
+        (userCancelled: true, error: nil)
+    } performRestore: {
+        (success: true, error: nil)
+    }
+    let _ = PaywallFooterViewController(offering: offering) { _ in
+        (userCancelled: true, error: nil)
+    } performRestore: {
+        (success: true, error: nil)
+    } dismissRequestedHandler: { _ in }
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)

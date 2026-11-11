@@ -1409,6 +1409,58 @@ final class CustomPurchaseCompatibilityTests: TestCase {
         }
     }
 
+    func testLegacyMultipleTrailingClosuresPreserveResults() async {
+        var purchaseCalls = 0
+        var restoreCalls = 0
+        let logic = MyAppPurchaseLogic { _ in
+            purchaseCalls += 1
+            return (userCancelled: true, error: Self.purchaseError)
+        } performRestore: {
+            restoreCalls += 1
+            return (success: false, error: Self.purchaseError)
+        }
+
+        let result = await logic.performPurchaseWithContext(.init(
+            package: TestData.annualPackage,
+            promotionalOffer: Self.offer(identifier: "legacy-trailing")
+        ))
+        let restored = await logic.performRestore()
+
+        XCTAssertEqual(purchaseCalls, 1)
+        XCTAssertEqual(restoreCalls, 1)
+        XCTAssertTrue(result.userCancelled)
+        XCTAssertTrue(result.error as NSError? === Self.purchaseError)
+        XCTAssertFalse(restored.success)
+        XCTAssertTrue(restored.error as NSError? === Self.purchaseError)
+    }
+
+    func testContextMultipleTrailingClosuresPreserveContextAndResults() async {
+        var receivedContext: PaywallPurchaseContext?
+        var restoreCalls = 0
+        // Exercise the public trailing-closure syntax so overload regressions fail to compile.
+        // swiftlint:disable multiple_closures_with_trailing_closure
+        let logic = MyAppPurchaseLogic(performPurchaseWithContext: { context in
+            receivedContext = context
+            return (userCancelled: true, error: Self.purchaseError)
+        }) {
+            restoreCalls += 1
+            return (success: false, error: Self.purchaseError)
+        }
+        // swiftlint:enable multiple_closures_with_trailing_closure
+        let context = PaywallPurchaseContext(package: TestData.annualPackage,
+                                             promotionalOffer: Self.offer(identifier: "context-trailing"))
+
+        let result = await logic.performPurchaseWithContext(context)
+        let restored = await logic.performRestore()
+
+        XCTAssertTrue(receivedContext === context)
+        XCTAssertTrue(result.userCancelled)
+        XCTAssertTrue(result.error as NSError? === Self.purchaseError)
+        XCTAssertEqual(restoreCalls, 1)
+        XCTAssertFalse(restored.success)
+        XCTAssertTrue(restored.error as NSError? === Self.purchaseError)
+    }
+
     func testLegacyCallbackSurvivesBothDefaultFactories() async throws {
         for throughLogic in [false, true] {
             var received: Package?

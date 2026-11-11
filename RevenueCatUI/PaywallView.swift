@@ -128,6 +128,7 @@ public struct PaywallView: View {
         )
     }
 
+    // Keep existing trailing-closure calls bound to the legacy initializer.
     /// Create a view to display the paywall in `Offerings.current`.
     /// - Parameters:
     ///   - fonts: The font provider for the paywall.
@@ -140,6 +141,7 @@ public struct PaywallView: View {
     /// an error will be displayed.
     /// - Warning: `Purchases` must have been configured prior to displaying it.
     /// If you want to handle that, you can use ``init(offering:)`` instead.
+    @_disfavoredOverload
     public init(
         fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
         displayCloseButton: Bool = false,
@@ -154,6 +156,7 @@ public struct PaywallView: View {
         ))
     }
 
+    // Keep existing trailing-closure calls bound to the legacy initializer.
     /// Create a view to display the paywall in a given `Offering`.
     /// - Parameters:
     ///   - offering: The offering to display, overriding the current offering and experiment assignment.
@@ -166,6 +169,7 @@ public struct PaywallView: View {
     /// - Note: If `offering` does not have a current paywall (`hasPaywall == false`), or it fails to load
     /// due to invalid data, a default paywall will be displayed.
     /// - Warning: `Purchases` must have been configured prior to displaying it.
+    @_disfavoredOverload
     public init(
         offering: Offering,
         fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
