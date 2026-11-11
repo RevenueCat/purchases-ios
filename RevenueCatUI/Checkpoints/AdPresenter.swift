@@ -58,6 +58,13 @@ public struct AdPresentationParams {
     /// The ad format ``adIdentifier`` was created for, which decides how the presenter loads and shows it.
     public let adFormat: AdFormat
 
+    /// Whether RevenueCat verifies the reward of a rewarded ad. Interstitial ads ignore it.
+    ///
+    /// When `false`, the presenter must not enable RevenueCat reward verification, and RevenueCat grants nothing for
+    /// the ad. The presenter reports ``AdPresentationResult/shown`` only if the ad network reported the reward on
+    /// the device, and ``AdPresentationResult/rewardNotEarned`` otherwise.
+    public let rewardVerificationEnabled: Bool
+
     /// Creates presentation context for an ad step selected by a checkpoint.
     ///
     /// - Parameters:
@@ -65,16 +72,19 @@ public struct AdPresentationParams {
     ///   - adIdentifier: The identifier of the ad configured for the ad step.
     ///   - mediator: The mediation network configured to serve `adIdentifier`.
     ///   - adFormat: The ad format `adIdentifier` was created for.
+    ///   - rewardVerificationEnabled: Whether RevenueCat verifies the reward of a rewarded ad.
     @_spi(Internal) public init(
         checkpointIdentifier: String,
         adIdentifier: String,
         mediator: MediatorName,
-        adFormat: AdFormat
+        adFormat: AdFormat,
+        rewardVerificationEnabled: Bool
     ) {
         self.checkpointIdentifier = checkpointIdentifier
         self.adIdentifier = adIdentifier
         self.mediator = mediator
         self.adFormat = adFormat
+        self.rewardVerificationEnabled = rewardVerificationEnabled
     }
 
 }
@@ -88,7 +98,8 @@ public struct AdPresentationParams {
 public struct AdPresentationResult: Equatable, Sendable {
 
     /// The ad was shown and dismissed. For a rewarded ad, the customer watched it through and the server
-    /// confirmed it.
+    /// confirmed it, or, when ``AdPresentationParams/rewardVerificationEnabled`` is `false`, the ad network
+    /// reported the reward on the device.
     ///
     /// The checkpoint passes.
     public static let shown = AdPresentationResult(kind: .shown)

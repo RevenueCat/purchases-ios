@@ -32,6 +32,9 @@ internal extension Tracking {
         func trackAdFailedToLoad(_ data: AdFailedToLoad) {
             Purchases.shared.adTracker.trackAdFailedToLoad(data, captureMethod: .iosAdMobAdapter)
         }
+        func trackAdRewardEarnedUnverified(_ data: AdRewardEarnedUnverified) {
+            Purchases.shared.adTracker.trackAdRewardEarnedUnverified(data, captureMethod: .iosAdMobAdapter)
+        }
 
     }
 

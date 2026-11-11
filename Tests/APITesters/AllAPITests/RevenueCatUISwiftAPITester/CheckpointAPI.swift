@@ -173,6 +173,7 @@ private final class CheckpointAPIAdPresenter: AdPresenter {
         let _: String = params.adIdentifier
         let _: MediatorName = params.mediator
         let _: AdFormat = params.adFormat
+        let _: Bool = params.rewardVerificationEnabled
         completion(.shown)
     }
 
