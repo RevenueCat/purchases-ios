@@ -139,8 +139,7 @@ extension View {
         purchaseFailure: PurchaseFailureHandler? = nil,
         restoreFailure: PurchaseFailureHandler? = nil
     ) -> some View {
-        let purchaseHandler = PurchaseHandler.default(performPurchase: myAppPurchaseLogic?.performPurchase,
-                                                      performRestore: myAppPurchaseLogic?.performRestore)
+        let purchaseHandler = PurchaseHandler.default(myAppPurchaseLogic: myAppPurchaseLogic)
         return self.originalTemplatePaywallFooter(
             offering: nil,
             condensed: condensed,
@@ -277,8 +276,7 @@ extension View {
         purchaseFailure: PurchaseFailureHandler? = nil,
         restoreFailure: PurchaseFailureHandler? = nil
     ) -> some View {
-        let purchaseHandler = PurchaseHandler.default(performPurchase: myAppPurchaseLogic?.performPurchase,
-                                                      performRestore: myAppPurchaseLogic?.performRestore)
+        let purchaseHandler = PurchaseHandler.default(myAppPurchaseLogic: myAppPurchaseLogic)
         return self.originalTemplatePaywallFooter(
             offering: offering,
             condensed: condensed,

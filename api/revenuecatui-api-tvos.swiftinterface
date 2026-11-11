@@ -246,6 +246,14 @@ public typealias WebCheckoutOpenedHandler = @_Concurrency.MainActor @Sendable ()
 public typealias URLOpenedHandler = @_Concurrency.MainActor @Sendable (_ url: Foundation.URL) -> Swift.Void
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public typealias PerformPurchase = @_Concurrency.MainActor @Sendable (_ packageToPurchase: RevenueCat.Package) async -> (userCancelled: Swift.Bool, error: (any Swift.Error)?)
+@_hasMissingDesignatedInitializers @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@objc(RCPaywallPurchaseContext) final public class PaywallPurchaseContext : ObjectiveC.NSObject, Swift.Sendable {
+  @objc final public let package: RevenueCat.Package
+  @objc final public let promotionalOffer: RevenueCat.PromotionalOffer?
+  @objc deinit
+}
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+public typealias PerformPurchaseWithContext = @_Concurrency.MainActor @Sendable (_ context: RevenueCatUI.PaywallPurchaseContext) async -> (userCancelled: Swift.Bool, error: (any Swift.Error)?)
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public typealias PerformRestore = @_Concurrency.MainActor @Sendable () async -> (success: Swift.Bool, error: (any Swift.Error)?)
 public typealias PurchaseFailureHandler = @_Concurrency.MainActor @Sendable (Foundation.NSError) -> Swift.Void

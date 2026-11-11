@@ -81,10 +81,11 @@ public struct PaywallView: View {
     /// an error will be displayed.
     /// - Warning: `Purchases` must have been configured prior to displaying it.
     /// If you want to handle that, you can use ``init(offering:)`` instead.
+    @available(*, deprecated, message: "Use the initializer with performPurchaseWithContext instead.")
     public init(
         fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
         displayCloseButton: Bool = false,
-        performPurchase: PerformPurchase? = nil,
+        performPurchase: PerformPurchase?,
         performRestore: PerformRestore? = nil
     ) {
         let purchaseHandler = PurchaseHandler.default(performPurchase: performPurchase, performRestore: performRestore)
@@ -107,11 +108,12 @@ public struct PaywallView: View {
     /// due to invalid data, a default paywall will be displayed.
     /// - Note: Specifying this parameter means that it will ignore the offering configured in an active experiment.
     /// - Warning: `Purchases` must have been configured prior to displaying it.
+    @available(*, deprecated, message: "Use the initializer with performPurchaseWithContext instead.")
     public init(
         offering: Offering,
         fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
         displayCloseButton: Bool = false,
-        performPurchase: PerformPurchase? = nil,
+        performPurchase: PerformPurchase?,
         performRestore: PerformRestore? = nil
     ) {
         let purchaseHandler = PurchaseHandler.default(performPurchase: performPurchase, performRestore: performRestore)
@@ -124,6 +126,62 @@ public struct PaywallView: View {
                 purchaseHandler: purchaseHandler
             )
         )
+    }
+
+    /// Create a view to display the paywall in `Offerings.current`.
+    /// - Parameters:
+    ///   - fonts: The font provider for the paywall.
+    ///   - displayCloseButton: Whether to display a close button.
+    ///   - performPurchaseWithContext: An optional callback responsible for applying the selected promotional offer.
+    ///     Only used when `purchasesAreCompletedBy` is `.myApp`.
+    ///   - performRestore: An optional callback that restores purchases. Only used when `purchasesAreCompletedBy`
+    ///     is `.myApp`.
+    /// - Note: If loading the current `Offering` fails (if the user is offline, for example),
+    /// an error will be displayed.
+    /// - Warning: `Purchases` must have been configured prior to displaying it.
+    /// If you want to handle that, you can use ``init(offering:)`` instead.
+    @_disfavoredOverload // Keep existing trailing-closure calls bound to the legacy initializer.
+    public init(
+        fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
+        displayCloseButton: Bool = false,
+        performPurchaseWithContext: PerformPurchaseWithContext? = nil,
+        performRestore: PerformRestore? = nil
+    ) {
+        self.init(configuration: .init(
+            fonts: fonts,
+            displayCloseButton: displayCloseButton,
+            purchaseHandler: .default(performRestore: performRestore,
+                                      performPurchaseWithContext: performPurchaseWithContext)
+        ))
+    }
+
+    /// Create a view to display the paywall in a given `Offering`.
+    /// - Parameters:
+    ///   - offering: The offering to display, overriding the current offering and experiment assignment.
+    ///   - fonts: The font provider for the paywall.
+    ///   - displayCloseButton: Whether to display a close button.
+    ///   - performPurchaseWithContext: An optional callback responsible for applying the selected promotional offer.
+    ///     Only used when `purchasesAreCompletedBy` is `.myApp`.
+    ///   - performRestore: An optional callback that restores purchases. Only used when `purchasesAreCompletedBy`
+    ///     is `.myApp`.
+    /// - Note: If `offering` does not have a current paywall (`hasPaywall == false`), or it fails to load
+    /// due to invalid data, a default paywall will be displayed.
+    /// - Warning: `Purchases` must have been configured prior to displaying it.
+    @_disfavoredOverload // Keep existing trailing-closure calls bound to the legacy initializer.
+    public init(
+        offering: Offering,
+        fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
+        displayCloseButton: Bool = false,
+        performPurchaseWithContext: PerformPurchaseWithContext? = nil,
+        performRestore: PerformRestore? = nil
+    ) {
+        self.init(configuration: .init(
+            offering: offering,
+            fonts: fonts,
+            displayCloseButton: displayCloseButton,
+            purchaseHandler: .default(performRestore: performRestore,
+                                      performPurchaseWithContext: performPurchaseWithContext)
+        ))
     }
 
     // swiftlint:disable:next missing_docs
@@ -231,12 +289,12 @@ public struct PaywallView: View {
     private static func checkForConfigurationConsistency(purchaseHandler: PurchaseHandler) -> NSError? {
         switch purchaseHandler.purchasesAreCompletedBy {
         case .myApp:
-            if purchaseHandler.performPurchase == nil || purchaseHandler.performRestore == nil {
+            if purchaseHandler.performPurchaseWithContext == nil || purchaseHandler.performRestore == nil {
                 let missingBlocks: String
-                if purchaseHandler.performPurchase == nil && purchaseHandler.performRestore == nil {
-                    missingBlocks = "performPurchase and performRestore are"
-                } else if purchaseHandler.performPurchase == nil {
-                    missingBlocks = "performPurchase is"
+                if purchaseHandler.performPurchaseWithContext == nil && purchaseHandler.performRestore == nil {
+                    missingBlocks = "performPurchaseWithContext and performRestore are"
+                } else if purchaseHandler.performPurchaseWithContext == nil {
+                    missingBlocks = "performPurchaseWithContext is"
                 } else {
                     missingBlocks = "performRestore is"
                 }
@@ -249,7 +307,7 @@ public struct PaywallView: View {
                 return error
             }
         case .revenueCat:
-            if purchaseHandler.performPurchase != nil || purchaseHandler.performRestore != nil {
+            if purchaseHandler.performPurchaseWithContext != nil || purchaseHandler.performRestore != nil {
                 Logger.warning(PaywallError.purchaseAndRestoreDefinedForRevenueCat)
             }
         }

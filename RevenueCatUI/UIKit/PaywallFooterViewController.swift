@@ -40,6 +40,7 @@ public final class PaywallFooterViewController: PaywallViewController {
     /// - Important: `performPurchase` and `performRestore` are only used when `Purchases`
     /// has been configured with `.with(purchasesAreCompletedBy: .myApp)`. Otherwise,
     /// the default purchase and restore implementations are used and these closures are ignored.
+    @available(*, deprecated, message: "Use the initializer with performPurchaseWithContext instead.")
     public init(
         offering: Offering? = nil,
         performPurchase: @escaping PerformPurchase,
@@ -52,6 +53,45 @@ public final class PaywallFooterViewController: PaywallViewController {
                    shouldBlockTouchEvents: false,
                    performPurchase: performPurchase,
                    performRestore: performRestore,
+                   dismissRequestedHandler: dismissRequestedHandler)
+    }
+
+    /// Creates a footer with custom purchase logic that receives the selected promotional offer.
+    /// - Parameters:
+    ///   - offering: The offering to display, or `nil` to use the current offering.
+    ///   - performPurchaseWithContext: The callback responsible for applying the selected offer.
+    ///   - performRestore: The callback that restores purchases.
+    ///   - dismissRequestedHandler: Called when the paywall requests dismissal.
+    @_disfavoredOverload // Keep existing trailing-closure calls bound to the legacy initializer.
+    public init(
+        offering: Offering? = nil,
+        performPurchaseWithContext: @escaping PerformPurchaseWithContext,
+        performRestore: @escaping PerformRestore,
+        dismissRequestedHandler: ((_ controller: PaywallViewController) -> Void)? = nil
+    ) {
+        super.init(content: .optionalOffering(offering), fonts: DefaultPaywallFontProvider(),
+                   displayCloseButton: false, shouldBlockTouchEvents: false,
+                   performPurchase: nil, performRestore: performRestore,
+                   performPurchaseWithContext: performPurchaseWithContext,
+                   dismissRequestedHandler: dismissRequestedHandler)
+    }
+
+    /// Creates a footer with an Objective-C compatible handler that receives the selected offer.
+    /// - Parameters:
+    ///   - offering: The offering to display, or `nil` to use the current offering.
+    ///   - purchaseHandlerWithContext: The app-defined purchase and restore handler.
+    ///   - dismissRequestedHandler: Called when the paywall requests dismissal.
+    @objc
+    public init(
+        offering: Offering? = nil,
+        purchaseHandlerWithContext: PaywallPurchaseHandlerWithContext,
+        dismissRequestedHandler: ((_ controller: PaywallViewController) -> Void)? = nil
+    ) {
+        let bridged = Self.bridgePurchaseHandlerWithContext(purchaseHandlerWithContext)
+        super.init(content: .optionalOffering(offering), fonts: DefaultPaywallFontProvider(),
+                   displayCloseButton: false, shouldBlockTouchEvents: false,
+                   performPurchase: nil, performRestore: bridged.performRestore,
+                   performPurchaseWithContext: bridged.performPurchaseWithContext,
                    dismissRequestedHandler: dismissRequestedHandler)
     }
 
@@ -68,6 +108,7 @@ public final class PaywallFooterViewController: PaywallViewController {
     /// - Important: `purchaseHandler` is only used when `Purchases` has been configured with
     /// `.with(purchasesAreCompletedBy: .myApp)`. Otherwise, the default purchase and restore
     /// implementations are used and the handler is ignored.
+    @available(*, deprecated, message: "Use the initializer with purchaseHandlerWithContext instead.")
     @objc
     public init(
         offering: Offering? = nil,
@@ -184,6 +225,7 @@ public final class PaywallFooterViewController: PaywallViewController {
         shouldBlockTouchEvents: Bool = false,
         performPurchase: PerformPurchase? = nil,
         performRestore: PerformRestore? = nil,
+        performPurchaseWithContext: PerformPurchaseWithContext? = nil,
         dismissRequestedHandler: ((_ controller: PaywallViewController) -> Void)? = nil,
         promoOfferCache: PaywallPromoOfferCache? = nil
     ) {

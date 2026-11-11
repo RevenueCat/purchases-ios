@@ -38,14 +38,18 @@ extension PaywallPresentationMode {
 
 }
 
-/// Contains the `PerformPurchase` and `PerformRestore` blocks that are executed when
+/// Contains the purchase and restore callbacks that are executed when
 /// ``Purchases/purchasesAreCompletedBy`` is ``PurchasesAreCompletedBy/myApp``.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public struct MyAppPurchaseLogic {
 
     /// When ``Purchases/purchasesAreCompletedBy`` is ``PurchasesAreCompletedBy/myApp``, this is the app-defined
-    /// callback method that performs the purchase.
+    /// callback method that performs the purchase. Calling this package-only callback directly does not
+    /// provide a promotional offer; paywalls use ``performPurchaseWithContext`` instead.
     public let performPurchase: PerformPurchase
+
+    /// The app-defined purchase callback, including the offer selected by the paywall.
+    public let performPurchaseWithContext: PerformPurchaseWithContext
 
     /// When  ``Purchases/purchasesAreCompletedBy`` is ``PurchasesAreCompletedBy/myApp``, this is the app-defined
     /// callback method that performs the restore.
@@ -53,8 +57,24 @@ public struct MyAppPurchaseLogic {
 
     /// Initializes the struct with blocks that are executed when
     /// ``Purchases/purchasesAreCompletedBy`` is ``PurchasesAreCompletedBy/myApp``.
+    @available(*, deprecated, message: "Use the initializer with performPurchaseWithContext instead.")
     public init(performPurchase: @escaping PerformPurchase, performRestore: @escaping PerformRestore) {
         self.performPurchase = performPurchase
+        self.performPurchaseWithContext = { context in await performPurchase(context.package) }
+        self.performRestore = performRestore
+    }
+
+    /// Creates custom purchase logic that receives the package and selected promotional offer.
+    /// - Parameters:
+    ///   - performPurchaseWithContext: The callback responsible for applying the selected offer.
+    ///   - performRestore: The callback that restores purchases.
+    @_disfavoredOverload // Keep existing trailing-closure calls bound to the legacy initializer.
+    public init(performPurchaseWithContext: @escaping PerformPurchaseWithContext,
+                performRestore: @escaping PerformRestore) {
+        self.performPurchaseWithContext = performPurchaseWithContext
+        self.performPurchase = { package in
+            await performPurchaseWithContext(.init(package: package, promotionalOffer: nil))
+        }
         self.performRestore = performRestore
     }
 }
@@ -558,8 +578,7 @@ private struct PresentingPaywallModifier: ViewModifier {
         self.customerInfoFetcher = customerInfoFetcher
         self.introEligibility = introEligibility
         let handler = purchaseHandler ??
-            PurchaseHandler.default(performPurchase: myAppPurchaseLogic?.performPurchase,
-                                    performRestore: myAppPurchaseLogic?.performRestore)
+            PurchaseHandler.default(myAppPurchaseLogic: myAppPurchaseLogic)
         self._purchaseHandler = .init(wrappedValue: handler)
         self._exitOfferPresenter = .init(wrappedValue: ExitOfferPresenter(purchaseHandler: handler))
         self._promoOfferCacheOwner = .init(wrappedValue:
@@ -917,8 +936,7 @@ private struct PresentingPaywallBindingModifier: ViewModifier {
         self.webCheckoutOpened = webCheckoutOpened
         self.urlOpened = urlOpened
         self.onInteraction = onInteraction
-        let handler = PurchaseHandler.default(performPurchase: myAppPurchaseLogic?.performPurchase,
-                                              performRestore: myAppPurchaseLogic?.performRestore)
+        let handler = PurchaseHandler.default(myAppPurchaseLogic: myAppPurchaseLogic)
         self._purchaseHandler = .init(wrappedValue: handler)
         self._exitOfferPresenter = .init(wrappedValue: ExitOfferPresenter(purchaseHandler: handler))
         self._promoOfferCacheOwner = .init(wrappedValue:
