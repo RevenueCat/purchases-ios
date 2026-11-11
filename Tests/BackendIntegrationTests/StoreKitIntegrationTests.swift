@@ -366,7 +366,7 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
                                                                         count: count)
 
         for transaction in transactions {
-            try await self.verifyTransactionWasFinished(transaction)
+            try await self.verifyTransactionWasFinished(transaction, count: nil)
         }
     }
 

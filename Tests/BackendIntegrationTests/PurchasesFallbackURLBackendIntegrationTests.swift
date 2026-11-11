@@ -129,7 +129,7 @@ class PurchasesFallbackURLBackendStoreKit2IntegrationTests: BaseStoreKitIntegrat
 
         let onlineCustomerInfo = try await self.purchases.customerInfo()
 
-        try await self.verifyTransactionWasFinished(transaction)
+        try await self.verifyTransactionWasFinished(transaction, count: nil)
 
         verifyCustomerInfoWasNotComputedOffline(customerInfo: onlineCustomerInfo)
 

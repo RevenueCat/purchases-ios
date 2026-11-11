@@ -197,7 +197,7 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
         }
 
         // 4. Ensure transaction is eventually finished
-        try await self.verifyTransactionWasFinished(transaction)
+        try await self.verifyTransactionWasFinished(transaction, count: nil)
 
         // 5. Restart app again
         try self.purchases.invalidateCustomerInfoCache()

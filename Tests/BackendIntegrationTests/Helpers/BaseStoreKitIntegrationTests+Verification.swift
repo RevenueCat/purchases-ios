@@ -164,6 +164,7 @@ extension BaseStoreKitIntegrationTests {
 
     func verifyTransactionWasFinished(
         _ transaction: StoreTransaction,
+        count: Int? = 1,
         file: FileString = #file,
         line: UInt = #line
     ) async throws {
@@ -180,6 +181,7 @@ extension BaseStoreKitIntegrationTests {
         case .storeKit2:
             try await self.verifySpecificTransactionIsEventuallyFinished(
                 transaction,
+                count: count,
                 file: file,
                 line: line
             )
