@@ -282,7 +282,7 @@ internal final class RewardedPresentation: NSObject, GoogleMobileAds.FullScreenC
                     ))
                 }
                 // Non-nil means verification succeeded; a verified result with nothing granted
-                // still passes, like client-reported mode.
+                // still passes, like when reward verification is off.
                 self.isRewardEarned = result.verifiedReward != nil
                 self.isVerificationSettled = true
                 self.finishIfSettled()

@@ -1889,6 +1889,7 @@
 		077AC81FEBE38D1468AE8670 /* VideoAutoplayHandlerTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = VideoAutoplayHandlerTests.swift; sourceTree = "<group>"; };
 		077FB0E4EC264B2EA08C4521 /* GetRemoteConfigOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GetRemoteConfigOperation.swift; sourceTree = "<group>"; };
 		0AA5FEF26985445B9576D005 /* TabsComponentDuplicateInstanceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabsComponentDuplicateInstanceTests.swift; sourceTree = "<group>"; };
+		0B7C4E1A92F0D4C6E9A3B5D1 /* BackgroundStyleTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackgroundStyleTests.swift; sourceTree = "<group>"; };
 		0C5FC914F4E87D00963A8F1D /* PackageComponentTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PackageComponentTests.swift; sourceTree = "<group>"; };
 		0DD50FFC7C0F48B6A0FDE360 /* PaywallPromoOfferCacheTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallPromoOfferCacheTests.swift; sourceTree = "<group>"; };
 		0E4CCD8E9E454A2EB3760E06 /* ButtonComponentViewModelMappingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ButtonComponentViewModelMappingTests.swift; sourceTree = "<group>"; };
@@ -3831,6 +3832,7 @@
 				57BFCD0A2EEB0E56009E5844 /* TabsPackageInheritanceTests.swift */,
 				D1E153AB41D64A01B729C7D4 /* TabControlDiscountTests.swift */,
 				0AA5FEF26985445B9576D005 /* TabsComponentDuplicateInstanceTests.swift */,
+				0B7C4E1A92F0D4C6E9A3B5D1 /* BackgroundStyleTests.swift */,
 				E7D46162A95A4706925EC868 /* TabControlHapticFeedbackTests.swift */,
 				E7EAAD1DC166ABD68E484EAA /* RootViewSheetDismissalTests.swift */,
 				83EE33252E1E20360011CF1C /* PaywallPreviewResourcesLoader.swift */,

@@ -101,7 +101,7 @@ final class RewardedPresentationTests: AdapterTestCase {
         }
     }
 
-    func testClientReportedRewardsNeverEnableRewardVerification() {
+    func testUnverifiedRewardsNeverEnableRewardVerification() {
         for format in Self.formats {
             let fakeAd = FakeRewardedAd()
             let presentation = self.makePresentation(format: format, loadResult: .success(fakeAd))
@@ -115,7 +115,7 @@ final class RewardedPresentationTests: AdapterTestCase {
         }
     }
 
-    func testClientReportedEarnedRewardThenDismissalCompletesWithShown() throws {
+    func testUnverifiedEarnedRewardThenDismissalCompletesWithShown() throws {
         for format in Self.formats {
             let fakeAd = FakeRewardedAd()
             let presentation = self.makePresentation(format: format, loadResult: .success(fakeAd))
@@ -132,7 +132,7 @@ final class RewardedPresentationTests: AdapterTestCase {
         }
     }
 
-    func testClientReportedDismissalWithoutEarningRewardCompletesWithRewardNotEarned() throws {
+    func testUnverifiedDismissalWithoutEarningRewardCompletesWithRewardNotEarned() throws {
         for format in Self.formats {
             let fakeAd = FakeRewardedAd()
             let presentation = self.makePresentation(format: format, loadResult: .success(fakeAd))
@@ -148,7 +148,7 @@ final class RewardedPresentationTests: AdapterTestCase {
         }
     }
 
-    func testClientReportedEarnedRewardWaitsForDismissal() {
+    func testUnverifiedEarnedRewardWaitsForDismissal() {
         for format in Self.formats {
             let fakeAd = FakeRewardedAd()
             let presentation = self.makePresentation(format: format, loadResult: .success(fakeAd))
