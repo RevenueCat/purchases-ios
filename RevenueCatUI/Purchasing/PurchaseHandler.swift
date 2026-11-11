@@ -237,9 +237,12 @@ final class PurchaseHandler: ObservableObject {
         self.resolveBranch = resolveBranch
         self.paywallEventTracker = eventTracker
         self.keyWindowFocusResigner = keyWindowFocusResigner
-        self.performPurchaseWithContext = performPurchaseWithContext
-        if performPurchaseWithContext == nil, let performPurchase {
-            self.performPurchaseWithContext = { context in await performPurchase(context.package) }
+        if let performPurchaseWithContext {
+            self.performPurchaseWithContext = performPurchaseWithContext
+        } else {
+            self.performPurchaseWithContext = performPurchase.map { legacyPurchase -> PerformPurchaseWithContext in
+                { context in await legacyPurchase(context.package) }
+            }
         }
         self.performRestore = performRestore
 
