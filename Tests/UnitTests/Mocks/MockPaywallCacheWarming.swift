@@ -31,22 +31,22 @@ final class MockPaywallCacheWarming: PaywallCacheWarmingType {
     let assetsWarmupPriority: Atomic<TaskPriority?> = .init(nil)
     let fontsWarmupPriority: Atomic<TaskPriority?> = .init(nil)
 
-    private let _invokedWarmUpEligibilityCache: Atomic<Bool> = false
-    private let _invokedWarmUpEligibilityCacheOfferings: Atomic<Offerings?> = nil
+    private let _invokedPrewarmEligibilityCache: Atomic<Bool> = false
+    private let _invokedPrewarmEligibilityCacheOfferings: Atomic<Offerings?> = nil
 
-    var invokedWarmUpEligibilityCache: Bool {
-        get { return self._invokedWarmUpEligibilityCache.value }
-        set { self._invokedWarmUpEligibilityCache.value = newValue }
+    var invokedPrewarmEligibilityCache: Bool {
+        get { return self._invokedPrewarmEligibilityCache.value }
+        set { self._invokedPrewarmEligibilityCache.value = newValue }
     }
-    var invokedWarmUpEligibilityCacheOfferings: Offerings? {
-        get { return self._invokedWarmUpEligibilityCacheOfferings.value }
-        set { self._invokedWarmUpEligibilityCacheOfferings.value = newValue }
+    var invokedPrewarmEligibilityCacheOfferings: Offerings? {
+        get { return self._invokedPrewarmEligibilityCacheOfferings.value }
+        set { self._invokedPrewarmEligibilityCacheOfferings.value = newValue }
     }
 
-    func warmUpEligibilityCache(offerings: Offerings) {
+    func prewarmEligibilityCache(offerings: Offerings) {
         self.eligibilityWarmupPriority.value = Task.currentPriority
-        self.invokedWarmUpEligibilityCache = true
-        self.invokedWarmUpEligibilityCacheOfferings = offerings
+        self.invokedPrewarmEligibilityCache = true
+        self.invokedPrewarmEligibilityCacheOfferings = offerings
     }
 
     // MARK: -
@@ -70,42 +70,42 @@ final class MockPaywallCacheWarming: PaywallCacheWarmingType {
 
     // MARK: -
 
-    private let _invokedWarmUpPaywallAssetsCache: Atomic<Bool> = false
-    private let _invokedWarmUpPaywallAssetsCacheOfferings: Atomic<Offerings?> = nil
+    private let _invokedPrewarmPaywallAssetsCache: Atomic<Bool> = false
+    private let _invokedPrewarmPaywallAssetsCacheOfferings: Atomic<Offerings?> = nil
 
-    var invokedWarmUpPaywallAssetsCache: Bool {
-        get { return self._invokedWarmUpPaywallAssetsCache.value }
-        set { self._invokedWarmUpPaywallAssetsCache.value = newValue }
+    var invokedPrewarmPaywallAssetsCache: Bool {
+        get { return self._invokedPrewarmPaywallAssetsCache.value }
+        set { self._invokedPrewarmPaywallAssetsCache.value = newValue }
     }
-    var invokedWarmUpPaywallAssetsCacheOfferings: Offerings? {
-        get { return self._invokedWarmUpPaywallAssetsCacheOfferings.value }
-        set { self._invokedWarmUpPaywallAssetsCacheOfferings.value = newValue }
+    var invokedPrewarmPaywallAssetsCacheOfferings: Offerings? {
+        get { return self._invokedPrewarmPaywallAssetsCacheOfferings.value }
+        set { self._invokedPrewarmPaywallAssetsCacheOfferings.value = newValue }
     }
 
-    func warmUpPaywallAssetsCache(offerings: Offerings) async {
+    func prewarmPaywallAssetsCache(offerings: Offerings) async {
         self.assetsWarmupPriority.value = Task.currentPriority
-        self.invokedWarmUpPaywallAssetsCache = true
-        self.invokedWarmUpPaywallAssetsCacheOfferings = offerings
+        self.invokedPrewarmPaywallAssetsCache = true
+        self.invokedPrewarmPaywallAssetsCacheOfferings = offerings
     }
 
     // MARK: -
 
-    private let _invokedWarmUpPaywallFontsCache: Atomic<Bool> = false
-    private let _invokedWarmUpPaywallFontsCacheOfferings: Atomic<Offerings?> = nil
+    private let _invokedPrewarmPaywallFontsCache: Atomic<Bool> = false
+    private let _invokedPrewarmPaywallFontsCacheOfferings: Atomic<Offerings?> = nil
 
-    var invokedWarmUpPaywallFontsCache: Bool {
-        get { return self._invokedWarmUpPaywallFontsCache.value }
-        set { self._invokedWarmUpPaywallFontsCache.value = newValue }
+    var invokedPrewarmPaywallFontsCache: Bool {
+        get { return self._invokedPrewarmPaywallFontsCache.value }
+        set { self._invokedPrewarmPaywallFontsCache.value = newValue }
     }
-    var invokedWarmUpPaywallFontsCacheOfferings: Offerings? {
-        get { return self._invokedWarmUpPaywallFontsCacheOfferings.value }
-        set { self._invokedWarmUpPaywallFontsCacheOfferings.value = newValue }
+    var invokedPrewarmPaywallFontsCacheOfferings: Offerings? {
+        get { return self._invokedPrewarmPaywallFontsCacheOfferings.value }
+        set { self._invokedPrewarmPaywallFontsCacheOfferings.value = newValue }
     }
 
-    func warmUpPaywallFontsCache(offerings: Offerings) {
+    func prewarmPaywallFontsCache(offerings: Offerings) {
         self.fontsWarmupPriority.value = Task.currentPriority
-        self.invokedWarmUpPaywallFontsCache = true
-        self.invokedWarmUpPaywallFontsCacheOfferings = offerings
+        self.invokedPrewarmPaywallFontsCache = true
+        self.invokedPrewarmPaywallFontsCacheOfferings = offerings
     }
 
     // MARK: -
@@ -137,7 +137,7 @@ final class MockPaywallCacheWarming: PaywallCacheWarmingType {
         set { self._invokedPrewarmWorkflowAssetsUiConfig.value = newValue }
     }
 
-    func startWorkflowAssetPrewarming(
+    func startPrewarmingWorkflowAssets(
         workflow: PublishedWorkflow,
         uiConfig: UIConfig
     ) async -> Task<Void, Never>? {
@@ -154,7 +154,7 @@ final class MockPaywallCacheWarming: PaywallCacheWarmingType {
         }
     }
 
-    func hasStartedWorkflowAssetPrewarming(for workflowID: String) async -> Bool {
+    func hasStartedPrewarmingWorkflowAssets(for workflowID: String) async -> Bool {
         return self._preparedWorkflowAssetIDs.value.contains(workflowID)
             || self.invokedPrewarmWorkflowAssetIDs.contains(workflowID)
     }
@@ -174,7 +174,7 @@ final class MockPaywallCacheWarming: PaywallCacheWarmingType {
     }
 
     func triggerFontDownloadIfNeeded(fontsConfig: UIConfig.FontsConfig) async {
-        self.invokedWarmUpEligibilityCache = true
+        self.invokedPrewarmEligibilityCache = true
         self.invokedTriggerFontDownloadIfNeededFontsConfig = fontsConfig
     }
 

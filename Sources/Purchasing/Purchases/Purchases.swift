@@ -1205,7 +1205,7 @@ public extension Purchases {
                                         fetchCurrent: fetchCurrent) { [weak self] result in
             if #available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *),
                let offerings = result.value {
-                self?.warmUpCaches(offerings: offerings)
+                self?.scheduleCachePrewarming(offerings: offerings)
             }
             completion(result.value, result.error?.asPublicError)
         }
@@ -3481,13 +3481,13 @@ private extension Purchases {
         ) { [weak self] offeringsResultData in
             if #available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *),
                let offerings = offeringsResultData.value?.offerings {
-                self?.warmUpCaches(offerings: offerings)
+                self?.scheduleCachePrewarming(offerings: offerings)
             }
         }
     }
 
     @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
-    private func warmUpCaches(offerings: Offerings) {
+    private func scheduleCachePrewarming(offerings: Offerings) {
         guard let cache = self.paywallCache else {
             return
         }
@@ -3499,7 +3499,7 @@ private extension Purchases {
             #if DEBUG
             defer { warmupFinished?() }
             #endif
-            await cache.warmUpEligibilityCache(offerings: offerings)
+            await cache.prewarmEligibilityCache(offerings: offerings)
         }
         #if DEBUG
         Self.eligibilityCacheWarmupTaskCreated.value?(warmupTask)
@@ -3507,10 +3507,10 @@ private extension Purchases {
         _ = warmupTask
         #endif
         self.operationDispatcher.dispatchOnWorkerThread {
-            await cache.warmUpPaywallAssetsCache(offerings: offerings)
+            await cache.prewarmPaywallAssetsCache(offerings: offerings)
         }
         self.operationDispatcher.dispatchOnWorkerThread {
-            await cache.warmUpPaywallFontsCache(offerings: offerings)
+            await cache.prewarmPaywallFontsCache(offerings: offerings)
         }
     }
 

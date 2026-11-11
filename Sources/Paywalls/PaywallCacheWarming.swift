@@ -19,28 +19,28 @@ import Foundation
 protocol PaywallCacheWarmingType: Sendable {
 
     @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
-    func warmUpEligibilityCache(offerings: Offerings) async
+    func prewarmEligibilityCache(offerings: Offerings) async
 
     @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
     func clearEligibilityCache() async
 
     @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
-    func warmUpPaywallAssetsCache(offerings: Offerings) async
+    func prewarmPaywallAssetsCache(offerings: Offerings) async
 
     @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
-    func warmUpPaywallFontsCache(offerings: Offerings) async
+    func prewarmPaywallFontsCache(offerings: Offerings) async
 
     @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
     func prewarmWorkflowAssets(workflow: PublishedWorkflow, uiConfig: UIConfig) async
 
     @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
-    func startWorkflowAssetPrewarming(
+    func startPrewarmingWorkflowAssets(
         workflow: PublishedWorkflow,
         uiConfig: UIConfig
     ) async -> Task<Void, Never>?
 
     @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
-    func hasStartedWorkflowAssetPrewarming(for workflowID: String) async -> Bool
+    func hasStartedPrewarmingWorkflowAssets(for workflowID: String) async -> Bool
 
 #if !os(tvOS) // For Paywalls
 
@@ -60,7 +60,7 @@ extension PaywallCacheWarmingType {
     /// best-effort and do not fail workflow delivery.
     @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
     func prewarmWorkflowAssets(workflow: PublishedWorkflow, uiConfig: UIConfig) async {
-        guard let task = await self.startWorkflowAssetPrewarming(
+        guard let task = await self.startPrewarmingWorkflowAssets(
             workflow: workflow,
             uiConfig: uiConfig
         ) else { return }
@@ -133,7 +133,7 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
     ///
     /// Products that have already been warmed up are skipped on subsequent calls.
     /// Call ``clearEligibilityCache()`` to reset the tracking (e.g. when `CustomerInfo` changes).
-    func warmUpEligibilityCache(offerings: Offerings) async {
+    func prewarmEligibilityCache(offerings: Offerings) async {
         self.pendingCurrentOfferingProductIdentifiers.formUnion(
             offerings.productIdentifiersInCurrentOffering.subtracting(self.warmedEligibilityProductIdentifiers)
         )
@@ -145,7 +145,7 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
             Logger.debug(Strings.paywalls.joining_eligibility_cache_warmup)
             await task.value
         } else if !self.pendingEligibilityProductIdentifiers.isEmpty {
-            let task = Task { await self.warmUpPendingEligibility() }
+            let task = Task { await self.prewarmPendingEligibility() }
             self.eligibilityWarmupTask = task
             await task.value
         }
@@ -154,7 +154,7 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
     /// Resets the set of product identifiers that have been warmed up for intro eligibility.
     ///
     /// Should be called whenever the underlying eligibility cache is cleared (e.g. on
-    /// `CustomerInfo` changes) so that the next call to ``warmUpEligibilityCache(offerings:)``
+    /// `CustomerInfo` changes) so that the next call to ``prewarmEligibilityCache(offerings:)``
     /// re-populates the cache.
     func clearEligibilityCache() {
         // New warm-ups must not wait for checks started before eligibility was invalidated.
@@ -166,7 +166,7 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
         self.pendingEligibilityProductIdentifiers.removeAll(keepingCapacity: false)
     }
 
-    private func warmUpPendingEligibility() async {
+    private func prewarmPendingEligibility() async {
         while !Task.isCancelled {
             let products = self.pendingCurrentOfferingProductIdentifiers.isEmpty
                 ? self.pendingEligibilityProductIdentifiers
@@ -200,7 +200,7 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
     ///
     /// Workflow assets and web bundles are prewarmed from decoded workflows. Assets stored in an offering's
     /// `internalPaywallComponents` are intentionally excluded from offerings prewarming.
-    func warmUpPaywallAssetsCache(offerings: Offerings) async {
+    func prewarmPaywallAssetsCache(offerings: Offerings) async {
         guard !self.hasStartedPaywallAssetPrewarming else { return }
         // Claim this work before suspending so actor reentrancy cannot start duplicate downloads.
         self.hasStartedPaywallAssetPrewarming = true
@@ -215,7 +215,7 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
         }
     }
 
-    func warmUpPaywallFontsCache(offerings: Offerings) async {
+    func prewarmPaywallFontsCache(offerings: Offerings) async {
         let allFontsInPaywallsNamed = offerings.allFontsInPaywallsNamed
         let allFontURLs = Set(allFontsInPaywallsNamed.map(\.url))
         Logger.verbose(Strings.paywalls.warming_up_fonts(fontsURLS: allFontURLs))
@@ -277,7 +277,7 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
     }
 
     /// Extracts lightweight asset references, then starts their download immediately.
-    func startWorkflowAssetPrewarming(
+    func startPrewarmingWorkflowAssets(
         workflow: PublishedWorkflow,
         uiConfig: UIConfig
     ) -> Task<Void, Never>? {
@@ -314,7 +314,7 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
         }
     }
 
-    func hasStartedWorkflowAssetPrewarming(for workflowID: String) async -> Bool {
+    func hasStartedPrewarmingWorkflowAssets(for workflowID: String) async -> Bool {
         return self.assetPrewarmingLocalesByWorkflowID[workflowID]?
             .contains(self.preferredLocalesProvider()) ?? false
     }

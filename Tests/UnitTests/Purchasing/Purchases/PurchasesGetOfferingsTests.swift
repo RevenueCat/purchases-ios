@@ -176,11 +176,11 @@ class PurchasesGetOfferingsTests: BasePurchasesTests {
 
         expect(self.mockOfferingsManager.invokedUpdateOfferingsCacheCount).toEventually(equal(1))
 
-        expect(self.paywallCache.invokedWarmUpEligibilityCache).toEventually(beTrue())
-        expect(self.paywallCache.invokedWarmUpEligibilityCacheOfferings) == offerings
+        expect(self.paywallCache.invokedPrewarmEligibilityCache).toEventually(beTrue())
+        expect(self.paywallCache.invokedPrewarmEligibilityCacheOfferings) == offerings
 
-        expect(self.paywallCache.invokedWarmUpPaywallAssetsCache).toEventually(beTrue())
-        expect(self.paywallCache.invokedWarmUpPaywallAssetsCacheOfferings) == offerings
+        expect(self.paywallCache.invokedPrewarmPaywallAssetsCache).toEventually(beTrue())
+        expect(self.paywallCache.invokedPrewarmPaywallAssetsCacheOfferings) == offerings
     }
 
     func testGetOfferingsWarmsUpEligibilityCache() throws {
@@ -196,8 +196,8 @@ class PurchasesGetOfferingsTests: BasePurchasesTests {
         self.mockOfferingsManager.stubbedOfferingsCompletionResult = .success(offerings)
 
         // Reset any warm-up that may have been triggered during configure.
-        self.paywallCache.invokedWarmUpEligibilityCache = false
-        self.paywallCache.invokedWarmUpEligibilityCacheOfferings = nil
+        self.paywallCache.invokedPrewarmEligibilityCache = false
+        self.paywallCache.invokedPrewarmEligibilityCacheOfferings = nil
 
         waitUntil { completed in
             self.purchases.getOfferings { _, _ in
@@ -205,8 +205,8 @@ class PurchasesGetOfferingsTests: BasePurchasesTests {
             }
         }
 
-        expect(self.paywallCache.invokedWarmUpEligibilityCache).toEventually(beTrue())
-        expect(self.paywallCache.invokedWarmUpEligibilityCacheOfferings) === offerings
+        expect(self.paywallCache.invokedPrewarmEligibilityCache).toEventually(beTrue())
+        expect(self.paywallCache.invokedPrewarmEligibilityCacheOfferings) === offerings
     }
 
     @MainActor
@@ -343,13 +343,13 @@ class PurchasesGetOfferingsTests: BasePurchasesTests {
 
         _ = try await self.purchases.offerings()
 
-        expect(self.paywallCache.invokedWarmUpEligibilityCache) == false
+        expect(self.paywallCache.invokedPrewarmEligibilityCache) == false
         expect(warmups.pendingCount) == 1
         for block in self.mockOperationDispatcher.dispatchedAsyncWorkerThreadBlocks {
             await block()
         }
         try await warmups.waitForCompletion(timeout: .seconds(2))
-        expect(self.paywallCache.invokedWarmUpEligibilityCache) == true
+        expect(self.paywallCache.invokedPrewarmEligibilityCache) == true
         expect(warmups.pendingCount) == 0
     }
 

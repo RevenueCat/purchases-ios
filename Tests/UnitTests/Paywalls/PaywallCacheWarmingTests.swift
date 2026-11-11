@@ -52,7 +52,7 @@ final class PaywallCacheWarmingTests: TestCase {
     }
 
     func testOfferingsWithNoProductsDoesNotCheckEligibility() async throws {
-        await self.cache.warmUpEligibilityCache(
+        await self.cache.prewarmEligibilityCache(
             offerings: try Self.createOfferings([
                 Self.createOffering(
                     identifier: Self.offeringIdentifier,
@@ -87,7 +87,7 @@ final class PaywallCacheWarmingTests: TestCase {
         let expectedCurrent: Set<String> = ["product_1", "product_2"]
         let expectedRemaining: Set<String> = ["product_3"]
 
-        await self.cache.warmUpEligibilityCache(offerings: offerings)
+        await self.cache.prewarmEligibilityCache(offerings: offerings)
 
         // Two staggered calls: the current offering's products first, then the rest.
         expect(self.eligibilityChecker.invokedCheckTrialOrIntroPriceEligibilityFromOptimalStore) == true
@@ -119,11 +119,11 @@ final class PaywallCacheWarmingTests: TestCase {
             )
         ])
 
-        await self.cache.warmUpEligibilityCache(offerings: offerings)
-        await self.cache.warmUpEligibilityCache(offerings: offerings)
+        await self.cache.prewarmEligibilityCache(offerings: offerings)
+        await self.cache.prewarmEligibilityCache(offerings: offerings)
 
         expect(self.eligibilityChecker.invokedCheckTrialOrIntroPriceEligibilityFromOptimalStore) == true
-        // Only one call for the current offering; the second `warmUpEligibilityCache` is a no-op
+        // Only one call for the current offering; the second `prewarmEligibilityCache` is a no-op
         // because all products are already in the warmed set.
         expect(self.eligibilityChecker.invokedCheckTrialOrIntroPriceEligibilityFromOptimalStoreCount) == 1
 
@@ -163,8 +163,8 @@ final class PaywallCacheWarmingTests: TestCase {
             )
         ])
 
-        await self.cache.warmUpEligibilityCache(offerings: firstOfferings)
-        await self.cache.warmUpEligibilityCache(offerings: secondOfferings)
+        await self.cache.prewarmEligibilityCache(offerings: firstOfferings)
+        await self.cache.prewarmEligibilityCache(offerings: secondOfferings)
 
         // The second call should only warm up products that haven't been warmed yet.
         // Current offering already had `product_1`, so only `product_2` is new there.
@@ -189,9 +189,9 @@ final class PaywallCacheWarmingTests: TestCase {
             )
         ])
 
-        await self.cache.warmUpEligibilityCache(offerings: offerings)
+        await self.cache.prewarmEligibilityCache(offerings: offerings)
         await self.cache.clearEligibilityCache()
-        await self.cache.warmUpEligibilityCache(offerings: offerings)
+        await self.cache.prewarmEligibilityCache(offerings: offerings)
 
         expect(self.eligibilityChecker.invokedCheckTrialOrIntroPriceEligibilityFromOptimalStoreCount) == 2
 
@@ -706,7 +706,7 @@ final class PaywallCacheWarmingTests: TestCase {
             .union(Self.localizedImageRequests("localized-es")))
     }
 
-    func testStartWorkflowAssetPrewarmingReturnsBeforeDownloadsComplete() async throws {
+    func testStartPrewarmingWorkflowAssetsReturnsBeforeDownloadsComplete() async throws {
         let fileRepository = BlockingCacheWarmingFileRepository()
         let cache = PaywallCacheWarming(
             introEligibiltyChecker: self.eligibilityChecker,
@@ -723,7 +723,7 @@ final class PaywallCacheWarmingTests: TestCase {
             ])]
         )
 
-        let optionalTask = await cache.startWorkflowAssetPrewarming(
+        let optionalTask = await cache.startPrewarmingWorkflowAssets(
             workflow: workflow,
             uiConfig: Self.emptyUIConfig
         )
@@ -738,7 +738,7 @@ final class PaywallCacheWarmingTests: TestCase {
         expect(completedAfterRelease) == true
     }
 
-    func testStartWorkflowAssetPrewarmingDoesNotQueueDifferentWorkflows() async throws {
+    func testStartPrewarmingWorkflowAssetsDoesNotQueueDifferentWorkflows() async throws {
         let fileRepository = BlockingCacheWarmingFileRepository()
         let cache = PaywallCacheWarming(
             introEligibiltyChecker: self.eligibilityChecker,
@@ -759,14 +759,14 @@ final class PaywallCacheWarmingTests: TestCase {
         let firstWorkflow = workflow("first")
         let secondWorkflow = workflow("second")
 
-        let optionalFirstTask = await cache.startWorkflowAssetPrewarming(
+        let optionalFirstTask = await cache.startPrewarmingWorkflowAssets(
             workflow: firstWorkflow,
             uiConfig: Self.emptyUIConfig
         )
         let firstTask = try XCTUnwrap(optionalFirstTask)
         await expect { await fileRepository.requestCount }.toEventually(equal(1))
 
-        let optionalSecondTask = await cache.startWorkflowAssetPrewarming(
+        let optionalSecondTask = await cache.startPrewarmingWorkflowAssets(
             workflow: secondWorkflow,
             uiConfig: Self.emptyUIConfig
         )
@@ -814,8 +814,8 @@ final class PaywallCacheWarmingTests: TestCase {
         )
         let offerings = try Self.createOfferings([offering])
 
-        await cache.warmUpPaywallAssetsCache(offerings: offerings)
-        await cache.warmUpPaywallAssetsCache(offerings: offerings)
+        await cache.prewarmPaywallAssetsCache(offerings: offerings)
+        await cache.prewarmPaywallAssetsCache(offerings: offerings)
 
         let requests = await fileRepository.requests
         XCTAssertEqual(Set(requests), [
@@ -1586,7 +1586,7 @@ private extension PaywallCacheWarmingTests {
         let finished = self.expectation(description: "Eligibility warm-up finished")
         let cache = self.cache!
         self.eligibilityWarmupTasks.append(Task {
-            await cache.warmUpEligibilityCache(offerings: offerings)
+            await cache.prewarmEligibilityCache(offerings: offerings)
             finished.fulfill()
         })
         return finished

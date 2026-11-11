@@ -124,7 +124,7 @@ private extension WorkflowPrewarmingCoordinator {
         switch await self.workflowsConfigProvider.decodeCachedWorkflowForAssetPrewarming(workflowId: workflowId) {
         case let .success(result):
             let assetPrewarmingTask = shouldPrewarmAssets
-                ? await self.paywallCache?.startWorkflowAssetPrewarming(
+                ? await self.paywallCache?.startPrewarmingWorkflowAssets(
                     workflow: result.workflow,
                     uiConfig: result.uiConfig
                 )
@@ -164,7 +164,7 @@ private extension WorkflowPrewarmingCoordinator {
     func decodeAndStartAssetPrewarming(_ workflowId: String) async -> Task<Void, Never>? {
         switch await self.workflowsConfigProvider.decodeCachedWorkflowForAssetPrewarming(workflowId: workflowId) {
         case let .success(result):
-            return await self.paywallCache?.startWorkflowAssetPrewarming(
+            return await self.paywallCache?.startPrewarmingWorkflowAssets(
                 workflow: result.workflow,
                 uiConfig: result.uiConfig
             )
@@ -177,7 +177,7 @@ private extension WorkflowPrewarmingCoordinator {
     @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
     func shouldPrepareAssetPrewarming(for workflowId: String) async -> Bool {
         guard let paywallCache else { return false }
-        return !(await paywallCache.hasStartedWorkflowAssetPrewarming(for: workflowId))
+        return !(await paywallCache.hasStartedPrewarmingWorkflowAssets(for: workflowId))
     }
 
     func logAssetPrewarmingFailure(workflowId: String, error: WorkflowResolutionError) {
