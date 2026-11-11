@@ -106,7 +106,8 @@ class VirtualCurrencyStoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
 
         let resultData = try await self.purchaseMonthlyOffering()
         let transaction = try XCTUnwrap(resultData.transaction)
-        self.verifySpecificTransactionWasFinished(transaction)
+        self.verifySpecificTransactionWasFinished(transaction, count: nil)
+        await self.verifyTransactionIsEventuallyRemovedFromSK1Queue(transaction)
 
         try self.purchases.invalidateVirtualCurrenciesCache()
 
