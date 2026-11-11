@@ -797,26 +797,6 @@ platform :ios do
     emerge(emerge_args)
   end
 
-  desc "Runs predicate fixtures and downloaded Khepri conformance cases"
-  lane :test_rules_engine_conformance do
-    fixture = File.join(__dir__, "../Tests/UnitTests/RulesEngine/PredicateFixtures/predicate_conformance_v1.json")
-    UI.user_error!("Download the Khepri conformance cases first") unless File.file?(fixture)
-    scan(
-      workspace: "RevenueCat.xcworkspace",
-      scheme: "RevenueCat",
-      testplan: "CI-RevenueCat",
-      device: ENV['SCAN_DEVICE'] || "iPhone 17 (26.5)",
-      ensure_devices_found: true,
-      only_testing: ['UnitTests/PredicateFixtureTests'],
-      xcargs: "CODE_SIGNING_ALLOWED=NO",
-      output_types: 'junit',
-      result_bundle: true,
-      output_directory: "fastlane/test_output/xctest/rules-engine-conformance",
-      number_of_retries: 0,
-      fail_build: true
-    )
-  end
-
   desc "Runs all the iOS tests"
   lane :test_ios do |options|
     generate_snapshots = ENV["CIRCLECI_TESTS_GENERATE_SNAPSHOTS"] == "true"

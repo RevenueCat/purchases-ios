@@ -31,11 +31,12 @@ struct PredicateFixtureTests {
     /// the suite) by pinning the total number of cases. Bump this whenever
     /// fixtures are added or removed.
     @Test
-    func fixtureCountMatchesExpected() {
-        let downloadedFixture = PredicateConformanceFixtureLoader.repoFixturesDirectoryURL()
+    func fixtureCountMatchesExpected() throws {
+        let sharedFixture = PredicateConformanceFixtureLoader.repoFixturesDirectoryURL()
             .appendingPathComponent("predicate_conformance_v1.json")
-        let downloadedCount = (try? PredicateConformanceFixtureLoader.loadCases(from: downloadedFixture))?.count ?? 0
-        let expectedCount = 681 + downloadedCount
+        let sharedCount = try PredicateConformanceFixtureLoader.loadCases(from: sharedFixture).count
+        try #require(sharedCount > 0, "Expected Khepri conformance cases")
+        let expectedCount = 681 + sharedCount
         #expect(
             Self.fixtures.count == expectedCount,
             "Expected \(expectedCount) fixtures, loaded \(Self.fixtures.count)"

@@ -11,7 +11,6 @@ const OUTPUT = "/tmp/requested-jobs-config.yml";
 // so the on-demand run has access to the same secrets as the regular run.
 // Release/deployment jobs are intentionally excluded.
 const JOBS = {
-  "run-rules-engine-conformance-tests": ["github-bot-public"],
   "api-tests": ["slack-secrets"],
   "backend-integration-tests-SK1": ["slack-secrets"],
   "backend-integration-tests-SK2": ["slack-secrets"],
