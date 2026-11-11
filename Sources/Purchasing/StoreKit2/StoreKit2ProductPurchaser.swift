@@ -58,6 +58,17 @@ internal class StoreKit2ProductPurchaser: StoreKit2ProductPurchaserType {
 
         if let confirmInScene = presentationContext?.scene,
            #available(iOS 17.0, iOSApplicationExtension 17.0, macCatalyst 17.0, tvOS 17.0, *) {
+            #if compiler(>=6.4)
+            if #available(iOS 27.0, iOSApplicationExtension 27.0, macCatalyst 27.0, tvOS 27.0, *) {
+                do {
+                    return try await product.purchase(confirmIn: confirmInScene, options: options)
+                } catch StoreKitError.invalidPresentationContext
+                            where presentationContext?.allowsDefaultPresentationFallback == true {
+                    return try await product.purchase(options: options)
+                }
+            }
+            #endif
+
             return try await product.purchase(confirmIn: confirmInScene, options: options)
         } else {
             return try await product.purchase(options: options)
@@ -69,6 +80,17 @@ internal class StoreKit2ProductPurchaser: StoreKit2ProductPurchaserType {
 
         if let confirmInWindow = presentationContext?.window,
            #available(macOS 15.2, *) {
+            #if compiler(>=6.4)
+            if #available(macOS 27.0, *) {
+                do {
+                    return try await product.purchase(confirmIn: confirmInWindow, options: options)
+                } catch StoreKitError.invalidPresentationContext
+                            where presentationContext?.allowsDefaultPresentationFallback == true {
+                    return try await product.purchase(options: options)
+                }
+            }
+            #endif
+
             return try await product.purchase(confirmIn: confirmInWindow, options: options)
         } else {
             return try await product.purchase(options: options)

@@ -22,18 +22,48 @@ import AppKit
 /// The platform UI context for presenting SDK-owned UI.
 @_spi(Internal) public struct PresentationContext: Sendable {
 
+    let allowsDefaultPresentationFallback: Bool
+
     #if canImport(UIKit) && !os(watchOS)
     let scene: UIScene
+    let window: UIWindow?
 
     /// Creates a presentation context anchored to a UIKit scene.
     @_spi(Internal) public init(scene: UIScene) {
+        self.init(scene: scene, allowsDefaultPresentationFallback: false)
+    }
+
+    /// Creates a presentation context anchored to a UIKit scene with configurable fallback behavior.
+    @_spi(Internal) public init(scene: UIScene, allowsDefaultPresentationFallback: Bool) {
+        self.allowsDefaultPresentationFallback = allowsDefaultPresentationFallback
         self.scene = scene
+        self.window = nil
+    }
+
+    /// Creates a presentation context anchored to a UIKit window.
+    @_spi(Internal) public init?(window: UIWindow) {
+        self.init(window: window, allowsDefaultPresentationFallback: false)
+    }
+
+    /// Creates a presentation context anchored to a UIKit window with configurable fallback behavior.
+    @_spi(Internal) public init?(window: UIWindow, allowsDefaultPresentationFallback: Bool) {
+        guard let scene = window.windowScene else { return nil }
+
+        self.allowsDefaultPresentationFallback = allowsDefaultPresentationFallback
+        self.scene = scene
+        self.window = window
     }
     #elseif canImport(AppKit) && !targetEnvironment(macCatalyst)
     let window: NSWindow
 
     /// Creates a presentation context anchored to an AppKit window.
     @_spi(Internal) public init(window: NSWindow) {
+        self.init(window: window, allowsDefaultPresentationFallback: false)
+    }
+
+    /// Creates a presentation context anchored to an AppKit window with configurable fallback behavior.
+    @_spi(Internal) public init(window: NSWindow, allowsDefaultPresentationFallback: Bool) {
+        self.allowsDefaultPresentationFallback = allowsDefaultPresentationFallback
         self.window = window
     }
     #endif
@@ -82,6 +112,10 @@ import AppKit
     @available(watchOSApplicationExtension, unavailable)
     @MainActor
     var presentationViewController: UIViewController? {
+        if let window = self.window {
+            return window.currentPresentationViewController
+        }
+
         return (self.scene as? UIWindowScene)?.currentPresentationViewController
     }
     #endif
