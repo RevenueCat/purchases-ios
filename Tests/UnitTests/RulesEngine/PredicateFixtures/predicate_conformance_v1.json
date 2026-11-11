@@ -1,0 +1,2940 @@
+{
+  "fixtures": [
+    {
+      "expected": true,
+      "id": "khepri/status_eq_active/matching",
+      "predicate": {
+        "==": [
+          {
+            "var": "status"
+          },
+          "active"
+        ]
+      },
+      "variables": {
+        "blocked_statuses": [
+          "expired",
+          "billing_issue"
+        ],
+        "last_seen": {
+          "ad": null,
+          "app_version": "1.2.3",
+          "locale": "en-US",
+          "platform": "ios",
+          "sdk_version": "9.19.0",
+          "storefront": "US",
+          "timestamp": 1703894400
+        },
+        "one_time_purchases": [
+          {
+            "gross_in_usd": "250",
+            "product_identifier": "lifetime_unlock"
+          }
+        ],
+        "status": "active",
+        "subscriber": {
+          "app_user_id": "user_123",
+          "last_seen_country": "US",
+          "original_app_user_id": "original_user_123"
+        },
+        "subscriber_attributes": {
+          "external_attributes": {
+            "campaign": "holiday promo 2024",
+            "plan": "pro"
+          },
+          "internal_attributes": {
+            "$email": "user@example.com"
+          }
+        },
+        "subscriptions": [
+          {
+            "current_period_ends_at": 1704240000,
+            "metrics": {
+              "canceled_at": null,
+              "lifetime_value": 150
+            },
+            "product_identifier": "pro_monthly",
+            "renewal_cycle_number": 2,
+            "status": "active",
+            "total_gross_in_usd": 125
+          },
+          {
+            "current_period_ends_at": 1704499200,
+            "metrics": {
+              "canceled_at": 1703203200,
+              "lifetime_value": 450
+            },
+            "product_identifier": "pro_annual",
+            "renewal_cycle_number": 4,
+            "status": "active",
+            "total_gross_in_usd": "50"
+          },
+          {
+            "current_period_ends_at": 1704931200,
+            "metrics": {
+              "canceled_at": null,
+              "lifetime_value": 0
+            },
+            "product_identifier": "trial_monthly",
+            "renewal_cycle_number": 0,
+            "status": "trialing",
+            "total_gross_in_usd": 0
+          }
+        ]
+      }
+    },
+    {
+      "expected": true,
+      "id": "khepri/status_neq_expired/matching",
+      "predicate": {
+        "!=": [
+          {
+            "var": "status"
+          },
+          "expired"
+        ]
+      },
+      "variables": {
+        "blocked_statuses": [
+          "expired",
+          "billing_issue"
+        ],
+        "last_seen": {
+          "ad": null,
+          "app_version": "1.2.3",
+          "locale": "en-US",
+          "platform": "ios",
+          "sdk_version": "9.19.0",
+          "storefront": "US",
+          "timestamp": 1703894400
+        },
+        "one_time_purchases": [
+          {
+            "gross_in_usd": "250",
+            "product_identifier": "lifetime_unlock"
+          }
+        ],
+        "status": "active",
+        "subscriber": {
+          "app_user_id": "user_123",
+          "last_seen_country": "US",
+          "original_app_user_id": "original_user_123"
+        },
+        "subscriber_attributes": {
+          "external_attributes": {
+            "campaign": "holiday promo 2024",
+            "plan": "pro"
+          },
+          "internal_attributes": {
+            "$email": "user@example.com"
+          }
+        },
+        "subscriptions": [
+          {
+            "current_period_ends_at": 1704240000,
+            "metrics": {
+              "canceled_at": null,
+              "lifetime_value": 150
+            },
+            "product_identifier": "pro_monthly",
+            "renewal_cycle_number": 2,
+            "status": "active",
+            "total_gross_in_usd": 125
+          },
+          {
+            "current_period_ends_at": 1704499200,
+            "metrics": {
+              "canceled_at": 1703203200,
+              "lifetime_value": 450
+            },
+            "product_identifier": "pro_annual",
+            "renewal_cycle_number": 4,
+            "status": "active",
+            "total_gross_in_usd": "50"
+          },
+          {
+            "current_period_ends_at": 1704931200,
+            "metrics": {
+              "canceled_at": null,
+              "lifetime_value": 0
+            },
+            "product_identifier": "trial_monthly",
+            "renewal_cycle_number": 0,
+            "status": "trialing",
+            "total_gross_in_usd": 0
+          }
+        ]
+      }
+    },
+    {
+      "expected": true,
+      "id": "khepri/status_in_list/matching",
+      "predicate": {
+        "in": [
+          {
+            "var": "status"
+          },
+          [
+            "active",
+            "trialing"
+          ]
+        ]
+      },
+      "variables": {
+        "blocked_statuses": [
+          "expired",
+          "billing_issue"
+        ],
+        "last_seen": {
+          "ad": null,
+          "app_version": "1.2.3",
+          "locale": "en-US",
+          "platform": "ios",
+          "sdk_version": "9.19.0",
+          "storefront": "US",
+          "timestamp": 1703894400
+        },
+        "one_time_purchases": [
+          {
+            "gross_in_usd": "250",
+            "product_identifier": "lifetime_unlock"
+          }
+        ],
+        "status": "active",
+        "subscriber": {
+          "app_user_id": "user_123",
+          "last_seen_country": "US",
+          "original_app_user_id": "original_user_123"
+        },
+        "subscriber_attributes": {
+          "external_attributes": {
+            "campaign": "holiday promo 2024",
+            "plan": "pro"
+          },
+          "internal_attributes": {
+            "$email": "user@example.com"
+          }
+        },
+        "subscriptions": [
+          {
+            "current_period_ends_at": 1704240000,
+            "metrics": {
+              "canceled_at": null,
+              "lifetime_value": 150
+            },
+            "product_identifier": "pro_monthly",
+            "renewal_cycle_number": 2,
+            "status": "active",
+            "total_gross_in_usd": 125
+          },
+          {
+            "current_period_ends_at": 1704499200,
+            "metrics": {
+              "canceled_at": 1703203200,
+              "lifetime_value": 450
+            },
+            "product_identifier": "pro_annual",
+            "renewal_cycle_number": 4,
+            "status": "active",
+            "total_gross_in_usd": "50"
+          },
+          {
+            "current_period_ends_at": 1704931200,
+            "metrics": {
+              "canceled_at": null,
+              "lifetime_value": 0
+            },
+            "product_identifier": "trial_monthly",
+            "renewal_cycle_number": 0,
+            "status": "trialing",
+            "total_gross_in_usd": 0
+          }
+        ]
+      }
+    },
+    {
+      "expected": false,
+      "id": "khepri/status_not_in_list/non_matching",
+      "predicate": {
+        "!": [
+          {
+            "in": [
+              {
+                "var": "status"
+              },
+              [
+                "expired",
+                "billing_issue"
+              ]
+            ]
+          }
+        ]
+      },
+      "variables": {
+        "blocked_statuses": [
+          "expired",
+          "billing_issue"
+        ],
+        "last_seen": {
+          "ad": null,
+          "app_version": "1.2.3",
+          "locale": "de-DE",
+          "platform": "android",
+          "sdk_version": "9.19.0",
+          "storefront": "DE",
+          "timestamp": 1703894400
+        },
+        "one_time_purchases": [
+          {
+            "gross_in_usd": "250",
+            "product_identifier": "lifetime_unlock"
+          }
+        ],
+        "status": "expired",
+        "subscriber": {
+          "app_user_id": "user_123",
+          "last_seen_country": "DE",
+          "original_app_user_id": "original_user_123"
+        },
+        "subscriber_attributes": {
+          "external_attributes": {
+            "campaign": "holiday promo 2024",
+            "plan": "free"
+          },
+          "internal_attributes": {
+            "$email": "user@example.com"
+          }
+        },
+        "subscriptions": [
+          {
+            "current_period_ends_at": 1703980800,
+            "metrics": {
+              "canceled_at": null,
+              "lifetime_value": 150
+            },
+            "product_identifier": "pro_monthly",
+            "renewal_cycle_number": 0,
+            "status": "expired",
+            "total_gross_in_usd": 125
+          },
+          {
+            "current_period_ends_at": 1703980800,
+            "metrics": {
+              "canceled_at": 1703203200,
+              "lifetime_value": 450
+            },
+            "product_identifier": "pro_annual",
+            "renewal_cycle_number": 0,
+            "status": "expired",
+            "total_gross_in_usd": "50"
+          },
+          {
+            "current_period_ends_at": 1703980800,
+            "metrics": {
+              "canceled_at": null,
+              "lifetime_value": 0
+            },
+            "product_identifier": "trial_monthly",
+            "renewal_cycle_number": 0,
+            "status": "expired",
+            "total_gross_in_usd": 0
+          }
+        ]
+      }
+    },
+    {
+      "expected": true,
+      "id": "khepri/and_all_predicates_true/matching",
+      "predicate": {
+        "and": [
+          {
+            "==": [
+              {
+                "var": "status"
+              },
+              "active"
+            ]
+          },
+          {
+            "==": [
+              {
+                "var": "subscriber.last_seen_country"
+              },
+              "US"
+            ]
+          }
+        ]
+      },
+      "variables": {
+        "blocked_statuses": [
+          "expired",
+          "billing_issue"
+        ],
+        "last_seen": {
+          "ad": null,
+          "app_version": "1.2.3",
+          "locale": "en-US",
+          "platform": "ios",
+          "sdk_version": "9.19.0",
+          "storefront": "US",
+          "timestamp": 1703894400
+        },
+        "one_time_purchases": [
+          {
+            "gross_in_usd": "250",
+            "product_identifier": "lifetime_unlock"
+          }
+        ],
+        "status": "active",
+        "subscriber": {
+          "app_user_id": "user_123",
+          "last_seen_country": "US",
+          "original_app_user_id": "original_user_123"
+        },
+        "subscriber_attributes": {
+          "external_attributes": {
+            "campaign": "holiday promo 2024",
+            "plan": "pro"
+          },
+          "internal_attributes": {
+            "$email": "user@example.com"
+          }
+        },
+        "subscriptions": [
+          {
+            "current_period_ends_at": 1704240000,
+            "metrics": {
+              "canceled_at": null,
+              "lifetime_value": 150
+            },
+            "product_identifier": "pro_monthly",
+            "renewal_cycle_number": 2,
+            "status": "active",
+            "total_gross_in_usd": 125
+          },
+          {
+            "current_period_ends_at": 1704499200,
+            "metrics": {
+              "canceled_at": 1703203200,
+              "lifetime_value": 450
+            },
+            "product_identifier": "pro_annual",
+            "renewal_cycle_number": 4,
+            "status": "active",
+            "total_gross_in_usd": "50"
+          },
+          {
+            "current_period_ends_at": 1704931200,
+            "metrics": {
+              "canceled_at": null,
+              "lifetime_value": 0
+            },
+            "product_identifier": "trial_monthly",
+            "renewal_cycle_number": 0,
+            "status": "trialing",
+            "total_gross_in_usd": 0
+          }
+        ]
+      }
+    },
+    {
+      "expected": false,
+      "id": "khepri/and_one_predicate_false/non_matching",
+      "predicate": {
+        "and": [
+          {
+            "==": [
+              {
+                "var": "status"
+              },
+              "active"
+            ]
+          },
+          {
+            "==": [
+              {
+                "var": "subscriber.last_seen_country"
+              },
+              "CA"
+            ]
+          }
+        ]
+      },
+      "variables": {
+        "blocked_statuses": [
+          "expired",
+          "billing_issue"
+        ],
+        "last_seen": {
+          "ad": null,
+          "app_version": "1.2.3",
+          "locale": "en-US",
+          "platform": "ios",
+          "sdk_version": "9.19.0",
+          "storefront": "US",
+          "timestamp": 1703894400
+        },
+        "one_time_purchases": [
+          {
+            "gross_in_usd": "250",
+            "product_identifier": "lifetime_unlock"
+          }
+        ],
+        "status": "active",
+        "subscriber": {
+          "app_user_id": "user_123",
+          "last_seen_country": "US",
+          "original_app_user_id": "original_user_123"
+        },
+        "subscriber_attributes": {
+          "external_attributes": {
+            "campaign": "holiday promo 2024",
+            "plan": "pro"
+          },
+          "internal_attributes": {
+            "$email": "user@example.com"
+          }
+        },
+        "subscriptions": [
+          {
+            "current_period_ends_at": 1704240000,
+            "metrics": {
+              "canceled_at": null,
+              "lifetime_value": 150
+            },
+            "product_identifier": "pro_monthly",
+            "renewal_cycle_number": 2,
+            "status": "active",
+            "total_gross_in_usd": 125
+          },
+          {
+            "current_period_ends_at": 1704499200,
+            "metrics": {
+              "canceled_at": 1703203200,
+              "lifetime_value": 450
+            },
+            "product_identifier": "pro_annual",
+            "renewal_cycle_number": 4,
+            "status": "active",
+            "total_gross_in_usd": "50"
+          },
+          {
+            "current_period_ends_at": 1704931200,
+            "metrics": {
+              "canceled_at": null,
+              "lifetime_value": 0
+            },
+            "product_identifier": "trial_monthly",
+            "renewal_cycle_number": 0,
+            "status": "trialing",
+            "total_gross_in_usd": 0
+          }
+        ]
+      }
+    },
+    {
+      "expected": true,
+      "id": "khepri/or_one_predicate_true/matching",
+      "predicate": {
+        "or": [
+          {
+            "==": [
+              {
+                "var": "status"
+              },
+              "trialing"
+            ]
+          },
+          {
+            "==": [
+              {
+                "var": "subscriber.last_seen_country"
+              },
+              "US"
+            ]
+          }
+        ]
+      },
+      "variables": {
+        "blocked_statuses": [
+          "expired",
+          "billing_issue"
+        ],
+        "last_seen": {
+          "ad": null,
+          "app_version": "1.2.3",
+          "locale": "en-US",
+          "platform": "ios",
+          "sdk_version": "9.19.0",
+          "storefront": "US",
+          "timestamp": 1703894400
+        },
+        "one_time_purchases": [
+          {
+            "gross_in_usd": "250",
+            "product_identifier": "lifetime_unlock"
+          }
+        ],
+        "status": "active",
+        "subscriber": {
+          "app_user_id": "user_123",
+          "last_seen_country": "US",
+          "original_app_user_id": "original_user_123"
+        },
+        "subscriber_attributes": {
+          "external_attributes": {
+            "campaign": "holiday promo 2024",
+            "plan": "pro"
+          },
+          "internal_attributes": {
+            "$email": "user@example.com"
+          }
+        },
+        "subscriptions": [
+          {
+            "current_period_ends_at": 1704240000,
+            "metrics": {
+              "canceled_at": null,
+              "lifetime_value": 150
+            },
+            "product_identifier": "pro_monthly",
+            "renewal_cycle_number": 2,
+            "status": "active",
+            "total_gross_in_usd": 125
+          },
+          {
+            "current_period_ends_at": 1704499200,
+            "metrics": {
+              "canceled_at": 1703203200,
+              "lifetime_value": 450
+            },
+            "product_identifier": "pro_annual",
+            "renewal_cycle_number": 4,
+            "status": "active",
+            "total_gross_in_usd": "50"
+          },
+          {
+            "current_period_ends_at": 1704931200,
+            "metrics": {
+              "canceled_at": null,
+              "lifetime_value": 0
+            },
+            "product_identifier": "trial_monthly",
+            "renewal_cycle_number": 0,
+            "status": "trialing",
+            "total_gross_in_usd": 0
+          }
+        ]
+      }
+    },
+    {
+      "expected": true,
+      "id": "khepri/not_inverts_predicate/matching",
+      "predicate": {
+        "!": [
+          {
+            "==": [
+              {
+                "var": "status"
+              },
+              "expired"
+            ]
+          }
+        ]
+      },
+      "variables": {
+        "blocked_statuses": [
+          "expired",
+          "billing_issue"
+        ],
+        "last_seen": {
+          "ad": null,
+          "app_version": "1.2.3",
+          "locale": "en-US",
+          "platform": "ios",
+          "sdk_version": "9.19.0",
+          "storefront": "US",
+          "timestamp": 1703894400
+        },
+        "one_time_purchases": [
+          {
+            "gross_in_usd": "250",
+            "product_identifier": "lifetime_unlock"
+          }
+        ],
+        "status": "active",
+        "subscriber": {
+          "app_user_id": "user_123",
+          "last_seen_country": "US",
+          "original_app_user_id": "original_user_123"
+        },
+        "subscriber_attributes": {
+          "external_attributes": {
+            "campaign": "holiday promo 2024",
+            "plan": "pro"
+          },
+          "internal_attributes": {
+            "$email": "user@example.com"
+          }
+        },
+        "subscriptions": [
+          {
+            "current_period_ends_at": 1704240000,
+            "metrics": {
+              "canceled_at": null,
+              "lifetime_value": 150
+            },
+            "product_identifier": "pro_monthly",
+            "renewal_cycle_number": 2,
+            "status": "active",
+            "total_gross_in_usd": 125
+          },
+          {
+            "current_period_ends_at": 1704499200,
+            "metrics": {
+              "canceled_at": 1703203200,
+              "lifetime_value": 450
+            },
+            "product_identifier": "pro_annual",
+            "renewal_cycle_number": 4,
+            "status": "active",
+            "total_gross_in_usd": "50"
+          },
+          {
+            "current_period_ends_at": 1704931200,
+            "metrics": {
+              "canceled_at": null,
+              "lifetime_value": 0
+            },
+            "product_identifier": "trial_monthly",
+            "renewal_cycle_number": 0,
+            "status": "trialing",
+            "total_gross_in_usd": 0
+          }
+        ]
+      }
+    },
+    {
+      "expected": true,
+      "id": "khepri/some_active_subscription/matching",
+      "predicate": {
+        "some": [
+          {
+            "var": "subscriptions"
+          },
+          {
+            "==": [
+              {
+                "var": "status"
+              },
+              "active"
+            ]
+          }
+        ]
+      },
+      "variables": {
+        "blocked_statuses": [
+          "expired",
+          "billing_issue"
+        ],
+        "last_seen": {
+          "ad": null,
+          "app_version": "1.2.3",
+          "locale": "en-US",
+          "platform": "ios",
+          "sdk_version": "9.19.0",
+          "storefront": "US",
+          "timestamp": 1703894400
+        },
+        "one_time_purchases": [
+          {
+            "gross_in_usd": "250",
+            "product_identifier": "lifetime_unlock"
+          }
+        ],
+        "status": "active",
+        "subscriber": {
+          "app_user_id": "user_123",
+          "last_seen_country": "US",
+          "original_app_user_id": "original_user_123"
+        },
+        "subscriber_attributes": {
+          "external_attributes": {
+            "campaign": "holiday promo 2024",
+            "plan": "pro"
+          },
+          "internal_attributes": {
+            "$email": "user@example.com"
+          }
+        },
+        "subscriptions": [
+          {
+            "current_period_ends_at": 1704240000,
+            "metrics": {
+              "canceled_at": null,
+              "lifetime_value": 150
+            },
+            "product_identifier": "pro_monthly",
+            "renewal_cycle_number": 2,
+            "status": "active",
+            "total_gross_in_usd": 125
+          },
+          {
+            "current_period_ends_at": 1704499200,
+            "metrics": {
+              "canceled_at": 1703203200,
+              "lifetime_value": 450
+            },
+            "product_identifier": "pro_annual",
+            "renewal_cycle_number": 4,
+            "status": "active",
+            "total_gross_in_usd": "50"
+          },
+          {
+            "current_period_ends_at": 1704931200,
+            "metrics": {
+              "canceled_at": null,
+              "lifetime_value": 0
+            },
+            "product_identifier": "trial_monthly",
+            "renewal_cycle_number": 0,
+            "status": "trialing",
+            "total_gross_in_usd": 0
+          }
+        ]
+      }
+    },
+    {
+      "expected": false,
+      "id": "khepri/some_active_subscription/non_matching",
+      "predicate": {
+        "some": [
+          {
+            "var": "subscriptions"
+          },
+          {
+            "==": [
+              {
+                "var": "status"
+              },
+              "active"
+            ]
+          }
+        ]
+      },
+      "variables": {
+        "blocked_statuses": [
+          "expired",
+          "billing_issue"
+        ],
+        "last_seen": {
+          "ad": null,
+          "app_version": "1.2.3",
+          "locale": "de-DE",
+          "platform": "android",
+          "sdk_version": "9.19.0",
+          "storefront": "DE",
+          "timestamp": 1703894400
+        },
+        "one_time_purchases": [
+          {
+            "gross_in_usd": "250",
+            "product_identifier": "lifetime_unlock"
+          }
+        ],
+        "status": "expired",
+        "subscriber": {
+          "app_user_id": "user_123",
+          "last_seen_country": "DE",
+          "original_app_user_id": "original_user_123"
+        },
+        "subscriber_attributes": {
+          "external_attributes": {
+            "campaign": "holiday promo 2024",
+            "plan": "free"
+          },
+          "internal_attributes": {
+            "$email": "user@example.com"
+          }
+        },
+        "subscriptions": [
+          {
+            "current_period_ends_at": 1703980800,
+            "metrics": {
+              "canceled_at": null,
+              "lifetime_value": 150
+            },
+            "product_identifier": "pro_monthly",
+            "renewal_cycle_number": 0,
+            "status": "expired",
+            "total_gross_in_usd": 125
+          },
+          {
+            "current_period_ends_at": 1703980800,
+            "metrics": {
+              "canceled_at": 1703203200,
+              "lifetime_value": 450
+            },
+            "product_identifier": "pro_annual",
+            "renewal_cycle_number": 0,
+            "status": "expired",
+            "total_gross_in_usd": "50"
+          },
+          {
+            "current_period_ends_at": 1703980800,
+            "metrics": {
+              "canceled_at": null,
+              "lifetime_value": 0
+            },
+            "product_identifier": "trial_monthly",
+            "renewal_cycle_number": 0,
+            "status": "expired",
+            "total_gross_in_usd": 0
+          }
+        ]
+      }
+    },
+    {
+      "expected": true,
+      "id": "khepri/all_subscriptions_active/matching",
+      "predicate": {
+        "all": [
+          {
+            "var": "subscriptions"
+          },
+          {
+            "==": [
+              {
+                "var": "status"
+              },
+              "active"
+            ]
+          }
+        ]
+      },
+      "variables": {
+        "blocked_statuses": [
+          "expired",
+          "billing_issue"
+        ],
+        "last_seen": {
+          "ad": null,
+          "app_version": "1.2.3",
+          "locale": "en-US",
+          "platform": "ios",
+          "sdk_version": "9.19.0",
+          "storefront": "US",
+          "timestamp": 1703894400
+        },
+        "one_time_purchases": [
+          {
+            "gross_in_usd": "250",
+            "product_identifier": "lifetime_unlock"
+          }
+        ],
+        "status": "active",
+        "subscriber": {
+          "app_user_id": "user_123",
+          "last_seen_country": "US",
+          "original_app_user_id": "original_user_123"
+        },
+        "subscriber_attributes": {
+          "external_attributes": {
+            "campaign": "holiday promo 2024",
+            "plan": "pro"
+          },
+          "internal_attributes": {
+            "$email": "user@example.com"
+          }
+        },
+        "subscriptions": [
+          {
+            "current_period_ends_at": 1704240000,
+            "metrics": {
+              "canceled_at": null,
+              "lifetime_value": 150
+            },
+            "product_identifier": "pro_monthly",
+            "renewal_cycle_number": 2,
+            "status": "active",
+            "total_gross_in_usd": 125
+          },
+          {
+            "current_period_ends_at": 1704499200,
+            "metrics": {
+              "canceled_at": 1703203200,
+              "lifetime_value": 450
+            },
+            "product_identifier": "pro_annual",
+            "renewal_cycle_number": 4,
+            "status": "active",
+            "total_gross_in_usd": "50"
+          }
+        ]
+      }
+    },
+    {
+      "expected": false,
+      "id": "khepri/all_subscriptions_active/non_matching",
+      "predicate": {
+        "all": [
+          {
+            "var": "subscriptions"
+          },
+          {
+            "==": [
+              {
+                "var": "status"
+              },
+              "active"
+            ]
+          }
+        ]
+      },
+      "variables": {
+        "blocked_statuses": [
+          "expired",
+          "billing_issue"
+        ],
+        "last_seen": {
+          "ad": null,
+          "app_version": "1.2.3",
+          "locale": "en-US",
+          "platform": "ios",
+          "sdk_version": "9.19.0",
+          "storefront": "US",
+          "timestamp": 1703894400
+        },
+        "one_time_purchases": [
+          {
+            "gross_in_usd": "250",
+            "product_identifier": "lifetime_unlock"
+          }
+        ],
+        "status": "active",
+        "subscriber": {
+          "app_user_id": "user_123",
+          "last_seen_country": "US",
+          "original_app_user_id": "original_user_123"
+        },
+        "subscriber_attributes": {
+          "external_attributes": {
+            "campaign": "holiday promo 2024",
+            "plan": "pro"
+          },
+          "internal_attributes": {
+            "$email": "user@example.com"
+          }
+        },
+        "subscriptions": [
+          {
+            "current_period_ends_at": 1704240000,
+            "metrics": {
+              "canceled_at": null,
+              "lifetime_value": 150
+            },
+            "product_identifier": "pro_monthly",
+            "renewal_cycle_number": 2,
+            "status": "active",
+            "total_gross_in_usd": 125
+          },
+          {
+            "current_period_ends_at": 1704499200,
+            "metrics": {
+              "canceled_at": 1703203200,
+              "lifetime_value": 450
+            },
+            "product_identifier": "pro_annual",
+            "renewal_cycle_number": 4,
+            "status": "active",
+            "total_gross_in_usd": "50"
+          },
+          {
+            "current_period_ends_at": 1704931200,
+            "metrics": {
+              "canceled_at": null,
+              "lifetime_value": 0
+            },
+            "product_identifier": "trial_monthly",
+            "renewal_cycle_number": 0,
+            "status": "trialing",
+            "total_gross_in_usd": 0
+          }
+        ]
+      }
+    },
+    {
+      "expected": false,
+      "id": "khepri/all_empty_collection_is_false/non_matching",
+      "predicate": {
+        "all": [
+          {
+            "var": "subscriptions"
+          },
+          {
+            "==": [
+              {
+                "var": "status"
+              },
+              "active"
+            ]
+          }
+        ]
+      },
+      "variables": {
+        "blocked_statuses": [
+          "expired",
+          "billing_issue"
+        ],
+        "last_seen": {
+          "ad": null,
+          "app_version": "1.2.3",
+          "locale": "en-US",
+          "platform": "ios",
+          "sdk_version": "9.19.0",
+          "storefront": "US",
+          "timestamp": 1703894400
+        },
+        "one_time_purchases": [],
+        "status": "active",
+        "subscriber": {
+          "app_user_id": "user_123",
+          "last_seen_country": "US",
+          "original_app_user_id": "original_user_123"
+        },
+        "subscriber_attributes": {
+          "external_attributes": {
+            "campaign": "holiday promo 2024",
+            "plan": "pro"
+          },
+          "internal_attributes": {
+            "$email": "user@example.com"
+          }
+        },
+        "subscriptions": []
+      }
+    },
+    {
+      "expected": true,
+      "id": "khepri/sum_renewals_at_least_six/matching",
+      "predicate": {
+        ">=": [
+          {
+            "reduce": [
+              {
+                "var": "subscriptions"
+              },
+              {
+                "+": [
+                  {
+                    "var": "accumulator"
+                  },
+                  {
+                    "var": "current.renewal_cycle_number"
+                  }
+                ]
+              },
+              0
+            ]
+          },
+          6
+        ]
+      },
+      "variables": {
+        "blocked_statuses": [
+          "expired",
+          "billing_issue"
+        ],
+        "last_seen": {
+          "ad": null,
+          "app_version": "1.2.3",
+          "locale": "en-US",
+          "platform": "ios",
+          "sdk_version": "9.19.0",
+          "storefront": "US",
+          "timestamp": 1703894400
+        },
+        "one_time_purchases": [
+          {
+            "gross_in_usd": "250",
+            "product_identifier": "lifetime_unlock"
+          }
+        ],
+        "status": "active",
+        "subscriber": {
+          "app_user_id": "user_123",
+          "last_seen_country": "US",
+          "original_app_user_id": "original_user_123"
+        },
+        "subscriber_attributes": {
+          "external_attributes": {
+            "campaign": "holiday promo 2024",
+            "plan": "pro"
+          },
+          "internal_attributes": {
+            "$email": "user@example.com"
+          }
+        },
+        "subscriptions": [
+          {
+            "current_period_ends_at": 1704240000,
+            "metrics": {
+              "canceled_at": null,
+              "lifetime_value": 150
+            },
+            "product_identifier": "pro_monthly",
+            "renewal_cycle_number": 2,
+            "status": "active",
+            "total_gross_in_usd": 125
+          },
+          {
+            "current_period_ends_at": 1704499200,
+            "metrics": {
+              "canceled_at": 1703203200,
+              "lifetime_value": 450
+            },
+            "product_identifier": "pro_annual",
+            "renewal_cycle_number": 4,
+            "status": "active",
+            "total_gross_in_usd": "50"
+          },
+          {
+            "current_period_ends_at": 1704931200,
+            "metrics": {
+              "canceled_at": null,
+              "lifetime_value": 0
+            },
+            "product_identifier": "trial_monthly",
+            "renewal_cycle_number": 0,
+            "status": "trialing",
+            "total_gross_in_usd": 0
+          }
+        ]
+      }
+    },
+    {
+      "expected": true,
+      "id": "khepri/max_renewals_at_least_four/matching",
+      "predicate": {
+        ">=": [
+          {
+            "reduce": [
+              {
+                "var": "subscriptions"
+              },
+              {
+                "if": [
+                  {
+                    "==": [
+                      {
+                        "var": "accumulator"
+                      },
+                      null
+                    ]
+                  },
+                  {
+                    "var": "current.renewal_cycle_number"
+                  },
+                  {
+                    "max": [
+                      {
+                        "var": "accumulator"
+                      },
+                      {
+                        "var": "current.renewal_cycle_number"
+                      }
+                    ]
+                  }
+                ]
+              },
+              null
+            ]
+          },
+          4
+        ]
+      },
+      "variables": {
+        "blocked_statuses": [
+          "expired",
+          "billing_issue"
+        ],
+        "last_seen": {
+          "ad": null,
+          "app_version": "1.2.3",
+          "locale": "en-US",
+          "platform": "ios",
+          "sdk_version": "9.19.0",
+          "storefront": "US",
+          "timestamp": 1703894400
+        },
+        "one_time_purchases": [
+          {
+            "gross_in_usd": "250",
+            "product_identifier": "lifetime_unlock"
+          }
+        ],
+        "status": "active",
+        "subscriber": {
+          "app_user_id": "user_123",
+          "last_seen_country": "US",
+          "original_app_user_id": "original_user_123"
+        },
+        "subscriber_attributes": {
+          "external_attributes": {
+            "campaign": "holiday promo 2024",
+            "plan": "pro"
+          },
+          "internal_attributes": {
+            "$email": "user@example.com"
+          }
+        },
+        "subscriptions": [
+          {
+            "current_period_ends_at": 1704240000,
+            "metrics": {
+              "canceled_at": null,
+              "lifetime_value": 150
+            },
+            "product_identifier": "pro_monthly",
+            "renewal_cycle_number": 2,
+            "status": "active",
+            "total_gross_in_usd": 125
+          },
+          {
+            "current_period_ends_at": 1704499200,
+            "metrics": {
+              "canceled_at": 1703203200,
+              "lifetime_value": 450
+            },
+            "product_identifier": "pro_annual",
+            "renewal_cycle_number": 4,
+            "status": "active",
+            "total_gross_in_usd": "50"
+          },
+          {
+            "current_period_ends_at": 1704931200,
+            "metrics": {
+              "canceled_at": null,
+              "lifetime_value": 0
+            },
+            "product_identifier": "trial_monthly",
+            "renewal_cycle_number": 0,
+            "status": "trialing",
+            "total_gross_in_usd": 0
+          }
+        ]
+      }
+    },
+    {
+      "expected": true,
+      "id": "khepri/time_until_within_three_days/matching",
+      "predicate": {
+        "<=": [
+          {
+            "-": [
+              {
+                "var": "subscriptions.0.current_period_ends_at"
+              },
+              1704067200
+            ]
+          },
+          259200
+        ]
+      },
+      "variables": {
+        "blocked_statuses": [
+          "expired",
+          "billing_issue"
+        ],
+        "last_seen": {
+          "ad": null,
+          "app_version": "1.2.3",
+          "locale": "en-US",
+          "platform": "ios",
+          "sdk_version": "9.19.0",
+          "storefront": "US",
+          "timestamp": 1703894400
+        },
+        "one_time_purchases": [
+          {
+            "gross_in_usd": "250",
+            "product_identifier": "lifetime_unlock"
+          }
+        ],
+        "status": "active",
+        "subscriber": {
+          "app_user_id": "user_123",
+          "last_seen_country": "US",
+          "original_app_user_id": "original_user_123"
+        },
+        "subscriber_attributes": {
+          "external_attributes": {
+            "campaign": "holiday promo 2024",
+            "plan": "pro"
+          },
+          "internal_attributes": {
+            "$email": "user@example.com"
+          }
+        },
+        "subscriptions": [
+          {
+            "current_period_ends_at": 1704240000,
+            "metrics": {
+              "canceled_at": null,
+              "lifetime_value": 150
+            },
+            "product_identifier": "pro_monthly",
+            "renewal_cycle_number": 2,
+            "status": "active",
+            "total_gross_in_usd": 125
+          },
+          {
+            "current_period_ends_at": 1704499200,
+            "metrics": {
+              "canceled_at": 1703203200,
+              "lifetime_value": 450
+            },
+            "product_identifier": "pro_annual",
+            "renewal_cycle_number": 4,
+            "status": "active",
+            "total_gross_in_usd": "50"
+          },
+          {
+            "current_period_ends_at": 1704931200,
+            "metrics": {
+              "canceled_at": null,
+              "lifetime_value": 0
+            },
+            "product_identifier": "trial_monthly",
+            "renewal_cycle_number": 0,
+            "status": "trialing",
+            "total_gross_in_usd": 0
+          }
+        ]
+      }
+    },
+    {
+      "expected": false,
+      "id": "khepri/time_until_within_three_days/non_matching",
+      "predicate": {
+        "<=": [
+          {
+            "-": [
+              {
+                "var": "subscriptions.2.current_period_ends_at"
+              },
+              1704067200
+            ]
+          },
+          259200
+        ]
+      },
+      "variables": {
+        "blocked_statuses": [
+          "expired",
+          "billing_issue"
+        ],
+        "last_seen": {
+          "ad": null,
+          "app_version": "1.2.3",
+          "locale": "en-US",
+          "platform": "ios",
+          "sdk_version": "9.19.0",
+          "storefront": "US",
+          "timestamp": 1703894400
+        },
+        "one_time_purchases": [
+          {
+            "gross_in_usd": "250",
+            "product_identifier": "lifetime_unlock"
+          }
+        ],
+        "status": "active",
+        "subscriber": {
+          "app_user_id": "user_123",
+          "last_seen_country": "US",
+          "original_app_user_id": "original_user_123"
+        },
+        "subscriber_attributes": {
+          "external_attributes": {
+            "campaign": "holiday promo 2024",
+            "plan": "pro"
+          },
+          "internal_attributes": {
+            "$email": "user@example.com"
+          }
+        },
+        "subscriptions": [
+          {
+            "current_period_ends_at": 1704240000,
+            "metrics": {
+              "canceled_at": null,
+              "lifetime_value": 150
+            },
+            "product_identifier": "pro_monthly",
+            "renewal_cycle_number": 2,
+            "status": "active",
+            "total_gross_in_usd": 125
+          },
+          {
+            "current_period_ends_at": 1704499200,
+            "metrics": {
+              "canceled_at": 1703203200,
+              "lifetime_value": 450
+            },
+            "product_identifier": "pro_annual",
+            "renewal_cycle_number": 4,
+            "status": "active",
+            "total_gross_in_usd": "50"
+          },
+          {
+            "current_period_ends_at": 1704931200,
+            "metrics": {
+              "canceled_at": null,
+              "lifetime_value": 0
+            },
+            "product_identifier": "trial_monthly",
+            "renewal_cycle_number": 0,
+            "status": "trialing",
+            "total_gross_in_usd": 0
+          }
+        ]
+      }
+    },
+    {
+      "expected": true,
+      "id": "khepri/time_since_at_least_seven_days/matching",
+      "predicate": {
+        ">=": [
+          {
+            "-": [
+              1704067200,
+              {
+                "var": "subscriptions.1.metrics.canceled_at"
+              }
+            ]
+          },
+          604800
+        ]
+      },
+      "variables": {
+        "blocked_statuses": [
+          "expired",
+          "billing_issue"
+        ],
+        "last_seen": {
+          "ad": null,
+          "app_version": "1.2.3",
+          "locale": "en-US",
+          "platform": "ios",
+          "sdk_version": "9.19.0",
+          "storefront": "US",
+          "timestamp": 1703894400
+        },
+        "one_time_purchases": [
+          {
+            "gross_in_usd": "250",
+            "product_identifier": "lifetime_unlock"
+          }
+        ],
+        "status": "active",
+        "subscriber": {
+          "app_user_id": "user_123",
+          "last_seen_country": "US",
+          "original_app_user_id": "original_user_123"
+        },
+        "subscriber_attributes": {
+          "external_attributes": {
+            "campaign": "holiday promo 2024",
+            "plan": "pro"
+          },
+          "internal_attributes": {
+            "$email": "user@example.com"
+          }
+        },
+        "subscriptions": [
+          {
+            "current_period_ends_at": 1704240000,
+            "metrics": {
+              "canceled_at": null,
+              "lifetime_value": 150
+            },
+            "product_identifier": "pro_monthly",
+            "renewal_cycle_number": 2,
+            "status": "active",
+            "total_gross_in_usd": 125
+          },
+          {
+            "current_period_ends_at": 1704499200,
+            "metrics": {
+              "canceled_at": 1703203200,
+              "lifetime_value": 450
+            },
+            "product_identifier": "pro_annual",
+            "renewal_cycle_number": 4,
+            "status": "active",
+            "total_gross_in_usd": "50"
+          },
+          {
+            "current_period_ends_at": 1704931200,
+            "metrics": {
+              "canceled_at": null,
+              "lifetime_value": 0
+            },
+            "product_identifier": "trial_monthly",
+            "renewal_cycle_number": 0,
+            "status": "trialing",
+            "total_gross_in_usd": 0
+          }
+        ]
+      }
+    },
+    {
+      "expected": true,
+      "id": "khepri/contains_substring/matching",
+      "predicate": {
+        "in": [
+          "holiday",
+          {
+            "var": "subscriber_attributes.external_attributes.campaign"
+          }
+        ]
+      },
+      "variables": {
+        "blocked_statuses": [
+          "expired",
+          "billing_issue"
+        ],
+        "last_seen": {
+          "ad": null,
+          "app_version": "1.2.3",
+          "locale": "en-US",
+          "platform": "ios",
+          "sdk_version": "9.19.0",
+          "storefront": "US",
+          "timestamp": 1703894400
+        },
+        "one_time_purchases": [
+          {
+            "gross_in_usd": "250",
+            "product_identifier": "lifetime_unlock"
+          }
+        ],
+        "status": "active",
+        "subscriber": {
+          "app_user_id": "user_123",
+          "last_seen_country": "US",
+          "original_app_user_id": "original_user_123"
+        },
+        "subscriber_attributes": {
+          "external_attributes": {
+            "campaign": "holiday promo 2024",
+            "plan": "pro"
+          },
+          "internal_attributes": {
+            "$email": "user@example.com"
+          }
+        },
+        "subscriptions": [
+          {
+            "current_period_ends_at": 1704240000,
+            "metrics": {
+              "canceled_at": null,
+              "lifetime_value": 150
+            },
+            "product_identifier": "pro_monthly",
+            "renewal_cycle_number": 2,
+            "status": "active",
+            "total_gross_in_usd": 125
+          },
+          {
+            "current_period_ends_at": 1704499200,
+            "metrics": {
+              "canceled_at": 1703203200,
+              "lifetime_value": 450
+            },
+            "product_identifier": "pro_annual",
+            "renewal_cycle_number": 4,
+            "status": "active",
+            "total_gross_in_usd": "50"
+          },
+          {
+            "current_period_ends_at": 1704931200,
+            "metrics": {
+              "canceled_at": null,
+              "lifetime_value": 0
+            },
+            "product_identifier": "trial_monthly",
+            "renewal_cycle_number": 0,
+            "status": "trialing",
+            "total_gross_in_usd": 0
+          }
+        ]
+      }
+    },
+    {
+      "expected": false,
+      "id": "khepri/contains_substring/non_matching",
+      "predicate": {
+        "in": [
+          "spring",
+          {
+            "var": "subscriber_attributes.external_attributes.campaign"
+          }
+        ]
+      },
+      "variables": {
+        "blocked_statuses": [
+          "expired",
+          "billing_issue"
+        ],
+        "last_seen": {
+          "ad": null,
+          "app_version": "1.2.3",
+          "locale": "en-US",
+          "platform": "ios",
+          "sdk_version": "9.19.0",
+          "storefront": "US",
+          "timestamp": 1703894400
+        },
+        "one_time_purchases": [
+          {
+            "gross_in_usd": "250",
+            "product_identifier": "lifetime_unlock"
+          }
+        ],
+        "status": "active",
+        "subscriber": {
+          "app_user_id": "user_123",
+          "last_seen_country": "US",
+          "original_app_user_id": "original_user_123"
+        },
+        "subscriber_attributes": {
+          "external_attributes": {
+            "campaign": "holiday promo 2024",
+            "plan": "pro"
+          },
+          "internal_attributes": {
+            "$email": "user@example.com"
+          }
+        },
+        "subscriptions": [
+          {
+            "current_period_ends_at": 1704240000,
+            "metrics": {
+              "canceled_at": null,
+              "lifetime_value": 150
+            },
+            "product_identifier": "pro_monthly",
+            "renewal_cycle_number": 2,
+            "status": "active",
+            "total_gross_in_usd": 125
+          },
+          {
+            "current_period_ends_at": 1704499200,
+            "metrics": {
+              "canceled_at": 1703203200,
+              "lifetime_value": 450
+            },
+            "product_identifier": "pro_annual",
+            "renewal_cycle_number": 4,
+            "status": "active",
+            "total_gross_in_usd": "50"
+          },
+          {
+            "current_period_ends_at": 1704931200,
+            "metrics": {
+              "canceled_at": null,
+              "lifetime_value": 0
+            },
+            "product_identifier": "trial_monthly",
+            "renewal_cycle_number": 0,
+            "status": "trialing",
+            "total_gross_in_usd": 0
+          }
+        ]
+      }
+    },
+    {
+      "expected": true,
+      "id": "khepri/custom_attribute_eq/matching",
+      "predicate": {
+        "==": [
+          {
+            "var": "subscriber_attributes.external_attributes.plan"
+          },
+          "pro"
+        ]
+      },
+      "variables": {
+        "blocked_statuses": [
+          "expired",
+          "billing_issue"
+        ],
+        "last_seen": {
+          "ad": null,
+          "app_version": "1.2.3",
+          "locale": "en-US",
+          "platform": "ios",
+          "sdk_version": "9.19.0",
+          "storefront": "US",
+          "timestamp": 1703894400
+        },
+        "one_time_purchases": [
+          {
+            "gross_in_usd": "250",
+            "product_identifier": "lifetime_unlock"
+          }
+        ],
+        "status": "active",
+        "subscriber": {
+          "app_user_id": "user_123",
+          "last_seen_country": "US",
+          "original_app_user_id": "original_user_123"
+        },
+        "subscriber_attributes": {
+          "external_attributes": {
+            "campaign": "holiday promo 2024",
+            "plan": "pro"
+          },
+          "internal_attributes": {
+            "$email": "user@example.com"
+          }
+        },
+        "subscriptions": [
+          {
+            "current_period_ends_at": 1704240000,
+            "metrics": {
+              "canceled_at": null,
+              "lifetime_value": 150
+            },
+            "product_identifier": "pro_monthly",
+            "renewal_cycle_number": 2,
+            "status": "active",
+            "total_gross_in_usd": 125
+          },
+          {
+            "current_period_ends_at": 1704499200,
+            "metrics": {
+              "canceled_at": 1703203200,
+              "lifetime_value": 450
+            },
+            "product_identifier": "pro_annual",
+            "renewal_cycle_number": 4,
+            "status": "active",
+            "total_gross_in_usd": "50"
+          },
+          {
+            "current_period_ends_at": 1704931200,
+            "metrics": {
+              "canceled_at": null,
+              "lifetime_value": 0
+            },
+            "product_identifier": "trial_monthly",
+            "renewal_cycle_number": 0,
+            "status": "trialing",
+            "total_gross_in_usd": 0
+          }
+        ]
+      }
+    },
+    {
+      "expected": true,
+      "id": "khepri/virtual_total_renewals/matching",
+      "predicate": {
+        "==": [
+          {
+            "reduce": [
+              {
+                "var": "subscriptions"
+              },
+              {
+                "+": [
+                  {
+                    "var": "accumulator"
+                  },
+                  {
+                    "max": [
+                      {
+                        "+": [
+                          {
+                            "var": "current.renewal_cycle_number"
+                          },
+                          -1
+                        ]
+                      },
+                      0
+                    ]
+                  }
+                ]
+              },
+              0
+            ]
+          },
+          4
+        ]
+      },
+      "variables": {
+        "blocked_statuses": [
+          "expired",
+          "billing_issue"
+        ],
+        "last_seen": {
+          "ad": null,
+          "app_version": "1.2.3",
+          "locale": "en-US",
+          "platform": "ios",
+          "sdk_version": "9.19.0",
+          "storefront": "US",
+          "timestamp": 1703894400
+        },
+        "one_time_purchases": [
+          {
+            "gross_in_usd": "250",
+            "product_identifier": "lifetime_unlock"
+          }
+        ],
+        "status": "active",
+        "subscriber": {
+          "app_user_id": "user_123",
+          "last_seen_country": "US",
+          "original_app_user_id": "original_user_123"
+        },
+        "subscriber_attributes": {
+          "external_attributes": {
+            "campaign": "holiday promo 2024",
+            "plan": "pro"
+          },
+          "internal_attributes": {
+            "$email": "user@example.com"
+          }
+        },
+        "subscriptions": [
+          {
+            "current_period_ends_at": 1704240000,
+            "metrics": {
+              "canceled_at": null,
+              "lifetime_value": 150
+            },
+            "product_identifier": "pro_monthly",
+            "renewal_cycle_number": 2,
+            "status": "active",
+            "total_gross_in_usd": 125
+          },
+          {
+            "current_period_ends_at": 1704499200,
+            "metrics": {
+              "canceled_at": 1703203200,
+              "lifetime_value": 450
+            },
+            "product_identifier": "pro_annual",
+            "renewal_cycle_number": 4,
+            "status": "active",
+            "total_gross_in_usd": "50"
+          },
+          {
+            "current_period_ends_at": 1704931200,
+            "metrics": {
+              "canceled_at": null,
+              "lifetime_value": 0
+            },
+            "product_identifier": "trial_monthly",
+            "renewal_cycle_number": 0,
+            "status": "trialing",
+            "total_gross_in_usd": 0
+          }
+        ]
+      }
+    },
+    {
+      "expected": true,
+      "id": "khepri/virtual_total_spent/matching",
+      "predicate": {
+        "==": [
+          {
+            "+": [
+              {
+                "reduce": [
+                  {
+                    "var": "subscriptions"
+                  },
+                  {
+                    "+": [
+                      {
+                        "var": "accumulator"
+                      },
+                      {
+                        "var": "current.total_gross_in_usd"
+                      }
+                    ]
+                  },
+                  0
+                ]
+              },
+              {
+                "reduce": [
+                  {
+                    "var": "one_time_purchases"
+                  },
+                  {
+                    "+": [
+                      {
+                        "var": "accumulator"
+                      },
+                      {
+                        "var": "current.gross_in_usd"
+                      }
+                    ]
+                  },
+                  0
+                ]
+              }
+            ]
+          },
+          425
+        ]
+      },
+      "variables": {
+        "blocked_statuses": [
+          "expired",
+          "billing_issue"
+        ],
+        "last_seen": {
+          "ad": null,
+          "app_version": "1.2.3",
+          "locale": "en-US",
+          "platform": "ios",
+          "sdk_version": "9.19.0",
+          "storefront": "US",
+          "timestamp": 1703894400
+        },
+        "one_time_purchases": [
+          {
+            "gross_in_usd": "250",
+            "product_identifier": "lifetime_unlock"
+          }
+        ],
+        "status": "active",
+        "subscriber": {
+          "app_user_id": "user_123",
+          "last_seen_country": "US",
+          "original_app_user_id": "original_user_123"
+        },
+        "subscriber_attributes": {
+          "external_attributes": {
+            "campaign": "holiday promo 2024",
+            "plan": "pro"
+          },
+          "internal_attributes": {
+            "$email": "user@example.com"
+          }
+        },
+        "subscriptions": [
+          {
+            "current_period_ends_at": 1704240000,
+            "metrics": {
+              "canceled_at": null,
+              "lifetime_value": 150
+            },
+            "product_identifier": "pro_monthly",
+            "renewal_cycle_number": 2,
+            "status": "active",
+            "total_gross_in_usd": 125
+          },
+          {
+            "current_period_ends_at": 1704499200,
+            "metrics": {
+              "canceled_at": 1703203200,
+              "lifetime_value": 450
+            },
+            "product_identifier": "pro_annual",
+            "renewal_cycle_number": 4,
+            "status": "active",
+            "total_gross_in_usd": "50"
+          },
+          {
+            "current_period_ends_at": 1704931200,
+            "metrics": {
+              "canceled_at": null,
+              "lifetime_value": 0
+            },
+            "product_identifier": "trial_monthly",
+            "renewal_cycle_number": 0,
+            "status": "trialing",
+            "total_gross_in_usd": 0
+          }
+        ]
+      }
+    },
+    {
+      "expected": true,
+      "id": "frontend/country_is_any_of/matching",
+      "predicate": {
+        "in": [
+          {
+            "var": "subscriber.last_seen_country"
+          },
+          [
+            "US",
+            "CA"
+          ]
+        ]
+      },
+      "variables": {
+        "blocked_statuses": [
+          "expired",
+          "billing_issue"
+        ],
+        "last_seen": {
+          "ad": null,
+          "app_version": "1.2.3",
+          "locale": "en-US",
+          "platform": "ios",
+          "sdk_version": "9.19.0",
+          "storefront": "US",
+          "timestamp": 1703894400
+        },
+        "one_time_purchases": [
+          {
+            "gross_in_usd": "250",
+            "product_identifier": "lifetime_unlock"
+          }
+        ],
+        "status": "active",
+        "subscriber": {
+          "app_user_id": "user_123",
+          "last_seen_country": "US",
+          "original_app_user_id": "original_user_123"
+        },
+        "subscriber_attributes": {
+          "external_attributes": {
+            "campaign": "holiday promo 2024",
+            "plan": "pro"
+          },
+          "internal_attributes": {
+            "$email": "user@example.com"
+          }
+        },
+        "subscriptions": [
+          {
+            "current_period_ends_at": 1704240000,
+            "metrics": {
+              "canceled_at": null,
+              "lifetime_value": 150
+            },
+            "product_identifier": "pro_monthly",
+            "renewal_cycle_number": 2,
+            "status": "active",
+            "total_gross_in_usd": 125
+          },
+          {
+            "current_period_ends_at": 1704499200,
+            "metrics": {
+              "canceled_at": 1703203200,
+              "lifetime_value": 450
+            },
+            "product_identifier": "pro_annual",
+            "renewal_cycle_number": 4,
+            "status": "active",
+            "total_gross_in_usd": "50"
+          },
+          {
+            "current_period_ends_at": 1704931200,
+            "metrics": {
+              "canceled_at": null,
+              "lifetime_value": 0
+            },
+            "product_identifier": "trial_monthly",
+            "renewal_cycle_number": 0,
+            "status": "trialing",
+            "total_gross_in_usd": 0
+          }
+        ]
+      }
+    },
+    {
+      "expected": false,
+      "id": "frontend/country_is_not_any_of/non_matching",
+      "predicate": {
+        "!": [
+          {
+            "in": [
+              {
+                "var": "subscriber.last_seen_country"
+              },
+              [
+                "US",
+                "CA"
+              ]
+            ]
+          }
+        ]
+      },
+      "variables": {
+        "blocked_statuses": [
+          "expired",
+          "billing_issue"
+        ],
+        "last_seen": {
+          "ad": null,
+          "app_version": "1.2.3",
+          "locale": "en-US",
+          "platform": "ios",
+          "sdk_version": "9.19.0",
+          "storefront": "US",
+          "timestamp": 1703894400
+        },
+        "one_time_purchases": [
+          {
+            "gross_in_usd": "250",
+            "product_identifier": "lifetime_unlock"
+          }
+        ],
+        "status": "active",
+        "subscriber": {
+          "app_user_id": "user_123",
+          "last_seen_country": "US",
+          "original_app_user_id": "original_user_123"
+        },
+        "subscriber_attributes": {
+          "external_attributes": {
+            "campaign": "holiday promo 2024",
+            "plan": "pro"
+          },
+          "internal_attributes": {
+            "$email": "user@example.com"
+          }
+        },
+        "subscriptions": [
+          {
+            "current_period_ends_at": 1704240000,
+            "metrics": {
+              "canceled_at": null,
+              "lifetime_value": 150
+            },
+            "product_identifier": "pro_monthly",
+            "renewal_cycle_number": 2,
+            "status": "active",
+            "total_gross_in_usd": 125
+          },
+          {
+            "current_period_ends_at": 1704499200,
+            "metrics": {
+              "canceled_at": 1703203200,
+              "lifetime_value": 450
+            },
+            "product_identifier": "pro_annual",
+            "renewal_cycle_number": 4,
+            "status": "active",
+            "total_gross_in_usd": "50"
+          },
+          {
+            "current_period_ends_at": 1704931200,
+            "metrics": {
+              "canceled_at": null,
+              "lifetime_value": 0
+            },
+            "product_identifier": "trial_monthly",
+            "renewal_cycle_number": 0,
+            "status": "trialing",
+            "total_gross_in_usd": 0
+          }
+        ]
+      }
+    },
+    {
+      "expected": true,
+      "id": "frontend/platform_is_ios/matching",
+      "predicate": {
+        "==": [
+          {
+            "var": "last_seen.platform"
+          },
+          "ios"
+        ]
+      },
+      "variables": {
+        "blocked_statuses": [
+          "expired",
+          "billing_issue"
+        ],
+        "last_seen": {
+          "ad": null,
+          "app_version": "1.2.3",
+          "locale": "en-US",
+          "platform": "ios",
+          "sdk_version": "9.19.0",
+          "storefront": "US",
+          "timestamp": 1703894400
+        },
+        "one_time_purchases": [
+          {
+            "gross_in_usd": "250",
+            "product_identifier": "lifetime_unlock"
+          }
+        ],
+        "status": "active",
+        "subscriber": {
+          "app_user_id": "user_123",
+          "last_seen_country": "US",
+          "original_app_user_id": "original_user_123"
+        },
+        "subscriber_attributes": {
+          "external_attributes": {
+            "campaign": "holiday promo 2024",
+            "plan": "pro"
+          },
+          "internal_attributes": {
+            "$email": "user@example.com"
+          }
+        },
+        "subscriptions": [
+          {
+            "current_period_ends_at": 1704240000,
+            "metrics": {
+              "canceled_at": null,
+              "lifetime_value": 150
+            },
+            "product_identifier": "pro_monthly",
+            "renewal_cycle_number": 2,
+            "status": "active",
+            "total_gross_in_usd": 125
+          },
+          {
+            "current_period_ends_at": 1704499200,
+            "metrics": {
+              "canceled_at": 1703203200,
+              "lifetime_value": 450
+            },
+            "product_identifier": "pro_annual",
+            "renewal_cycle_number": 4,
+            "status": "active",
+            "total_gross_in_usd": "50"
+          },
+          {
+            "current_period_ends_at": 1704931200,
+            "metrics": {
+              "canceled_at": null,
+              "lifetime_value": 0
+            },
+            "product_identifier": "trial_monthly",
+            "renewal_cycle_number": 0,
+            "status": "trialing",
+            "total_gross_in_usd": 0
+          }
+        ]
+      }
+    },
+    {
+      "expected": false,
+      "id": "frontend/locale_is_de/non_matching",
+      "predicate": {
+        "==": [
+          {
+            "var": "last_seen.locale"
+          },
+          "de-DE"
+        ]
+      },
+      "variables": {
+        "blocked_statuses": [
+          "expired",
+          "billing_issue"
+        ],
+        "last_seen": {
+          "ad": null,
+          "app_version": "1.2.3",
+          "locale": "en-US",
+          "platform": "ios",
+          "sdk_version": "9.19.0",
+          "storefront": "US",
+          "timestamp": 1703894400
+        },
+        "one_time_purchases": [
+          {
+            "gross_in_usd": "250",
+            "product_identifier": "lifetime_unlock"
+          }
+        ],
+        "status": "active",
+        "subscriber": {
+          "app_user_id": "user_123",
+          "last_seen_country": "US",
+          "original_app_user_id": "original_user_123"
+        },
+        "subscriber_attributes": {
+          "external_attributes": {
+            "campaign": "holiday promo 2024",
+            "plan": "pro"
+          },
+          "internal_attributes": {
+            "$email": "user@example.com"
+          }
+        },
+        "subscriptions": [
+          {
+            "current_period_ends_at": 1704240000,
+            "metrics": {
+              "canceled_at": null,
+              "lifetime_value": 150
+            },
+            "product_identifier": "pro_monthly",
+            "renewal_cycle_number": 2,
+            "status": "active",
+            "total_gross_in_usd": 125
+          },
+          {
+            "current_period_ends_at": 1704499200,
+            "metrics": {
+              "canceled_at": 1703203200,
+              "lifetime_value": 450
+            },
+            "product_identifier": "pro_annual",
+            "renewal_cycle_number": 4,
+            "status": "active",
+            "total_gross_in_usd": "50"
+          },
+          {
+            "current_period_ends_at": 1704931200,
+            "metrics": {
+              "canceled_at": null,
+              "lifetime_value": 0
+            },
+            "product_identifier": "trial_monthly",
+            "renewal_cycle_number": 0,
+            "status": "trialing",
+            "total_gross_in_usd": 0
+          }
+        ]
+      }
+    },
+    {
+      "expected": true,
+      "id": "frontend/last_seen_before_now/matching",
+      "predicate": {
+        "<": [
+          {
+            "var": "last_seen.timestamp"
+          },
+          1704067200
+        ]
+      },
+      "variables": {
+        "blocked_statuses": [
+          "expired",
+          "billing_issue"
+        ],
+        "last_seen": {
+          "ad": null,
+          "app_version": "1.2.3",
+          "locale": "en-US",
+          "platform": "ios",
+          "sdk_version": "9.19.0",
+          "storefront": "US",
+          "timestamp": 1703894400
+        },
+        "one_time_purchases": [
+          {
+            "gross_in_usd": "250",
+            "product_identifier": "lifetime_unlock"
+          }
+        ],
+        "status": "active",
+        "subscriber": {
+          "app_user_id": "user_123",
+          "last_seen_country": "US",
+          "original_app_user_id": "original_user_123"
+        },
+        "subscriber_attributes": {
+          "external_attributes": {
+            "campaign": "holiday promo 2024",
+            "plan": "pro"
+          },
+          "internal_attributes": {
+            "$email": "user@example.com"
+          }
+        },
+        "subscriptions": [
+          {
+            "current_period_ends_at": 1704240000,
+            "metrics": {
+              "canceled_at": null,
+              "lifetime_value": 150
+            },
+            "product_identifier": "pro_monthly",
+            "renewal_cycle_number": 2,
+            "status": "active",
+            "total_gross_in_usd": 125
+          },
+          {
+            "current_period_ends_at": 1704499200,
+            "metrics": {
+              "canceled_at": 1703203200,
+              "lifetime_value": 450
+            },
+            "product_identifier": "pro_annual",
+            "renewal_cycle_number": 4,
+            "status": "active",
+            "total_gross_in_usd": "50"
+          },
+          {
+            "current_period_ends_at": 1704931200,
+            "metrics": {
+              "canceled_at": null,
+              "lifetime_value": 0
+            },
+            "product_identifier": "trial_monthly",
+            "renewal_cycle_number": 0,
+            "status": "trialing",
+            "total_gross_in_usd": 0
+          }
+        ]
+      }
+    },
+    {
+      "expected": false,
+      "id": "frontend/last_seen_after_now/non_matching",
+      "predicate": {
+        ">=": [
+          {
+            "var": "last_seen.timestamp"
+          },
+          1704067200
+        ]
+      },
+      "variables": {
+        "blocked_statuses": [
+          "expired",
+          "billing_issue"
+        ],
+        "last_seen": {
+          "ad": null,
+          "app_version": "1.2.3",
+          "locale": "en-US",
+          "platform": "ios",
+          "sdk_version": "9.19.0",
+          "storefront": "US",
+          "timestamp": 1703894400
+        },
+        "one_time_purchases": [
+          {
+            "gross_in_usd": "250",
+            "product_identifier": "lifetime_unlock"
+          }
+        ],
+        "status": "active",
+        "subscriber": {
+          "app_user_id": "user_123",
+          "last_seen_country": "US",
+          "original_app_user_id": "original_user_123"
+        },
+        "subscriber_attributes": {
+          "external_attributes": {
+            "campaign": "holiday promo 2024",
+            "plan": "pro"
+          },
+          "internal_attributes": {
+            "$email": "user@example.com"
+          }
+        },
+        "subscriptions": [
+          {
+            "current_period_ends_at": 1704240000,
+            "metrics": {
+              "canceled_at": null,
+              "lifetime_value": 150
+            },
+            "product_identifier": "pro_monthly",
+            "renewal_cycle_number": 2,
+            "status": "active",
+            "total_gross_in_usd": 125
+          },
+          {
+            "current_period_ends_at": 1704499200,
+            "metrics": {
+              "canceled_at": 1703203200,
+              "lifetime_value": 450
+            },
+            "product_identifier": "pro_annual",
+            "renewal_cycle_number": 4,
+            "status": "active",
+            "total_gross_in_usd": "50"
+          },
+          {
+            "current_period_ends_at": 1704931200,
+            "metrics": {
+              "canceled_at": null,
+              "lifetime_value": 0
+            },
+            "product_identifier": "trial_monthly",
+            "renewal_cycle_number": 0,
+            "status": "trialing",
+            "total_gross_in_usd": 0
+          }
+        ]
+      }
+    },
+    {
+      "expected": true,
+      "id": "frontend/last_seen_between_last_three_days/matching",
+      "predicate": {
+        "and": [
+          {
+            ">=": [
+              {
+                "var": "last_seen.timestamp"
+              },
+              1703808000
+            ]
+          },
+          {
+            "<": [
+              {
+                "var": "last_seen.timestamp"
+              },
+              1704153600
+            ]
+          }
+        ]
+      },
+      "variables": {
+        "blocked_statuses": [
+          "expired",
+          "billing_issue"
+        ],
+        "last_seen": {
+          "ad": null,
+          "app_version": "1.2.3",
+          "locale": "en-US",
+          "platform": "ios",
+          "sdk_version": "9.19.0",
+          "storefront": "US",
+          "timestamp": 1703894400
+        },
+        "one_time_purchases": [
+          {
+            "gross_in_usd": "250",
+            "product_identifier": "lifetime_unlock"
+          }
+        ],
+        "status": "active",
+        "subscriber": {
+          "app_user_id": "user_123",
+          "last_seen_country": "US",
+          "original_app_user_id": "original_user_123"
+        },
+        "subscriber_attributes": {
+          "external_attributes": {
+            "campaign": "holiday promo 2024",
+            "plan": "pro"
+          },
+          "internal_attributes": {
+            "$email": "user@example.com"
+          }
+        },
+        "subscriptions": [
+          {
+            "current_period_ends_at": 1704240000,
+            "metrics": {
+              "canceled_at": null,
+              "lifetime_value": 150
+            },
+            "product_identifier": "pro_monthly",
+            "renewal_cycle_number": 2,
+            "status": "active",
+            "total_gross_in_usd": 125
+          },
+          {
+            "current_period_ends_at": 1704499200,
+            "metrics": {
+              "canceled_at": 1703203200,
+              "lifetime_value": 450
+            },
+            "product_identifier": "pro_annual",
+            "renewal_cycle_number": 4,
+            "status": "active",
+            "total_gross_in_usd": "50"
+          },
+          {
+            "current_period_ends_at": 1704931200,
+            "metrics": {
+              "canceled_at": null,
+              "lifetime_value": 0
+            },
+            "product_identifier": "trial_monthly",
+            "renewal_cycle_number": 0,
+            "status": "trialing",
+            "total_gross_in_usd": 0
+          }
+        ]
+      }
+    },
+    {
+      "expected": false,
+      "id": "frontend/last_seen_between_future_window/non_matching",
+      "predicate": {
+        "and": [
+          {
+            ">=": [
+              {
+                "var": "last_seen.timestamp"
+              },
+              1704153600
+            ]
+          },
+          {
+            "<": [
+              {
+                "var": "last_seen.timestamp"
+              },
+              1704326400
+            ]
+          }
+        ]
+      },
+      "variables": {
+        "blocked_statuses": [
+          "expired",
+          "billing_issue"
+        ],
+        "last_seen": {
+          "ad": null,
+          "app_version": "1.2.3",
+          "locale": "en-US",
+          "platform": "ios",
+          "sdk_version": "9.19.0",
+          "storefront": "US",
+          "timestamp": 1703894400
+        },
+        "one_time_purchases": [
+          {
+            "gross_in_usd": "250",
+            "product_identifier": "lifetime_unlock"
+          }
+        ],
+        "status": "active",
+        "subscriber": {
+          "app_user_id": "user_123",
+          "last_seen_country": "US",
+          "original_app_user_id": "original_user_123"
+        },
+        "subscriber_attributes": {
+          "external_attributes": {
+            "campaign": "holiday promo 2024",
+            "plan": "pro"
+          },
+          "internal_attributes": {
+            "$email": "user@example.com"
+          }
+        },
+        "subscriptions": [
+          {
+            "current_period_ends_at": 1704240000,
+            "metrics": {
+              "canceled_at": null,
+              "lifetime_value": 150
+            },
+            "product_identifier": "pro_monthly",
+            "renewal_cycle_number": 2,
+            "status": "active",
+            "total_gross_in_usd": 125
+          },
+          {
+            "current_period_ends_at": 1704499200,
+            "metrics": {
+              "canceled_at": 1703203200,
+              "lifetime_value": 450
+            },
+            "product_identifier": "pro_annual",
+            "renewal_cycle_number": 4,
+            "status": "active",
+            "total_gross_in_usd": "50"
+          },
+          {
+            "current_period_ends_at": 1704931200,
+            "metrics": {
+              "canceled_at": null,
+              "lifetime_value": 0
+            },
+            "product_identifier": "trial_monthly",
+            "renewal_cycle_number": 0,
+            "status": "trialing",
+            "total_gross_in_usd": 0
+          }
+        ]
+      }
+    },
+    {
+      "expected": false,
+      "id": "frontend/presence_empty/non_matching",
+      "predicate": {
+        "==": [
+          {
+            "var": "last_seen.ad"
+          },
+          null
+        ]
+      },
+      "variables": {
+        "blocked_statuses": [
+          "expired",
+          "billing_issue"
+        ],
+        "last_seen": {
+          "ad": null,
+          "app_version": "1.2.3",
+          "locale": "en-US",
+          "platform": "ios",
+          "sdk_version": "9.19.0",
+          "storefront": "US",
+          "timestamp": 1703894400
+        },
+        "one_time_purchases": [
+          {
+            "gross_in_usd": "250",
+            "product_identifier": "lifetime_unlock"
+          }
+        ],
+        "status": "active",
+        "subscriber": {
+          "app_user_id": "user_123",
+          "last_seen_country": "US",
+          "original_app_user_id": "original_user_123"
+        },
+        "subscriber_attributes": {
+          "external_attributes": {
+            "campaign": "holiday promo 2024",
+            "plan": "pro"
+          },
+          "internal_attributes": {
+            "$email": "user@example.com"
+          }
+        },
+        "subscriptions": [
+          {
+            "current_period_ends_at": 1704240000,
+            "metrics": {
+              "canceled_at": null,
+              "lifetime_value": 150
+            },
+            "product_identifier": "pro_monthly",
+            "renewal_cycle_number": 2,
+            "status": "active",
+            "total_gross_in_usd": 125
+          },
+          {
+            "current_period_ends_at": 1704499200,
+            "metrics": {
+              "canceled_at": 1703203200,
+              "lifetime_value": 450
+            },
+            "product_identifier": "pro_annual",
+            "renewal_cycle_number": 4,
+            "status": "active",
+            "total_gross_in_usd": "50"
+          },
+          {
+            "current_period_ends_at": 1704931200,
+            "metrics": {
+              "canceled_at": null,
+              "lifetime_value": 0
+            },
+            "product_identifier": "trial_monthly",
+            "renewal_cycle_number": 0,
+            "status": "trialing",
+            "total_gross_in_usd": 0
+          }
+        ]
+      }
+    },
+    {
+      "expected": false,
+      "id": "frontend/presence_not_empty/non_matching",
+      "predicate": {
+        "!=": [
+          {
+            "var": "last_seen.ad"
+          },
+          null
+        ]
+      },
+      "variables": {
+        "blocked_statuses": [
+          "expired",
+          "billing_issue"
+        ],
+        "last_seen": {
+          "ad": null,
+          "app_version": "1.2.3",
+          "locale": "en-US",
+          "platform": "ios",
+          "sdk_version": "9.19.0",
+          "storefront": "US",
+          "timestamp": 1703894400
+        },
+        "one_time_purchases": [
+          {
+            "gross_in_usd": "250",
+            "product_identifier": "lifetime_unlock"
+          }
+        ],
+        "status": "active",
+        "subscriber": {
+          "app_user_id": "user_123",
+          "last_seen_country": "US",
+          "original_app_user_id": "original_user_123"
+        },
+        "subscriber_attributes": {
+          "external_attributes": {
+            "campaign": "holiday promo 2024",
+            "plan": "pro"
+          },
+          "internal_attributes": {
+            "$email": "user@example.com"
+          }
+        },
+        "subscriptions": [
+          {
+            "current_period_ends_at": 1704240000,
+            "metrics": {
+              "canceled_at": null,
+              "lifetime_value": 150
+            },
+            "product_identifier": "pro_monthly",
+            "renewal_cycle_number": 2,
+            "status": "active",
+            "total_gross_in_usd": 125
+          },
+          {
+            "current_period_ends_at": 1704499200,
+            "metrics": {
+              "canceled_at": 1703203200,
+              "lifetime_value": 450
+            },
+            "product_identifier": "pro_annual",
+            "renewal_cycle_number": 4,
+            "status": "active",
+            "total_gross_in_usd": "50"
+          },
+          {
+            "current_period_ends_at": 1704931200,
+            "metrics": {
+              "canceled_at": null,
+              "lifetime_value": 0
+            },
+            "product_identifier": "trial_monthly",
+            "renewal_cycle_number": 0,
+            "status": "trialing",
+            "total_gross_in_usd": 0
+          }
+        ]
+      }
+    }
+  ],
+  "generated_at": "2026-05-08T00:00:00Z",
+  "kind": "audience_predicate",
+  "oracle": "Khepri audience RuleEvaluator",
+  "reference_now": "2024-01-01T00:00:00Z",
+  "schema_version": 1,
+  "semantics": "Khepri audience predicate semantics serialized for the SDK predicate profile; logical and/or evaluate predicate operands and return booleans."
+}
