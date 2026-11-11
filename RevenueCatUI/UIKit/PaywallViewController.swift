@@ -1134,14 +1134,21 @@ public protocol PaywallPurchaseHandlerWithContext {
     /// Completes a purchase using the package and promotional offer in `context`.
     /// - Parameters:
     ///   - context: The package and optional signed promotional offer selected by the paywall.
-    ///   - completion: Call with the cancellation flag and any purchase error.
+    ///   - completion: Must be called when the purchase completes.
+    ///     - `userCancelled`: `true` if the user cancelled the purchase; otherwise, `false`.
+    ///     - `error`: An optional error that occurred during the purchase, or `nil` if none.
     @objc func performPurchase(
         with context: PaywallPurchaseContext,
         completion: @escaping (_ userCancelled: Bool, _ error: Error?) -> Void
     )
 
-    /// Restores purchases and calls `completion` with the success flag and any error.
-    @objc func performRestore(completion: @escaping (_ success: Bool, _ error: Error?) -> Void)
+    /// Performs a restore operation.
+    /// - Parameter completion: Must be called when the restore completes.
+    ///   - `success`: `true` if the restore succeeded; otherwise, `false`.
+    ///   - `error`: An optional error that occurred during the restore, or `nil` if none.
+    @objc func performRestore(
+        completion: @escaping (_ success: Bool, _ error: Error?) -> Void
+    )
 
 }
 
