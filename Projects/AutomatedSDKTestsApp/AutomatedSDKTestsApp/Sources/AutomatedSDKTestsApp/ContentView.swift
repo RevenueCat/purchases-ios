@@ -1,9 +1,9 @@
 import RevenueCat
 import RevenueCatUI
-import SwiftUI
 import StoreKit
+import SwiftUI
 
-public struct ContentView: View {
+struct ContentView: View {
     @State private var presentCustomerCenter = false
     @State private var pushCustomerCenter = false
     @State private var presentCustomerCenterWithHistory = false
@@ -13,9 +13,9 @@ public struct ContentView: View {
 
     @State private var productToBuy: String?
 
-    public init() { }
+    init() { }
 
-    public var body: some View {
+    var body: some View {
         NavigationStack {
             VStack {
                 Spacer()
@@ -35,7 +35,7 @@ public struct ContentView: View {
                 }
                 .buttonStyle(.borderedProminent)
                 #endif
-                
+
                 Spacer()
             }
             .navigationDestination(isPresented: $pushCustomerCenter, destination: {

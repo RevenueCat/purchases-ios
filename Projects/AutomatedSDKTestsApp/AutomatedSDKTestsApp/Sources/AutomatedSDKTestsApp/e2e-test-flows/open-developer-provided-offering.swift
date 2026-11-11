@@ -5,9 +5,9 @@
 //  Copyright © 2026 RevenueCat, Inc. All rights reserved.
 //
 
-import SwiftUI
 import RevenueCat
 import RevenueCatUI
+import SwiftUI
 
 extension E2ETestFlowView {
     /// Covers presenting a paywall with a developer-modified `Offering` instance.

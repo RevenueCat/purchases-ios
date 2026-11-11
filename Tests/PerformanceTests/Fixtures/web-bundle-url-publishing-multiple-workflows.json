@@ -1,0 +1,5 @@
+{
+  "scenario": "web-bundle URL publishing across multiple decoded workflows",
+  "source_fixture": "performance-benchmark-1-revision-24",
+  "workflow_count": 50
+}
