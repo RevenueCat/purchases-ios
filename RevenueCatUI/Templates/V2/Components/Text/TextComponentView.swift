@@ -216,6 +216,7 @@ private extension TextComponentContent {
         )
     }
 
+    @MainActor
     func render(
         packageContext: PackageContext?,
         isEligibleForIntroOffer: Bool,
