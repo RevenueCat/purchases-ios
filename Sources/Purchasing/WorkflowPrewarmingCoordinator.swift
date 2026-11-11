@@ -87,7 +87,7 @@ private extension WorkflowPrewarmingCoordinator {
             if shouldPrewarmAssets {
                 handledAssetWorkflowIDs.insert(workflowId)
             }
-            let shouldPublishWebBundles = await self.webBundlePublicationTracker.claimIfNeeded(
+            let shouldPublishWebBundles = await self.webBundlePublicationTracker.shouldPublish(
                 workflowId,
                 configGeneration: configGeneration
             )
@@ -131,32 +131,16 @@ private extension WorkflowPrewarmingCoordinator {
                 : nil
             if shouldPublishWebBundles {
                 await self.webBundleURLBatcher.publishWebBundles(in: result.workflow)
-                await self.completeWebBundlePublication(
+                await self.webBundlePublicationTracker.recordPublication(
                     workflowId,
-                    published: true,
                     configGeneration: configGeneration
                 )
             }
             return assetPrewarmingTask
         case let .failure(error):
-            if shouldPublishWebBundles {
-                await self.completeWebBundlePublication(
-                    workflowId,
-                    published: false,
-                    configGeneration: configGeneration
-                )
-            }
             self.logAssetPrewarmingFailure(ifNeeded: shouldPrewarmAssets, workflowId: workflowId, error: error)
             return nil
         }
-    }
-
-    func completeWebBundlePublication(_ workflowId: String, published: Bool, configGeneration: Int) async {
-        await self.webBundlePublicationTracker.completeClaims(
-            [workflowId],
-            publishedWorkflowIDs: published ? [workflowId] : [],
-            configGeneration: configGeneration
-        )
     }
 
     @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
@@ -218,28 +202,20 @@ private extension WorkflowPrewarmingCoordinator {
 private actor WorkflowWebBundlePublicationTracker {
 
     private var configGeneration: Int?
-    private var claimedWorkflowIDs: Set<String> = []
     private var publishedWorkflowIDs: Set<String> = []
 
-    func claimIfNeeded(_ workflowId: String, configGeneration: Int) -> Bool {
+    func shouldPublish(_ workflowId: String, configGeneration: Int) -> Bool {
         guard self.prepareForConfigGeneration(configGeneration),
-              !self.claimedWorkflowIDs.contains(workflowId),
               !self.publishedWorkflowIDs.contains(workflowId) else {
             return false
         }
 
-        self.claimedWorkflowIDs.insert(workflowId)
         return true
     }
 
-    func completeClaims(
-        _ claimedWorkflowIDs: Set<String>,
-        publishedWorkflowIDs: Set<String>,
-        configGeneration: Int
-    ) {
+    func recordPublication(_ workflowId: String, configGeneration: Int) {
         guard self.configGeneration == configGeneration else { return }
-        self.claimedWorkflowIDs.subtract(claimedWorkflowIDs)
-        self.publishedWorkflowIDs.formUnion(publishedWorkflowIDs)
+        self.publishedWorkflowIDs.insert(workflowId)
     }
 
     private func prepareForConfigGeneration(_ configGeneration: Int) -> Bool {
@@ -247,7 +223,6 @@ private actor WorkflowWebBundlePublicationTracker {
         guard self.configGeneration != configGeneration else { return true }
 
         self.configGeneration = configGeneration
-        self.claimedWorkflowIDs.removeAll()
         self.publishedWorkflowIDs.removeAll()
         return true
     }

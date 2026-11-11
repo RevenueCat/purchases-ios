@@ -506,7 +506,7 @@ class WorkflowPrewarmingCoordinatorTests: TestCase {
         expect(receivedEvents).to(beEmpty())
     }
 
-    func testPublishWebBundleURLsDoesNotPublishFallbackAssetsForClaimedWorkflowOffering() async throws {
+    func testPublishWebBundleURLsDoesNotPublishFallbackAssetsForPreviouslyPublishedWorkflowOffering() async throws {
         try requireWorkflowPrewarmingAvailability()
         let provider = BlockingWorkflowPrewarmingDecodeProvider(
             result: try Self.workflowDataResult(id: "wf_1"),
