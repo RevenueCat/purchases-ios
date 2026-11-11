@@ -162,6 +162,24 @@ extension BaseStoreKitIntegrationTests {
                                            line: line)
     }
 
+    func verifyTransactionWasFinished(
+        _ transaction: StoreTransaction,
+        file: FileString = #file,
+        line: UInt = #line
+    ) async throws {
+        let expectedCount = Self.storeKitVersion == .storeKit1 ? nil : 1
+        try await self.verifySpecificTransactionIsEventuallyFinished(
+            transaction,
+            count: expectedCount,
+            file: file,
+            line: line
+        )
+
+        if Self.storeKitVersion == .storeKit1 {
+            await self.verifyTransactionIsEventuallyRemovedFromSK1Queue(transaction, file: file, line: line)
+        }
+    }
+
     func verifySpecificTransactionIsEventuallyFinished(
         _ transaction: StoreTransaction,
         count: Int? = 1,

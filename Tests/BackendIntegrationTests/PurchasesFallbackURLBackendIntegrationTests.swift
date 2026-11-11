@@ -91,10 +91,7 @@ class PurchasesFallbackURLBackendStoreKit2IntegrationTests: BaseStoreKitIntegrat
         let onlineCustomerInfo = try await self.purchases.customerInfo()
 
         verifyCustomerInfoWasNotComputedOffline(customerInfo: onlineCustomerInfo)
-        try await self.verifySpecificTransactionIsEventuallyFinished(
-            transactionId: transactionIdentifier,
-            productId: transaction.productIdentifier
-        )
+        try await self.verifyTransactionWasFinished(transaction)
         try await asyncWait(description: "Recovered transaction is still unfinished", timeout: .seconds(5)) {
             for await result in StoreKit.Transaction.unfinished {
                 switch result {
@@ -132,10 +129,7 @@ class PurchasesFallbackURLBackendStoreKit2IntegrationTests: BaseStoreKitIntegrat
 
         let onlineCustomerInfo = try await self.purchases.customerInfo()
 
-        try await self.verifySpecificTransactionIsEventuallyFinished(
-            transaction,
-            count: nil
-        )
+        try await self.verifyTransactionWasFinished(transaction)
 
         verifyCustomerInfoWasNotComputedOffline(customerInfo: onlineCustomerInfo)
 
