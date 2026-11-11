@@ -1130,7 +1130,9 @@ public protocol PaywallPurchaseHandler {
 
 /// An Objective-C compatible custom purchase handler that receives the paywall's selected offer.
 /// Use the `purchaseHandlerWithContext` initializer of ``PaywallViewController`` or ``PaywallFooterViewController``.
+/// Purchase and restore methods are called on the main actor.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+@MainActor
 @objc(RCPaywallPurchaseHandlerWithContext)
 public protocol PaywallPurchaseHandlerWithContext {
 
