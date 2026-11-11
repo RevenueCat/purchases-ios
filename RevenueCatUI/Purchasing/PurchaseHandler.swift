@@ -116,6 +116,11 @@ final class PurchaseHandler: ObservableObject {
         return actionTypeInProgress != nil
     }
 
+    /// Reads the customer's current entitlements when a workflow reaches a checkpoint gate.
+    func customerInfo() async throws -> CustomerInfo {
+        return try await self.purchases.customerInfo()
+    }
+
     var configuredStoreEnvironment: ConfiguredStoreEnvironment {
         return purchases.configuredStoreEnvironment
     }

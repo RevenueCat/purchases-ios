@@ -19,7 +19,7 @@ enum WorkflowGateDecision: Equatable {
     case blocked
 }
 
-/// Call-scoped gate state only; the presenter owns navigation, rendering, and completion.
+/// Call-scoped gate and entry task state; the presenter owns navigation, rendering, and completion.
 ///
 /// Entitlements are only trusted for the app user they were read for. When the app user changes mid-checkpoint
 /// they become unknown, and the gate fails closed until `update` is given customer info read for the new user
@@ -27,6 +27,10 @@ enum WorkflowGateDecision: Equatable {
 @MainActor
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 final class CheckpointWorkflowGateController {
+
+    /// Entry work belongs to this presentation, including while SwiftUI rebuilds its view value.
+    var entryTask: Task<Void, Never>?
+    var entryID: UUID?
 
     private let currentAppUserID: @MainActor () -> String
     private var context: CheckpointGateContext?
@@ -55,6 +59,24 @@ final class CheckpointWorkflowGateController {
         self.reachedGate = nil
         self.outcome = .notApplicable
         context?.onOutcomeChanged(self.outcome)
+    }
+
+    /// A branch can select an enforced gate, so passage stays blocked until its destination is known.
+    func markInitialBranchPending() {
+        guard self.context != nil else { return }
+        self.reportOutcome(.notPassed)
+    }
+
+    /// Marks a gate unresolved before its customer read starts. Ungated destinations only clear a pending branch.
+    func beginEntry(step: WorkflowStep) -> Bool {
+        guard self.context != nil else { return false }
+        guard step.gating?.isEnforced == true else {
+            if self.reachedGate == nil { self.reportOutcome(.notApplicable) }
+            return false
+        }
+        self.activeEntitlementIdentifiers = []
+        _ = self.evaluate(step: step)
+        return true
     }
 
     func evaluate(step: WorkflowStep) -> WorkflowGateDecision {
@@ -103,11 +125,14 @@ final class CheckpointWorkflowGateController {
         let passed = gate.isSatisfied(by: self.activeEntitlementIdentifiers)
         self.reachedGate = gate
         let newOutcome: CheckpointGateOutcome = passed ? .passed : .notPassed
-        if newOutcome != self.outcome {
-            self.outcome = newOutcome
-            self.context?.onOutcomeChanged(newOutcome)
-        }
+        self.reportOutcome(newOutcome)
         return passed ? .passed : .blocked
+    }
+
+    private func reportOutcome(_ outcome: CheckpointGateOutcome) {
+        guard outcome != self.outcome else { return }
+        self.outcome = outcome
+        self.context?.onOutcomeChanged(outcome)
     }
 
 }

@@ -142,6 +142,7 @@ enum Strings {
 
     // Conditional Configurability
     case paywall_contains_unsupported_condition
+    case workflow_gate_customer_read_failed(stepId: String, error: Error)
     case workflow_paywall_invalid_state(currentStepId: String, screenId: String?)
     case paywall_close_workflow_action_not_handled(componentName: String?)
     case paywall_workflow_trigger_not_handled(componentName: String?)
@@ -455,6 +456,9 @@ extension Strings: CustomStringConvertible {
         case .paywall_contains_unsupported_condition:
             return "Unsupported paywall rule encountered. " +
             "Rendering paywall without conditional configurability rules."
+        case let .workflow_gate_customer_read_failed(stepId, error):
+            return "Workflow gate on step '\(stepId)' could not read the customer's entitlements: " +
+                error.localizedDescription
         case let .workflow_paywall_invalid_state(currentStepId, screenId):
             return "Workflow paywall could not resolve the current screen. " +
             "currentStepId=\(currentStepId), screenId=\(screenId ?? "nil")"

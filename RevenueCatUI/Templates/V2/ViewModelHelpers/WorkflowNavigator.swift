@@ -104,10 +104,17 @@ final class WorkflowNavigator: ObservableObject {
             return nil
         }
 
-        backStack.append(currentStepId)
-        currentStepId = nextStep.step.id
+        return self.navigateForward(to: nextStep.step.id)
+    }
+
+    /// Commits the destination selected before an asynchronous gate read, without resolving its branch again.
+    @discardableResult
+    func navigateForward(to stepId: WorkflowStepID) -> WorkflowStep? {
+        guard let step = self.workflow.steps[stepId] else { return nil }
+        self.backStack.append(self.currentStepId)
+        self.currentStepId = step.id
         self.branchResolver.resolve(self.currentStep)
-        return nextStep.step
+        return step
     }
 
     /// Resolves the step targeted by an action without changing the current step or back stack.
