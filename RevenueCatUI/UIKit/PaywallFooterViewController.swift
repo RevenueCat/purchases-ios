@@ -56,14 +56,13 @@ public final class PaywallFooterViewController: PaywallViewController {
                    dismissRequestedHandler: dismissRequestedHandler)
     }
 
-    // Keep existing trailing-closure calls bound to the legacy initializer.
     /// Creates a footer with custom purchase logic that receives the selected promotional offer.
     /// - Parameters:
     ///   - offering: The offering to display, or `nil` to use the current offering.
     ///   - performPurchaseWithContext: The callback responsible for applying the selected offer.
     ///   - performRestore: The callback that restores purchases.
     ///   - dismissRequestedHandler: Called when the paywall requests dismissal.
-    @_disfavoredOverload
+    @_disfavoredOverload // Keep existing trailing-closure calls bound to the legacy initializer.
     public init(
         offering: Offering? = nil,
         performPurchaseWithContext: @escaping PerformPurchaseWithContext,

@@ -64,12 +64,11 @@ public struct MyAppPurchaseLogic {
         self.performRestore = performRestore
     }
 
-    // Keep existing trailing-closure calls bound to the legacy initializer.
     /// Creates custom purchase logic that receives the package and selected promotional offer.
     /// - Parameters:
     ///   - performPurchaseWithContext: The callback responsible for applying the selected offer.
     ///   - performRestore: The callback that restores purchases.
-    @_disfavoredOverload
+    @_disfavoredOverload // Keep existing trailing-closure calls bound to the legacy initializer.
     public init(performPurchaseWithContext: @escaping PerformPurchaseWithContext,
                 performRestore: @escaping PerformRestore) {
         self.performPurchaseWithContext = performPurchaseWithContext

@@ -1434,6 +1434,23 @@ final class CustomPurchaseCompatibilityTests: TestCase {
         XCTAssertTrue(restored.error as NSError? === Self.purchaseError)
     }
 
+    func testUnlabeledPurchaseClosureKeepsReceivingPackage() async {
+        var receivedArgument: Any?
+        // Erase the argument's type so the callback body cannot influence overload selection.
+        let logic = MyAppPurchaseLogic { argument in
+            receivedArgument = argument
+            return (userCancelled: true, error: nil)
+        } performRestore: {
+            (success: true, error: nil)
+        }
+        let context = PaywallPurchaseContext(package: TestData.annualPackage,
+                                             promotionalOffer: Self.offer(identifier: "overload-selection"))
+
+        _ = await logic.performPurchaseWithContext(context)
+
+        XCTAssertTrue((receivedArgument as? Package) === context.package)
+    }
+
     func testContextMultipleTrailingClosuresPreserveContextAndResults() async {
         var receivedContext: PaywallPurchaseContext?
         var restoreCalls = 0
