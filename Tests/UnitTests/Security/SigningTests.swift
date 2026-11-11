@@ -1448,6 +1448,25 @@ class SigningTests: TestCase {
         ) == .verified
     }
 
+    func testVersion2SignatureDecodesNonASCIIIdsAndTheQueryStringOnce() throws {
+        let nonASCII = Self.anonymousUserParameters(path: .getCustomerInfo(appUserID: "José"))
+        expect(nonASCII.path.relativePath) == "/v1/subscribers/Jos%C3%A9"
+
+        let literalEscape = Self.anonymousUserParameters(path: .getCustomerInfo(appUserID: "%24literal"))
+        expect(literalEscape.path.relativePath) == "/v1/subscribers/%2524literal"
+
+        let query = Self.anonymousUserParameters(
+            path: .rewardVerificationStatus(appUserID: "user", clientTransactionID: "txn", adUnitID: "ca-app-pub/123 x")
+        )
+        expect(query.path.relativePath).to(contain("?ad_unit_id=ca-app-pub/123%20x"))
+
+        for parameters in [nonASCII, literalEscape, query] {
+            expect(
+                try self.verify(parameters, signedOverDecodedPath: true, prefix: Signing.signatureVersion2Prefix)
+            ) == .verified
+        }
+    }
+
     func testVersion2SignatureIsNotVerifiedOverEncodedPath() throws {
         expect(
             try self.verify(Self.anonymousUserParameters(),
@@ -1476,9 +1495,11 @@ class SigningTests: TestCase {
 
 private extension SigningTests {
 
-    static func anonymousUserParameters() -> Signing.SignatureParameters {
+    static func anonymousUserParameters(
+        path: HTTPRequest.Path = .getCustomerInfo(appUserID: "$RCAnonymousID:1af512a3b9c848899fe427f39dd69f2b")
+    ) -> Signing.SignatureParameters {
         return .init(
-            path: .getCustomerInfo(appUserID: "$RCAnonymousID:1af512a3b9c848899fe427f39dd69f2b"),
+            path: path,
             iamEnabled: false,
             message: "Hello World".asData,
             nonce: "0123456789ab".asData,

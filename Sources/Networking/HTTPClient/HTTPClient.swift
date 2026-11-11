@@ -441,6 +441,10 @@ private extension HTTPClient {
         let verificationDiagnostics: VerificationDiagnostics?
 
         let signatureVersion: Int?
+
+        func signatureVersion(verified result: SignatureVerificationResult) -> Int? {
+            return result == .notRequested ? nil : self.signatureVersion
+        }
     }
 
     struct VerificationDiagnostics {
@@ -976,7 +980,9 @@ private extension HTTPClient {
                                                              backendErrorCode: nil,
                                                              resultOrigin: response.origin,
                                                              verificationResult: response.verificationResult,
-                                                             signatureVersion: responseContext.signatureVersion,
+                                                             signatureVersion: responseContext.signatureVersion(
+                                                                verified: response.verificationResult
+                                                             ),
                                                              responseRequestDate: response.requestDate,
                                                              isRetry: request.retried,
                                                              connectionErrorReason: nil)
@@ -997,7 +1003,9 @@ private extension HTTPClient {
                                                              backendErrorCode: backendErrorCode,
                                                              resultOrigin: nil,
                                                              verificationResult: verificationResult,
-                                                             signatureVersion: responseContext.signatureVersion,
+                                                             signatureVersion: responseContext.signatureVersion(
+                                                                verified: verificationResult
+                                                             ),
                                                              responseRequestDate: verificationDiagnostics?.requestDate,
                                                              isRetry: request.retried,
                                                              connectionErrorReason: .init(from: error))
