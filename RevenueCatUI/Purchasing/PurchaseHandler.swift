@@ -170,7 +170,7 @@ final class PurchaseHandler: ObservableObject {
     /// When `purchasesAreCompletedBy` is `.myApp`, this is the app-defined
     /// callback method that performs the purchase
     @Published
-    private(set) var performPurchase: PerformPurchase?
+    private(set) var performPurchaseWithContext: PerformPurchaseWithContext?
 
     /// When `purchasesAreCompletedBy` is `.myApp`, this is the app-defined
     /// callback method that performs the restore
@@ -196,6 +196,7 @@ final class PurchaseHandler: ObservableObject {
     convenience init(purchases: Purchases = .shared,
                      performPurchase: PerformPurchase? = nil,
                      performRestore: PerformRestore? = nil,
+                     performPurchaseWithContext: PerformPurchaseWithContext? = nil,
                      purchaseResultPublisher: AnyPublisher<PurchaseResultData, Never> = NotificationCenter
                          .default
                          .purchaseCompletedPublisher(),
@@ -207,6 +208,7 @@ final class PurchaseHandler: ObservableObject {
                   resolveBranch: { [purchases] branch in await purchases.resolveBranch(branch) },
                   performPurchase: performPurchase,
                   performRestore: performRestore,
+                  performPurchaseWithContext: performPurchaseWithContext,
                   purchaseResultPublisher: purchaseResultPublisher,
                   eventTracker: eventTracker,
                   keyWindowFocusResigner: keyWindowFocusResigner
@@ -221,6 +223,7 @@ final class PurchaseHandler: ObservableObject {
         customerCenterPreviewURLHandler: (@Sendable (URL) async throws -> Void)? = nil,
         performPurchase: PerformPurchase? = nil,
         performRestore: PerformRestore? = nil,
+        performPurchaseWithContext: PerformPurchaseWithContext? = nil,
         purchaseResultPublisher: AnyPublisher<PurchaseResultData, Never> = NotificationCenter
             .default
             .purchaseCompletedPublisher(),
@@ -234,7 +237,10 @@ final class PurchaseHandler: ObservableObject {
         self.resolveBranch = resolveBranch
         self.paywallEventTracker = eventTracker
         self.keyWindowFocusResigner = keyWindowFocusResigner
-        self.performPurchase = performPurchase
+        self.performPurchaseWithContext = performPurchaseWithContext
+        if performPurchaseWithContext == nil, let performPurchase {
+            self.performPurchaseWithContext = { context in await performPurchase(context.package) }
+        }
         self.performRestore = performRestore
 
         purchaseResultPublisher
@@ -250,41 +256,29 @@ final class PurchaseHandler: ObservableObject {
     /// Returns a new instance of `PurchaseHandler` using `Purchases.shared` if `Purchases`
     /// has been configured, and using a PurchaseHandler that cannot be used for purchases otherwise.
     static func `default`(performPurchase: PerformPurchase? = nil,
-                          performRestore: PerformRestore? = nil) -> Self {
+                          performRestore: PerformRestore? = nil,
+                          performPurchaseWithContext: PerformPurchaseWithContext? = nil) -> Self {
         return Purchases.isConfigured ? .init(performPurchase: performPurchase,
-                                              performRestore: performRestore) :
+                                              performRestore: performRestore,
+                                              performPurchaseWithContext: performPurchaseWithContext) :
                                         Self.notConfigured(performPurchase: performPurchase,
-                                                           performRestore: performRestore)
+                                                           performRestore: performRestore,
+                                                           performPurchaseWithContext: performPurchaseWithContext)
     }
 
     static func `default`(performPurchase: PerformPurchase? = nil,
                           performRestore: PerformRestore? = nil,
+                          performPurchaseWithContext: PerformPurchaseWithContext? = nil,
                           customerInfo: CustomerInfo,
                           purchasesAreCompletedBy: PurchasesAreCompletedBy) -> Self {
         return Purchases.isConfigured ? .init(performPurchase: performPurchase,
-                                              performRestore: performRestore) :
+                                              performRestore: performRestore,
+                                              performPurchaseWithContext: performPurchaseWithContext) :
                                         Self.notConfigured(performPurchase: performPurchase,
                                                            performRestore: performRestore,
+                                                           performPurchaseWithContext: performPurchaseWithContext,
                                                            customerInfo: customerInfo,
                                                            purchasesAreCompletedBy: purchasesAreCompletedBy)
-    }
-
-    private static func notConfigured(performPurchase: PerformPurchase?,
-                                      performRestore: PerformRestore?,
-                                      customerInfo: CustomerInfo? = nil,
-                                      purchasesAreCompletedBy: PurchasesAreCompletedBy = .revenueCat) -> Self {
-        let purchases = NotConfiguredPurchases(
-            customerInfo: customerInfo,
-            purchasesAreCompletedBy: purchasesAreCompletedBy
-        )
-
-        return .init(
-            isConfigured: false,
-            purchases: purchases,
-            performPurchase: performPurchase,
-            performRestore: performRestore,
-            eventTracker: .init(purchases: purchases)
-        )
     }
 
 #if os(iOS)
@@ -904,6 +898,11 @@ extension PurchaseHandler {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension PurchaseHandler {
 
+    static func `default`(myAppPurchaseLogic: MyAppPurchaseLogic?) -> Self {
+        return .default(performRestore: myAppPurchaseLogic?.performRestore,
+                        performPurchaseWithContext: myAppPurchaseLogic?.performPurchaseWithContext)
+    }
+
     // MARK: - Purchase
 
     @MainActor
@@ -967,8 +966,7 @@ extension PurchaseHandler {
     func performExternalPurchaseLogic(package: Package, promotionalOffer: PromotionalOffer?) async throws {
         Logger.debug(Strings.executing_external_purchase_logic)
 
-        // WIP: Handle promotionalOffer in performPurchase
-        guard let externalPurchaseMethod = self.performPurchase else {
+        guard let externalPurchaseMethod = self.performPurchaseWithContext else {
             throw PaywallError.performPurchaseAndRestoreHandlersNotDefined(missingBlocks: "performPurchase is")
         }
 
@@ -991,7 +989,7 @@ extension PurchaseHandler {
             productIdentifier: productIdentifier
         )
 
-        let result = await externalPurchaseMethod(package)
+        let result = await externalPurchaseMethod(.init(package: package, promotionalOffer: promotionalOffer))
 
         if result.userCancelled {
             self.trackCancelledPurchase(package: package)
@@ -1342,6 +1340,28 @@ extension PurchaseHandler {
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private extension PurchaseHandler {
+
+    static func notConfigured(
+        performPurchase: PerformPurchase?,
+        performRestore: PerformRestore?,
+        performPurchaseWithContext: PerformPurchaseWithContext?,
+        customerInfo: CustomerInfo? = nil,
+        purchasesAreCompletedBy: PurchasesAreCompletedBy = .revenueCat
+    ) -> Self {
+        let purchases = NotConfiguredPurchases(
+            customerInfo: customerInfo,
+            purchasesAreCompletedBy: purchasesAreCompletedBy
+        )
+
+        return .init(
+            isConfigured: false,
+            purchases: purchases,
+            performPurchase: performPurchase,
+            performRestore: performRestore,
+            performPurchaseWithContext: performPurchaseWithContext,
+            eventTracker: .init(purchases: purchases)
+        )
+    }
 
     func track(_ event: PaywallEvent) {
         self.paywallEventTracker.track(event)

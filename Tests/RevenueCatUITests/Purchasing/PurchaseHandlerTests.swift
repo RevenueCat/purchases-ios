@@ -326,6 +326,143 @@ class PurchaseHandlerTests: TestCase {
         expect(cancelEvent.data.productId) == TestData.packageWithIntroOffer.storeProduct.productIdentifier
     }
 
+    func testCustomPurchaseReceivesSelectedPromotionalOffer() async throws {
+        let offer = self.promotionalOffer
+        var receivedContext: PaywallPurchaseContext?
+        let logic = MyAppPurchaseLogic(performPurchaseWithContext: { context in
+            receivedContext = context
+            return (userCancelled: false, error: nil)
+        }, performRestore: { (success: true, error: nil) })
+        let handler = PurchaseHandler.mock(
+            purchasesAreCompletedBy: .myApp,
+            performRestore: logic.performRestore,
+            performPurchaseWithContext: logic.performPurchaseWithContext
+        )
+
+        try await handler.purchase(package: TestData.packageWithIntroOffer, promotionalOffer: offer)
+
+        let context = try XCTUnwrap(receivedContext)
+        XCTAssertTrue(context.package === TestData.packageWithIntroOffer)
+        XCTAssertTrue(context.promotionalOffer === offer)
+        expect(handler.purchaseResult) == .purchased(transaction: nil, customerInfo: TestData.customerInfo)
+    }
+
+    func testCustomPurchaseWithoutOfferReceivesNil() async throws {
+        var receivedContext: PaywallPurchaseContext?
+        let handler = PurchaseHandler.mock(purchasesAreCompletedBy: .myApp, performPurchaseWithContext: { context in
+            receivedContext = context
+            return (userCancelled: false, error: nil)
+        })
+
+        try await handler.purchase(package: TestData.packageWithIntroOffer)
+
+        let context = try XCTUnwrap(receivedContext)
+        XCTAssertTrue(context.package === TestData.packageWithIntroOffer)
+        XCTAssertNil(context.promotionalOffer)
+    }
+
+    func testLegacyCustomPurchaseStillReceivesPackageWhenOfferIsSelected() async throws {
+        var receivedPackage: Package?
+        let logic = MyAppPurchaseLogic(performPurchase: { package in
+            receivedPackage = package
+            return (userCancelled: false, error: nil)
+        }, performRestore: { (success: true, error: nil) })
+        let handler = PurchaseHandler.mock(purchasesAreCompletedBy: .myApp,
+                                           performPurchase: logic.performPurchase)
+
+        try await handler.purchase(package: TestData.packageWithIntroOffer, promotionalOffer: self.promotionalOffer)
+
+        XCTAssertTrue(receivedPackage === TestData.packageWithIntroOffer)
+        expect(handler.purchaseResult) == .purchased(transaction: nil, customerInfo: TestData.customerInfo)
+        _ = await logic.performPurchaseWithContext(.init(package: TestData.packageWithIntroOffer,
+                                                         promotionalOffer: self.promotionalOffer))
+        XCTAssertTrue(receivedPackage === TestData.packageWithIntroOffer)
+    }
+
+    func testContextPurchaseCancellation() async throws {
+        let handler = PurchaseHandler.mock(purchasesAreCompletedBy: .myApp, performPurchaseWithContext: { _ in
+            return (userCancelled: true, error: nil)
+        })
+
+        try await handler.purchase(package: TestData.packageWithIntroOffer, promotionalOffer: self.promotionalOffer)
+
+        expect(handler.purchaseResult) == .cancelled
+        XCTAssertFalse(handler.actionInProgress)
+        XCTAssertNil(handler.purchaseError)
+    }
+
+    func testContextPurchaseError() async throws {
+        let handler = PurchaseHandler.mock(purchasesAreCompletedBy: .myApp, performPurchaseWithContext: { _ in
+            return (userCancelled: false, error: ErrorCode.storeProblemError)
+        })
+
+        do {
+            try await handler.purchase(package: TestData.packageWithIntroOffer, promotionalOffer: self.promotionalOffer)
+            XCTFail("Expected the custom purchase error")
+        } catch {
+            XCTAssertEqual(error as? ErrorCode, .storeProblemError)
+        }
+
+        XCTAssertNotNil(handler.purchaseError)
+        XCTAssertFalse(handler.actionInProgress)
+    }
+
+    func testRevenueCatManagedPurchaseDoesNotCallCustomContextCallback() async throws {
+        let handler = PurchaseHandler.mock(performPurchaseWithContext: { _ in
+            XCTFail("RevenueCat-managed purchases must not invoke the custom callback")
+            return (userCancelled: false, error: nil)
+        })
+
+        try await handler.purchase(package: TestData.packageWithIntroOffer, promotionalOffer: self.promotionalOffer)
+
+        expect(handler.purchaseResult) == .purchased(transaction: nil, customerInfo: TestData.customerInfo)
+    }
+
+    func testContextLogicKeepsLegacyPurchasePropertyCallable() async {
+        var receivedContext: PaywallPurchaseContext?
+        let logic = MyAppPurchaseLogic(performPurchaseWithContext: { context in
+            receivedContext = context
+            return (userCancelled: true, error: nil)
+        }, performRestore: { (success: true, error: nil) })
+
+        let result = await logic.performPurchase(TestData.packageWithIntroOffer)
+
+        XCTAssertTrue(result.userCancelled)
+        XCTAssertTrue(receivedContext?.package === TestData.packageWithIntroOffer)
+        XCTAssertNil(receivedContext?.promotionalOffer)
+    }
+
+    #if canImport(UIKit) && !os(tvOS) && !os(watchOS)
+    func testObjectiveCContextHandlerBridgePreservesOfferAndResults() async throws {
+        let delegate = ContextPurchaseHandlerSpy()
+        let bridged = PaywallViewController.bridgePurchaseHandlerWithContext(delegate)
+        let context = PaywallPurchaseContext(package: TestData.packageWithIntroOffer,
+                                             promotionalOffer: self.promotionalOffer)
+
+        let purchaseResult = await bridged.performPurchaseWithContext(context)
+        let restoreResult = await bridged.performRestore()
+
+        XCTAssertTrue(delegate.context === context)
+        XCTAssertTrue(purchaseResult.userCancelled)
+        XCTAssertEqual(purchaseResult.error as? ErrorCode, .storeProblemError)
+        XCTAssertTrue(restoreResult.success)
+        XCTAssertNil(restoreResult.error)
+    }
+    #endif
+
+    private var promotionalOffer: PromotionalOffer {
+        PromotionalOffer(
+            discount: MockStoreProductDiscount(
+                offerIdentifier: "promo", currencyCode: "USD", price: 1, localizedPriceString: "$1.00",
+                paymentMode: .payAsYouGo, subscriptionPeriod: .init(value: 1, unit: .month),
+                numberOfPeriods: 1, type: .promotional
+            ),
+            signedData: .init(
+                identifier: "promo", keyIdentifier: "key", nonce: UUID(), signature: "signature", timestamp: 1234
+            )
+        )
+    }
+
     func testCancellingAPurchaseCompletedByMyAppDoesNotNeedCustomerInfo() async throws {
         let handler = Self.handlerFailingToFetchCustomerInfo(
             purchasesAreCompletedBy: .myApp,
@@ -1115,4 +1252,23 @@ private final class KeyWindowFocusResignerSpy: KeyWindowFocusResigning {
 
 }
 
+#endif
+
+#if canImport(UIKit) && !os(tvOS) && !os(watchOS)
+@available(iOS 15.0, *)
+private final class ContextPurchaseHandlerSpy: NSObject, PaywallPurchaseHandlerWithContext {
+
+    var context: PaywallPurchaseContext?
+
+    func performPurchase(with context: PaywallPurchaseContext,
+                         completion: @escaping (Bool, Error?) -> Void) {
+        self.context = context
+        completion(true, ErrorCode.storeProblemError)
+    }
+
+    func performRestore(completion: @escaping (Bool, Error?) -> Void) {
+        completion(true, nil)
+    }
+
+}
 #endif

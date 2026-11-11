@@ -58,6 +58,34 @@ public typealias PerformPurchase = @MainActor @Sendable (
     _ packageToPurchase: Package
 ) async -> (userCancelled: Bool, error: Error?)
 
+/// The package and selected promotional offer for a custom paywall purchase.
+/// Pass ``promotionalOffer`` to your purchase implementation to apply the discount displayed by the paywall.
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@objc(RCPaywallPurchaseContext)
+public final class PaywallPurchaseContext: NSObject, Sendable {
+
+    /// The package selected for purchase.
+    @objc public let package: Package
+
+    /// The signed promotional offer selected by the paywall, or `nil` when no offer applies.
+    @objc public let promotionalOffer: PromotionalOffer?
+
+    init(package: Package, promotionalOffer: PromotionalOffer?) {
+        self.package = package
+        self.promotionalOffer = promotionalOffer
+        super.init()
+    }
+
+}
+
+/// A closure that performs a custom purchase using the package and offer selected by the paywall.
+/// - Parameter context: The package and optional signed promotional offer to purchase.
+/// - Returns: Whether the user cancelled and any error encountered, matching ``PerformPurchase``.
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+public typealias PerformPurchaseWithContext = @MainActor @Sendable (
+    _ context: PaywallPurchaseContext
+) async -> (userCancelled: Bool, error: Error?)
+
 /// A closure used to perform custom restore logic implemented by your app.
 /// - Returns: A tuple indicating whether the restore operation was successful and
 /// any error encountered during the process.

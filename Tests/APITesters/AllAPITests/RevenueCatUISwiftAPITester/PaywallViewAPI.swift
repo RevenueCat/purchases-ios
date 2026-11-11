@@ -902,6 +902,25 @@ struct App: View {
 
 }
 
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+func checkContextPurchaseAPI(offering: Offering) {
+    let purchase: PerformPurchaseWithContext = { context in
+        let _: Package = context.package
+        let _: PromotionalOffer? = context.promotionalOffer
+        return (userCancelled: false, error: nil)
+    }
+    let restore: PerformRestore = { (success: true, error: nil) }
+    let logic = MyAppPurchaseLogic(performPurchaseWithContext: purchase, performRestore: restore)
+    let _: PerformPurchase = logic.performPurchase
+    let _: PerformPurchaseWithContext = logic.performPurchaseWithContext
+    let _ = PaywallView(performPurchaseWithContext: purchase, performRestore: restore)
+    let _ = PaywallView(offering: offering, performPurchaseWithContext: purchase)
+    let _ = PaywallView(performPurchase: { _ in (userCancelled: true, error: nil) })
+    let _ = PaywallView(performPurchaseWithContext: { _ in (userCancelled: true, error: nil) })
+    let _ = Text("").presentPaywallIfNeeded(requiredEntitlementIdentifier: "pro", myAppPurchaseLogic: logic)
+    let _ = Text("").paywallFooter(myAppPurchaseLogic: logic)
+}
+
 private struct CustomFontProvider: PaywallFontProvider {
 
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)

@@ -101,6 +101,14 @@ func paywallViewControllerAPI(_ delegate: Delegate,
                                                     purchaseHandler: purchaseHandler,
                                                     dismissRequestedHandler: dismissRequestedHandler)
 
+    let purchaseWithContext: PerformPurchaseWithContext = { _ in (userCancelled: false, error: nil) }
+    let _ = PaywallViewController(performPurchaseWithContext: purchaseWithContext)
+    let _ = PaywallViewController(offering: offering, fonts: fontProvider,
+                                 performPurchaseWithContext: purchaseWithContext,
+                                 performRestore: performRestore)
+    let _ = PaywallFooterViewController(performPurchaseWithContext: purchaseWithContext,
+                                       performRestore: { (success: true, error: nil) })
+
     controller.update(with: offering!)
     controller.update(with: "offering_identifier")
     controller.updateFont(with: "Papyrus")

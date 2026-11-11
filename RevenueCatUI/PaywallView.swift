@@ -126,6 +126,49 @@ public struct PaywallView: View {
         )
     }
 
+    /// Displays the current offering using custom purchase logic that receives the selected offer.
+    /// - Parameters:
+    ///   - fonts: The font provider for the paywall.
+    ///   - displayCloseButton: Whether to display a close button.
+    ///   - performPurchaseWithContext: The callback responsible for applying the selected promotional offer.
+    ///   - performRestore: The callback that restores purchases.
+    public init(
+        fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
+        displayCloseButton: Bool = false,
+        performPurchaseWithContext: @escaping PerformPurchaseWithContext,
+        performRestore: PerformRestore? = nil
+    ) {
+        self.init(configuration: .init(
+            fonts: fonts,
+            displayCloseButton: displayCloseButton,
+            purchaseHandler: .default(performRestore: performRestore,
+                                      performPurchaseWithContext: performPurchaseWithContext)
+        ))
+    }
+
+    /// Displays an offering using custom purchase logic that receives the selected offer.
+    /// - Parameters:
+    ///   - offering: The offering to display, overriding the current offering and experiment assignment.
+    ///   - fonts: The font provider for the paywall.
+    ///   - displayCloseButton: Whether to display a close button.
+    ///   - performPurchaseWithContext: The callback responsible for applying the selected promotional offer.
+    ///   - performRestore: The callback that restores purchases.
+    public init(
+        offering: Offering,
+        fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
+        displayCloseButton: Bool = false,
+        performPurchaseWithContext: @escaping PerformPurchaseWithContext,
+        performRestore: PerformRestore? = nil
+    ) {
+        self.init(configuration: .init(
+            offering: offering,
+            fonts: fonts,
+            displayCloseButton: displayCloseButton,
+            purchaseHandler: .default(performRestore: performRestore,
+                                      performPurchaseWithContext: performPurchaseWithContext)
+        ))
+    }
+
     // swiftlint:disable:next missing_docs
     @_spi(Internal) public init(
         offeringIdentifier: String,
@@ -231,11 +274,11 @@ public struct PaywallView: View {
     private static func checkForConfigurationConsistency(purchaseHandler: PurchaseHandler) -> NSError? {
         switch purchaseHandler.purchasesAreCompletedBy {
         case .myApp:
-            if purchaseHandler.performPurchase == nil || purchaseHandler.performRestore == nil {
+            if purchaseHandler.performPurchaseWithContext == nil || purchaseHandler.performRestore == nil {
                 let missingBlocks: String
-                if purchaseHandler.performPurchase == nil && purchaseHandler.performRestore == nil {
+                if purchaseHandler.performPurchaseWithContext == nil && purchaseHandler.performRestore == nil {
                     missingBlocks = "performPurchase and performRestore are"
-                } else if purchaseHandler.performPurchase == nil {
+                } else if purchaseHandler.performPurchaseWithContext == nil {
                     missingBlocks = "performPurchase is"
                 } else {
                     missingBlocks = "performRestore is"
@@ -249,7 +292,7 @@ public struct PaywallView: View {
                 return error
             }
         case .revenueCat:
-            if purchaseHandler.performPurchase != nil || purchaseHandler.performRestore != nil {
+            if purchaseHandler.performPurchaseWithContext != nil || purchaseHandler.performRestore != nil {
                 Logger.warning(PaywallError.purchaseAndRestoreDefinedForRevenueCat)
             }
         }
