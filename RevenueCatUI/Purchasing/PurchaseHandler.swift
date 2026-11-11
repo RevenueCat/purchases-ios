@@ -977,7 +977,7 @@ extension PurchaseHandler {
         self.purchaseError = nil
 
         defer {
-            self.restoreInProgress = false
+            self.packageBeingPurchased = nil
             self.actionTypeInProgress = nil
         }
 

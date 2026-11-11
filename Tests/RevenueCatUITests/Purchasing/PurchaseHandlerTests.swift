@@ -42,6 +42,95 @@ class PurchaseHandlerTests: TestCase {
         expect(handler.restoreError).to(beNil())
     }
 
+    func testCustomPurchaseSuccessClearsLoadingState() async throws {
+        try await self.checkCustomPurchaseLoadingState(userCancelled: false, error: nil)
+    }
+
+    func testCustomPurchaseCancellationClearsLoadingState() async throws {
+        try await self.checkCustomPurchaseLoadingState(userCancelled: true, error: nil)
+    }
+
+    func testCustomPurchaseFailureClearsLoadingState() async throws {
+        try await self.checkCustomPurchaseLoadingState(userCancelled: false, error: ErrorCode.storeProblemError)
+    }
+
+    func testCustomPurchaseCustomerInfoFailureClearsLoadingState() async throws {
+        let purchases = MockPurchases(purchasesAreCompletedBy: .myApp) { _, _, _ in
+            XCTFail("The app must complete its own purchase")
+            return (nil, TestData.customerInfo, false)
+        } restorePurchases: {
+            TestData.customerInfo
+        } trackEvent: { _ in
+        } customerInfo: {
+            throw ErrorCode.networkError
+        }
+        let handler = PurchaseHandler(
+            purchases: purchases,
+            performPurchase: { _ in (false, nil) },
+            eventTracker: .init(purchases: purchases)
+        )
+
+        do {
+            try await handler.purchase(package: TestData.packageWithIntroOffer)
+            XCTFail("Expected the customer info error")
+        } catch {
+            XCTAssertEqual(error as? ErrorCode, .networkError)
+        }
+
+        XCTAssertNil(handler.packageBeingPurchased)
+        XCTAssertFalse(handler.actionInProgress)
+    }
+
+    func testCustomPurchaseCanRetryAfterCancellation() async throws {
+        var packages: [Package] = []
+        let handler = PurchaseHandler.mock(purchasesAreCompletedBy: .myApp, performPurchase: { package in
+            packages.append(package)
+            return (userCancelled: packages.count == 1, error: nil)
+        })
+
+        try await handler.purchase(package: TestData.packageWithIntroOffer)
+        XCTAssertNil(handler.packageBeingPurchased)
+        expect(handler.purchaseResult) == .cancelled
+
+        try await handler.purchase(package: TestData.annualPackage)
+        XCTAssertNil(handler.packageBeingPurchased)
+        XCTAssertFalse(handler.actionInProgress)
+        XCTAssertEqual(packages.count, 2)
+        XCTAssertTrue(packages[0] === TestData.packageWithIntroOffer)
+        XCTAssertTrue(packages[1] === TestData.annualPackage)
+        expect(handler.purchaseResult) == .purchased(transaction: nil, customerInfo: TestData.customerInfo)
+    }
+
+    private func checkCustomPurchaseLoadingState(userCancelled: Bool, error expectedError: Error?) async throws {
+        weak var handlerReference: PurchaseHandler?
+        let handler = PurchaseHandler.mock(purchasesAreCompletedBy: .myApp, performPurchase: { package in
+            XCTAssertTrue(handlerReference?.packageBeingPurchased === package)
+            XCTAssertTrue(handlerReference?.actionInProgress == true)
+            return (userCancelled, expectedError)
+        })
+        handlerReference = handler
+
+        do {
+            try await handler.purchase(package: TestData.packageWithIntroOffer)
+            XCTAssertNil(expectedError)
+        } catch {
+            XCTAssertNotNil(expectedError)
+            XCTAssertEqual(error as? ErrorCode, expectedError as? ErrorCode)
+        }
+
+        XCTAssertNil(handler.packageBeingPurchased)
+        XCTAssertFalse(handler.actionInProgress)
+        XCTAssertFalse(handler.restoreInProgress)
+        if expectedError != nil {
+            XCTAssertNotNil(handler.purchaseError)
+            XCTAssertNil(handler.purchaseResult)
+        } else if userCancelled {
+            expect(handler.purchaseResult) == .cancelled
+        } else {
+            expect(handler.purchaseResult) == .purchased(transaction: nil, customerInfo: TestData.customerInfo)
+        }
+    }
+
     func testPurchaseSetsCustomerInfo() async throws {
         let handler: PurchaseHandler = .mock()
 
