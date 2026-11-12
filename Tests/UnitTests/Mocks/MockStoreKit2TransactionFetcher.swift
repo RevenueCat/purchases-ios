@@ -16,6 +16,10 @@ import Foundation
 
 final class MockStoreKit2TransactionFetcher: StoreKit2TransactionFetcherType {
 
+    let firstVerifiedAutoRenewableTransactionCount = Atomic<Int>(0)
+    let fetchReceiptCount = Atomic<Int>(0)
+    let onFirstVerifiedAutoRenewableTransaction = Atomic<(@Sendable () -> Void)?>(nil)
+
     private let _stubbedUnfinishedTransactions: Atomic<[StoreTransaction]> = .init([])
     private let _stubbedFirstVerifiedTransaction: Atomic<StoreTransaction?> = .init(nil)
     private let _stubbedOldestVerifiedTransaction: Atomic<StoreTransaction?> = .init(nil)
@@ -68,6 +72,7 @@ final class MockStoreKit2TransactionFetcher: StoreKit2TransactionFetcherType {
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     func fetchReceipt(containing transaction: StoreTransactionType) async -> StoreKit2Receipt {
+        self.fetchReceiptCount.modify { $0 += 1 }
         return self.stubbedReceipt!
     }
 
@@ -88,7 +93,9 @@ final class MockStoreKit2TransactionFetcher: StoreKit2TransactionFetcherType {
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     var firstVerifiedAutoRenewableTransaction: RevenueCat.StoreTransaction? {
         get async {
-            self.stubbedFirstVerifiedAutoRenewableTransaction
+            self.firstVerifiedAutoRenewableTransactionCount.modify { $0 += 1 }
+            self.onFirstVerifiedAutoRenewableTransaction.value?()
+            return self.stubbedFirstVerifiedAutoRenewableTransaction
         }
     }
 

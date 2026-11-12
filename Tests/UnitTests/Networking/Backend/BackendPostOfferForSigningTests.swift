@@ -27,12 +27,12 @@ class BackendPostOfferForSigningTests: BaseBackendTests {
         let validSigningResponse: [String: Any] = [
             "offers": [
                 [
-                    "offer_id": "PROMO_ID",
-                    "product_id": "com.myapp.product_a",
+                    "offer_id": "offerid",
+                    "product_id": "a_great_product",
                     "key_id": "STEAKANDEGGS",
                     "signature_data": [
                         "signature": "Base64 encoded signature",
-                        "nonce": "A UUID",
+                        "nonce": "CBA91706-1D66-4ABD-AB53-3EA9C41D1F5E",
                         "timestamp": Int64(123413232131)
                     ]  as [String: Any],
                     "signature_error": nil
@@ -49,15 +49,16 @@ class BackendPostOfferForSigningTests: BaseBackendTests {
         let group = "sub_group"
         let offerIdentifier = "offerid"
 
-        waitUntil { completed in
+        let result = waitUntilValue { completed in
             self.offerings.post(offerIdForSigning: offerIdentifier,
                                 productIdentifier: productIdentifier,
                                 subscriptionGroup: group,
                                 receipt: .receipt("an awesome discount".asData),
-                                appUserID: Self.userID) { _ in
-                completed()
-            }
+                                appUserID: Self.userID,
+                                completion: completed)
         }
+
+        expect(result?.value?.signature) == "Base64 encoded signature"
 
         expect(self.httpClient.calls).to(haveCount(1))
     }
@@ -124,8 +125,8 @@ class BackendPostOfferForSigningTests: BaseBackendTests {
         let validSigningResponse: [String: Any] = [
             "offers": [
                 [
-                    "offer_id": "PROMO_ID",
-                    "product_id": "com.myapp.product_a",
+                    "offer_id": "offerid",
+                    "product_id": "a_great_product",
                     "key_id": "STEAKANDEGGS",
                     "signature_data": nil,
                     "signature_error": [
@@ -163,8 +164,8 @@ class BackendPostOfferForSigningTests: BaseBackendTests {
         let validSigningResponse: [String: Any] = [
             "offers": [
                 [
-                    "offer_id": "PROMO_ID",
-                    "product_id": "com.myapp.product_a",
+                    "offer_id": "offerid",
+                    "product_id": "a_great_product",
                     "key_id": "STEAKANDEGGS",
                     "signature_data": nil,
                     "signature_error": nil
