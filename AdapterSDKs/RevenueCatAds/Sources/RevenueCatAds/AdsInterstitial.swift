@@ -136,6 +136,10 @@ import UIKit
             self.failToPresent("The view controller is already presenting.")
             return
         }
+        if viewController.isBeingPresented || viewController.isBeingDismissed {
+            self.failToPresent("The view controller is in a transition.")
+            return
+        }
 
         self.state = .presenting
         self.retainedWhilePresenting = self
