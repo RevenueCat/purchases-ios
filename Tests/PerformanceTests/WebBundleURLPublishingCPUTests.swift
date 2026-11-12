@@ -50,7 +50,7 @@ final class WebBundleURLPublishingCPUTests: XCTestCase {
     }
 
     private func measureCPU(includingAssetPrewarming: Bool, testName: String) throws {
-        let metric = RecordingCPUMetric(limitingToCurrentThread: false)
+        let metric = RecordingCPUTimeMetric(limitingToCurrentThread: false)
         let failuresBeforeMeasurement = self.testRun?.failureCount
         let options = XCTMeasureOptions()
         options.iterationCount = 5
@@ -74,11 +74,11 @@ final class WebBundleURLPublishingCPUTests: XCTestCase {
         if let failure { throw failure }
         guard self.testRun?.failureCount == failuresBeforeMeasurement else { return }
         // XCTest excludes the first iteration from its results.
-        let cpuInstructions = metric.samples.cpuInstructionsThousands.dropFirst()
-        XCTAssertEqual(cpuInstructions.count, options.iterationCount)
-        guard cpuInstructions.count == options.iterationCount else { return }
-        try PerformanceBaseline.checkOrRecordCPU(
-            cpuInstructionsThousands: cpuInstructions.reduce(0, +) / Double(cpuInstructions.count),
+        let cpuTimes = metric.samples.cpuTimeSeconds.dropFirst()
+        XCTAssertEqual(cpuTimes.count, options.iterationCount)
+        guard cpuTimes.count == options.iterationCount else { return }
+        try PerformanceBaseline.checkOrRecordCPUTime(
+            cpuTimeSeconds: cpuTimes.reduce(0, +) / Double(cpuTimes.count),
             tolerancePercent: 10,
             testName: "\(type(of: self))/\(testName)",
             workloadSHA256: self.workload.sha256,

@@ -14,7 +14,7 @@ import Foundation
 
 struct PerformanceBaseline: Codable {
     var peakMemoryMiB: Double?
-    var cpuInstructionsThousands: Double?
+    var cpuTimeSeconds: Double?
     var workloadSHA256: String
     var environment: [String: String]
 
@@ -34,7 +34,7 @@ struct PerformanceBaseline: Codable {
         if record {
             baselines[testName] = Self(
                 peakMemoryMiB: peakMemoryMiB,
-                cpuInstructionsThousands: nil,
+                cpuTimeSeconds: nil,
                 workloadSHA256: workloadSHA256,
                 environment: environment
             )
@@ -61,8 +61,8 @@ struct PerformanceBaseline: Codable {
         print("PASS \(testName): \(values)")
     }
 
-    static func checkOrRecordCPU(
-        cpuInstructionsThousands: Double,
+    static func checkOrRecordCPUTime(
+        cpuTimeSeconds: Double,
         tolerancePercent: Double,
         testName: String,
         workloadSHA256: String,
@@ -70,23 +70,29 @@ struct PerformanceBaseline: Codable {
         record: Bool = false,
         fileURL: URL = Self.fileURL
     ) throws {
+        guard cpuTimeSeconds > 0 else {
+            throw Failure("\(testName): CPU time must be greater than zero.")
+        }
         var baselines = try self.load(from: fileURL)
         if record {
             baselines[testName] = Self(
                 peakMemoryMiB: nil,
-                cpuInstructionsThousands: cpuInstructionsThousands,
+                cpuTimeSeconds: cpuTimeSeconds,
                 workloadSHA256: workloadSHA256,
                 environment: environment
             )
             try self.write(baselines, to: fileURL)
-            print("Recorded \(testName): \(cpuInstructionsThousands) kI in \(fileURL.path). Review the baseline diff.")
+            print("Recorded \(testName): \(cpuTimeSeconds) s in \(fileURL.path). Review the baseline diff.")
             return
         }
         guard let baseline = baselines[testName] else {
             throw Failure("No baseline for \(testName). Set RECORD_PERFORMANCE_BASELINES=1 to record it.")
         }
-        guard let baselineCPUInstructionsThousands = baseline.cpuInstructionsThousands else {
-            throw Failure("\(testName): baseline does not contain CPU instructions.")
+        guard let baselineCPUTimeSeconds = baseline.cpuTimeSeconds else {
+            throw Failure("\(testName): baseline does not contain CPU time.")
+        }
+        guard baselineCPUTimeSeconds > 0 else {
+            throw Failure("\(testName): baseline CPU time must be greater than zero.")
         }
         guard baseline.environment == environment else {
             throw Failure("\(testName): environment differs. Use the baseline simulator and Xcode version.")
@@ -94,10 +100,10 @@ struct PerformanceBaseline: Codable {
         guard baseline.workloadSHA256 == workloadSHA256 else {
             throw Failure("\(testName): workload differs. Review the change before you record a new baseline.")
         }
-        let limit = baselineCPUInstructionsThousands * (1 + tolerancePercent / 100)
-        let values = String(format: "CPU %.0f kI, baseline %.0f kI, limit %.0f kI",
-                            cpuInstructionsThousands, baselineCPUInstructionsThousands, limit)
-        guard cpuInstructionsThousands <= limit else { throw Failure("\(testName): \(values)") }
+        let limit = baselineCPUTimeSeconds * (1 + tolerancePercent / 100)
+        let values = String(format: "CPU time %.3f s, baseline %.3f s, limit %.3f s",
+                            cpuTimeSeconds, baselineCPUTimeSeconds, limit)
+        guard cpuTimeSeconds <= limit else { throw Failure("\(testName): \(values)") }
         print("PASS \(testName): \(values)")
     }
 

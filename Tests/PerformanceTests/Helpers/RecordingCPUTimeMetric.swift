@@ -7,16 +7,16 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  RecordingCPUMetric.swift
+//  RecordingCPUTimeMetric.swift
 //
 //  Created by Rick van der Linden on 11/11/26.
 
 import XCTest
 
-final class RecordingCPUMetric: XCTCPUMetric {
+final class RecordingCPUTimeMetric: XCTCPUMetric {
 
     final class Samples {
-        var cpuInstructionsThousands: [Double] = []
+        var cpuTimeSeconds: [Double] = []
     }
 
     let samples: Samples
@@ -35,7 +35,7 @@ final class RecordingCPUMetric: XCTCPUMetric {
     }
 
     override func copy(with zone: NSZone? = nil) -> Any {
-        return RecordingCPUMetric(
+        return RecordingCPUTimeMetric(
             samples: self.samples,
             limitingToCurrentThread: self.limitingToCurrentThread
         )
@@ -46,19 +46,26 @@ final class RecordingCPUMetric: XCTCPUMetric {
         to endTime: XCTPerformanceMeasurementTimestamp
     ) throws -> [XCTPerformanceMeasurement] {
         let measurements = try super.reportMeasurements(from: startTime, to: endTime)
-        let cpuInstructions = try XCTUnwrap(measurements.first {
-            $0.identifier == "com.apple.dt.XCTMetric_CPU.instructions_retired"
+        let cpuTime = try XCTUnwrap(measurements.first {
+            $0.identifier == "com.apple.dt.XCTMetric_CPU.time"
         })
-        let cpuInstructionsThousands: Double
-        switch cpuInstructions.unitSymbol {
-        case "I":
-            cpuInstructionsThousands = cpuInstructions.doubleValue / 1_000
-        case "kI":
-            cpuInstructionsThousands = cpuInstructions.doubleValue
+        let cpuTimeSeconds: Double
+        switch cpuTime.unitSymbol {
+        case "s":
+            cpuTimeSeconds = cpuTime.doubleValue
+        case "ms":
+            cpuTimeSeconds = cpuTime.doubleValue / 1_000
+        case "µs", "us":
+            cpuTimeSeconds = cpuTime.doubleValue / 1_000_000
+        case "ns":
+            cpuTimeSeconds = cpuTime.doubleValue / 1_000_000_000
         default:
-            throw PerformanceBaseline.Failure("Unsupported CPU instructions unit: \(cpuInstructions.unitSymbol)")
+            throw PerformanceBaseline.Failure("Unsupported CPU time unit: \(cpuTime.unitSymbol)")
         }
-        self.samples.cpuInstructionsThousands.append(cpuInstructionsThousands)
+        guard cpuTimeSeconds > 0 else {
+            throw PerformanceBaseline.Failure("CPU time measurement must be greater than zero.")
+        }
+        self.samples.cpuTimeSeconds.append(cpuTimeSeconds)
         return measurements
     }
 
