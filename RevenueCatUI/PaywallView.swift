@@ -63,6 +63,11 @@ public struct PaywallView: View {
 
     private var initializationError: NSError?
 
+    /// When this view first appeared. The paywall's loading time is measured from here, so the
+    /// redacted placeholder shown while offerings load counts as loading time too.
+    @State
+    private var presentationDate: Date?
+
     @Environment(\.onRequestedDismissal)
     private var onRequestedDismissal: (() -> Void)?
 
@@ -318,6 +323,12 @@ public struct PaywallView: View {
     // swiftlint:disable:next missing_docs
     public var body: some View {
         self.content
+            .environment(\.paywallPresentationDate, self.presentationDate)
+            .onAppear {
+                if self.presentationDate == nil {
+                    self.presentationDate = Date()
+                }
+            }
             .environment(\.asyncButtonDisplaysErrors, self.displaysPurchaseAndRestoreErrors)
             .displayError(self.$error) {
                 guard let onRequestedDismissal = self.onRequestedDismissal else {

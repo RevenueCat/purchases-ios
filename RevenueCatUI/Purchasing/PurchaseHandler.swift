@@ -1227,6 +1227,21 @@ extension PurchaseHandler {
         return self.paywallEventTracker.trackPaywallClose(sessionID: sessionID)
     }
 
+    /// Tracks that a paywall session finished loading. See `PaywallEventTracker.trackPaywallLoaded`.
+    /// - Returns: whether the event was tracked
+    @discardableResult
+    func trackPaywallLoaded(
+        sessionID: PaywallEvent.SessionID,
+        loadingDurationMs: Int,
+        incompleteReason: String? = nil
+    ) -> Bool {
+        return self.paywallEventTracker.trackPaywallLoaded(
+            loadingDurationMs: loadingDurationMs,
+            incompleteReason: incompleteReason,
+            sessionID: sessionID
+        )
+    }
+
     /// Tracks a paywall close for a specific session, regardless of which session is currently active.
     /// A workflow keeps several paywall pages alive at once, so each page must close its own session
     /// rather than whichever one happened to be impressed last (which `trackPaywallClose()` uses).

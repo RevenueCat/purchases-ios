@@ -74,6 +74,7 @@ extension PaywallEvent {
         let typeName: String = {
             switch self {
             case .impression: return "paywall_impression"
+            case .loaded: return "paywall_loaded"
             case .cancel: return "paywall_cancel"
             case .close: return "paywall_close"
             case .exitOffer: return "paywall_exit_offer"
@@ -100,11 +101,29 @@ extension PaywallEvent {
             result["paywall_id"] = paywallIdentifier
         }
 
+        self.data.mergeLoadingFields(into: &result)
+
         if let interaction = self.componentInteractionData {
             interaction.mergeIntoPaywallFeatureMap(&result)
         }
 
         return result
+    }
+
+}
+
+private extension PaywallEvent.Data {
+
+    func mergeLoadingFields(into result: inout [String: Any]) {
+        if let msSinceConfigure = self.msSinceConfigure {
+            result["ms_since_configure"] = msSinceConfigure
+        }
+        if let loadingDurationMs = self.loadingDurationMs {
+            result["loading_duration_ms"] = loadingDurationMs
+        }
+        if let loadingIncompleteReason = self.loadingIncompleteReason {
+            result["loading_incomplete_reason"] = loadingIncompleteReason
+        }
     }
 
 }
