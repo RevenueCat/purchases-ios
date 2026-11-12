@@ -443,6 +443,40 @@ public class PaywallViewController: UIViewController {
         )
     }
 
+    /// Creates a paywall for an offering identifier with custom purchase logic that receives the selected offer.
+    /// - Parameters:
+    ///   - offeringIdentifier: The identifier of the offering to display.
+    ///   - presentedOfferingContext: The context from which the offering was presented.
+    ///   - fonts: The font provider for the paywall.
+    ///   - displayCloseButton: Whether to display a close button.
+    ///   - shouldBlockTouchEvents: Whether to intercept touches propagated through this controller.
+    ///   - performPurchaseWithContext: The callback responsible for applying the selected promotional offer.
+    ///   - performRestore: The callback that restores purchases.
+    ///   - dismissRequestedHandler: Called when the paywall requests dismissal.
+    @_disfavoredOverload // Keep existing trailing-closure calls bound to the legacy initializer.
+    @_spi(Internal)
+    public convenience init(
+        offeringIdentifier: String,
+        presentedOfferingContext: PresentedOfferingContext,
+        fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
+        displayCloseButton: Bool = false,
+        shouldBlockTouchEvents: Bool = false,
+        performPurchaseWithContext: PerformPurchaseWithContext?,
+        performRestore: PerformRestore? = nil,
+        dismissRequestedHandler: ((_ controller: PaywallViewController) -> Void)? = nil
+    ) {
+        self.init(
+            content: .offeringIdentifier(offeringIdentifier, presentedOfferingContext: presentedOfferingContext),
+            fonts: fonts,
+            displayCloseButton: displayCloseButton,
+            shouldBlockTouchEvents: shouldBlockTouchEvents,
+            performPurchase: nil,
+            performRestore: performRestore,
+            performPurchaseWithContext: performPurchaseWithContext,
+            dismissRequestedHandler: dismissRequestedHandler
+        )
+    }
+
     init(
         content: PaywallViewConfiguration.Content,
         fonts: PaywallFontProvider,
