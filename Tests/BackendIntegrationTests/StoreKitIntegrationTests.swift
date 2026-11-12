@@ -367,6 +367,9 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
 
         for transaction in transactions {
             try await self.verifyTransactionWasFinished(transaction, count: nil)
+            if Self.storeKitVersion == .storeKit1 {
+                await self.verifyTransactionIsEventuallyRemovedFromSK1Queue(transaction)
+            }
         }
     }
 
@@ -395,6 +398,9 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         expect(transaction1.transactionIdentifier).toNot(equal(transaction2.transactionIdentifier))
         for transaction in [transaction1, transaction2] {
             try await self.verifyTransactionWasFinished(transaction)
+            if Self.storeKitVersion == .storeKit1 {
+                await self.verifyTransactionIsEventuallyRemovedFromSK1Queue(transaction)
+            }
         }
     }
 

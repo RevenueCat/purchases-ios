@@ -576,8 +576,12 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
         expect(info.nonSubscriptions.onlyElement?.productIdentifier) == Self.consumable10Coins
 
         // 6. Ensure transactions are finished
+        if Self.storeKitVersion == .storeKit2 {
+            try await self.verifyAnyTransactionIsEventuallyFinished(count: 2)
+        }
         try await self.verifyTransactionWasFinished(transaction)
-        try await self.verifyTransactionWasFinishedForProductIdentifier(Self.consumable10Coins, count: nil)
+        let expectedCount = Self.storeKitVersion == .storeKit1 ? nil : 1
+        try await self.verifyTransactionWasFinishedForProductIdentifier(Self.consumable10Coins, count: expectedCount)
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)

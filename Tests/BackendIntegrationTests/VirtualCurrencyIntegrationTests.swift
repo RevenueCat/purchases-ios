@@ -40,6 +40,7 @@ class VirtualCurrencyStoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         let resultData = try await self.purchaseConsumablePackage()
         let transaction = try XCTUnwrap(resultData.transaction)
         try await self.verifyTransactionWasFinished(transaction)
+        await self.verifyTransactionIsEventuallyRemovedFromSK1Queue(transaction)
 
         try self.purchases.invalidateVirtualCurrenciesCache()
 
@@ -73,6 +74,7 @@ class VirtualCurrencyStoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         let resultData = try await self.purchaseNonConsumablePackage()
         let transaction = try XCTUnwrap(resultData.transaction)
         try await self.verifyTransactionWasFinished(transaction)
+        await self.verifyTransactionIsEventuallyRemovedFromSK1Queue(transaction)
 
         try self.purchases.invalidateVirtualCurrenciesCache()
 
@@ -105,6 +107,7 @@ class VirtualCurrencyStoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         let resultData = try await self.purchaseMonthlyOffering()
         let transaction = try XCTUnwrap(resultData.transaction)
         try await self.verifyTransactionWasFinished(transaction)
+        await self.verifyTransactionIsEventuallyRemovedFromSK1Queue(transaction)
 
         try self.purchases.invalidateVirtualCurrenciesCache()
 

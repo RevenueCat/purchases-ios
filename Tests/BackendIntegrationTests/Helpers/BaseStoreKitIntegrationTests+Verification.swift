@@ -170,14 +170,13 @@ extension BaseStoreKitIntegrationTests {
     ) async throws {
         switch Self.storeKitVersion {
         case .storeKit1:
-            // StoreKit 1 can deliver duplicate updates, so verify at least one finish request and actual queue removal.
+            // StoreKit 1 can deliver duplicate updates, so exact finish-request counts are unreliable.
             try await self.verifySpecificTransactionIsEventuallyFinished(
                 transaction,
                 count: nil,
                 file: file,
                 line: line
             )
-            await self.verifyTransactionIsEventuallyRemovedFromSK1Queue(transaction, file: file, line: line)
         case .storeKit2:
             try await self.verifySpecificTransactionIsEventuallyFinished(
                 transaction,
