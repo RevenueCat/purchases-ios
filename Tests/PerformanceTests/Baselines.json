@@ -1,4 +1,24 @@
 {
+  "WebBundleURLPublishingCPUTests/testCPUTimeAcrossMultipleWorkflows()" : {
+    "cpuTimeSeconds" : 0.2909782792,
+    "environment" : {
+      "architecture" : "arm64",
+      "model" : "iPhone18,3",
+      "os" : "Version 27.0 (Build 24A434)",
+      "xcodeBuild" : "27A266a"
+    },
+    "workloadSHA256" : "596667e911cb6a11f714ef44daa541a2d2c8b715f7bc33feee12372f79583188"
+  },
+  "WebBundleURLPublishingCPUTests/testCPUTimeAcrossMultipleWorkflowsIncludingAssetPrewarming()" : {
+    "cpuTimeSeconds" : 0.3138170914,
+    "environment" : {
+      "architecture" : "arm64",
+      "model" : "iPhone18,3",
+      "os" : "Version 27.0 (Build 24A434)",
+      "xcodeBuild" : "27A266a"
+    },
+    "workloadSHA256" : "596667e911cb6a11f714ef44daa541a2d2c8b715f7bc33feee12372f79583188"
+  },
   "WebBundleURLPublishingMemoryTests/testPeakMemoryAcrossMultipleWorkflows()" : {
     "environment" : {
       "architecture" : "arm64",
@@ -6,7 +26,7 @@
       "os" : "Version 27.0 (Build 24A434)",
       "xcodeBuild" : "27A266a"
     },
-    "peakMemoryMiB" : 45.2653564453125,
+    "peakMemoryMiB" : 45.17479248046875,
     "workloadSHA256" : "596667e911cb6a11f714ef44daa541a2d2c8b715f7bc33feee12372f79583188"
   },
   "WorkflowPrewarmingMemoryTests/testPublishWebBundleURLsPeakMemory()" : {
@@ -16,7 +36,7 @@
       "os" : "Version 27.0 (Build 24A434)",
       "xcodeBuild" : "27A266a"
     },
-    "peakMemoryMiB" : 45.3341064453125,
+    "peakMemoryMiB" : 45.17791748046875,
     "workloadSHA256" : "959a1c94069c07a67398bdbdb641bf6b48a18ab7bd956f7b48e982d4bffc6d04"
   }
 }
