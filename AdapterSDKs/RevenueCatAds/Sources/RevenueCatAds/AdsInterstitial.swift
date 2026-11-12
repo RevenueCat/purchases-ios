@@ -175,12 +175,12 @@ import UIKit
         case .loaded:
             self.finish()
             self.delegate?.interstitialDidExpire(self)
-        case .presenting:
-            // The underlying SDK only cancels expiry once the ad is displayed, so expiring here means
-            // the presentation was refused.
+        case .presenting, .presented:
+            // The underlying SDK reports "presented" before it actually presents and only cancels
+            // expiry once the ad is displayed, so expiring here means the presentation was refused.
             self.finish()
             self.failToPresent("The presentation was refused.")
-        case .idle, .loading, .presented:
+        case .idle, .loading:
             break
         }
     }
