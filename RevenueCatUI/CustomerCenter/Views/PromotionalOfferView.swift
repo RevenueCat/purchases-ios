@@ -124,7 +124,7 @@ struct PromotionalOfferView: View {
             } else {
                 Color.clear
                     // keep a size similar to what the image would have occuppied so layout looks correct
-                    .frame(width: 70, height: 50)
+                    .frame(width: 70, height: 70)
             }
         }
 
