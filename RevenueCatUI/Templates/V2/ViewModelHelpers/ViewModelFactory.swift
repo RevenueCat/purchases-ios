@@ -32,6 +32,11 @@ struct ViewModelFactory {
     /// Sheet inventory also provides the initial selection when the page has no packages.
     let sheetPackageValidator = PackageValidator()
 
+    /// Closed sheets supply the root selection when the page has no package components.
+    var rootSelectionValidator: PackageValidator {
+        self.packageValidator.packages.isEmpty ? self.sheetPackageValidator : self.packageValidator
+    }
+
     /// When true, all rule-based overrides are discarded globally across all components.
     /// Set when any component in the paywall contains unsupported conditions.
     private(set) var discardRules: Bool = false

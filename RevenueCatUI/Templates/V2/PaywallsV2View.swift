@@ -726,7 +726,7 @@ struct LoadedPaywallsV2View: View {
     /// `LoadedTabsComponentView`.
     private func reconcileSelection() {
         guard !self.selectedPackageContext.isPresentingSheet else { return }
-        let packageValidator = self.paywallState.viewModelFactory.packageValidator
+        let packageValidator = self.paywallState.viewModelFactory.rootSelectionValidator
 
         guard let resolved = packageValidator.reconciledSelection(
             current: self.selectedPackageContext.package,
@@ -751,7 +751,7 @@ struct LoadedPaywallsV2View: View {
 
     private func selectedPackageIsVisible() -> Bool {
         guard let package = self.selectedPackageContext.package else { return false }
-        return self.paywallState.viewModelFactory.packageValidator.couldBeRendering(
+        return self.paywallState.viewModelFactory.rootSelectionValidator.couldBeRendering(
             package,
             in: self.packageSelectionContext,
             offerEligibilityLoading: self.offerEligibilityLoading,
@@ -847,6 +847,12 @@ struct LoadedPaywallsV2View: View {
             // A window resize (rotation, Split View, Stage Manager) can hide the
             // selected package via a window size condition.
             .onChangeOf(self.paywallWindowSize) { _ in
+                self.reconcileSelection()
+            }
+            .onChangeOf(self.customVariables) { _ in
+                self.reconcileSelection()
+            }
+            .onChangeOf(self.screenCondition) { _ in
                 self.reconcileSelection()
             }
         }
