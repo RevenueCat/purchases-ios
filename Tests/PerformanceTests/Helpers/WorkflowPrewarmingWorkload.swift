@@ -19,19 +19,32 @@ final class WorkflowPrewarmingWorkload {
 
     private let manager: RemoteConfigManager
     private let rootURL: URL
+    private let expectedWorkflowCount: Int
     private var offeringIDs: [String] = []
     private var expectedScreens: [String: Set<String>] = [:]
     private(set) var sha256 = ""
 
-    private init(manager: RemoteConfigManager, rootURL: URL) {
+    private init(manager: RemoteConfigManager, rootURL: URL, expectedWorkflowCount: Int) {
         self.manager = manager
         self.rootURL = rootURL
+        self.expectedWorkflowCount = expectedWorkflowCount
     }
 
-    static func load() async throws -> WorkflowPrewarmingWorkload {
+    static func load(
+        sourceFixture: String = "performance-benchmark-1-revision-24",
+        workflowCount: Int = 1
+    ) async throws -> WorkflowPrewarmingWorkload {
         let rootURL = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
-        let manager = try PerformanceFixture.makeManager(rootURL: rootURL)
-        let workload = WorkflowPrewarmingWorkload(manager: manager, rootURL: rootURL)
+        let manager = try PerformanceFixture.makeManager(
+            rootURL: rootURL,
+            sourceFixture: sourceFixture,
+            workflowCount: workflowCount
+        )
+        let workload = WorkflowPrewarmingWorkload(
+            manager: manager,
+            rootURL: rootURL,
+            expectedWorkflowCount: workflowCount
+        )
         do {
             try await workload.prepare()
             return workload
@@ -48,7 +61,7 @@ final class WorkflowPrewarmingWorkload {
             guard case let .string(identifier)? = item.content["offering_identifier"] else { return nil }
             return identifier
         }).sorted()
-        XCTAssertFalse(self.offeringIDs.isEmpty, "The fixture needs a mapped workflow.")
+        XCTAssertEqual(self.offeringIDs.count, self.expectedWorkflowCount, "The fixture needs every mapped workflow.")
 
         let provider = WorkflowsConfigProvider(manager: self.manager)
         var fingerprint = SHA256()
@@ -89,7 +102,7 @@ final class WorkflowPrewarmingWorkload {
             }
         )
         for identifier in self.offeringIDs {
-            await provider.cachePrefetchedWorkflowBodyData(includingOfferingId: identifier)
+            _ = await provider.cachePrefetchedWorkflowBodyData(includingOfferingId: identifier)
         }
         let config = await uiConfigProvider.getUiConfig()
         _ = try XCTUnwrap(config)

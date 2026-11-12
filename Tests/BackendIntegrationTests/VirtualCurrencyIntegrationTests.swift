@@ -39,7 +39,7 @@ class VirtualCurrencyStoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
 
         let resultData = try await self.purchaseConsumablePackage()
         let transaction = try XCTUnwrap(resultData.transaction)
-        try await self.verifySpecificTransactionIsEventuallyFinished(transaction, count: nil)
+        try await self.verifyTransactionWasFinished(transaction)
         await self.verifyTransactionIsEventuallyRemovedFromSK1Queue(transaction)
 
         try self.purchases.invalidateVirtualCurrenciesCache()
@@ -73,7 +73,7 @@ class VirtualCurrencyStoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
 
         let resultData = try await self.purchaseNonConsumablePackage()
         let transaction = try XCTUnwrap(resultData.transaction)
-        try await self.verifySpecificTransactionIsEventuallyFinished(transaction)
+        try await self.verifyTransactionWasFinished(transaction)
         await self.verifyTransactionIsEventuallyRemovedFromSK1Queue(transaction)
 
         try self.purchases.invalidateVirtualCurrenciesCache()
@@ -106,7 +106,7 @@ class VirtualCurrencyStoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
 
         let resultData = try await self.purchaseMonthlyOffering()
         let transaction = try XCTUnwrap(resultData.transaction)
-        self.verifySpecificTransactionWasFinished(transaction)
+        try await self.verifyTransactionWasFinished(transaction)
 
         try self.purchases.invalidateVirtualCurrenciesCache()
 
@@ -138,7 +138,7 @@ class VirtualCurrencyStoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
 
         let purchaseResult = try await self.purchaseNonRenewingSubscriptionPackage()
         let transaction = try XCTUnwrap(purchaseResult.transaction)
-        self.verifySpecificTransactionWasFinished(transaction)
+        try await self.verifyTransactionWasFinished(transaction)
 
         try self.purchases.invalidateVirtualCurrenciesCache()
 

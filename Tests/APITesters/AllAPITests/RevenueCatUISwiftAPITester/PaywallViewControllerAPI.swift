@@ -116,6 +116,97 @@ func paywallViewControllerAPI(_ delegate: Delegate,
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+func checkContextPaywallViewControllerAPI(offering: Offering?, fontProvider: PaywallFontProvider) {
+    let purchase: PerformPurchaseWithContext = { _ in (userCancelled: false, error: nil) }
+    let restore: PerformRestore = { (success: true, error: nil) }
+    let _ = PaywallViewController()
+    let _ = PaywallViewController(offering: offering)
+    let _ = PaywallViewController(fonts: fontProvider)
+    let _ = PaywallViewController(offering: offering, fonts: fontProvider, performRestore: restore)
+    let _ = PaywallViewController(performPurchaseWithContext: nil)
+    let _ = PaywallViewController(fonts: fontProvider, performPurchaseWithContext: nil, performRestore: restore)
+    let optionalPurchase: PerformPurchaseWithContext? = purchase
+    let _ = PaywallViewController(offering: offering, fonts: fontProvider,
+                                 performPurchaseWithContext: optionalPurchase, performRestore: restore)
+    let _ = PaywallViewController(performPurchaseWithContext: purchase)
+    let _ = PaywallViewController(offering: offering, fonts: fontProvider,
+                                 performPurchaseWithContext: purchase, performRestore: restore)
+    let _ = PaywallFooterViewController(performPurchaseWithContext: purchase, performRestore: restore)
+    let _ = PaywallViewController(offering: offering, performPurchaseWithContext: { _ in
+        (userCancelled: true, error: nil)
+    }) {
+        (success: true, error: nil)
+    }
+    let _ = PaywallViewController(offering: offering, fonts: fontProvider, performPurchaseWithContext: { _ in
+        (userCancelled: true, error: nil)
+    }) {
+        (success: true, error: nil)
+    } dismissRequestedHandler: { _ in }
+    let _ = PaywallFooterViewController(offering: offering, performPurchaseWithContext: { _ in
+        (userCancelled: true, error: nil)
+    }) {
+        (success: true, error: nil)
+    }
+    let _ = PaywallFooterViewController(offering: offering, performPurchaseWithContext: { _ in
+        (userCancelled: true, error: nil)
+    }) {
+        (success: true, error: nil)
+    } dismissRequestedHandler: { _ in }
+    let _ = PaywallViewController { controller in controller.dismiss(animated: true) }
+    let _ = PaywallViewController(fonts: fontProvider) { controller in controller.dismiss(animated: true) }
+    let _ = PaywallFooterViewController { controller in controller.dismiss(animated: true) }
+}
+
+// Deliberately retain deprecation warnings here to exercise overload selection in ordinary client code.
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+func checkLegacyControllerTrailingClosuresAPI(offering: Offering?, fontProvider: PaywallFontProvider) {
+    let _ = PaywallViewController(offering: offering, fonts: fontProvider) { _ in
+        (userCancelled: true, error: nil)
+    } performRestore: {
+        (success: true, error: nil)
+    }
+    let _ = PaywallViewController(offering: offering, fonts: fontProvider) { _ in
+        (userCancelled: true, error: nil)
+    } performRestore: {
+        (success: true, error: nil)
+    } dismissRequestedHandler: { _ in }
+    let _ = PaywallFooterViewController(offering: offering) { _ in
+        (userCancelled: true, error: nil)
+    } performRestore: {
+        (success: true, error: nil)
+    }
+    let _ = PaywallFooterViewController(offering: offering) { _ in
+        (userCancelled: true, error: nil)
+    } performRestore: {
+        (success: true, error: nil)
+    } dismissRequestedHandler: { _ in }
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+func checkSwiftPurchaseHandlerInitializersAPI(
+    offering: Offering?,
+    legacyHandler: PaywallPurchaseHandler?,
+    contextHandler: PaywallPurchaseHandlerWithContext
+) {
+    let _ = PaywallViewController(purchaseHandlerWithContext: contextHandler)
+    let _ = PaywallFooterViewController(purchaseHandlerWithContext: contextHandler)
+    let _ = PaywallViewController(offering: offering, purchaseHandlerWithContext: contextHandler) { controller in
+        controller.dismiss(animated: true)
+    }
+    let _ = PaywallFooterViewController(offering: offering, purchaseHandlerWithContext: contextHandler) { controller in
+        controller.dismiss(animated: true)
+    }
+    let _ = PaywallViewController(purchaseHandler: legacyHandler) { controller in
+        controller.dismiss(animated: true)
+    }
+    let _ = PaywallFooterViewController(purchaseHandler: legacyHandler) { controller in
+        controller.dismiss(animated: true)
+    }
+    let _ = PaywallViewController(purchaseHandler: nil)
+    let _ = PaywallFooterViewController(purchaseHandler: nil)
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 func customVariableValueAPI() {
     // CustomVariableValue type and static constructors
     let _: CustomVariableValue = .string("test")

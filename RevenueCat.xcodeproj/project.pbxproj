@@ -1896,6 +1896,7 @@
 		077AC81FEBE38D1468AE8670 /* VideoAutoplayHandlerTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = VideoAutoplayHandlerTests.swift; sourceTree = "<group>"; };
 		077FB0E4EC264B2EA08C4521 /* GetRemoteConfigOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GetRemoteConfigOperation.swift; sourceTree = "<group>"; };
 		0AA5FEF26985445B9576D005 /* TabsComponentDuplicateInstanceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabsComponentDuplicateInstanceTests.swift; sourceTree = "<group>"; };
+		0B7C4E1A92F0D4C6E9A3B5D1 /* BackgroundStyleTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackgroundStyleTests.swift; sourceTree = "<group>"; };
 		0C5FC914F4E87D00963A8F1D /* PackageComponentTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PackageComponentTests.swift; sourceTree = "<group>"; };
 		0DD50FFC7C0F48B6A0FDE360 /* PaywallPromoOfferCacheTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallPromoOfferCacheTests.swift; sourceTree = "<group>"; };
 		0E4CCD8E9E454A2EB3760E06 /* ButtonComponentViewModelMappingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ButtonComponentViewModelMappingTests.swift; sourceTree = "<group>"; };
@@ -3500,6 +3501,7 @@
 		E32EE3749710C439BCB9AFD6 /* RulesEngine.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RulesEngine.swift; sourceTree = "<group>"; };
 		E35BAD07C46D469D8CC7C396 /* RemoteConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteConfiguration.swift; sourceTree = "<group>"; };
 		E78770053AB84EF380CC0C1D /* TextComponentViewLoadingTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TextComponentViewLoadingTests.swift; sourceTree = "<group>"; };
+		D5A7C3E91B4F4A2E8C6D1F03 /* TextComponentLinkColorTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TextComponentLinkColorTests.swift; sourceTree = "<group>"; };
 		C4E8A91D2F6D4E70A1B3C5D9 /* OfferEligibilityTextRedactionTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = OfferEligibilityTextRedactionTests.swift; sourceTree = "<group>"; };
 		C4E8A91E2F6D4E71A1B3C5DA /* StackOfferEligibilityVisibilityTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = StackOfferEligibilityVisibilityTests.swift; sourceTree = "<group>"; };
 		C4E8A91F2F6D4E72A1B3C5DB /* ButtonPackageOfferEligibilityVisibilityTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ButtonPackageOfferEligibilityVisibilityTests.swift; sourceTree = "<group>"; };
@@ -3844,6 +3846,7 @@
 				57BFCD0A2EEB0E56009E5844 /* TabsPackageInheritanceTests.swift */,
 				D1E153AB41D64A01B729C7D4 /* TabControlDiscountTests.swift */,
 				0AA5FEF26985445B9576D005 /* TabsComponentDuplicateInstanceTests.swift */,
+				0B7C4E1A92F0D4C6E9A3B5D1 /* BackgroundStyleTests.swift */,
 				E7D46162A95A4706925EC868 /* TabControlHapticFeedbackTests.swift */,
 				E7EAAD1DC166ABD68E484EAA /* RootViewSheetDismissalTests.swift */,
 				83EE33252E1E20360011CF1C /* PaywallPreviewResourcesLoader.swift */,
@@ -3859,6 +3862,7 @@
 				077AC81FEBE38D1468AE8670 /* VideoAutoplayHandlerTests.swift */,
 				B29E428C04E073334CD13B58 /* CarouselStateTests.swift */,
 				E78770053AB84EF380CC0C1D /* TextComponentViewLoadingTests.swift */,
+				D5A7C3E91B4F4A2E8C6D1F03 /* TextComponentLinkColorTests.swift */,
 				C4E8A91D2F6D4E70A1B3C5D9 /* OfferEligibilityTextRedactionTests.swift */,
 				C4E8A91E2F6D4E71A1B3C5DA /* StackOfferEligibilityVisibilityTests.swift */,
 				C4E8A91F2F6D4E72A1B3C5DB /* ButtonPackageOfferEligibilityVisibilityTests.swift */,

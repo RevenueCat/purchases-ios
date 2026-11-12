@@ -5,9 +5,9 @@
 //  Copyright © 2025 RevenueCat, Inc. All rights reserved.
 //
 
-import SwiftUI
 @_spi(Internal) import RevenueCat
 @_spi(Internal) import RevenueCatUI
+import SwiftUI
 
 extension E2ETestFlowView {
     struct OpenWorkflow: View {

@@ -37,10 +37,20 @@ final class FileImageLoader: ObservableObject {
             return
         }
 
-        let result = fileRepository.getCachedFileURL(
+        if let result = DecodedImageCache.shared.cachedImageAndSize(for: url) {
+            self.wasLoadedFromCache = true
+            self.result = result
+            return
+        }
+
+        let result = self.fileRepository.getCachedFileURL(
             for: url,
             withChecksum: nil
         )?.asImageAndSize
+
+        if let result {
+            DecodedImageCache.shared.cacheImageAndSize(result, for: url)
+        }
 
         self.wasLoadedFromCache = result != nil
         self.result = result
@@ -83,6 +93,10 @@ final class FileImageLoader: ObservableObject {
                 return
             }
 
+            if let imageInfo {
+                DecodedImageCache.shared.cacheImageAndSize(imageInfo, for: url)
+            }
+
             await MainActor.run {
                 self.result = imageInfo
             }
@@ -102,7 +116,7 @@ extension URL {
 
 }
 
-/// Process-wide, memory-bounded cache of decoded images keyed by file URL.
+/// Process-wide cache of decoded images keyed by local file and remote URLs.
 ///
 /// Avoids repeated `UIImage(contentsOfFile:)` / `NSImage(contentsOfFile:)` calls
 /// when the same URL is loaded many times (e.g. SwiftUI re-initialising a view's
@@ -116,18 +130,28 @@ final class DecodedImageCache {
 
     private init() {}
 
-    func imageAndSize(for url: URL) -> (Image, CGSize)? {
-        let key = url as NSURL
-
-        if let hit = self.cache.object(forKey: key) {
+    func cachedImageAndSize(for url: URL) -> (Image, CGSize)? {
+        if let hit = self.cache.object(forKey: url as NSURL) {
             return (hit.image, hit.size)
+        }
+
+        return nil
+    }
+
+    func cacheImageAndSize(_ imageAndSize: (Image, CGSize), for url: URL) {
+        self.cache.setObject(Entry(image: imageAndSize.0, size: imageAndSize.1), forKey: url as NSURL)
+    }
+
+    func imageAndSize(for url: URL) -> (Image, CGSize)? {
+        if let hit = self.cachedImageAndSize(for: url) {
+            return hit
         }
 
         guard let decoded = Self.decode(url: url) else {
             return nil
         }
 
-        self.cache.setObject(Entry(image: decoded.0, size: decoded.1), forKey: key)
+        self.cacheImageAndSize(decoded, for: url)
 
         return decoded
     }

@@ -23,6 +23,10 @@ import UIKit
 /// checkpoint passes only on a verified reward: an ad closed early, or a reward that fails verification,
 /// gates like a dismissed paywall.
 ///
+/// When the ad step does not verify rewards (`AdPresentationParams.rewardVerificationEnabled` is `false`), the ad
+/// is presented without reward verification and RevenueCat grants nothing. The checkpoint passes only once AdMob
+/// reports the reward on the device.
+///
 /// The checkpoint identifier is used as the tracking placement. Failures are reported as `NSError`s in
 /// the `RevenueCatAdMob.RewardedPresentationError` domain, or as the underlying AdMob error.
 @_spi(CheckpointsInternal)
@@ -48,7 +52,8 @@ public final class AdMobRewardedInterstitialPresenter: AdPresenter {
         presentation.start(
             adUnitID: params.adIdentifier,
             mediator: params.mediator,
-            placement: params.checkpointIdentifier
+            placement: params.checkpointIdentifier,
+            rewardVerificationEnabled: params.rewardVerificationEnabled
         ) { [weak self, weak presentation] outcome in
             if let presentation {
                 self?.activePresentations.remove(presentation)

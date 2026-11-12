@@ -31,20 +31,16 @@ struct BackgroundStyleModifier: ViewModifier {
     @Environment(\.colorScheme)
     var colorScheme
 
-    @State var size: CGSize?
-
     var backgroundStyle: BackgroundStyle?
     var alignment: Alignment
 
     func body(content: Content) -> some View {
         if let backgroundStyle {
             content
-                .onSizeChange { size = $0 }
                 .apply(
                     backgroundStyle: backgroundStyle,
                     colorScheme: colorScheme,
-                    alignment: alignment,
-                    size: size
+                    alignment: alignment
                 )
         } else {
             content
@@ -60,8 +56,7 @@ fileprivate extension View {
     func apply(
         backgroundStyle: BackgroundStyle,
         colorScheme: ColorScheme,
-        alignment: Alignment,
-        size: CGSize? = nil
+        alignment: Alignment
     ) -> some View {
         switch backgroundStyle {
         case .color(let color):
@@ -83,14 +78,17 @@ fileprivate extension View {
                             .resizable()
                             .aspectRatio(contentMode: fitMode.contentMode)
                     }
-                    // Align image to top so it overlaps with the transparent portion of the gradient.
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-                    // Enforces image clipping to the exact bounds of the view where .clipped does not.
-                    // This prevents the background image from influencing the parent view's size,
-                    // which was causing the footer to enlarge when using "fill" fit mode with tall images.
-                    .mask(self.overlay(content: {
-                        Color.black
-                    }))
+                    // Align "fit" images to top so they overlap with the transparent portion of the gradient.
+                    // The zero minimums keep the frame from growing to a "fill" image that is larger than
+                    // the view, so `clipped` cuts the overflow (it made a footer look taller by drawing over the body).
+                    .frame(
+                        minWidth: 0,
+                        maxWidth: .infinity,
+                        minHeight: 0,
+                        maxHeight: .infinity,
+                        alignment: fitMode == .fill ? alignment : .top
+                    )
+                    .clipped()
 
                     // Color overlay fills the full container, not just the image bounds.
                     // This matches the web builder behavior where overlays cover 100% of the viewport.
@@ -100,7 +98,7 @@ fileprivate extension View {
                     }
                 }
                 .ignoresSafeArea()
-                // The mask clips drawing only, so a "fill" image overflowing its container would
+                // Clipping affects drawing only, so a "fill" image overflowing its container would
                 // still swallow taps on the components it overlaps.
                 .allowsHitTesting(false)
                 .paywallDecorativeMedia()
@@ -109,10 +107,15 @@ fileprivate extension View {
             self.background(alignment: alignment) {
                 ZStack {
                     VideoComponentView(viewModel: viewModel)
-                        // Enforces video clipping to the exact bounds of the view where .clipped does not
-                        .mask(self.overlay(content: {
-                            Color.black
-                        }))
+                        // Same clipping as the image background above.
+                        .frame(
+                            minWidth: 0,
+                            maxWidth: .infinity,
+                            minHeight: 0,
+                            maxHeight: .infinity,
+                            alignment: alignment
+                        )
+                        .clipped()
 
                     // Color overlay fills the full container, not just the video bounds.
                     // This matches the web builder behavior where overlays cover 100% of the viewport.

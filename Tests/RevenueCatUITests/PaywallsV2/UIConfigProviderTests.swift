@@ -46,6 +46,17 @@ final class UIConfigProviderTests: TestCase {
                                            expectedCount: 1)
     }
 
+    func testRepeatedGetLocalizationsReturnsLocalizationsOfEachLocale() throws {
+        let uiConfigProvider = try createUIConfigProvider()
+
+        expect(uiConfigProvider.getLocalizations(for: Locale(identifier: "en_US"))) == ["monthly": "monthly"]
+        expect(uiConfigProvider.getLocalizations(for: Locale(identifier: "es_ES"))) == ["monthly": "mensual"]
+
+        // Second lookups are served from the cache and must not mix up locales.
+        expect(uiConfigProvider.getLocalizations(for: Locale(identifier: "en_US"))) == ["monthly": "monthly"]
+        expect(uiConfigProvider.getLocalizations(for: Locale(identifier: "es_ES"))) == ["monthly": "mensual"]
+    }
+
     func testGetLocalizationsForFoundLocaleDoesNotLogMessage() throws {
         let uiConfigProvider = try createUIConfigProvider()
 

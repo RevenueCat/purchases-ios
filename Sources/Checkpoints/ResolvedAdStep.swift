@@ -28,11 +28,21 @@ import Foundation
     /// this ad through the matching format's loader.
     public let adFormat: AdFormat
 
+    /// Whether RevenueCat verifies the reward of a rewarded ad. When `false`, RevenueCat grants nothing, and the
+    /// checkpoint passes once the ad network reports the reward on the device. Interstitial ads ignore it.
+    public let rewardVerificationEnabled: Bool
+
     /// Creates a resolved ad step.
-    @_spi(Internal) public init(adIdentifier: String, mediator: MediatorName, adFormat: AdFormat) {
+    @_spi(Internal) public init(
+        adIdentifier: String,
+        mediator: MediatorName,
+        adFormat: AdFormat,
+        rewardVerificationEnabled: Bool
+    ) {
         self.adIdentifier = adIdentifier
         self.mediator = mediator
         self.adFormat = adFormat
+        self.rewardVerificationEnabled = rewardVerificationEnabled
     }
 
 }

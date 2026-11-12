@@ -280,6 +280,52 @@ final class MarkdownTests: TestCase {
 
     // MARK: - NonLocalizedMarkdownText View Tests
 
+    func testMarkdownText_identicalFontsCompareEqual() {
+        let first = Font.system(size: 17, design: .rounded).weight(.medium)
+        let second = Font.system(size: 17, design: .rounded).weight(.medium)
+
+        XCTAssertEqual(first, second)
+        XCTAssertEqual(first.hashValue, second.hashValue)
+    }
+
+    func testMarkdownText_differentWeightPreservesFormatting() throws {
+        let regular = try XCTUnwrap(NonLocalizedMarkdownText(
+            text: "Weight cache **regression**",
+            font: .body,
+            fontWeight: .regular
+        ).markdownText)
+        let black = try XCTUnwrap(NonLocalizedMarkdownText(
+            text: "Weight cache **regression**",
+            font: .body,
+            fontWeight: .black
+        ).markdownText)
+
+        XCTAssertEqual(regular.runs.first?.font, Font.body.weight(.regular))
+        XCTAssertEqual(black.runs.first?.font, Font.body.weight(.black))
+        let boldRun = regular.runs.first { $0.inlinePresentationIntent?.contains(.stronglyEmphasized) == true }
+        let blackBoldRun = black.runs.first { $0.inlinePresentationIntent?.contains(.stronglyEmphasized) == true }
+        XCTAssertEqual(boldRun?.font, Font.body.weight(.bold))
+        XCTAssertEqual(blackBoldRun?.font, Font.body.weight(.black))
+    }
+
+    func testMarkdownText_differentFontPreservesFont() throws {
+        let firstFont = Font.system(size: 17)
+        let secondFont = Font.system(size: 21)
+        let first = try XCTUnwrap(NonLocalizedMarkdownText(
+            text: "Font cache regression",
+            font: firstFont,
+            fontWeight: .regular
+        ).markdownText)
+        let second = try XCTUnwrap(NonLocalizedMarkdownText(
+            text: "Font cache regression",
+            font: secondFont,
+            fontWeight: .regular
+        ).markdownText)
+
+        XCTAssertEqual(first.runs.first?.font, firstFont.weight(.regular))
+        XCTAssertEqual(second.runs.first?.font, secondFont.weight(.regular))
+    }
+
     func testMarkdownText_plainTextReturnsAttributedString() {
         let view = NonLocalizedMarkdownText(
             text: "Hello world",

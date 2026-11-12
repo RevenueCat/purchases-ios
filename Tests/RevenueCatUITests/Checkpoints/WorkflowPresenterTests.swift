@@ -12,8 +12,10 @@
 //  Created by Rick van der Linden.
 //
 
+import Nimble
 @_spi(Internal) @testable import RevenueCat
 @_spi(InviteOnlyCheckpointsApi) @_spi(Internal) @testable import RevenueCatUI
+import SwiftUI
 import XCTest
 
 #if canImport(UIKit) && !os(tvOS) && !os(watchOS)
@@ -38,6 +40,34 @@ final class WorkflowPresenterTests: TestCase {
             return XCTFail("Expected an error outcome")
         }
     }
+
+    func testQualifyingRestoreDoesNotTrackWorkflowAbandonment() async throws {
+        try await self.assertRestoreWorkflowEvents(
+            initialActiveEntitlements: [], restoredEntitlements: ["pro"], shouldDismiss: true
+        )
+    }
+
+    func testAlreadyActiveRestoreStillTracksAbandonmentWhenClosed() async throws {
+        try await self.assertRestoreWorkflowEvents(
+            initialActiveEntitlements: ["pro"], restoredEntitlements: ["pro"], shouldDismiss: false
+        )
+    }
+
+    func testUnrelatedRestoreStillTracksAbandonmentWhenClosed() async throws {
+        try await self.assertRestoreWorkflowEvents(
+            initialActiveEntitlements: [], restoredEntitlements: ["other"], shouldDismiss: false
+        )
+    }
+
+    #if os(iOS)
+    func testWorkflowRestoreTracksCompletionBeforeUIKitReportsDismissal() async throws {
+        try await self.assertRestoreReportsAfterTerminalAnalytics(usesDefaultPresenter: false)
+    }
+
+    func testMatchedOfferingRestoreTracksCompletionBeforeUIKitReportsDismissal() async throws {
+        try await self.assertRestoreReportsAfterTerminalAnalytics(usesDefaultPresenter: true)
+    }
+    #endif
 
     func testWorkflowPresentationErrorProducesErrorOutcomeAfterDismissal() throws {
         var receivedParams: ErrorPresentationParams?
@@ -162,7 +192,10 @@ final class WorkflowPresenterTests: TestCase {
             initialActiveEntitlementIdentifiers: ["pro"],
             errorPresentationHandler: { params, _ in receivedParams = params }
         )
-        let presenter = WorkflowPresenter { _ in true }
+        let presenter = WorkflowPresenter(
+            productEntitlementMappingProvider: { restoreProductEntitlementMapping },
+            presentationStarter: { _ in true }
+        )
         let controller = PaywallViewController(offering: nil)
 
         try presenter.startPresentation(presentation)
@@ -201,7 +234,7 @@ final class WorkflowPresenterTests: TestCase {
     func testCompletionAfterPurchaseErrorKeepsWorkflowPresented() throws {
         var completion: ErrorPresentationCompletion?
         let presenter = WorkflowPresenter { _ in true }
-        let controller = self.makePaywallViewControllerForDismissalRecording()
+        let controller = DismissRecordingPaywallViewController()
         let presentation = Self.presentation(
             errorPresentationHandler: { _, value in completion = value }
         )
@@ -216,6 +249,44 @@ final class WorkflowPresenterTests: TestCase {
         XCTAssertEqual(controller.dismissCallCount, 0)
         guard case .completed(nil)? = presenter.presentationDidDismiss() else {
             return XCTFail("Expected the handled error to leave a completed workflow outcome")
+        }
+    }
+
+    func testNonqualifyingRestorePreservesPendingRecoverableErrorCompletion() throws {
+        for scenario in restoreEntitlementSetScenarios where !scenario.closes {
+            var completion: ErrorPresentationCompletion?
+            let presentation = Self.presentation(
+                initialActiveEntitlementIdentifiers: Set(scenario.state.before),
+                errorPresentationHandler: { _, value in completion = value }
+            )
+            let presenter = WorkflowPresenter(
+                productEntitlementMappingProvider: {
+                    ["monthly": scenario.offered, "annual": ["extra", "bonus"]]
+                },
+                presentationStarter: { _ in true }
+            )
+            let controller = DismissRecordingPaywallViewController(
+                offering: makeRestoreOfferingWithMultipleProducts()
+            )
+            try presenter.startPresentation(presentation)
+            presenter.paywallViewController(
+                controller,
+                didFailPurchasingWith: NSError(
+                    domain: ErrorCode.errorDomain, code: ErrorCode.purchaseInvalidError.rawValue
+                )
+            )
+
+            presenter.paywallViewController(
+                controller,
+                didFinishRestoringWith: try Self.customerInfo(activeEntitlements: scenario.state.after)
+            )
+            try XCTUnwrap(completion).complete()
+
+            XCTAssertEqual(controller.dismissCallCount, 0, scenario.name)
+            guard case .completed(nil)? = presenter.presentationDidDismiss() else {
+                XCTFail("Handled recoverable error must not fail the flow after restore: \(scenario.name)")
+                continue
+            }
         }
     }
 
@@ -256,9 +327,10 @@ final class WorkflowPresenterTests: TestCase {
         }
     }
 
-    func testWorkflowBackNavigationBridgeWaitsForActiveTransitionToFinish() {
-        let navigationBridge = WorkflowBackNavigationBridge()
-        navigationBridge.workflowDidAppear()
+    func testPaywallPresentationBridgeWaitsForActiveTransitionToFinish() {
+        let navigationBridge = PaywallPresentationBridge()
+        XCTAssertFalse(navigationBridge.navigateBack())
+        navigationBridge.workflowDidAppear(onCompletion: {})
 
         XCTAssertTrue(navigationBridge.navigateBack())
         XCTAssertTrue(navigationBridge.hasPendingBackNavigationRequest)
@@ -267,12 +339,15 @@ final class WorkflowPresenterTests: TestCase {
         XCTAssertTrue(navigationBridge.takePendingBackNavigationRequest(isTransitioning: false))
         XCTAssertFalse(navigationBridge.hasPendingBackNavigationRequest)
         XCTAssertFalse(navigationBridge.takePendingBackNavigationRequest(isTransitioning: false))
+
+        navigationBridge.workflowDidDisappear()
+        XCTAssertFalse(navigationBridge.navigateBack())
     }
 
     func testNewerWorkflowErrorPresentationSupersedesEarlierCompletion() throws {
         var completions: [ErrorPresentationCompletion] = []
         let presenter = WorkflowPresenter { _ in true }
-        let controller = self.makePaywallViewControllerForDismissalRecording()
+        let controller = DismissRecordingPaywallViewController()
         let presentation = Self.presentation(
             errorPresentationHandler: { _, completion in completions.append(completion) }
         )
@@ -294,7 +369,7 @@ final class WorkflowPresenterTests: TestCase {
     func testOnlyFirstErrorPresentationCompletionIsHandled() throws {
         var completion: ErrorPresentationCompletion?
         let presenter = WorkflowPresenter { _ in true }
-        let controller = self.makePaywallViewControllerForDismissalRecording()
+        let controller = DismissRecordingPaywallViewController()
         let presentation = Self.presentation(
             errorPresentationHandler: { _, value in completion = value }
         )
@@ -313,7 +388,7 @@ final class WorkflowPresenterTests: TestCase {
     func testErrorPresentationCompletionAfterWorkflowDismissalIsIgnored() throws {
         var completion: ErrorPresentationCompletion?
         let presenter = WorkflowPresenter { _ in true }
-        let controller = self.makePaywallViewControllerForDismissalRecording()
+        let controller = DismissRecordingPaywallViewController()
         let presentation = Self.presentation(
             errorPresentationHandler: { _, value in completion = value }
         )
@@ -353,13 +428,18 @@ final class WorkflowPresenterTests: TestCase {
 
     func testWorkflowPresentationErrorDoesNotReplaceEarlierRestoreOutcome() throws {
         let presentation = try Self.renderablePresentation(customVariables: [:])
-        let presenter = WorkflowPresenter { _ in true }
+        let presenter = WorkflowPresenter(
+            productEntitlementMappingProvider: { restoreProductEntitlementMapping },
+            presentationStarter: { _ in true }
+        )
         let controller = try presenter.makePaywallViewController(for: presentation)
         let error = NSError(domain: ErrorCode.errorDomain, code: ErrorCode.configurationError.rawValue)
         let restoredCustomerInfo = try Self.customerInfo(activeEntitlements: ["pro"])
 
         try presenter.startPresentation(presentation)
-        presenter.paywallViewController(controller, didFinishRestoringWith: restoredCustomerInfo)
+        presenter.paywallViewController(
+            DismissRecordingPaywallViewController(), didFinishRestoringWith: restoredCustomerInfo
+        )
         controller.simulateWorkflowPresentationError(error, behavior: .endFlow)
         let execution = presenter.presentationDidDismiss()
 
@@ -420,33 +500,327 @@ final class WorkflowPresenterTests: TestCase {
         XCTAssertEqual(customerInfo, TestData.customerInfo)
     }
 
-    func testNavigatingBackAfterRestoreWithoutNewEntitlementsBacksOut() throws {
+    func testRestoreWithoutAnOfferedEntitlementDoesNotDismissWorkflow() throws {
+        let presenter = WorkflowPresenter(
+            productEntitlementMappingProvider: { restoreProductEntitlementMapping },
+            presentationStarter: { _ in true }
+        )
+        let controller = DismissRecordingPaywallViewController()
+        try presenter.startPresentation(Self.presentation())
+
+        presenter.paywallViewController(
+            controller,
+            didFinishRestoringWith: try Self.customerInfo(activeEntitlements: ["unrelated"])
+        )
+
+        XCTAssertEqual(controller.dismissCallCount, 0)
+        guard case .backedOut? = presenter.presentationDidDismiss(reason: .navigatedBack) else {
+            return XCTFail("An unrelated restore must not complete the workflow")
+        }
+    }
+
+    func testRestoreRequiresACompleteOfferedProductEntitlementSet() throws {
+        for scenario in restoreEntitlementSetScenarios {
+            let presenter = WorkflowPresenter(
+                productEntitlementMappingProvider: { ["monthly": scenario.offered, "annual": ["extra", "bonus"]] },
+                presentationStarter: { _ in true }
+            )
+            let controller = DismissRecordingPaywallViewController(
+                offering: makeRestoreOfferingWithMultipleProducts()
+            )
+            try presenter.startPresentation(Self.presentation(
+                workflow: Self.workflow(offerings: [makeRestoreOfferingWithMultipleProducts()]),
+                initialActiveEntitlementIdentifiers: Set(scenario.state.before)
+            ))
+
+            presenter.paywallViewController(
+                controller, didFinishRestoringWith: try Self.customerInfo(activeEntitlements: scenario.state.after)
+            )
+
+            XCTAssertEqual(controller.dismissCallCount, scenario.closes ? 1 : 0, scenario.name)
+            let execution = presenter.presentationDidDismiss(reason: .navigatedBack)
+            if scenario.closes {
+                guard case .completed? = execution else { XCTFail(scenario.name); continue }
+            } else {
+                guard case .backedOut? = execution else { XCTFail(scenario.name); continue }
+            }
+        }
+    }
+
+    func testRestoreWithoutMappingDoesNotDismissWorkflow() throws {
         let presenter = WorkflowPresenter { _ in true }
+        let controller = DismissRecordingPaywallViewController()
+        try presenter.startPresentation(Self.presentation())
+
+        presenter.paywallViewController(
+            controller, didFinishRestoringWith: try Self.customerInfo(activeEntitlements: ["pro"])
+        )
+
+        XCTAssertEqual(controller.dismissCallCount, 0)
+        guard case .backedOut? = presenter.presentationDidDismiss(reason: .navigatedBack) else {
+            return XCTFail("Missing mapping must leave the workflow open")
+        }
+    }
+
+    func testWorkflowRestoreOnlyConsidersCurrentlyDisplayedOffering() throws {
+        let first = makeRestoreOffering()
+        let second = makeRestoreOffering(identifier: "other", productIdentifier: "annual")
+        let presenter = WorkflowPresenter(
+            productEntitlementMappingProvider: { ["monthly": ["pro"], "annual": ["other"]] },
+            presentationStarter: { _ in true }
+        )
+        let controller = DismissRecordingPaywallViewController()
+        let workflow = Self.workflow(
+            offerings: [first, second], referencedOfferingIdentifiers: [first.identifier, second.identifier]
+        )
+        try presenter.startPresentation(Self.presentation(workflow: workflow))
+
+        presenter.paywallViewController(
+            controller, didFinishRestoringWith: try Self.customerInfo(activeEntitlements: ["other"])
+        )
+        XCTAssertEqual(controller.dismissCallCount, 0, "An unvisited screen must not qualify")
+
+        controller.offeringOnScreen = second
+        presenter.paywallViewController(
+            controller, didFinishRestoringWith: try Self.customerInfo(activeEntitlements: ["pro"])
+        )
+        XCTAssertEqual(controller.dismissCallCount, 0, "The previous screen must not qualify")
+
+        controller.offeringOnScreen = first
+        presenter.paywallViewController(
+            controller, didFinishRestoringWith: try Self.customerInfo(activeEntitlements: ["other"])
+        )
+        XCTAssertEqual(controller.dismissCallCount, 0, "Returning must restore the first offering's scope")
+
+        let customerInfo = try Self.customerInfo(activeEntitlements: ["pro"])
+        presenter.paywallViewController(controller, didFinishRestoringWith: customerInfo)
+
+        XCTAssertEqual(controller.dismissCallCount, 1)
+        guard case .completed(customerInfo)? = presenter.presentationDidDismiss(reason: .navigatedBack) else {
+            return XCTFail("Restoring the active offering must complete the workflow")
+        }
+    }
+
+    func testWorkflowRestoreDismissesForTheActiveAlternateBranch() throws {
+        let first = makeRestoreOffering()
+        let second = makeRestoreOffering(identifier: "other", productIdentifier: "annual")
+        let presenter = WorkflowPresenter(
+            productEntitlementMappingProvider: { ["monthly": ["pro"], "annual": ["other"]] },
+            presentationStarter: { _ in true }
+        )
+        let controller = DismissRecordingPaywallViewController()
+        controller.offeringOnScreen = second
+        try presenter.startPresentation(Self.presentation(workflow: Self.workflow(
+            offerings: [first, second], referencedOfferingIdentifiers: [first.identifier, second.identifier]
+        )))
+
+        presenter.paywallViewController(
+            controller, didFinishRestoringWith: try Self.customerInfo(activeEntitlements: ["other"])
+        )
+
+        XCTAssertEqual(controller.dismissCallCount, 1)
+        guard case .completed? = presenter.presentationDidDismiss(reason: .navigatedBack) else {
+            return XCTFail("The active branch's offering must qualify")
+        }
+    }
+
+    func testUnpresentedPaywallHasNoDisplayedOffering() {
+        let controller = PaywallViewController(offering: makeRestoreOffering())
+
+        XCTAssertNil(controller.displayedOffering)
+    }
+
+    func testWorkflowRestoreBeforeFirstScreenRendersDoesNotComplete() throws {
+        let presentation = try Self.renderablePresentation(customVariables: [:])
+        let presenter = WorkflowPresenter(
+            productEntitlementMappingProvider: { restoreProductEntitlementMapping },
+            presentationStarter: { _ in true }
+        )
+        let controller = try presenter.makePaywallViewController(for: presentation)
+        try presenter.startPresentation(presentation)
+
+        presenter.paywallViewController(
+            controller, didFinishRestoringWith: try Self.customerInfo(activeEntitlements: ["pro"])
+        )
+
+        guard case .backedOut? = presenter.presentationDidDismiss(reason: .navigatedBack) else {
+            return XCTFail("An unrendered fallback must not qualify for restore dismissal")
+        }
+    }
+
+    func testWorkflowRestoreOnContentOnlyScreenDoesNotDismiss() throws {
+        let presenter = WorkflowPresenter(
+            productEntitlementMappingProvider: { restoreProductEntitlementMapping },
+            presentationStarter: { _ in true }
+        )
+        let controller = DismissRecordingPaywallViewController()
+        controller.offeringOnScreen = nil
+        try presenter.startPresentation(Self.presentation())
+
+        presenter.paywallViewController(
+            controller, didFinishRestoringWith: try Self.customerInfo(activeEntitlements: ["pro"])
+        )
+
+        XCTAssertEqual(controller.dismissCallCount, 0)
+        guard case .backedOut? = presenter.presentationDidDismiss(reason: .navigatedBack) else {
+            return XCTFail("A screen without an offering must not qualify")
+        }
+    }
+
+    func testWorkflowRestoreUsesMappingThatArrivesAfterPresentation() throws {
+        var mapping: [String: [String]]?
+        let presenter = WorkflowPresenter(
+            productEntitlementMappingProvider: { mapping },
+            presentationStarter: { _ in true }
+        )
+        let controller = DismissRecordingPaywallViewController()
+        let customerInfo = try Self.customerInfo(activeEntitlements: ["pro"])
+        try presenter.startPresentation(Self.presentation())
+
+        presenter.paywallViewController(controller, didFinishRestoringWith: customerInfo)
+        XCTAssertEqual(controller.dismissCallCount, 0)
+
+        mapping = restoreProductEntitlementMapping
+        presenter.paywallViewController(controller, didFinishRestoringWith: customerInfo)
+
+        XCTAssertEqual(controller.dismissCallCount, 1)
+        guard case .completed(customerInfo)? = presenter.presentationDidDismiss(reason: .navigatedBack) else {
+            return XCTFail("A late mapping must allow a qualifying restore to complete")
+        }
+    }
+
+    func testRestoreOfAnEntitlementFromAnUnreferencedOfferingDoesNotDismissWorkflow() throws {
+        let presenter = WorkflowPresenter(productEntitlementMappingProvider: {
+            ["monthly": ["pro"], "other-product": ["unrelated"]]
+        }, presentationStarter: { _ in true })
+        let workflow = Self.workflow(offerings: [
+            makeRestoreOffering(), makeRestoreOffering(identifier: "other", productIdentifier: "other-product")
+        ])
+        let controller = DismissRecordingPaywallViewController()
+        try presenter.startPresentation(Self.presentation(workflow: workflow))
+
+        presenter.paywallViewController(
+            controller, didFinishRestoringWith: try Self.customerInfo(activeEntitlements: ["unrelated"])
+        )
+
+        XCTAssertEqual(controller.dismissCallCount, 0)
+        guard case .backedOut? = presenter.presentationDidDismiss(reason: .navigatedBack) else {
+            return XCTFail("Unreferenced offerings must not affect restore eligibility")
+        }
+    }
+
+    func testEntitlementsGrantedByUsesCompoundProductIdentifier() {
+        let offering = makeRestoreOffering(productIdentifier: "annual", installmentsInfo: restoreMonthlyInstallments)
+
+        XCTAssertEqual(offering.availablePackages.first?.storeProduct.id, "annual:monthly")
+        XCTAssertEqual(offering.entitlementsGrantedBy(["annual:monthly": ["pro"]]), [Set(["pro"])])
+    }
+
+    func testEntitlementsGrantedByPrefersCompoundMappingOverPlainMapping() {
+        let offering = makeRestoreOffering(productIdentifier: "annual", installmentsInfo: restoreMonthlyInstallments)
+
+        XCTAssertEqual(
+            offering.entitlementsGrantedBy(["annual:monthly": ["pro"], "annual": ["other"]]),
+            [Set(["pro"])]
+        )
+    }
+
+    func testEntitlementsGrantedByFallsBackToPlainIdentifier() {
+        let offering = makeRestoreOffering(productIdentifier: "annual", installmentsInfo: restoreMonthlyInstallments)
+
+        XCTAssertEqual(offering.entitlementsGrantedBy(["annual": ["pro"]]), [Set(["pro"])])
+    }
+
+    func testEntitlementsGrantedByDoesNotFallBackForExplicitlyEmptyCompoundMapping() {
+        let offering = makeRestoreOffering(productIdentifier: "annual", installmentsInfo: restoreMonthlyInstallments)
+
+        XCTAssertEqual(offering.entitlementsGrantedBy(["annual:monthly": [], "annual": ["other"]]), [])
+    }
+
+    func testWorkflowRestoreDismissesForAnOfferedBillingPlanEntitlement() throws {
+        let offering = makeRestoreOffering(productIdentifier: "annual", installmentsInfo: restoreMonthlyInstallments)
+        let presenter = WorkflowPresenter(
+            productEntitlementMappingProvider: { ["annual:monthly": ["pro"], "annual": ["other"]] },
+            presentationStarter: { _ in true }
+        )
+        let controller = DismissRecordingPaywallViewController(offering: offering)
+        try presenter.startPresentation(Self.presentation(workflow: Self.workflow(offerings: [offering])))
+
+        presenter.paywallViewController(
+            controller, didFinishRestoringWith: try Self.customerInfo(activeEntitlements: ["pro"])
+        )
+
+        XCTAssertEqual(controller.dismissCallCount, 1)
+        guard case .completed? = presenter.presentationDidDismiss(reason: .navigatedBack) else {
+            return XCTFail("Restoring an offered billing-plan entitlement must complete the workflow")
+        }
+    }
+
+    func testPresentedOfferingsUsesStepOverridesAndScreenFallbacks() throws {
+        let screen = try Self.renderablePresentation(customVariables: [:]).workflow.workflow.screens["screen-id"]
+        let workflow = PublishedWorkflow(
+            id: "workflow", displayName: "Test", initialStepId: "step", singleStepFallbackId: nil,
+            steps: [
+                "step": makeRestoreStep(
+                    id: "step", type: "screen", screenId: "screen-id",
+                    paramValues: ["offering": .object(["identifier": .string("override")])]
+                ),
+                "fallback": makeRestoreStep(id: "fallback", type: "screen", screenId: "screen-id"),
+                "duplicate": makeRestoreStep(id: "duplicate", type: "screen", screenId: "screen-id"),
+                "missing": makeRestoreStep(
+                    id: "missing", type: "screen", screenId: nil,
+                    paramValues: ["offering_identifier": .string("missing")]
+                )
+            ],
+            screens: ["screen-id": try XCTUnwrap(screen)]
+        )
+        let resolved = ResolvedCheckpointWorkflow(
+            workflow: workflow, uiConfig: .empty,
+            offerings: .preview(offerings: [makeRestoreOffering(), makeRestoreOffering(identifier: "override"),
+                                           makeRestoreOffering(identifier: "unreferenced")])
+        )
+
+        XCTAssertEqual(Set(resolved.presentedOfferings.map(\.identifier)), ["offering-id", "override"])
+        XCTAssertEqual(resolved.presentedOfferings.count, 2)
+    }
+
+    func testNavigatingBackAfterRestoreWithoutNewEntitlementsBacksOut() throws {
+        let presenter = WorkflowPresenter(
+            productEntitlementMappingProvider: { restoreProductEntitlementMapping },
+            presentationStarter: { _ in true }
+        )
+        let controller = DismissRecordingPaywallViewController()
         let customerInfo = try Self.customerInfo(activeEntitlements: ["pro"])
 
         try presenter.startPresentation(Self.presentation(initialActiveEntitlementIdentifiers: ["pro"]))
         presenter.paywallViewController(
-            PaywallViewController(offering: nil),
+            controller,
             didFinishRestoringWith: customerInfo
         )
         let execution = presenter.presentationDidDismiss(reason: .navigatedBack)
 
+        XCTAssertEqual(controller.dismissCallCount, 0)
         guard case .backedOut? = execution else {
             return XCTFail("Expected an unchanged restore not to override back navigation")
         }
     }
 
     func testNavigatingBackAfterRestoreWithNewEntitlementCompletes() throws {
-        let presenter = WorkflowPresenter { _ in true }
+        let presenter = WorkflowPresenter(
+            productEntitlementMappingProvider: { ["monthly": ["pro", "premium"]] },
+            presentationStarter: { _ in true }
+        )
+        let controller = DismissRecordingPaywallViewController()
         let customerInfo = try Self.customerInfo(activeEntitlements: ["premium", "pro"])
 
         try presenter.startPresentation(Self.presentation(initialActiveEntitlementIdentifiers: ["pro"]))
         presenter.paywallViewController(
-            PaywallViewController(offering: nil),
+            controller,
             didFinishRestoringWith: customerInfo
         )
         let execution = presenter.presentationDidDismiss(reason: .navigatedBack)
 
+        XCTAssertEqual(controller.dismissCallCount, 1)
         guard case let .completed(reportedCustomerInfo)? = execution else {
             return XCTFail("Expected a restore that grants a new entitlement to complete")
         }
@@ -624,18 +998,201 @@ final class WorkflowPresenterTests: TestCase {
         XCTAssertNil(viewController.exitOfferOfferingForTesting)
     }
 
-    private func makePaywallViewControllerForDismissalRecording() -> DismissRecordingPaywallViewController {
-        return DismissRecordingPaywallViewController(
-            offering: Offering(
-                identifier: "offering-id",
-                serverDescription: "Test offering",
-                availablePackages: [],
-                webCheckoutUrl: nil
-            )
+    #if os(iOS)
+    private func assertRestoreReportsAfterTerminalAnalytics(usesDefaultPresenter: Bool) async throws {
+        try XCTSkipIf(UIApplication.shared.connectedScenes.isEmpty, "Requires UnitTestsHostApp")
+        let scene = try XCTUnwrap(
+            UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }.first,
+            "Requires UnitTestsHostApp"
         )
+        let presentation = try Self.renderablePresentation(customVariables: [:])
+        let restored = try Self.customerInfo(activeEntitlements: ["pro"])
+        let recorder = RestoreWorkflowEventRecorder(restoredCustomerInfo: restored)
+        let context = try PurchaseHandler.makeWorkflowContext(
+            workflow: presentation.workflow.workflow, uiConfig: presentation.workflow.uiConfig,
+            allOfferings: presentation.workflow.offerings,
+            presentedOfferingContext: nil, developerProvidedOffering: nil
+        )
+        let controller = PaywallViewController(
+            workflowContext: context, displayCloseButton: true,
+            introEligibility: .producing(eligibility: .eligible),
+            purchaseHandler: recorder.handler
+        )
+        let reported = self.expectation(description: "Checkpoint reports after UIKit dismissal")
+        let delegate: PaywallViewControllerDelegate
+        var resultTask: Task<CheckpointPresentationOutcome, Error>?
+        if usesDefaultPresenter {
+            let presenter = DefaultPaywallPresenter(
+                cachedCustomerInfoProvider: { nil },
+                productEntitlementMappingProvider: { restoreProductEntitlementMapping }
+            )
+            presenter.prepareForPresentation(
+                params: .init(checkpointIdentifier: "test_checkpoint", offering: makeRestoreOffering()),
+                completion: { result in
+                    guard case .continued = result else { return XCTFail("Expected restored access") }
+                    reported.fulfill()
+                }
+            )
+            delegate = presenter
+        } else {
+            let started = self.expectation(description: "Workflow presentation starts")
+            let presenter = WorkflowPresenter(
+                productEntitlementMappingProvider: { restoreProductEntitlementMapping },
+                presentationStarter: { _ in started.fulfill(); return true }
+            )
+            resultTask = Task {
+                let result = try await presenter.present(presentation)
+                reported.fulfill()
+                return result
+            }
+            await self.fulfillment(of: [started], timeout: 3)
+            delegate = presenter
+        }
+        defer {
+            if let presenter = delegate as? WorkflowPresenter { _ = presenter.presentationDidDismiss() }
+        }
+        let observer = RestoreDismissalObservingDelegate(forwardingTo: delegate) {
+            recorder.captureDispatchesAtDismissal()
+        }
+        controller.delegate = observer
+        let host = UIViewController()
+        let previousKeyWindow = scene.windows.first(where: \.isKeyWindow)
+        let window = UIWindow(windowScene: scene)
+        window.frame = CGRect(x: 0, y: 0, width: 390, height: 844)
+        window.rootViewController = host
+        window.makeKeyAndVisible()
+        defer {
+            host.dismiss(animated: false)
+            window.isHidden = true
+            window.rootViewController = nil
+            previousKeyWindow?.makeKeyAndVisible()
+        }
+        let presented = self.expectation(description: "Paywall is presented")
+        host.present(controller, animated: false) { presented.fulfill() }
+        await self.fulfillment(of: [presented], timeout: 3)
+        await expect(controller.displayedOffering?.identifier).toEventually(equal("offering-id"))
+        XCTAssertTrue(controller.presentationBridgeForTesting.hasActiveWorkflow)
+
+        recorder.handler.setRestored(restored, success: true)
+
+        await self.fulfillment(of: [reported], timeout: 3)
+        guard recorder.didReportDismissal else { return }
+        if let resultTask {
+            guard case let .completed(customerInfo) = try await resultTask.value else {
+                return XCTFail("Expected workflow completion with restored access")
+            }
+            XCTAssertEqual(customerInfo, restored)
+        }
+        await expect(recorder.terminalEventCount).toEventually(equal(1))
+        for task in recorder.tasks.value { await task.value }
+        recorder.assertTerminalEventWasDispatchedBeforeDismissal()
+        XCTAssertNil(host.presentedViewController)
+    }
+    #endif
+
+    private func assertRestoreWorkflowEvents(
+        initialActiveEntitlements: [String],
+        restoredEntitlements: [String],
+        shouldDismiss: Bool
+    ) async throws {
+        for usesDefaultPresenter in [false, true] {
+            let presentation = try Self.renderablePresentation(customVariables: [:])
+            let controller = DismissRecordingPaywallViewController()
+            let delegate = try Self.makeRestoreTrackingDelegate(
+                usesDefaultPresenter: usesDefaultPresenter,
+                workflow: presentation.workflow, initialActiveEntitlements: initialActiveEntitlements
+            )
+            let events: Atomic<[WorkflowEvent]> = .init([])
+            let tasks: Atomic<[Task<Void, Never>]> = .init([])
+            let handler = Self.makeWorkflowEventRecordingHandler(events: events, tasks: tasks)
+            let context = WorkflowContext(
+                workflow: presentation.workflow.workflow,
+                uiConfig: presentation.workflow.uiConfig,
+                offerings: .init(offerings: presentation.workflow.offerings, developerProvidedOffering: nil),
+                initialOffering: makeRestoreOffering(), presentedOfferingContext: nil
+            )
+            var workflowDismissalCount = 0
+            var dispose: (() -> Void)? = try WorkflowPaywallView(
+                context: context, purchaseHandler: handler,
+                introEligibilityChecker: .producing(eligibility: .eligible),
+                showZeroDecimalPlacePrices: false, displayCloseButton: false, promoOfferCache: nil,
+                onDismiss: {
+                    workflowDismissalCount += 1
+                    controller.dismiss(animated: true, completion: nil)
+                },
+                presentationBridge: controller.presentationBridgeForTesting
+            ).addToHierarchy()
+            defer { dispose?() }
+            XCTAssertNotNil(controller.presentationBridgeForTesting.displayedOffering)
+            delegate.paywallViewController?(
+                controller, didFinishRestoringWith: try Self.customerInfo(activeEntitlements: restoredEntitlements)
+            )
+            XCTAssertEqual(controller.dismissCallCount, shouldDismiss ? 1 : 0)
+            XCTAssertEqual(workflowDismissalCount, shouldDismiss ? 1 : 0)
+            XCTAssertFalse(handler.hasPurchasedInSession)
+            dispose?()
+            dispose = nil
+            await expect(controller.presentationBridgeForTesting.hasActiveWorkflow).toEventually(beFalse())
+            for task in tasks.value { await task.value }
+            let names = events.value.map { event in
+                switch event {
+                case .stepStarted: return "started"
+                case .stepCompleted: return "completed"
+                case .close: return "abandoned"
+                }
+            }
+            XCTAssertEqual(names.filter { $0 == "started" }.count, 1)
+            XCTAssertEqual(names.filter { $0 == "completed" }.count, 1)
+            XCTAssertEqual(names.filter { $0 == "abandoned" }.count, shouldDismiss ? 0 : 1,
+                           usesDefaultPresenter ? "Default paywall presenter" : "Workflow presenter")
+        }
+    }
+
+    private static func makeRestoreTrackingDelegate(
+        usesDefaultPresenter: Bool,
+        workflow: ResolvedCheckpointWorkflow,
+        initialActiveEntitlements: [String]
+    ) throws -> PaywallViewControllerDelegate {
+        if usesDefaultPresenter {
+            let initialCustomerInfo = try Self.customerInfo(activeEntitlements: initialActiveEntitlements)
+            let presenter = DefaultPaywallPresenter(
+                cachedCustomerInfoProvider: { initialCustomerInfo },
+                productEntitlementMappingProvider: { restoreProductEntitlementMapping }
+            )
+            presenter.prepareForPresentation(params: .init(
+                checkpointIdentifier: "test_checkpoint", offering: makeRestoreOffering()
+            ))
+            return presenter
+        }
+        let presenter = WorkflowPresenter(
+            productEntitlementMappingProvider: { restoreProductEntitlementMapping },
+            presentationStarter: { _ in true }
+        )
+        try presenter.startPresentation(Self.presentation(
+            workflow: workflow, initialActiveEntitlementIdentifiers: Set(initialActiveEntitlements)
+        ))
+        return presenter
+    }
+
+    private static func makeWorkflowEventRecordingHandler(
+        events: Atomic<[WorkflowEvent]>,
+        tasks: Atomic<[Task<Void, Never>]>
+    ) -> PurchaseHandler {
+        let purchases = MockPurchases(
+            purchase: { _, _, _ in (nil, TestData.customerInfo, false) },
+            restorePurchases: { TestData.customerInfo },
+            trackEvent: { _ in },
+            customerInfo: { TestData.customerInfo }
+        )
+        purchases.trackWorkflowEventBlock = { event in events.modify { $0.append(event) } }
+        return PurchaseHandler(purchases: purchases, eventTracker: .init(
+            purchases: purchases,
+            eventDispatcher: { work in tasks.modify { $0.append(Task { await work() }) } }
+        ))
     }
 
     private static func presentation(
+        workflow: ResolvedCheckpointWorkflow? = nil,
         customVariables: [String: CustomVariableValue] = [:],
         initialActiveEntitlementIdentifiers: Set<String> = [],
         errorPresentationHandler: @escaping ErrorPresentationHandler = { _, completion in
@@ -644,7 +1201,7 @@ final class WorkflowPresenterTests: TestCase {
     ) -> WorkflowPresentationRequest {
         return WorkflowPresentationRequest(
             checkpointIdentifier: "test_checkpoint",
-            workflow: self.workflow(),
+            workflow: workflow ?? self.workflow(),
             customVariables: customVariables,
             presentationMode: .modalSheet,
             initialActiveEntitlementIdentifiers: initialActiveEntitlementIdentifiers,
@@ -673,7 +1230,7 @@ final class WorkflowPresenterTests: TestCase {
             displayName: "Test",
             initialStepId: "step-id",
             singleStepFallbackId: nil,
-            steps: ["step-id": WorkflowStep(id: "step-id", type: "screen", screenId: "screen-id")],
+            steps: ["step-id": makeRestoreStep(id: "step-id", type: "screen", screenId: "screen-id")],
             screens: ["screen-id": screen]
         )
         return WorkflowPresentationRequest(
@@ -713,25 +1270,31 @@ final class WorkflowPresenterTests: TestCase {
         return try JSONDecoder.default.decode(PaywallComponentsData.ComponentsConfig.self, from: data)
     }
 
-    private static func workflow() -> ResolvedCheckpointWorkflow {
+    private static func workflow(
+        offerings: [Offering]? = nil,
+        referencedOfferingIdentifiers: [String] = ["offering-id"]
+    ) -> ResolvedCheckpointWorkflow {
+        let steps = referencedOfferingIdentifiers.enumerated().map { index, identifier in
+            let stepID = index == 0 ? "step-id" : "step-\(index)"
+            let step = makeRestoreStep(
+                id: stepID, type: "screen", screenId: nil,
+                paramValues: ["offering_identifier": .string(identifier)]
+            )
+            return (stepID, step)
+        }
         let workflow = PublishedWorkflow(
             id: "workflow-id",
             displayName: "Test",
             initialStepId: "step-id",
             singleStepFallbackId: nil,
-            steps: ["step-id": WorkflowStep(id: "step-id", type: "screen", screenId: nil)],
+            steps: Dictionary(uniqueKeysWithValues: steps),
             screens: [:]
         )
-        let offering = Offering(
-            identifier: "offering-id",
-            serverDescription: "Test offering",
-            availablePackages: [],
-            webCheckoutUrl: nil
-        )
+        let offering = makeRestoreOffering()
         return ResolvedCheckpointWorkflow(
             workflow: workflow,
             uiConfig: .empty,
-            offerings: .preview(offerings: [offering])
+            offerings: .preview(offerings: offerings ?? [offering])
         )
     }
 
@@ -824,7 +1387,7 @@ final class DefaultPaywallPresenterTests: TestCase {
     func testCompletionAfterPurchaseErrorKeepsPaywallPresented() {
         var completion: ErrorPresentationCompletion?
         let presenter = DefaultPaywallPresenter()
-        let controller = self.makePaywallViewControllerForDismissalRecording()
+        let controller = DismissRecordingPaywallViewController()
         presenter.prepareForPresentation(params: .init(
             checkpointIdentifier: "test_checkpoint",
             offering: Self.offering(),
@@ -869,7 +1432,7 @@ final class DefaultPaywallPresenterTests: TestCase {
     func testErrorPresentationCompletionAfterPaywallDismissalIsIgnored() {
         var completion: ErrorPresentationCompletion?
         let presenter = DefaultPaywallPresenter()
-        let controller = self.makePaywallViewControllerForDismissalRecording()
+        let controller = DismissRecordingPaywallViewController()
         presenter.prepareForPresentation(params: .init(
             checkpointIdentifier: "test_checkpoint",
             offering: Self.offering(),
@@ -889,7 +1452,7 @@ final class DefaultPaywallPresenterTests: TestCase {
     func testNewerPaywallErrorPresentationSupersedesEarlierCompletion() throws {
         var completions: [ErrorPresentationCompletion] = []
         let presenter = DefaultPaywallPresenter()
-        let controller = self.makePaywallViewControllerForDismissalRecording()
+        let controller = DismissRecordingPaywallViewController()
         presenter.prepareForPresentation(params: .init(
             checkpointIdentifier: "test_checkpoint",
             offering: Self.offering(),
@@ -914,7 +1477,7 @@ final class DefaultPaywallPresenterTests: TestCase {
         var errorCompletion: ErrorPresentationCompletion?
         var result: PaywallPresentationResult?
         let presenter = DefaultPaywallPresenter()
-        let controller = self.makePaywallViewControllerForDismissalRecording()
+        let controller = DismissRecordingPaywallViewController()
         presenter.prepareForPresentation(
             params: .init(
                 checkpointIdentifier: "test_checkpoint",
@@ -947,7 +1510,7 @@ final class DefaultPaywallPresenterTests: TestCase {
         var errorCompletion: ErrorPresentationCompletion?
         var result: PaywallPresentationResult?
         let presenter = DefaultPaywallPresenter()
-        let controller = self.makePaywallViewControllerForDismissalRecording()
+        let controller = DismissRecordingPaywallViewController()
         presenter.prepareForPresentation(
             params: .init(
                 checkpointIdentifier: "test_checkpoint",
@@ -978,9 +1541,10 @@ final class DefaultPaywallPresenterTests: TestCase {
         var errorCompletion: ErrorPresentationCompletion?
         var result: PaywallPresentationResult?
         let presenter = DefaultPaywallPresenter(
-            cachedCustomerInfoProvider: { try? Self.customerInfo(activeEntitlements: ["pro"]) }
+            cachedCustomerInfoProvider: { try? Self.customerInfo(activeEntitlements: ["pro"]) },
+            productEntitlementMappingProvider: { ["monthly": ["pro", "premium"]] }
         )
-        let controller = self.makePaywallViewControllerForDismissalRecording()
+        let controller = DismissRecordingPaywallViewController()
         presenter.prepareForPresentation(
             params: .init(
                 checkpointIdentifier: "test_checkpoint",
@@ -1029,9 +1593,10 @@ final class DefaultPaywallPresenterTests: TestCase {
 
     func testRestoreWithNewEntitlementTakesPrecedenceOverNavigatingBack() throws {
         let presenter = DefaultPaywallPresenter(
-            cachedCustomerInfoProvider: { try? Self.customerInfo(activeEntitlements: ["pro"]) }
+            cachedCustomerInfoProvider: { try? Self.customerInfo(activeEntitlements: ["pro"]) },
+            productEntitlementMappingProvider: { ["monthly": ["pro", "premium"]] }
         )
-        let controller = self.makePaywallViewControllerForDismissalRecording()
+        let controller = DismissRecordingPaywallViewController()
         let delegate: PaywallViewControllerDelegate = presenter
 
         presenter.prepareForPresentation(params: Self.presentationParams)
@@ -1044,11 +1609,160 @@ final class DefaultPaywallPresenterTests: TestCase {
         XCTAssertEqual(controller.dismissCallCount, 1)
     }
 
+    func testRestoreWithoutAnOfferedEntitlementDoesNotDismissPaywall() throws {
+        let presenter = DefaultPaywallPresenter(productEntitlementMappingProvider: { restoreProductEntitlementMapping })
+        let controller = DismissRecordingPaywallViewController()
+        presenter.prepareForPresentation(params: Self.presentationParams)
+
+        presenter.paywallViewController(
+            controller,
+            didFinishRestoringWith: try Self.customerInfo(activeEntitlements: ["unrelated"])
+        )
+
+        XCTAssertEqual(controller.dismissCallCount, 0)
+        XCTAssertEqual(presenter.presentationResult(dismissalReason: .navigatedBack), .navigatedBack)
+    }
+
+    func testPaywallRestoreDismissesForAnOfferedBillingPlanEntitlement() throws {
+        let offering = makeRestoreOffering(productIdentifier: "annual", installmentsInfo: restoreMonthlyInstallments)
+        let presenter = DefaultPaywallPresenter(
+            productEntitlementMappingProvider: { ["annual:monthly": ["pro"], "annual": ["other"]] }
+        )
+        let controller = DismissRecordingPaywallViewController(offering: offering)
+        presenter.prepareForPresentation(params: .init(checkpointIdentifier: "test_checkpoint", offering: offering))
+
+        presenter.paywallViewController(
+            controller, didFinishRestoringWith: try Self.customerInfo(activeEntitlements: ["pro"])
+        )
+
+        XCTAssertEqual(controller.dismissCallCount, 1)
+        XCTAssertEqual(presenter.presentationResult(dismissalReason: .navigatedBack), .continued)
+    }
+
+    func testRestoreRequiresACompleteOfferedProductEntitlementSet() throws {
+        for scenario in restoreEntitlementSetScenarios {
+            let presenter = DefaultPaywallPresenter(
+                cachedCustomerInfoProvider: { try? Self.customerInfo(activeEntitlements: scenario.state.before) },
+                productEntitlementMappingProvider: { ["monthly": scenario.offered, "annual": ["extra", "bonus"]] }
+            )
+            let controller = DismissRecordingPaywallViewController(
+                offering: makeRestoreOfferingWithMultipleProducts()
+            )
+            presenter.prepareForPresentation(params: .init(
+                checkpointIdentifier: "test_checkpoint", offering: makeRestoreOfferingWithMultipleProducts()
+            ))
+
+            presenter.paywallViewController(
+                controller, didFinishRestoringWith: try Self.customerInfo(activeEntitlements: scenario.state.after)
+            )
+
+            XCTAssertEqual(controller.dismissCallCount, scenario.closes ? 1 : 0, scenario.name)
+            XCTAssertEqual(
+                presenter.presentationResult(dismissalReason: .navigatedBack),
+                scenario.closes ? .continued : .navigatedBack,
+                scenario.name
+            )
+        }
+    }
+
+    func testFallbackPaywallPublishesRestoreResultWithAndWithoutActiveSubscription() async throws {
+        for hasActiveSubscription in [true, false] {
+            let customerInfo = try makeCustomerInfo(
+                activeEntitlements: hasActiveSubscription ? ["pro"] : [],
+                activeSubscriptionProductIdentifiers: hasActiveSubscription ? ["pro-product"] : []
+            )
+            let purchases = MockPurchases { _, _, _ in
+                (transaction: nil, customerInfo: customerInfo, userCancelled: false)
+            } restorePurchases: {
+                customerInfo
+            } trackEvent: { _ in
+            } customerInfo: {
+                customerInfo
+            }
+            let handler = PurchaseHandler(
+                purchases: purchases,
+                eventTracker: .init(purchases: purchases, eventDispatcher: PaywallEventTrackerTestDispatcher.value)
+            )
+            let view = DefaultPaywallView(handler: handler, offering: makeRestoreOffering())
+
+            await view.restorePurchases()
+
+            XCTAssertEqual(handler.restoredCustomerInfo?.customerInfo, customerInfo)
+            XCTAssertEqual(handler.restoredCustomerInfo?.success, hasActiveSubscription)
+        }
+    }
+
+    func testRestoreWithoutMappingDoesNotDismissPaywall() throws {
+        let presenter = DefaultPaywallPresenter()
+        let controller = DismissRecordingPaywallViewController()
+        presenter.prepareForPresentation(params: Self.presentationParams)
+
+        presenter.paywallViewController(
+            controller, didFinishRestoringWith: try Self.customerInfo(activeEntitlements: ["pro"])
+        )
+
+        XCTAssertEqual(controller.dismissCallCount, 0)
+        XCTAssertEqual(presenter.presentationResult(dismissalReason: .navigatedBack), .navigatedBack)
+    }
+
+    func testPaywallRestoreUsesMappingThatArrivesAfterPresentation() throws {
+        var mapping: [String: [String]]?
+        let presenter = DefaultPaywallPresenter(productEntitlementMappingProvider: { mapping })
+        let controller = DismissRecordingPaywallViewController()
+        let customerInfo = try Self.customerInfo(activeEntitlements: ["pro"])
+        presenter.prepareForPresentation(params: Self.presentationParams)
+
+        presenter.paywallViewController(controller, didFinishRestoringWith: customerInfo)
+        XCTAssertEqual(controller.dismissCallCount, 0)
+
+        mapping = restoreProductEntitlementMapping
+        presenter.paywallViewController(controller, didFinishRestoringWith: customerInfo)
+
+        XCTAssertEqual(controller.dismissCallCount, 1)
+        XCTAssertEqual(presenter.presentationResult(dismissalReason: .navigatedBack), .continued)
+    }
+
+    func testPaywallRestoreUsesTheActiveWorkflowOfferingInsteadOfTheOriginalOffering() throws {
+        let presenter = DefaultPaywallPresenter(productEntitlementMappingProvider: {
+            ["monthly": ["pro"], "annual": ["other"]]
+        })
+        let controller = DismissRecordingPaywallViewController()
+        controller.offeringOnScreen = makeRestoreOffering(identifier: "other", productIdentifier: "annual")
+        presenter.prepareForPresentation(params: Self.presentationParams)
+
+        presenter.paywallViewController(
+            controller, didFinishRestoringWith: try Self.customerInfo(activeEntitlements: ["pro"])
+        )
+        XCTAssertEqual(controller.dismissCallCount, 0)
+        XCTAssertEqual(presenter.presentationResult(dismissalReason: .navigatedBack), .navigatedBack)
+
+        presenter.paywallViewController(
+            controller, didFinishRestoringWith: try Self.customerInfo(activeEntitlements: ["other"])
+        )
+        XCTAssertEqual(controller.dismissCallCount, 1)
+        XCTAssertEqual(presenter.presentationResult(dismissalReason: .navigatedBack), .continued)
+    }
+
+    func testPaywallRestoreOnContentOnlyWorkflowScreenDoesNotDismiss() throws {
+        let presenter = DefaultPaywallPresenter(productEntitlementMappingProvider: { restoreProductEntitlementMapping })
+        let controller = DismissRecordingPaywallViewController()
+        controller.offeringOnScreen = nil
+        presenter.prepareForPresentation(params: Self.presentationParams)
+
+        presenter.paywallViewController(
+            controller, didFinishRestoringWith: try Self.customerInfo(activeEntitlements: ["pro"])
+        )
+
+        XCTAssertEqual(controller.dismissCallCount, 0)
+        XCTAssertEqual(presenter.presentationResult(dismissalReason: .navigatedBack), .navigatedBack)
+    }
+
     func testRestoreWithoutNewEntitlementDoesNotOverrideNavigatingBack() throws {
         let presenter = DefaultPaywallPresenter(
-            cachedCustomerInfoProvider: { try? Self.customerInfo(activeEntitlements: ["pro"]) }
+            cachedCustomerInfoProvider: { try? Self.customerInfo(activeEntitlements: ["pro"]) },
+            productEntitlementMappingProvider: { restoreProductEntitlementMapping }
         )
-        let controller = self.makePaywallViewControllerForDismissalRecording()
+        let controller = DismissRecordingPaywallViewController()
         let delegate: PaywallViewControllerDelegate = presenter
 
         presenter.prepareForPresentation(params: Self.presentationParams)
@@ -1063,9 +1777,10 @@ final class DefaultPaywallPresenterTests: TestCase {
 
     func testRestoreWithoutNewEntitlementDoesNotOverrideClose() throws {
         let presenter = DefaultPaywallPresenter(
-            cachedCustomerInfoProvider: { try? Self.customerInfo(activeEntitlements: ["pro"]) }
+            cachedCustomerInfoProvider: { try? Self.customerInfo(activeEntitlements: ["pro"]) },
+            productEntitlementMappingProvider: { restoreProductEntitlementMapping }
         )
-        let controller = self.makePaywallViewControllerForDismissalRecording()
+        let controller = DismissRecordingPaywallViewController()
         let delegate: PaywallViewControllerDelegate = presenter
 
         presenter.prepareForPresentation(params: Self.presentationParams)
@@ -1079,8 +1794,8 @@ final class DefaultPaywallPresenterTests: TestCase {
     }
 
     func testRestoreTreatsActiveEntitlementsAsNewWithoutCachedCustomerInfo() throws {
-        let presenter = DefaultPaywallPresenter(cachedCustomerInfoProvider: { nil })
-        let controller = self.makePaywallViewControllerForDismissalRecording()
+        let presenter = DefaultPaywallPresenter(productEntitlementMappingProvider: { restoreProductEntitlementMapping })
+        let controller = DismissRecordingPaywallViewController()
         let delegate: PaywallViewControllerDelegate = presenter
 
         presenter.prepareForPresentation(params: Self.presentationParams)
@@ -1094,8 +1809,8 @@ final class DefaultPaywallPresenterTests: TestCase {
     }
 
     func testRestoreWithoutActiveEntitlementsDoesNotOverrideBackWhenCacheIsMissing() throws {
-        let presenter = DefaultPaywallPresenter(cachedCustomerInfoProvider: { nil })
-        let controller = self.makePaywallViewControllerForDismissalRecording()
+        let presenter = DefaultPaywallPresenter(productEntitlementMappingProvider: { restoreProductEntitlementMapping })
+        let controller = DismissRecordingPaywallViewController()
         let delegate: PaywallViewControllerDelegate = presenter
 
         presenter.prepareForPresentation(params: Self.presentationParams)
@@ -1156,27 +1871,11 @@ final class DefaultPaywallPresenterTests: TestCase {
     }
 
     private static func offering() -> Offering {
-        return Offering(
-            identifier: "offering-id",
-            serverDescription: "Test offering",
-            availablePackages: [],
-            webCheckoutUrl: nil
-        )
+        return makeRestoreOffering()
     }
 
     private static var presentationParams: PaywallPresentationParams {
         return .init(checkpointIdentifier: "test_checkpoint", offering: Self.offering())
-    }
-
-    private func makePaywallViewControllerForDismissalRecording() -> DismissRecordingPaywallViewController {
-        return DismissRecordingPaywallViewController(
-            offering: Offering(
-                identifier: "offering-id",
-                serverDescription: "Test offering",
-                availablePackages: [],
-                webCheckoutUrl: nil
-            )
-        )
     }
 
     private static func customerInfo(activeEntitlements: [String]) throws -> CustomerInfo {
@@ -1185,7 +1884,172 @@ final class DefaultPaywallPresenterTests: TestCase {
 
 }
 
-private func makeCustomerInfo(activeEntitlements: [String]) throws -> CustomerInfo {
+#if os(iOS)
+/// Associates asynchronous event writes with their dispatch, so ordering assertions do not depend on scheduling.
+private enum RestoreEventDispatchContext {
+
+    @TaskLocal static var id: UUID?
+
+}
+
+@available(iOS 15.0, *)
+@MainActor
+private final class RestoreWorkflowEventRecorder {
+
+    let handler: PurchaseHandler
+    let tasks: Atomic<[Task<Void, Never>]> = .init([])
+    var didReportDismissal: Bool { self.dispatchesAtDismissal != nil }
+
+    var terminalEventCount: Int {
+        self.events.value.filter { if case .stepCompleted = $0.event { return true }; return false }.count
+    }
+
+    private let dispatches: Atomic<Set<UUID>> = .init([])
+    private let events: Atomic<[(id: UUID, event: WorkflowEvent)]> = .init([])
+    private var dispatchesAtDismissal: Set<UUID>?
+
+    init(restoredCustomerInfo: CustomerInfo) {
+        let purchases = MockPurchases(
+            purchase: { _, _, _ in (nil, restoredCustomerInfo, false) },
+            restorePurchases: { restoredCustomerInfo },
+            trackEvent: { _ in }, customerInfo: { restoredCustomerInfo }
+        )
+        purchases.trackWorkflowEventBlock = { [events] event in
+            if let id = RestoreEventDispatchContext.id { events.modify { $0.append((id, event)) } }
+        }
+        self.handler = PurchaseHandler(purchases: purchases, eventTracker: .init(
+            purchases: purchases,
+            eventDispatcher: { [dispatches, tasks] work in
+                let id = UUID()
+                dispatches.modify { $0.insert(id) }
+                tasks.modify { $0.append(Task {
+                    await RestoreEventDispatchContext.$id.withValue(id) { await work() }
+                }) }
+            }
+        ))
+    }
+
+    func captureDispatchesAtDismissal() {
+        XCTAssertNil(self.dispatchesAtDismissal, "UIKit must report dismissal once")
+        self.dispatchesAtDismissal = self.dispatches.value
+    }
+
+    func assertTerminalEventWasDispatchedBeforeDismissal(file: StaticString = #filePath, line: UInt = #line) {
+        let terminal = self.events.value.filter { if case .stepCompleted = $0.event { return true }; return false }
+        let abandoned = self.events.value.filter { if case .close = $0.event { return true }; return false }
+        XCTAssertEqual(terminal.count, 1, file: file, line: line)
+        XCTAssertTrue(abandoned.isEmpty, file: file, line: line)
+        guard let event = terminal.first else { return }
+        XCTAssertEqual(self.dispatchesAtDismissal?.contains(event.id), true,
+                       "Terminal event must be enqueued before UIKit reports dismissal", file: file, line: line)
+    }
+
+}
+
+@available(iOS 15.0, *)
+@MainActor
+private final class RestoreDismissalObservingDelegate: NSObject, PaywallViewControllerDelegate {
+
+    private let forwardingDelegate: PaywallViewControllerDelegate
+    private let onDismiss: () -> Void
+
+    init(forwardingTo delegate: PaywallViewControllerDelegate, onDismiss: @escaping () -> Void) {
+        self.forwardingDelegate = delegate
+        self.onDismiss = onDismiss
+    }
+
+    nonisolated func paywallViewController(
+        _ controller: PaywallViewController,
+        didFinishRestoringWith customerInfo: CustomerInfo
+    ) {
+        MainActor.assumeIsolated {
+            self.forwardingDelegate.paywallViewController?(controller, didFinishRestoringWith: customerInfo)
+        }
+    }
+
+    nonisolated func paywallViewControllerWasDismissed(_ controller: PaywallViewController) {
+        MainActor.assumeIsolated {
+            self.onDismiss()
+            self.forwardingDelegate.paywallViewControllerWasDismissed?(controller)
+        }
+    }
+
+}
+#endif
+
+private func makeRestoreStep(
+    id: String,
+    type: String,
+    screenId: String?,
+    paramValues: [String: AnyDecodable] = [:]
+) -> WorkflowStep {
+    var step = WorkflowStep(id: id, type: type, screenId: screenId)
+    step.paramValues = paramValues
+    return step
+}
+
+private let restoreEntitlementSetScenarios: [
+    (name: String, offered: [String], state: (before: [String], after: [String]), closes: Bool)
+] = [
+    ("Partial set", ["pro", "premium"], ([], ["pro"]), false),
+    ("Complete set", ["pro", "premium"], ([], ["pro", "premium"]), true),
+    ("Completes partially owned set", ["pro", "premium"], (["pro"], ["pro", "premium"]), true),
+    ("Already owns complete set", ["pro", "premium"], (["pro", "premium"], ["pro", "premium"]), false),
+    ("Only unrelated entitlement is new", ["pro", "premium"],
+     (["pro", "premium"], ["pro", "premium", "other"]), false),
+    ("Missing entitlement despite unrelated grant", ["pro", "premium"], ([], ["pro", "other"]), false),
+    ("Empty product mapping", [], ([], ["pro"]), false),
+    ("Complete second product only", ["pro", "premium"], ([], ["extra", "bonus"]), true),
+    ("Partial second product", ["pro", "premium"], ([], ["extra"]), false),
+    ("Partial sets from different products", ["pro", "premium"], ([], ["pro", "extra"]), false),
+    ("Already owned product and partial new product", ["pro", "premium"],
+     (["pro", "premium"], ["pro", "premium", "extra"]), false)
+]
+
+private let restoreProductEntitlementMapping = ["monthly": ["pro"]]
+
+private let restoreMonthlyInstallments = InstallmentsInfo(
+    commitmentInstallmentsCount: 12,
+    commitmentInstallmentPeriod: SubscriptionPeriod(value: 1, unit: .month),
+    installmentBillingPrice: 1.99,
+    installmentBillingDisplayPrice: "$1.99",
+    commitmentTotalPeriod: SubscriptionPeriod(value: 1, unit: .year),
+    commitmentTotalPrice: 23.88,
+    commitmentTotalDisplayPrice: "$23.88",
+    billingPlanType: .monthly
+)
+
+private func makeRestoreOfferingWithMultipleProducts() -> Offering {
+    let offerings = [makeRestoreOffering(), makeRestoreOffering(productIdentifier: "annual")]
+    return Offering(
+        identifier: "offering-id", serverDescription: "Multiple products",
+        availablePackages: offerings.flatMap(\.availablePackages), webCheckoutUrl: nil
+    )
+}
+
+private func makeRestoreOffering(
+    identifier: String = "offering-id",
+    productIdentifier: String = "monthly",
+    installmentsInfo: InstallmentsInfo? = nil
+) -> Offering {
+    let product = TestStoreProduct(
+        localizedTitle: productIdentifier, price: 1.99, currencyCode: "USD", localizedPriceString: "$1.99",
+        productIdentifier: productIdentifier, productType: .nonConsumable, localizedDescription: productIdentifier,
+        locale: Locale(identifier: "en_US"),
+        installmentsInfo: installmentsInfo
+    ).toStoreProduct()
+    return Offering(
+        identifier: identifier, serverDescription: "Test offering",
+        availablePackages: [Package(identifier: "monthly", packageType: .monthly, storeProduct: product,
+                                    offeringIdentifier: identifier, webCheckoutUrl: nil)],
+        webCheckoutUrl: nil
+    )
+}
+
+private func makeCustomerInfo(
+    activeEntitlements: [String],
+    activeSubscriptionProductIdentifiers: [String] = []
+) throws -> CustomerInfo {
     let infos = Dictionary(uniqueKeysWithValues: activeEntitlements.map { identifier in
         (
             identifier,
@@ -1206,6 +2070,9 @@ private func makeCustomerInfo(activeEntitlements: [String]) throws -> CustomerIn
 
     return CustomerInfo(
         entitlements: EntitlementInfos(entitlements: infos),
+        expirationDatesByProductId: Dictionary(uniqueKeysWithValues: activeSubscriptionProductIdentifiers.map {
+            ($0, Date(timeIntervalSince1970: 4_102_444_800))
+        }),
         requestDate: Date(timeIntervalSince1970: 0),
         firstSeen: Date(timeIntervalSince1970: 0),
         originalAppUserId: "test-user"
@@ -1216,8 +2083,12 @@ private func makeCustomerInfo(activeEntitlements: [String]) throws -> CustomerIn
 private final class DismissRecordingPaywallViewController: PaywallViewController {
 
     private(set) var dismissCallCount = 0
+    var offeringOnScreen: Offering?
 
-    init(offering: Offering) {
+    override var displayedOffering: Offering? { self.offeringOnScreen }
+
+    init(offering: Offering = makeRestoreOffering()) {
+        self.offeringOnScreen = offering
         super.init(
             content: .offering(offering),
             fonts: DefaultPaywallFontProvider(),

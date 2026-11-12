@@ -348,7 +348,7 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         expect(nonSubscription.storeTransactionIdentifier) == transaction.transactionIdentifier
         expect(info.allPurchasedProductIdentifiers).to(contain(Self.consumable10Coins))
 
-        self.verifySpecificTransactionWasFinished(transaction)
+        try await self.verifyTransactionWasFinished(transaction)
     }
 
     func testCanPurchaseConsumableMultipleTimes() async throws {
@@ -366,7 +366,7 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
                                                                         count: count)
 
         for transaction in transactions {
-            self.verifySpecificTransactionWasFinished(transaction, count: nil)
+            try await self.verifyTransactionWasFinished(transaction, count: nil)
             if Self.storeKitVersion == .storeKit1 {
                 await self.verifyTransactionIsEventuallyRemovedFromSK1Queue(transaction)
             }
@@ -397,7 +397,7 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
 
         expect(transaction1.transactionIdentifier).toNot(equal(transaction2.transactionIdentifier))
         for transaction in [transaction1, transaction2] {
-            self.verifySpecificTransactionWasFinished(transaction)
+            try await self.verifyTransactionWasFinished(transaction)
             if Self.storeKitVersion == .storeKit1 {
                 await self.verifyTransactionIsEventuallyRemovedFromSK1Queue(transaction)
             }
@@ -416,7 +416,7 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
 
         try await self.verifyEntitlementWentThrough(info)
 
-        self.verifySpecificTransactionWasFinished(transaction)
+        try await self.verifyTransactionWasFinished(transaction)
     }
 
     func testCanPurchaseNonRenewingSubscription() async throws {
@@ -431,7 +431,7 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
 
         try await self.verifyEntitlementWentThrough(info)
 
-        self.verifySpecificTransactionWasFinished(transaction)
+        try await self.verifyTransactionWasFinished(transaction)
     }
 
     func testCanPurchaseMultipleSubscriptions() async throws {
@@ -1236,7 +1236,7 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
 
         let transaction = try XCTUnwrap(result.transaction)
         try await self.verifyEntitlementWentThrough(result.customerInfo)
-        self.verifySpecificTransactionWasFinished(transaction)
+        try await self.verifyTransactionWasFinished(transaction)
     }
     #endif
 

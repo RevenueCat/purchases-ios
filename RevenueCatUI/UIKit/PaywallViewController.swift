@@ -136,8 +136,8 @@ public class PaywallViewController: UIViewController {
 
     var workflowContextForTesting: WorkflowContext? { self.configuration.injectedWorkflowContext }
 
-    var workflowBackNavigationBridgeForTesting: WorkflowBackNavigationBridge {
-        return self.configuration.workflowBackNavigationBridge
+    var presentationBridgeForTesting: PaywallPresentationBridge {
+        return self.configuration.presentationBridge
     }
 
     func simulateWorkflowExitOfferUpdate(_ offering: Offering?) {
@@ -177,6 +177,17 @@ public class PaywallViewController: UIViewController {
 
     private var purchaseHandler: PurchaseHandler {
         return configuration.purchaseHandler
+    }
+
+    /// The offering on the currently rendered paywall, or nil while no offering is displayed.
+    var displayedOffering: Offering? {
+        return self.configuration.presentationBridge.displayedOffering
+    }
+
+    func completeAndDismiss() {
+        if !self.configuration.presentationBridge.completeAndDismiss() {
+            self.dismiss(animated: true)
+        }
     }
 
     /// The promo offer cache, shared with exit offer paywall to avoid race conditions.
@@ -235,6 +246,7 @@ public class PaywallViewController: UIViewController {
         introEligibility: TrialOrIntroEligibilityChecker? = nil,
         performPurchase: PerformPurchase? = nil,
         performRestore: PerformRestore? = nil,
+        purchaseHandler: PurchaseHandler? = nil,
         workflowPresentationErrorHandler: WorkflowPresentationErrorHandler? = nil
     ) {
         self.init(
@@ -249,6 +261,7 @@ public class PaywallViewController: UIViewController {
 
         var configuration = self.configuration
         configuration.introEligibility = introEligibility
+        configuration.purchaseHandler = purchaseHandler ?? configuration.purchaseHandler
         configuration.injectedWorkflowContext = workflowContext
         configuration.displaysPurchaseAndRestoreErrors = false
         configuration.workflowPresentationErrorHandler = workflowPresentationErrorHandler
@@ -268,12 +281,13 @@ public class PaywallViewController: UIViewController {
     /// - Parameter shouldBlockTouchEvents: Whether to interecept all touch events propagated through this VC.
     /// - Parameter dismissRequestedHandler: If this is not set, the paywall will close itself automatically
     /// after a successful purchase. Otherwise use this handler to handle dismissals of the paywall.
+    @available(*, deprecated, message: "Use the initializer with performPurchaseWithContext instead.")
     public convenience init(
         offering: Offering? = nil,
         fonts: PaywallFontProvider,
         displayCloseButton: Bool = false,
         shouldBlockTouchEvents: Bool = false,
-        performPurchase: PerformPurchase? = nil,
+        performPurchase: PerformPurchase?,
         performRestore: PerformRestore? = nil,
         dismissRequestedHandler: ((_ controller: PaywallViewController) -> Void)? = nil
     ) {
@@ -299,6 +313,7 @@ public class PaywallViewController: UIViewController {
     /// `.with(purchasesAreCompletedBy: .myApp)`.
     /// - Parameter dismissRequestedHandler: If this is not set, the paywall will close itself automatically
     /// after a successful purchase. Otherwise use this handler to handle dismissals of the paywall.
+    @available(*, deprecated, message: "Use the initializer with purchaseHandlerWithContext instead.")
     @objc
     public convenience init(
         offering: Offering? = nil,
@@ -317,6 +332,55 @@ public class PaywallViewController: UIViewController {
             performRestore: bridged.performRestore,
             dismissRequestedHandler: dismissRequestedHandler
         )
+    }
+
+    /// Creates a paywall with optional custom purchase logic that receives the selected promotional offer.
+    /// - Parameters:
+    ///   - offering: The offering to display, or `nil` to use the current offering.
+    ///   - fonts: The font provider for the paywall.
+    ///   - displayCloseButton: Whether to display a close button.
+    ///   - shouldBlockTouchEvents: Whether to intercept touches propagated through this controller.
+    ///   - performPurchaseWithContext: An optional callback responsible for applying the selected offer.
+    ///   - performRestore: The callback that restores purchases.
+    ///   - dismissRequestedHandler: Called when the paywall requests dismissal.
+    @_disfavoredOverload // Keep existing trailing-closure calls bound to the legacy initializer.
+    public convenience init(
+        offering: Offering? = nil,
+        fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
+        displayCloseButton: Bool = false,
+        shouldBlockTouchEvents: Bool = false,
+        performPurchaseWithContext: PerformPurchaseWithContext? = nil,
+        performRestore: PerformRestore? = nil,
+        dismissRequestedHandler: ((_ controller: PaywallViewController) -> Void)? = nil
+    ) {
+        self.init(content: .optionalOffering(offering), fonts: fonts,
+                  displayCloseButton: displayCloseButton, shouldBlockTouchEvents: shouldBlockTouchEvents,
+                  performPurchase: nil, performRestore: performRestore,
+                  performPurchaseWithContext: performPurchaseWithContext,
+                  dismissRequestedHandler: dismissRequestedHandler)
+    }
+
+    /// Creates a paywall with an Objective-C compatible handler that receives the selected offer.
+    /// - Parameters:
+    ///   - offering: The offering to display, or `nil` to use the current offering.
+    ///   - displayCloseButton: Whether to display a close button.
+    ///   - shouldBlockTouchEvents: Whether to intercept touches propagated through this controller.
+    ///   - purchaseHandlerWithContext: The app-defined purchase and restore handler.
+    ///   - dismissRequestedHandler: Called when the paywall requests dismissal.
+    @objc
+    public convenience init(
+        offering: Offering? = nil,
+        displayCloseButton: Bool = false,
+        shouldBlockTouchEvents: Bool = false,
+        purchaseHandlerWithContext: PaywallPurchaseHandlerWithContext,
+        dismissRequestedHandler: ((_ controller: PaywallViewController) -> Void)? = nil
+    ) {
+        let bridged = Self.bridgePurchaseHandlerWithContext(purchaseHandlerWithContext)
+        self.init(offering: offering, displayCloseButton: displayCloseButton,
+                  shouldBlockTouchEvents: shouldBlockTouchEvents,
+                  performPurchaseWithContext: bridged.performPurchaseWithContext,
+                  performRestore: bridged.performRestore,
+                  dismissRequestedHandler: dismissRequestedHandler)
     }
 
     /// Initialize a `PaywallViewController` with an offering identifier.
@@ -386,12 +450,15 @@ public class PaywallViewController: UIViewController {
         shouldBlockTouchEvents: Bool,
         performPurchase: PerformPurchase?,
         performRestore: PerformRestore?,
+        performPurchaseWithContext: PerformPurchaseWithContext? = nil,
         dismissRequestedHandler: ((_ controller: PaywallViewController) -> Void)?,
         promoOfferCache: PaywallPromoOfferCache? = nil
     ) {
         self.shouldBlockTouchEvents = shouldBlockTouchEvents
         self.dismissRequestedHandler = dismissRequestedHandler
-        let handler = PurchaseHandler.default(performPurchase: performPurchase, performRestore: performRestore)
+        let handler = PurchaseHandler.default(performPurchase: performPurchase,
+                                              performRestore: performRestore,
+                                              performPurchaseWithContext: performPurchaseWithContext)
 
         self.promoOfferCache = promoOfferCache ?? PaywallPromoOfferCache(
             subscriptionHistoryTracker: handler.subscriptionHistoryTracker
@@ -652,7 +719,7 @@ public class PaywallViewController: UIViewController {
         let originalDismissHandler = self.dismissRequestedHandler
         let fonts = self.configuration.fonts
         let shouldBlock = self.shouldBlockTouchEvents
-        let performPurchase = self.purchaseHandler.performPurchase
+        let performPurchaseWithContext = self.purchaseHandler.performPurchaseWithContext
         let performRestore = self.purchaseHandler.performRestore
 
         // Mark that we're dismissing to show exit offer (skip dismissal notification)
@@ -675,8 +742,9 @@ public class PaywallViewController: UIViewController {
                 fonts: fonts,
                 displayCloseButton: true,
                 shouldBlockTouchEvents: shouldBlock,
-                performPurchase: performPurchase,
+                performPurchase: nil,
                 performRestore: performRestore,
+                performPurchaseWithContext: performPurchaseWithContext,
                 dismissRequestedHandler: Self.exitOfferDismissRequestedHandler(
                     originalHandler: originalDismissHandler
                 ),
@@ -1060,10 +1128,59 @@ public protocol PaywallPurchaseHandler {
 
 }
 
+/// An Objective-C compatible custom purchase handler that receives the paywall's selected offer.
+/// Use the `purchaseHandlerWithContext` initializer of ``PaywallViewController`` or ``PaywallFooterViewController``.
+/// Purchase and restore methods are called on the main actor.
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+@MainActor
+@objc(RCPaywallPurchaseHandlerWithContext)
+public protocol PaywallPurchaseHandlerWithContext {
+
+    /// Completes a purchase using the package and promotional offer in `context`.
+    /// - Parameters:
+    ///   - context: The package and optional signed promotional offer selected by the paywall.
+    ///   - completion: Must be called when the purchase completes.
+    ///     - `userCancelled`: `true` if the user cancelled the purchase; otherwise, `false`.
+    ///     - `error`: An optional error that occurred during the purchase, or `nil` if none.
+    @objc func performPurchase(
+        with context: PaywallPurchaseContext,
+        completion: @escaping (_ userCancelled: Bool, _ error: Error?) -> Void
+    )
+
+    /// Performs a restore operation.
+    /// - Parameter completion: Must be called when the restore completes.
+    ///   - `success`: `true` if the restore succeeded; otherwise, `false`.
+    ///   - `error`: An optional error that occurred during the restore, or `nil` if none.
+    @objc func performRestore(
+        completion: @escaping (_ success: Bool, _ error: Error?) -> Void
+    )
+
+}
+
 // MARK: - ObjC bridging
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 extension PaywallViewController {
+
+    static func bridgePurchaseHandlerWithContext(
+        _ handler: PaywallPurchaseHandlerWithContext
+    ) -> (performPurchaseWithContext: PerformPurchaseWithContext, performRestore: PerformRestore) {
+        let purchase: PerformPurchaseWithContext = { context in
+            await withCheckedContinuation { continuation in
+                handler.performPurchase(with: context) { userCancelled, error in
+                    continuation.resume(returning: (userCancelled, error))
+                }
+            }
+        }
+        let restore: PerformRestore = {
+            await withCheckedContinuation { continuation in
+                handler.performRestore { success, error in
+                    continuation.resume(returning: (success, error))
+                }
+            }
+        }
+        return (purchase, restore)
+    }
 
     static func bridgePurchaseHandler(
         _ handler: PaywallPurchaseHandler?
