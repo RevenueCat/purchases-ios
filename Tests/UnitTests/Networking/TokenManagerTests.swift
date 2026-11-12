@@ -718,7 +718,7 @@ class TokenManagerTests: TestCase {
 
 }
 
-private extension TokenManagerTests {
+extension TokenManagerTests {
 
     /// Builds an unsigned (`alg: "none"`) JWT string with the given payload, suitable for exercising
     /// `TokenManager`'s ID-token-derived properties, which don't validate the JWT's signature.

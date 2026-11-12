@@ -145,7 +145,7 @@ class JWTTests: TestCase {
 
 }
 
-private extension JWTTests {
+extension JWTTests {
 
     static func validToken() throws -> String {
         return try Self.makeToken(
