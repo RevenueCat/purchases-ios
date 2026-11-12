@@ -56,7 +56,7 @@ enum ExternalPurchaseLink {
             return .open(url)
         }
 
-        return Action(await purchaseHandler.prepareExternalPurchaseLink(), url: url)
+        return Action(await purchaseHandler.prepareExternalPurchaseLink(destinationURL: url), url: url)
     }
 
     /// Whether opening a link with this method goes through Apple's external purchase flow.

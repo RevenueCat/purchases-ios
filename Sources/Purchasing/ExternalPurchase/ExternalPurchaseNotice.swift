@@ -17,7 +17,7 @@ import Foundation
 internal enum ExternalPurchaseNoticeType: Hashable, Sendable {
 
     /// The app goes to the background and promotes offers in a destination outside of the app.
-    case browser
+    case browser(destinationURL: URL)
 
     /// The app promotes offers in a web view or native experience within the app.
     case withinApp
