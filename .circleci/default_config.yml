@@ -1937,45 +1937,6 @@ jobs:
           command: bundle exec fastlane release
           no_output_timeout: 30m
 
-  push-revenuecat-pod:
-    executor:
-      name: macos-executor
-    steps:
-      - checkout
-      - revenuecat/install-mise-tools:
-          tools: ruby
-      - install-bundle-dependencies
-      - revenuecat/trust-github-key
-      - run:
-          name: Deploy new version
-          command: bundle exec fastlane push_revenuecat_pod
-          no_output_timeout: 30m
-
-  push-revenuecatui-pod:
-    executor:
-      name: macos-executor
-    steps:
-      - checkout
-      - revenuecat/install-mise-tools:
-          tools: ruby
-      - install-bundle-dependencies
-      - revenuecat/trust-github-key
-      - run:
-          name: Deploy new version
-          command: bundle exec fastlane push_revenuecatui_pod
-          no_output_timeout: 30m
-
-  cocoapods-token-keepalive:
-    docker:
-      - image: cimg/ruby:3.3
-    resource_class: small
-    steps:
-      - run:
-          name: Refresh CocoaPods trunk session
-          command: |
-            gem install cocoapods --no-document
-            pod trunk me
-
   prepare-next-version:
     executor:
       name: macos-executor
@@ -2862,12 +2823,6 @@ workflows:
       not:
         equal: [scheduled_pipeline, << pipeline.trigger_source >>]
     jobs:
-      - push-revenuecat-pod:
-          <<: *release-tags
-      - push-revenuecatui-pod:
-          requires:
-            - push-revenuecat-pod
-          <<: *release-tags
       - deploy-to-spm:
           <<: *release-tags
       - deploy-to-purchases-ios-admob:
@@ -2884,7 +2839,6 @@ workflows:
       - make-release:
           context: github-bot-public
           requires:
-            - push-revenuecatui-pod
             - deploy-to-spm
             - docs-deploy
           <<: *release-tags
@@ -3000,14 +2954,6 @@ workflows:
           context:
             - e2e-tests
             - slack-secrets
-
-  daily-cocoapods-token-keepalive:
-    when:
-      and:
-        - equal: [scheduled_pipeline, << pipeline.trigger_source >>]
-        - equal: ["cocoapods_token_keepalive", << pipeline.schedule.name >>]
-    jobs:
-      - cocoapods-token-keepalive
 
   manual-trigger-bump:
     when:

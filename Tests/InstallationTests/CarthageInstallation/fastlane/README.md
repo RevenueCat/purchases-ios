@@ -242,22 +242,6 @@ replace API KEY for installation and integration tests
 
 Create XCFramework, and create GitHub release
 
-### ios push_revenuecat_pod
-
-```sh
-[bundle exec] fastlane ios push_revenuecat_pod
-```
-
-Release to CocoaPods
-
-### ios push_revenuecatui_pod
-
-```sh
-[bundle exec] fastlane ios push_revenuecatui_pod
-```
-
-Release to CocoaPods
-
 ### ios tag_current_branch
 
 ```sh
