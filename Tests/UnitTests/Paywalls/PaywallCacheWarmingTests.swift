@@ -842,6 +842,29 @@ final class PaywallCacheWarmingTests: TestCase {
         expect(mockRegistrar.didRegister).to(beTrue())
     }
 
+    func testFontOverridePreservesCanonicalCacheKeyAndHashValidation() async throws {
+        let original = try XCTUnwrap(URL(string: "https://fonts.pawwalls.com/font.ttf"))
+        let replacement = try XCTUnwrap(URL(string: "https://fonts.8-lives-cat.io/font.ttf"))
+        let data = "font contents".asData
+        let session = MockSession()
+        session.dataFromURL = data
+        session.urlResponse = HTTPURLResponse(url: replacement, statusCode: 200, httpVersion: nil, headerFields: nil)
+        let files = MockFileManager()
+        let registrar = MockRegistrar()
+        let manager = DefaultPaywallFontsManager(
+            fileManager: files,
+            session: session,
+            registrar: registrar,
+            assetURLResolver: { _ in [replacement] }
+        )
+
+        try await manager.installFont(.init(name: "test-font", fontFamily: nil, url: original, hash: data.md5String))
+
+        XCTAssertEqual(session.requestedURL, replacement)
+        XCTAssertEqual(files.didWriteDataToURL?.lastPathComponent, original.absoluteString.asData.md5String + ".ttf")
+        XCTAssertTrue(registrar.didRegister)
+    }
+
     func testDownloadFont_ThrowsHashValidationError() async {
         let mockSession = MockSession()
         mockSession.urlResponse = HTTPURLResponse(
@@ -878,6 +901,80 @@ final class PaywallCacheWarmingTests: TestCase {
         } catch {
             fail("Unexpected error: \(error)")
         }
+    }
+
+    func testFontDownloadRetriesNetworkHTTPAndHashFailures() async throws {
+        let original = try XCTUnwrap(URL(string: "https://fonts.pawwalls.com/font.ttf"))
+        let backup = try XCTUnwrap(URL(string: "https://fonts.8-lives-cat.io/font.ttf"))
+        let data = "valid font".asData
+        let success = HTTPURLResponse(url: backup, statusCode: 200, httpVersion: nil, headerFields: nil)!
+        let failures: [Result<(Data, URLResponse), Swift.Error>] = [
+            .failure(URLError(.timedOut)),
+            .success((data, HTTPURLResponse(
+                url: original, statusCode: 503, httpVersion: nil, headerFields: nil
+            )!)),
+            .success(("corrupt font".asData, success))
+        ]
+        for failure in failures {
+            let session = MockSession()
+            session.responses = [failure, .success((data, success))]
+            let files = MockFileManager()
+            let registrar = MockRegistrar()
+            let manager = DefaultPaywallFontsManager(fileManager: files, session: session, registrar: registrar,
+                                                     assetURLResolver: { _ in [original, backup] })
+
+            try await manager.installFont(.init(name: "font", fontFamily: nil, url: original, hash: data.md5String))
+
+            XCTAssertEqual(session.requestedURLs, [original, backup])
+            XCTAssertEqual(files.didWriteDataToURL?.lastPathComponent,
+                           original.absoluteString.asData.md5String + ".ttf")
+            XCTAssertTrue(registrar.didRegister)
+        }
+    }
+
+    func testCancelledFontDownloadDoesNotTryFallbackOrWriteToCache() async throws {
+        let original = try XCTUnwrap(URL(string: "https://fonts.pawwalls.com/font.ttf"))
+        let backup = try XCTUnwrap(URL(string: "https://fonts.8-lives-cat.io/font.ttf"))
+        let session = MockSession()
+        session.responses = [.failure(URLError(.cancelled))]
+        let files = MockFileManager()
+        let registrar = MockRegistrar()
+        let manager = DefaultPaywallFontsManager(fileManager: files, session: session, registrar: registrar,
+                                                 assetURLResolver: { _ in [original, backup] })
+
+        do {
+            try await manager.installFont(.init(name: "font", fontFamily: nil, url: original, hash: "expected"))
+            XCTFail("Expected cancellation")
+        } catch {
+            XCTAssertEqual((error as? URLError)?.code, .cancelled)
+        }
+        XCTAssertEqual(session.requestedURLs, [original])
+        XCTAssertFalse(files.didWriteData)
+        XCTAssertFalse(registrar.didRegister)
+    }
+
+    func testFontDownloadStopsWhenAllSourcesFailIntegrityChecks() async throws {
+        let original = try XCTUnwrap(URL(string: "https://fonts.pawwalls.com/font.ttf"))
+        let backup = try XCTUnwrap(URL(string: "https://fonts.8-lives-cat.io/font.ttf"))
+        let session = MockSession()
+        let response = HTTPURLResponse(url: original, statusCode: 200, httpVersion: nil, headerFields: nil)!
+        session.responses = [.success(("bad".asData, response)), .success(("also bad".asData, response))]
+        let files = MockFileManager()
+        let registrar = MockRegistrar()
+        let manager = DefaultPaywallFontsManager(fileManager: files, session: session, registrar: registrar,
+                                                 assetURLResolver: { _ in [original, backup] })
+
+        do {
+            try await manager.installFont(.init(name: "font", fontFamily: nil, url: original, hash: "expected"))
+            XCTFail("Expected integrity failure")
+        } catch {
+            guard case DefaultPaywallFontsManager.FontsManagerError.hashValidationError = error else {
+                return XCTFail("Unexpected error: \(error)")
+            }
+        }
+        XCTAssertEqual(session.requestedURLs, [original, backup])
+        XCTAssertFalse(files.didWriteData)
+        XCTAssertFalse(registrar.didRegister)
     }
 
     func testInstallFont_DownloadsOnce_RegistersTwice() async throws {
@@ -1609,6 +1706,9 @@ private actor MockCacheWarmingFileRepository: FileRepositoryType {
 private final class MockSession: FontDownloadSession {
 
     var didCallDataFrom = false
+    var requestedURL: URL?
+    var requestedURLs: [URL] = []
+    var responses: [Result<(Data, URLResponse), Error>] = []
 
     var dataFromURL: Data?
     var dataFromURLCallCount = 0
@@ -1616,8 +1716,11 @@ private final class MockSession: FontDownloadSession {
     var urlResponse: URLResponse?
 
     func data(from url: URL) async throws -> (Data, URLResponse) {
+        self.requestedURL = url
+        self.requestedURLs.append(url)
         didCallDataFrom = true
         dataFromURLCallCount += 1
+        if !self.responses.isEmpty { return try self.responses.removeFirst().get() }
         return (dataFromURL ?? Data(), urlResponse ?? URLResponse())
     }
 }

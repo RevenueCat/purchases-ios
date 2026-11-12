@@ -1672,6 +1672,7 @@
 		FEDA000000000000000000B2 /* WeightedSourceSelector.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDA000000000000000000A2 /* WeightedSourceSelector.swift */; };
 		FEDA000000000000000000D1 /* RemoteConfigSourceProviderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDA000000000000000000C1 /* RemoteConfigSourceProviderTests.swift */; };
 		FEDA000000000000000000D2 /* RemoteConfigSourceProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDA000000000000000000C2 /* RemoteConfigSourceProvider.swift */; };
+		CFCD00000000000000000002 /* PaywallAssetURLResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFCD00000000000000000001 /* PaywallAssetURLResolver.swift */; };
 		FEDA000000000000000000D3 /* CheckpointRules.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDA000000000000000000C3 /* CheckpointRules.swift */; };
 		FEDA000000000000000000D4 /* CheckpointsConfigProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDA000000000000000000C4 /* CheckpointsConfigProvider.swift */; };
 		FEDA000000000000000000D5 /* CheckpointRulesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDA000000000000000000C5 /* CheckpointRulesTests.swift */; };
@@ -3638,6 +3639,7 @@
 		FEDA000000000000000000A2 /* WeightedSourceSelector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeightedSourceSelector.swift; sourceTree = "<group>"; };
 		FEDA000000000000000000C1 /* RemoteConfigSourceProviderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteConfigSourceProviderTests.swift; sourceTree = "<group>"; };
 		FEDA000000000000000000C2 /* RemoteConfigSourceProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteConfigSourceProvider.swift; sourceTree = "<group>"; };
+		CFCD00000000000000000001 /* PaywallAssetURLResolver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallAssetURLResolver.swift; sourceTree = "<group>"; };
 		FEDA000000000000000000C3 /* CheckpointRules.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckpointRules.swift; sourceTree = "<group>"; };
 		FEDA000000000000000000C4 /* CheckpointsConfigProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckpointsConfigProvider.swift; sourceTree = "<group>"; };
 		FEDA000000000000000000C5 /* CheckpointRulesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckpointRulesTests.swift; sourceTree = "<group>"; };
@@ -5522,6 +5524,7 @@
 				F3A2DB969D72432B87F48C5F /* RemoteConfigAPI.swift */,
 				FEDA000000000000000000A2 /* WeightedSourceSelector.swift */,
 				FEDA000000000000000000C2 /* RemoteConfigSourceProvider.swift */,
+				CFCD00000000000000000001 /* PaywallAssetURLResolver.swift */,
 				A1B2C3D42FE6000000000001 /* RemoteConfigBlobRefHelpers.swift */,
 				A1B2C3D42FE6000000000003 /* RemoteConfigBlobDownloader.swift */,
 				A1B2C3D42FE6000000000005 /* RemoteConfigBlobFetcher.swift */,
@@ -8291,6 +8294,7 @@
 				3B41364A5DFC4039B3026F40 /* RemoteConfigAPI.swift in Sources */,
 				FEDA000000000000000000B2 /* WeightedSourceSelector.swift in Sources */,
 				FEDA000000000000000000D2 /* RemoteConfigSourceProvider.swift in Sources */,
+				CFCD00000000000000000002 /* PaywallAssetURLResolver.swift in Sources */,
 				E6B064598F674333A29E0781 /* RemoteConfigCallback.swift in Sources */,
 				FEDA0000000000000000F0A2 /* GetRemoteConfigFallbackOperation.swift in Sources */,
 				A6CC43904EBD4860BFD2BD85 /* GetRemoteConfigOperation.swift in Sources */,
