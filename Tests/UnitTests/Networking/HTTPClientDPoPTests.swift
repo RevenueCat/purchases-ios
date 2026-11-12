@@ -42,7 +42,14 @@ final class HTTPClientDPoPTests: BaseHTTPClientTests<MockETagManager, HTTPReques
     }
 
     func testProofIsBoundToTheURLTheRequestIsSentTo() throws {
-        let request = HTTPRequest(method: .get, path: .getCustomerInfo(appUserID: "dave@revenuecat.com"))
+        let pathComponent = "/a/\(UUID().uuidString)/b"
+        let path = HTTPRequest.Path(name: "test",
+                                    authenticated: true,
+                                    etagBehavior: .send,
+                                    supportsSignatureVerification: true,
+                                    needsNonceForSigning: true,
+                                    pathComponent: pathComponent)
+        let request = HTTPRequest(method: .get, path: path)
 
         let host = try XCTUnwrap(SystemInfo.apiBaseURL.host)
 
@@ -62,7 +69,7 @@ final class HTTPClientDPoPTests: BaseHTTPClientTests<MockETagManager, HTTPReques
         expect(headers[HTTPClient.RequestHeader.authorization.rawValue]).to(beginWith("DPoP "))
         expect(proof.payload["htm"] as? String) == "GET"
         expect(proof.payload["htu"] as? String) == expectedHTU
-        expect(expectedHTU).to(contain("dave%40revenuecat.com"))
+        expect(expectedHTU).to(contain(pathComponent))
     }
 
     func testRetriedRequestsGetAFreshProof() throws {
