@@ -172,6 +172,10 @@ private struct HostedWebViewComponentView: View {
                 )
                 // The host callbacks and coordinator belong to this instance for their entire lifetime.
                 .id(ObjectIdentifier(self.instance))
+                // Rebinds when a replacement instance (after a crash or failed load) appears. The
+                // instance can also be shared by several hosts (e.g. carousel copies); the one that
+                // appeared last presents the in-app browser.
+                .onAppear { self.bindOpenURL() }
                 .webViewSize(
                     self.size,
                     measuredWidth: self.instance.measuredWidth,
@@ -182,9 +186,6 @@ private struct HostedWebViewComponentView: View {
                 .clipped()
             }
         }
-        // The instance can be shared by several hosts (e.g. carousel copies); the one that appeared
-        // last presents the in-app browser.
-        .onAppear { self.bindOpenURL() }
         #if canImport(SafariServices) && canImport(UIKit)
         .sheet(isPresented: .isNotNil(self.$inAppBrowserURL)) {
             let url = self.inAppBrowserURL!
