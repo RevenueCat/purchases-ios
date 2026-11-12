@@ -191,6 +191,26 @@ class KeychainTests: TestCase {
         expect(try self.keychain.readItem(identifier: id)) == payload
     }
 
+    // MARK: - addItem
+
+    func testAddItemSavesANewItem() throws {
+        let id = uniqueID()
+        let payload = data(byte: 0x10)
+        expect(try self.keychain.addItem(identifier: id, contents: payload, attributes: SecureItemAttributes())) == true
+        expect(try self.keychain.readItem(identifier: id)) == payload
+    }
+
+    func testAddItemDoesNotOverwriteAnExistingItem() throws {
+        let id = uniqueID()
+        let original = data(byte: 0x20)
+        try keychain.saveItem(identifier: id, contents: original)
+
+        let added = try keychain.addItem(identifier: id, contents: data(byte: 0x30), attributes: SecureItemAttributes())
+
+        expect(added) == false
+        expect(try self.keychain.readItem(identifier: id)) == original
+    }
+
     // MARK: - deleteItem
 
     func testDeleteNonExistentItemDoesNotThrow() {

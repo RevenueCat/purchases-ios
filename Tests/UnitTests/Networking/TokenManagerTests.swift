@@ -406,29 +406,21 @@ class TokenManagerTests: TestCase {
         expect(manager.currentIdentitySource) == .oidc
     }
 
-    // MARK: - authorizationHeaders(for:)
+    // MARK: - authorizationHeaders(for:url:)
 
     func testAuthorizationHeadersIsEmptyWhenDisabled() {
         let manager = TokenManager(enabled: false, storage: self.storage)
         manager.currentUserProvider = self.userProvider
         manager.currentAccessToken = "access-token"
 
-        expect(manager.authorizationHeaders(for: Self.makeRequest())).to(beEmpty())
+        expect(manager.authorizationHeaders(for: Self.makeRequest(), url: Self.mockURL)).to(beEmpty())
     }
 
     func testAuthorizationHeadersIsEmptyWhenThereIsNoAccessToken() {
         let manager = TokenManager(enabled: true, storage: self.storage)
         manager.currentUserProvider = self.userProvider
 
-        expect(manager.authorizationHeaders(for: Self.makeRequest())).to(beEmpty())
-    }
-
-    func testAuthorizationHeadersIsEmptyForIAMPathsEvenWithAnAccessToken() {
-        let manager = TokenManager(enabled: true, storage: self.storage)
-        manager.currentUserProvider = self.userProvider
-        manager.currentAccessToken = "access-token"
-
-        expect(manager.authorizationHeaders(for: Self.makeRequest(path: .tokenRefresh))).to(beEmpty())
+        expect(manager.authorizationHeaders(for: Self.makeRequest(), url: Self.mockURL)).to(beEmpty())
     }
 
     func testAuthorizationHeadersReturnsBearerTokenForNonIAMPathsWithAnAccessToken() {
@@ -436,9 +428,59 @@ class TokenManagerTests: TestCase {
         manager.currentUserProvider = self.userProvider
         manager.currentAccessToken = "access-token"
 
-        expect(manager.authorizationHeaders(for: Self.makeRequest())) == [
+        expect(manager.authorizationHeaders(for: Self.makeRequest(), url: Self.mockURL)) == [
             HTTPClient.RequestHeader.authorization.rawValue: "Bearer access-token"
         ]
+    }
+
+    func testAuthorizationHeadersForIAMPathsContainOnlyADPoPProofWithoutAnAccessTokenHash() throws {
+        let manager = TokenManager(enabled: true, storage: self.storage)
+        manager.currentUserProvider = self.userProvider
+        manager.currentAccessToken = try Self.makeBoundAccessToken()
+
+        let headers = manager.authorizationHeaders(for: Self.makeRequest(path: .tokenLogin), url: Self.mockURL)
+
+        expect(Array(headers.keys)) == [HTTPClient.RequestHeader.dpop.rawValue]
+        let proof = try JWT(from: try XCTUnwrap(headers[HTTPClient.RequestHeader.dpop.rawValue]))
+        expect(proof.payload["htu"] as? String) == Self.mockURL.absoluteString
+        expect(proof.payload.keys).toNot(contain("ath"))
+    }
+
+    func testAuthorizationHeadersUseBearerWithoutAProofForAnUnboundAccessToken() throws {
+        let manager = TokenManager(enabled: true, storage: self.storage)
+        manager.currentUserProvider = self.userProvider
+        let accessToken = try Self.makeToken(header: ["alg": "none"], payload: [:])
+        manager.currentAccessToken = accessToken
+
+        expect(manager.authorizationHeaders(for: Self.makeRequest(), url: Self.mockURL)) == [
+            HTTPClient.RequestHeader.authorization.rawValue: "Bearer \(accessToken)"
+        ]
+    }
+
+    func testAuthorizationHeadersUseTheDPoPSchemeAndAProofForABoundAccessToken() throws {
+        let manager = TokenManager(enabled: true, storage: self.storage)
+        manager.currentUserProvider = self.userProvider
+        let accessToken = try Self.makeBoundAccessToken()
+        manager.currentAccessToken = accessToken
+
+        let headers = manager.authorizationHeaders(for: Self.makeRequest(), url: Self.mockURL)
+
+        expect(headers[HTTPClient.RequestHeader.authorization.rawValue]) == "DPoP \(accessToken)"
+        let proof = try JWT(from: try XCTUnwrap(headers[HTTPClient.RequestHeader.dpop.rawValue]))
+        expect(proof.payload["htm"] as? String) == "GET"
+        expect(proof.payload["htu"] as? String) == Self.mockURL.absoluteString
+        expect(proof.payload["ath"] as? String) == Data(accessToken.utf8).sha256.base64URLEncodedString
+    }
+
+    // MARK: - Token storage attributes
+
+    func testTokensAreStoredExcludedFromBackups() {
+        let manager = TokenManager(enabled: true, storage: self.storage)
+
+        manager.saveTokens(refreshToken: "refresh", accessToken: "access", idToken: "id", for: "test-user")
+
+        expect(self.storage.saveCallCount) == 3
+        expect(self.storage.lastSaveAttributes?.includedInBackup) == false
     }
 
     // MARK: - tokenRefreshRequest(for:response:duplicateRequestHandler:)
@@ -750,6 +792,10 @@ private extension TokenManagerTests {
             isLoadShedderResponse: false,
             isFallbackUrlResponse: false
         )
+    }
+
+    static func makeBoundAccessToken() throws -> String {
+        return try Self.makeToken(header: ["alg": "none"], payload: ["cnf": ["jkt": "key-thumbprint"]])
     }
 
     static func makeNetworkError() -> NetworkError {

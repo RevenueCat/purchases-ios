@@ -21,6 +21,12 @@ struct JWT {
     var appUserID: String? { payload["rc.app_user_id"] as? String }
     var amr: [String]? { payload["amr"] as? [String] }
 
+    /// The `cnf.jkt` claim (RFC 9449): the thumbprint of the DPoP key this token is bound to, if any.
+    var dpopKeyThumbprint: String? {
+        let confirmation = payload["cnf"] as? [String: Any]
+        return confirmation?["jkt"] as? String
+    }
+
     init(from token: String) throws {
         // `omittingEmptySubsequences: false` is required: JWTs signed with `alg: "none"` are
         // formatted as `header.payload.` with an empty signature segment. The default

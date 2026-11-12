@@ -17,6 +17,10 @@ enum AuthenticationStrings {
 
     case unknownItem(_ key: String)
     case failedModification(_ key: String, _ error: any Error)
+    case dpopKeyReadFailed(_ error: any Error)
+    case dpopKeyRestoreFailed(_ error: any Error)
+    case dpopSecureEnclaveKeyCreationFailed(_ error: any Error)
+    case dpopProofCreationFailed(_ error: any Error)
 }
 
 extension AuthenticationStrings: LogMessage {
@@ -27,6 +31,14 @@ extension AuthenticationStrings: LogMessage {
             return "Unknown secure item: \(key)"
         case .failedModification(let key, let error):
             return "Failed to modify item \(key): \(error)"
+        case .dpopKeyReadFailed(let error):
+            return "Failed to read DPoP key: \(error)"
+        case .dpopKeyRestoreFailed(let error):
+            return "Stored DPoP key is unusable and will be replaced: \(error)"
+        case .dpopSecureEnclaveKeyCreationFailed(let error):
+            return "Failed to create DPoP key in the Secure Enclave; using a software key instead: \(error)"
+        case .dpopProofCreationFailed(let error):
+            return "Failed to create DPoP proof: \(error)"
         }
     }
 

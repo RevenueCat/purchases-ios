@@ -209,6 +209,7 @@ extension HTTPClient {
         case headerParametersForSignature = "X-Headers-Hash"
         case sandbox = "X-Is-Sandbox"
         case retryCount = "X-Retry-Count"
+        case dpop = "DPoP"
 
     }
 
@@ -926,12 +927,12 @@ private extension HTTPClient {
             headers = headers.merging(eTagHeader)
         }
 
-        if request.httpRequest.path.authenticated {
+        if request.httpRequest.path.authenticated, let url = urlRequest.url {
             // NOTE: it's almost guaranteed that the request will already have an "Authorization" header,
             // because it's how the API key is sent up
             // if the TokenManager produces a new authorization header, it will override
             // any existing authorization header present
-            let authorization = self.tokenManager.authorizationHeaders(for: request)
+            let authorization = self.tokenManager.authorizationHeaders(for: request, url: url)
             headers = headers.merging(authorization)
         }
 

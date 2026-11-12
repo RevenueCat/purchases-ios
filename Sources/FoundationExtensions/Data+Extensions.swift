@@ -127,6 +127,14 @@ extension Data {
 
         self.init(base64Encoded: input)
     }
+
+    /// The base64url encoding of the data, without padding (RFC 4648 section 5).
+    var base64URLEncodedString: String {
+        return self.base64EncodedString()
+            .replacingOccurrences(of: "+", with: "-")
+            .replacingOccurrences(of: "/", with: "_")
+            .replacingOccurrences(of: "=", with: "")
+    }
 }
 
 extension Data {
