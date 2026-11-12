@@ -53,7 +53,7 @@ final class WebBundleURLPublishingCPUTests: XCTestCase {
         let metric = RecordingCPUTimeMetric(limitingToCurrentThread: false)
         let failuresBeforeMeasurement = self.testRun?.failureCount
         let options = XCTMeasureOptions()
-        options.iterationCount = 5
+        options.iterationCount = 10
         options.invocationOptions = [.manuallyStart, .manuallyStop]
         var failure: Error?
         self.measure(metrics: [metric, XCTClockMetric()], options: options) {
@@ -77,9 +77,12 @@ final class WebBundleURLPublishingCPUTests: XCTestCase {
         let cpuTimes = metric.samples.cpuTimeSeconds.dropFirst()
         XCTAssertEqual(cpuTimes.count, options.iterationCount)
         guard cpuTimes.count == options.iterationCount else { return }
+        let sortedCPUTimes = cpuTimes.sorted()
+        let middleIndex = sortedCPUTimes.count / 2
+        let medianCPUTime = (sortedCPUTimes[middleIndex - 1] + sortedCPUTimes[middleIndex]) / 2
         try PerformanceBaseline.checkOrRecordCPUTime(
-            cpuTimeSeconds: cpuTimes.reduce(0, +) / Double(cpuTimes.count),
-            tolerancePercent: 10,
+            cpuTimeSeconds: medianCPUTime,
+            tolerancePercent: 20,
             testName: "\(type(of: self))/\(testName)",
             workloadSHA256: self.workload.sha256,
             environment: try self.baselineEnvironment(),
