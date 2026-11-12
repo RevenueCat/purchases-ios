@@ -3160,9 +3160,29 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
             let params = try XCTUnwrap(diagnosticsTracker.trackedPurchaseRequestParams.value.first)
             expect(params.wasSuccessful).to(beFalse())
             expect(params.storeKitVersion) == .storeKit2
-            expect(params.errorMessage) == "Unable to Complete Request"
             expect(params.errorCode) == ErrorCode.storeProblemError.rawValue
+
+            #if compiler(>=6.4.2)
+            // Starting with the iOS 27.2 simulator runtime (with any Xcode version), StoreKit Testing no
+            // longer surfaces a simulated `.generic(.unknown)` purchase error as `StoreKitError.unknown`.
+            // It throws `StoreKitError.systemError` wrapping `ASDErrorDomain` code 537, which has no
+            // localized description. iOS 27.0 still throws `StoreKitError.unknown`. `systemError` maps to
+            // `storeProblemError` with the inner ASD error as the underlying error, so the tracked message
+            // is Foundation's generic fallback and no StoreKit error description can be extracted. The
+            // error code is unchanged. Accept both shapes in case Apple restores the previous behavior.
+            //
+            // For more information, see FB25546465
+            let validErrorMessages: [String?] = [
+                "Unable to Complete Request",
+                "The operation couldn’t be completed. (ASDErrorDomain error 537.)"
+            ]
+            let validStoreKitErrorDescriptions: [String?] = [StoreKitError.unknown.trackingDescription, nil]
+            expect(validErrorMessages).to(contain(params.errorMessage))
+            expect(validStoreKitErrorDescriptions).to(contain(params.storeKitErrorDescription))
+            #else
+            expect(params.errorMessage) == "Unable to Complete Request"
             expect(params.storeKitErrorDescription) == StoreKitError.unknown.trackingDescription
+            #endif
             expect(params.productId) == Self.productID
             expect(params.promotionalOfferId) == nil
             expect(params.winBackOfferApplied) == false
