@@ -148,7 +148,7 @@ platform :ios do
 
     # Resolve the commit SHA for the tag on purchases-ios-admob, since the current
     # repo HEAD belongs to purchases-ios and would be invalid for that repo.
-    tag_ref_resp = github_api(
+    tag_ref_resp = Fastlane::Helper::GitHubHelper.github_api_call_with_retry(
       server_url: 'https://api.github.com',
       api_token: ENV["GITHUB_TOKEN"],
       http_method: 'GET',
@@ -760,7 +760,7 @@ platform :ios do
       UI.message("No PR context, treating the API gate as unlabelled")
       []
     else
-      response = github_api(
+      response = Fastlane::Helper::GitHubHelper.github_api_call_with_retry(
         server_url: 'https://api.github.com',
         api_token: token,
         http_method: 'GET',
@@ -2900,7 +2900,7 @@ platform :ios do
       body = ApiDiffHelper.merge_api_diff_comment(existing["body"], options[:scheme], section)
 
       UI.message("Updating API diff comment #{existing['id']}")
-      github_api(
+      Fastlane::Helper::GitHubHelper.github_api_call_with_retry(
         server_url: 'https://api.github.com',
         api_token: token,
         http_method: 'PATCH',
@@ -2909,7 +2909,7 @@ platform :ios do
       )
     else
       UI.message("Creating the API diff comment")
-      github_api(
+      Fastlane::Helper::GitHubHelper.github_api_call_with_retry(
         server_url: 'https://api.github.com',
         api_token: token,
         http_method: 'POST',
@@ -3120,7 +3120,7 @@ platform :ios do
     existing_id = find_pr_comment_with_marker(repo, pr_number, token, marker)
     if existing_id
       UI.message("Updating existing comment #{existing_id}")
-      github_api(
+      Fastlane::Helper::GitHubHelper.github_api_call_with_retry(
         server_url: 'https://api.github.com',
         api_token: token,
         http_method: 'PATCH',
@@ -3129,7 +3129,7 @@ platform :ios do
       )
     else
       UI.message("Creating new comment")
-      github_api(
+      Fastlane::Helper::GitHubHelper.github_api_call_with_retry(
         server_url: 'https://api.github.com',
         api_token: token,
         http_method: 'POST',
@@ -3160,7 +3160,7 @@ platform :ios do
       existing_id = find_pr_comment_with_marker(repo, pr_number, token, marker)
       if existing_id
         UI.message("Deleting stale failure comment #{existing_id}")
-        github_api(
+        Fastlane::Helper::GitHubHelper.github_api_call_with_retry(
           server_url: 'https://api.github.com',
           api_token: token,
           http_method: 'DELETE',
@@ -3276,7 +3276,7 @@ def find_pr_comment(repo, pr_number, token, marker)
   page = 1
 
   loop do
-    resp = github_api(
+    resp = Fastlane::Helper::GitHubHelper.github_api_call_with_retry(
       server_url: 'https://api.github.com',
       api_token: token,
       http_method: 'GET',
