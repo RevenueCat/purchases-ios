@@ -46,7 +46,6 @@ final class MockMultiSeatSheetsHelper: MultiSeatSheetsHelper {
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
     @available(visionOS, unavailable)
-    @MainActor
     override func presentMultiSeatInvitationSheet(
         for product: StoreProduct,
         from controller: UIViewController

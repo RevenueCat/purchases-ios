@@ -1,10 +1,15 @@
 //
-//  MultiseatSheetsHelper.swift
-//  RevenueCat
+//  Copyright RevenueCat Inc. All Rights Reserved.
+//
+//  Licensed under the MIT License (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//      https://opensource.org/licenses/MIT
+//
+//  MultiSeatSheetsHelper.swift
 //
 //  Created by Will Taylor on 11/13/26.
-//  Copyright © 2026 RevenueCat, Inc. All rights reserved.
-//
 
 import Foundation
 import StoreKit
@@ -35,22 +40,27 @@ internal class MultiSeatSheetsHelper {
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
     @available(visionOS, unavailable)
-    @MainActor
     func presentMultiSeatInvitationSheet(
         for product: StoreProduct,
         from controller: UIViewController
     ) async throws {
-        let subscriptionGroupIdentifier = try validateCanPresentMultiSeatSheet(
+        let subscriptionGroupIdentifier = try self.validateCanPresentMultiSeatSheet(
             for: product
         )
+        let presenter = self.multiSeatSheetPresenter
 
-        do {
-            try await self.multiSeatSheetPresenter.presentMultiSeatInvitationSheet(
-                from: controller,
-                subscriptionGroupID: subscriptionGroupIdentifier
-            )
-        } catch {
-            throw ErrorUtils.purchasesError(withStoreKitError: error)
+        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
+            self.systemInfo.operationDispatcher.dispatchOnMainActor {
+                    do {
+                        try await presenter.presentMultiSeatInvitationSheet(
+                            from: controller,
+                            subscriptionGroupID: subscriptionGroupIdentifier
+                        )
+                        continuation.resume()
+                    } catch {
+                        continuation.resume(throwing: ErrorUtils.purchasesError(withStoreKitError: error))
+                    }
+                }
         }
     }
     #endif
