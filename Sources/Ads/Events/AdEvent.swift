@@ -83,6 +83,9 @@ public final class MediatorName: NSObject, Codable, @unchecked Sendable {
     /// RevenueCat Ads mediation
     public static let revenueCat = MediatorName(rawValue: "RevenueCat")
 
+    /// Unity LevelPlay mediation network
+    public static let levelPlay = MediatorName(rawValue: "LevelPlay")
+
     // MARK: - NSObject overrides for equality
 
     public override func isEqual(_ object: Any?) -> Bool {

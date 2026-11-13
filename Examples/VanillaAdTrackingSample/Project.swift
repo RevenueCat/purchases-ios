@@ -6,8 +6,8 @@ let project = Project(
     organizationName: .revenueCatOrgName,
     packages: .projectPackages + [
         .package(
-            url: "https://github.com/googleads/swift-package-manager-google-mobile-ads.git",
-            .upToNextMajor(from: "13.0.0")
+            url: "https://github.com/ironsource-mobile/LevelPlay-Swift-Package",
+            .upToNextMajor(from: "9.5.0")
         )
     ],
     settings: .appProject,
@@ -22,10 +22,11 @@ let project = Project(
             sources: ["Sources/**"],
             dependencies: [
                 .revenueCat,
-                .googleMobileAds
+                .package(product: "UnityMediationSDK", type: .runtime)
             ],
             settings: .appTarget(including: [
-                "DEVELOPMENT_TEAM": ""
+                "DEVELOPMENT_TEAM": "",
+                "OTHER_LDFLAGS": "$(inherited) -ObjC"
             ])
         )
     ]

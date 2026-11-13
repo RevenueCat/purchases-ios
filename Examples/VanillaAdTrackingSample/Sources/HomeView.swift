@@ -1,8 +1,8 @@
-import GoogleMobileAds
+@preconcurrency import IronSource
 import SwiftUI
 
 struct HomeView: View {
-    @StateObject private var adManager = AdMobManager()
+    @StateObject private var adManager = LevelPlayManager()
 
     var body: some View {
         Group {
@@ -18,40 +18,54 @@ struct HomeView: View {
         }
     }
 
+    @ViewBuilder
     private var content: some View {
-        List {
-            Section {
-                Text("Select an ad format to test. Check Xcode console logs for detailed event tracking.")
-                    .font(.subheadline)
-            }
+        switch self.adManager.initializationState {
+        case .initializing:
+            ProgressView("Initializing LevelPlay…")
 
-            Section {
-                ForEach(AdFormat.allCases) { format in
-                    NavigationLink(destination: AdFormatDetailView(format: format, adManager: adManager)) {
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text(format.title)
-                                .font(.headline)
-                            Text(format.subtitle)
-                                .font(.caption)
-                                .foregroundColor(.secondary)
+        case .failed(let message):
+            VStack(spacing: 12) {
+                Text("LevelPlay initialization failed")
+                    .font(.headline)
+                Text(message)
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                    .multilineTextAlignment(.center)
+            }
+            .padding()
+
+        case .initialized:
+            List {
+                Section {
+                    Text("Select an ad format to test. Check Xcode console logs for detailed event tracking.")
+                        .font(.subheadline)
+                }
+
+                Section {
+                    ForEach(AdFormat.allCases) { format in
+                        NavigationLink(destination: AdFormatDetailView(format: format, adManager: self.adManager)) {
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text(format.title)
+                                    .font(.headline)
+                                Text(format.subtitle)
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+                            .padding(.vertical, 4)
                         }
-                        .padding(.vertical, 4)
                     }
                 }
             }
+            .navigationTitle("LevelPlay + RC")
         }
-        .navigationTitle("AdMob + RC (Vanilla)")
     }
 }
 
 private enum AdFormat: String, CaseIterable, Identifiable {
     case banner
     case interstitial
-    case appOpen
     case rewarded
-    case rewardedInterstitial
-    case native
-    case nativeVideo
     case errorTesting
 
     var id: String { self.rawValue }
@@ -60,11 +74,7 @@ private enum AdFormat: String, CaseIterable, Identifiable {
         switch self {
         case .banner: return "Banner Ad"
         case .interstitial: return "Interstitial Ad"
-        case .appOpen: return "App Open Ad"
         case .rewarded: return "Rewarded Ad"
-        case .rewardedInterstitial: return "Rewarded Interstitial Ad"
-        case .native: return "Native Ad"
-        case .nativeVideo: return "Native Video Ad"
         case .errorTesting: return "Error Testing"
         }
     }
@@ -73,11 +83,7 @@ private enum AdFormat: String, CaseIterable, Identifiable {
         switch self {
         case .banner: return "Always visible, auto-loaded"
         case .interstitial: return "Full-screen ad"
-        case .appOpen: return "App launch/resume ad"
         case .rewarded: return "Rewards users after viewing"
-        case .rewardedInterstitial: return "Interstitial that rewards users"
-        case .native: return "Text + images integrated into UI"
-        case .nativeVideo: return "Video content integrated into UI"
         case .errorTesting: return "Triggers ad load failure"
         }
     }
@@ -85,8 +91,7 @@ private enum AdFormat: String, CaseIterable, Identifiable {
 
 private struct AdFormatDetailView: View {
     let format: AdFormat
-    @ObservedObject var adManager: AdMobManager
-    @State private var showErrorFeedback = false
+    @ObservedObject var adManager: LevelPlayManager
 
     var body: some View {
         ScrollView {
@@ -95,122 +100,67 @@ private struct AdFormatDetailView: View {
                     .font(.subheadline)
                     .foregroundColor(.secondary)
 
-                switch format {
+                switch self.format {
                 case .banner:
-                    BannerAdView(adManager: adManager)
+                    Text("Status: \(self.adManager.bannerStatus)")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                    BannerAdView(adManager: self.adManager)
                         .frame(height: 50)
 
                 case .interstitial:
                     self.statusAndButtons(
-                        status: adManager.interstitialStatus,
-                        onLoad: { adManager.loadInterstitialAd() },
+                        status: self.adManager.interstitialStatus,
+                        onLoad: { self.adManager.loadInterstitialAd() },
                         onShow: {
-                            if let rootVC = Self.rootViewController {
-                                adManager.showInterstitialAd(from: rootVC)
+                            if let rootViewController = Self.rootViewController {
+                                self.adManager.showInterstitialAd(from: rootViewController)
                             }
                         },
-                        canShow: adManager.interstitialStatus == "Ready"
-                    )
-
-                case .appOpen:
-                    self.statusAndButtons(
-                        status: adManager.appOpenStatus,
-                        onLoad: { adManager.loadAppOpenAd() },
-                        onShow: {
-                            if let rootVC = Self.rootViewController {
-                                adManager.showAppOpenAd(from: rootVC)
-                            }
-                        },
-                        canShow: adManager.appOpenStatus == "Ready"
+                        canShow: self.adManager.interstitialStatus == "Loaded - ready to show"
                     )
 
                 case .rewarded:
                     self.statusAndButtons(
-                        status: adManager.rewardedStatus,
-                        onLoad: { adManager.loadRewardedAd() },
+                        status: self.adManager.rewardedStatus,
+                        onLoad: { self.adManager.loadRewardedAd() },
                         onShow: {
-                            if let rootVC = Self.rootViewController {
-                                adManager.showRewardedAd(from: rootVC) {}
+                            if let rootViewController = Self.rootViewController {
+                                self.adManager.showRewardedAd(from: rootViewController)
                             }
                         },
-                        canShow: adManager.rewardedStatus == "Ready"
+                        canShow: self.adManager.rewardedStatus == "Loaded - ready to show"
                     )
-
-                case .rewardedInterstitial:
-                    self.statusAndButtons(
-                        status: adManager.rewardedInterstitialStatus,
-                        onLoad: { adManager.loadRewardedInterstitialAd() },
-                        onShow: {
-                            if let rootVC = Self.rootViewController {
-                                adManager.showRewardedInterstitialAd(from: rootVC) {}
-                            }
-                        },
-                        canShow: adManager.rewardedInterstitialStatus == "Ready"
-                    )
-
-                case .native:
-                    self.nativeBlock(
-                        status: adManager.nativeAdStatus,
-                        onLoad: {
-                            adManager.loadNativeAd(
-                                adUnitID: Constants.AdMob.nativeAdUnitID
-                            )
-                        },
-                        nativeAd: adManager.nativeAd
-                    )
-
-                case .nativeVideo:
-                    self.nativeBlock(
-                        status: adManager.nativeVideoAdStatus,
-                        onLoad: {
-                            adManager.loadNativeAd(
-                                adUnitID: Constants.AdMob.nativeVideoAdUnitID
-                            )
-                        },
-                        nativeAd: adManager.nativeVideoAd
-                    )
+                    .onAppear {
+                        self.adManager.trackRewardedPromptShown()
+                    }
 
                 case .errorTesting:
+                    Text("Status: \(self.adManager.errorTestStatus)")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
                     Button("Trigger Ad Load Error") {
-                        adManager.loadAdWithError()
-                        showErrorFeedback = true
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
-                            showErrorFeedback = false
-                        }
+                        self.adManager.loadAdWithError()
                     }
                     .buttonStyle(.bordered)
-
-                    if showErrorFeedback {
-                        Text("Loading with invalid ID. Check console logs for failure tracking.")
-                            .font(.caption)
-                            .foregroundColor(.red)
-                    }
                 }
             }
             .padding()
         }
-        .navigationTitle(format.title)
+        .navigationTitle(self.format.title)
         .navigationBarTitleDisplayMode(.inline)
     }
 
     private var detailDescription: String {
-        switch format {
+        switch self.format {
         case .banner:
-            return "Always visible at the top. Tracks Loaded, Displayed, Opened, and Revenue."
+            return "Auto-loaded banner. Tracks Loaded, Displayed, Opened, and Revenue."
         case .interstitial:
             return "Full-screen ad. Tracks Loaded, Displayed, Opened, and Revenue."
-        case .appOpen:
-            return "App launch/resume ad. Tracks Loaded, Displayed, Opened, and Revenue."
         case .rewarded:
-            return "Reward ad with reward callback. Tracks Loaded, Displayed, Opened, and Revenue."
-        case .rewardedInterstitial:
-            return "Interstitial format with reward callback and full tracking."
-        case .native:
-            return "Integrated native ad. Native test IDs can be unreliable; custom IDs are best for validation."
-        case .nativeVideo:
-            return "Integrated native video ad. Native video test IDs can be unreliable in test environments."
+            return "Reward ad. Tracks Prompt Shown, Prompt Accepted, Loaded, Displayed, Opened, and Revenue."
         case .errorTesting:
-            return "Uses an intentionally invalid ad unit ID to trigger and track load failures."
+            return "Uses an intentionally invalid LevelPlay ad unit ID to trigger and track a load failure."
         }
     }
 
@@ -228,7 +178,7 @@ private struct AdFormatDetailView: View {
         HStack {
             Button("Load") { onLoad() }
                 .buttonStyle(.bordered)
-                .disabled(status == "Loading...")
+                .disabled(status == "Loading…")
 
             Button("Show") { onShow() }
                 .buttonStyle(.borderedProminent)
@@ -236,117 +186,39 @@ private struct AdFormatDetailView: View {
         }
     }
 
-    @ViewBuilder
-    private func nativeBlock(
-        status: String,
-        onLoad: @escaping () -> Void,
-        nativeAd: NativeAd?
-    ) -> some View {
-        Text("Status: \(status)")
-            .font(.caption)
-            .foregroundColor(.secondary)
-
-        Button("Load") { onLoad() }
-            .buttonStyle(.bordered)
-            .disabled(status == "Loading...")
-
-        if let nativeAd {
-            NativeAdViewRepresentable(nativeAd: nativeAd)
-                .frame(height: 300)
-                .padding(.top, 8)
+    private static var rootViewController: UIViewController? {
+        guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene else {
+            return nil
         }
+
+        return windowScene.windows.first(where: \.isKeyWindow)?.rootViewController
+            ?? windowScene.windows.first?.rootViewController
+    }
+}
+
+private struct BannerAdView: UIViewRepresentable {
+    let adManager: LevelPlayManager
+
+    func makeUIView(context: Context) -> UIView {
+        guard let viewController = Self.rootViewController else {
+            return UIView()
+        }
+
+        return self.adManager.makeBannerAd(from: viewController)
+    }
+
+    func updateUIView(_ uiView: UIView, context: Context) {}
+
+    static func dismantleUIView(_ uiView: UIView, coordinator: Void) {
+        (uiView as? LPMBannerAdView)?.destroy()
     }
 
     private static var rootViewController: UIViewController? {
         guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene else {
             return nil
         }
-        return windowScene.windows.first?.rootViewController
+
+        return windowScene.windows.first(where: \.isKeyWindow)?.rootViewController
+            ?? windowScene.windows.first?.rootViewController
     }
-}
-
-struct NativeAdViewRepresentable: UIViewRepresentable {
-    let nativeAd: NativeAd
-
-    func makeUIView(context: Context) -> NativeAdView {
-        let nativeAdView = NativeAdView()
-
-        // Create UI elements
-        let stackView = UIStackView()
-        stackView.axis = .vertical
-        stackView.spacing = 8
-        stackView.translatesAutoresizingMaskIntoConstraints = false
-
-        // Media view for images/videos
-        let mediaView = MediaView()
-        mediaView.translatesAutoresizingMaskIntoConstraints = false
-        mediaView.contentMode = .scaleAspectFit
-
-        let headlineLabel = UILabel()
-        headlineLabel.font = .boldSystemFont(ofSize: 16)
-        headlineLabel.numberOfLines = 0
-        headlineLabel.text = nativeAd.headline
-
-        let bodyLabel = UILabel()
-        bodyLabel.font = .systemFont(ofSize: 14)
-        bodyLabel.numberOfLines = 0
-        bodyLabel.textColor = .secondaryLabel
-        bodyLabel.text = nativeAd.body
-
-        let ctaButton = UIButton(type: .system)
-        ctaButton.setTitle(nativeAd.callToAction, for: .normal)
-        ctaButton.layer.cornerRadius = 8
-        ctaButton.clipsToBounds = true
-        var configuration = UIButton.Configuration.filled()
-        configuration.baseBackgroundColor = .systemBlue
-        configuration.baseForegroundColor = .white
-        configuration.contentInsets = NSDirectionalEdgeInsets(top: 10, leading: 20, bottom: 10, trailing: 20)
-        ctaButton.configuration = configuration
-
-        stackView.addArrangedSubview(mediaView)
-        stackView.addArrangedSubview(headlineLabel)
-        stackView.addArrangedSubview(bodyLabel)
-        stackView.addArrangedSubview(ctaButton)
-
-        // Set media view height constraint
-        NSLayoutConstraint.activate([
-            mediaView.heightAnchor.constraint(equalToConstant: 200)
-        ])
-
-        nativeAdView.addSubview(stackView)
-        NSLayoutConstraint.activate([
-            stackView.topAnchor.constraint(equalTo: nativeAdView.topAnchor, constant: 12),
-            stackView.leadingAnchor.constraint(equalTo: nativeAdView.leadingAnchor, constant: 12),
-            stackView.trailingAnchor.constraint(equalTo: nativeAdView.trailingAnchor, constant: -12),
-            stackView.bottomAnchor.constraint(equalTo: nativeAdView.bottomAnchor, constant: -12)
-        ])
-
-        nativeAdView.mediaView = mediaView
-        nativeAdView.headlineView = headlineLabel
-        nativeAdView.bodyView = bodyLabel
-        nativeAdView.callToActionView = ctaButton
-        nativeAdView.nativeAd = nativeAd
-
-        nativeAdView.backgroundColor = .secondarySystemBackground
-        nativeAdView.layer.cornerRadius = 12
-
-        return nativeAdView
-    }
-
-    func updateUIView(_ uiView: NativeAdView, context: Context) {
-        uiView.nativeAd = nativeAd
-        (uiView.headlineView as? UILabel)?.text = nativeAd.headline
-        (uiView.bodyView as? UILabel)?.text = nativeAd.body
-        (uiView.callToActionView as? UIButton)?.setTitle(nativeAd.callToAction, for: .normal)
-    }
-}
-
-struct BannerAdView: UIViewRepresentable {
-    let adManager: AdMobManager
-
-    func makeUIView(context: Context) -> BannerView {
-        return adManager.loadBannerAd()
-    }
-
-    func updateUIView(_ uiView: BannerView, context: Context) {}
 }
