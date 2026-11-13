@@ -314,25 +314,6 @@ final class CheckpointsManagerTests: TestCase {
         )
     }
 
-    func testResolvedWorkflowKeepsTheInitiatingAppUserIDWhenTheIdentityChangesDuringTheCustomerRead() async throws {
-        let executor = MockWorkflowPresenter()
-        var appUserID = "customer-a"
-        let manager = CheckpointsManager(
-            resolveCheckpoint: { _, _ in .matchedWorkflow(Self.workflow()) },
-            workflowPresenter: executor,
-            customerInfoProvider: {
-                appUserID = "customer-b"
-                return try Self.customerInfo(activeEntitlements: ["pro"])
-            },
-            appUserIDProvider: { appUserID }
-        )
-
-        _ = try await manager.executeCheckpoint(identifier: "soft_paywall", params: .init())
-        _ = await manager.checkpointForCallback(identifier: "soft_paywall", params: .init())
-
-        XCTAssertEqual(executor.presentations.map(\.initialAppUserID), ["customer-a", "customer-b"])
-    }
-
     func testCustomerInfoIsReadOnceAfterResolutionAndIsTheBaselineForPresentationAndResult() async throws {
         let executor = MockWorkflowPresenter()
         executor.execution = .completed(

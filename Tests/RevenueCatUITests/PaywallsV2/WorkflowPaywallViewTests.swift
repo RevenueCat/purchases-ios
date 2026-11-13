@@ -2412,7 +2412,6 @@ private final class WorkflowGateHarness: @unchecked Sendable {
     let duringOperation: Atomic<(@Sendable () -> Void)?> = .init(nil)
 
     let purchaseHandler: PurchaseHandler
-    private let activeEntitlements: Set<String>
 
     init(
         activeEntitlements: Set<String>,
@@ -2441,7 +2440,6 @@ private final class WorkflowGateHarness: @unchecked Sendable {
         purchases.trackWorkflowEventBlock = { event in
             workflowEvents.modify { $0.append(event) }
         }
-        self.activeEntitlements = activeEntitlements
         self.purchaseHandler = PurchaseHandler(
             purchases: purchases,
             resolveBranch: resolveBranch ?? { branch in routesToStep ?? branch.fallbackStepId },
@@ -2492,8 +2490,6 @@ private final class WorkflowGateHarness: @unchecked Sendable {
     @MainActor
     private var gateContext: CheckpointGateContext {
         return CheckpointGateContext(
-            initialAppUserID: "customer-a",
-            initialActiveEntitlementIdentifiers: self.activeEntitlements,
             currentAppUserID: { [appUserID] in appUserID.value },
             onOutcomeChanged: { [outcomes] outcome in outcomes.modify { $0.append(outcome) } }
         )
