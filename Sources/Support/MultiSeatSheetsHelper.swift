@@ -57,6 +57,9 @@ internal class MultiSeatSheetsHelper {
                             subscriptionGroupID: subscriptionGroupIdentifier
                         )
                         continuation.resume()
+                    } catch StoreKitError.userCancelled {
+                        // Dismissing the sheet isn't an error.
+                        continuation.resume()
                     } catch {
                         continuation.resume(throwing: ErrorUtils.purchasesError(withStoreKitError: error))
                     }

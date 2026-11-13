@@ -165,13 +165,8 @@ extension MultiSeatSheetsHelperTests {
 
     @MainActor
     @available(iOS 27.3, *)
-    func testMapsUserCancelledStoreKitErrorToPurchaseCancelledError() async throws {
-        do {
-            try await self.presentInvitationSheet(simulatedPresenterError: StoreKitError.userCancelled)
-            fail("Expected presenting the invitation sheet to throw")
-        } catch {
-            expect(error).to(matchError(ErrorCode.purchaseCancelledError))
-        }
+    func testDoesNotThrowWhenUserCancels() async throws {
+        try await self.presentInvitationSheet(simulatedPresenterError: StoreKitError.userCancelled)
 
         expect(self.presenter.invitationSheetInvocations).to(haveCount(1))
     }
