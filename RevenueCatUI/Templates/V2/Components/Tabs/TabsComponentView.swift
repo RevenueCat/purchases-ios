@@ -260,6 +260,8 @@ struct LoadedTabsComponentView: View {
         return PackageSelectionContext(
             condition: self.screenCondition,
             customVariables: self.customVariables,
+            stateValues: [:],
+            stateDefaults: [:],
             windowSize: self.paywallWindowSize,
             isEligibleForIntroOffer: { [introOfferEligibilityContext] in
                 introOfferEligibilityContext.isEligible(package: $0)

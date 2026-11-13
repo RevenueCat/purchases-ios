@@ -1,0 +1,265 @@
+//
+//  Copyright RevenueCat Inc. All Rights Reserved.
+//
+
+@_spi(Internal) import RevenueCat
+@_spi(Internal) @testable import RevenueCatUI
+import SwiftUI
+import XCTest
+#if canImport(UIKit)
+import UIKit
+#endif
+
+#if !os(tvOS)
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+final class FooterLayoutTests: TestCase {
+    private typealias Footer = PaywallComponent.StickyFooterComponent
+    private typealias Partial = PaywallComponent.PartialStickyFooterComponent
+
+    func testLegacyFooterHasNoLayoutOrOverrides() throws {
+        let footer = try decode(#"{"stack":{"type":"stack","components":[]}}"#)
+        XCTAssertNil(footer.layout)
+        XCTAssertNil(footer.overrides)
+    }
+
+    func testLayoutValuesRoundTrip() throws {
+        for layout in [Footer.Layout.normal, .hidden, .splitLeading, .splitTrailing] {
+            let footer = Footer(stack: .init(components: []), layout: layout)
+            let data = try JSONEncoder().encode(footer)
+            XCTAssertEqual(try JSONDecoder().decode(Footer.self, from: data), footer)
+        }
+    }
+
+    func testUnknownLayoutFallsBackToNormal() throws {
+        XCTAssertEqual(try decode(#"{"layout":"future","stack":{"type":"stack","components":[]}}"#).layout,
+                       .normal)
+    }
+
+    func testViewportOverrideUsesFullPaywallBoundsAndResetsOnResize() throws {
+        let footer = try decode(#"""
+        {"stack":{"type":"stack","components":[]},"overrides":[
+          {"conditions":[{"type":"window_width_condition","operator":">=","value":700}],
+           "properties":{"layout":"split_trailing"}}
+        ]}
+        """#)
+        let overrides = footer.overrides?.toPresentedOverrides()
+        func resolved(width: CGFloat) -> Footer.Layout {
+            Partial.buildPartial(state: .default, condition: .compact,
+                                 isEligibleForIntroOffer: false, isEligibleForPromoOffer: false,
+                                 conditionContext: .init(windowSize: CGSize(width: width, height: 600)),
+                                 with: overrides)?.layout ?? footer.layout ?? .normal
+        }
+        XCTAssertEqual(resolved(width: 390), .normal)
+        XCTAssertEqual(resolved(width: 800), .splitTrailing)
+        XCTAssertEqual(resolved(width: 390), .normal)
+    }
+
+    func testUnsupportedFooterConditionDiscardsRules() throws {
+        let footer = try decode(#"""
+        {"stack":{"type":"stack","components":[]},"overrides":[
+          {"conditions":[{"type":"future_condition"}],"properties":{"layout":"hidden"}}
+        ]}
+        """#)
+        XCTAssertTrue(PaywallComponent.stickyFooter(footer).containsUnsupportedConditions())
+        XCTAssertTrue(footer.overrides?.toPresentedOverrides(discardRules: true).isEmpty == true)
+    }
+
+    #if canImport(UIKit) && !os(watchOS)
+    @MainActor
+    func testStateHiddenFooterReconcilesSelectionOnAppearAndStateChange() throws {
+        for initiallyHidden in [true, false] {
+            let paywallState = try self.makePackagePaywallState()
+            let packageContext = PackageContext(
+                package: TestData.annualPackage,
+                variableContext: .init(packages: paywallState.packages)
+            )
+            let intro = IntroOfferEligibilityContext(introEligibilityChecker: BaseSnapshotTest.eligibleChecker)
+            let store = PaywallStateStore(declarations: [
+                "hide_footer": .init(type: "boolean", defaultValue: .bool(initiallyHidden))
+            ])
+            let view = LoadedPaywallsV2View(
+                introOfferEligibilityContext: intro,
+                paywallState: paywallState,
+                uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
+                selectedPackageContext: packageContext,
+                workflowDefaultPackage: nil,
+                onDismiss: {}
+            )
+            .environmentObject(PurchaseHandler.mock())
+            .environmentObject(intro)
+            .environmentObject(PaywallPromoOfferCache(subscriptionHistoryTracker: SubscriptionHistoryTracker()))
+            let dispose = try FooterStateHost(store: store, content: view).addToHierarchy()
+            defer { dispose() }
+            RunLoop.main.run(until: Date().addingTimeInterval(0.1))
+            XCTAssertEqual(packageContext.package?.identifier,
+                           initiallyHidden ? TestData.monthlyPackage.identifier : TestData.annualPackage.identifier)
+
+            store.apply([.set(key: "hide_footer", value: .literal(.bool(true)))])
+            RunLoop.main.run(until: Date().addingTimeInterval(0.1))
+            XCTAssertEqual(packageContext.package?.identifier, TestData.monthlyPackage.identifier)
+
+            store.apply([.set(key: "hide_footer", value: .literal(.bool(false)))])
+            RunLoop.main.run(until: Date().addingTimeInterval(0.1))
+            XCTAssertEqual(packageContext.package?.identifier, TestData.monthlyPackage.identifier,
+                           "Showing the footer again must preserve the visible body selection")
+        }
+    }
+
+    @MainActor
+    private func makePackagePaywallState() throws -> PaywallState {
+        let packages = [TestData.monthlyPackage, TestData.annualPackage]
+        let components = packages.map { package in
+            PaywallComponent.package(.init(
+                packageID: package.identifier,
+                isSelectedByDefault: package == TestData.annualPackage,
+                applePromoOfferProductCode: nil,
+                stack: .init(components: [.text(.init(text: "package", color: .init(light: .hex("#000000"))))])
+            ))
+        }
+        return try PaywallsV2View.createPaywallState(
+            componentsConfig: .init(
+                stack: .init(components: [components[0]]),
+                stickyFooter: .init(stack: .init(components: [components[1]]), layout: .normal, overrides: [.init(
+                    extendedConditions: [.state(operator: .equals, name: "hide_footer", value: .bool(true))],
+                    properties: .init(layout: .hidden)
+                )]),
+                background: .color(.init(light: .hex("#FFFFFF")))
+            ),
+            componentsLocalizations: ["en_US": ["package": .string("Package")]],
+            preferredLocales: [Locale(identifier: "en_US")],
+            defaultLocale: "en_US",
+            uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
+            offering: .init(
+                identifier: "test", serverDescription: "", availablePackages: packages, webCheckoutUrl: nil
+            ),
+            introEligibilityChecker: BaseSnapshotTest.eligibleChecker,
+            showZeroDecimalPlacePrices: false,
+            colorScheme: .light
+        ).get()
+    }
+
+    @MainActor
+    func testSplitFooterBackgroundFillsColumn() throws {
+        let size = CGSize(width: 800, height: 600)
+        for layout in [Footer.Layout.splitLeading, .splitTrailing] {
+            let footer = PaywallComponent.StackComponent(
+                components: [.stack(.init(
+                    components: [], size: .init(width: .fill, height: .fixed(40)),
+                    backgroundColor: .init(light: .hex("#00FF00"))
+                ))],
+                dimension: .vertical(.center, .center),
+                size: .init(width: .fill, height: .fit(nil)),
+                backgroundColor: .init(light: .hex("#FF0000"))
+            )
+            let viewModel = try PaywallsV2LayoutFixtures.makeRootViewModel(componentsConfig: .init(
+                stack: .init(components: [], size: .init(width: .fill, height: .fill)),
+                stickyFooter: .init(stack: footer, layout: layout),
+                background: .color(.init(light: .hex("#0000FF")))
+            ))
+            let window = self.makeWindow(viewModel: viewModel, size: size)
+            defer { window.isHidden = true }
+            let format = UIGraphicsImageRendererFormat.default()
+            format.scale = 1
+            let image = UIGraphicsImageRenderer(bounds: window.bounds, format: format).image { context in
+                window.layer.render(in: context.cgContext)
+            }
+            let columnX = layout == .splitLeading ? 200 : 600
+            try assertRedPixel(image, column: columnX, row: 4)
+            try assertRedPixel(image, column: columnX, row: 596)
+        }
+    }
+
+    @MainActor
+    func testHorizontalSplitFooterScrollAxisHonorsOverflow() throws {
+        let size = CGSize(width: 800, height: 600)
+        let cases: [(PaywallComponent.StackComponent.Overflow?, Axis?)] = [
+            (nil, .vertical), (.scroll, .horizontal), (.default, nil)
+        ]
+        for (overflow, expectedAxis) in cases {
+            let footer = PaywallComponent.StackComponent(
+                components: [.stack(.init(
+                    components: [], size: .init(width: .fixed(1200), height: .fixed(1200))
+                ))],
+                dimension: .horizontal(.top, .start),
+                overflow: overflow
+            )
+            let viewModel = try PaywallsV2LayoutFixtures.makeRootViewModel(componentsConfig: .init(
+                stack: .init(components: []),
+                stickyFooter: .init(stack: footer, layout: .splitTrailing),
+                background: .color(.init(light: .hex("#FFFFFF")))
+            ))
+            let window = self.makeWindow(viewModel: viewModel, size: size)
+            defer { window.isHidden = true }
+            let scrollViews = self.scrollViews(in: window).filter {
+                $0.convert($0.bounds, to: window).midX > size.width / 2
+            }
+            if let expectedAxis {
+                let scrollView = try XCTUnwrap(scrollViews.first)
+                XCTAssertEqual(scrollView.contentSize.height > scrollView.bounds.height, expectedAxis == .vertical)
+                XCTAssertEqual(scrollView.contentSize.width > scrollView.bounds.width, expectedAxis == .horizontal)
+            } else {
+                XCTAssertTrue(scrollViews.isEmpty)
+            }
+        }
+    }
+
+    @MainActor
+    private func makeWindow(viewModel: RootViewModel, size: CGSize) -> UIWindow {
+        let view = PaywallsV2LayoutFixtures.makeRootView(viewModel: viewModel, size: size).ignoresSafeArea()
+        let controller = UIHostingController(rootView: view)
+        let window = UIWindow(frame: CGRect(origin: .zero, size: size))
+        window.rootViewController = controller
+        window.makeKeyAndVisible()
+        controller.view.frame = window.bounds
+        window.layoutIfNeeded()
+        controller.beginAppearanceTransition(true, animated: false)
+        controller.endAppearanceTransition()
+        return window
+    }
+
+    @MainActor
+    private func scrollViews(in view: UIView) -> [UIScrollView] {
+        return (view as? UIScrollView).map { [$0] } ?? view.subviews.flatMap { self.scrollViews(in: $0) }
+    }
+
+    private func assertRedPixel(_ image: UIImage, column: Int, row: Int) throws {
+        let cgImage = try XCTUnwrap(image.cgImage)
+        var pixels = [UInt8](repeating: 0, count: cgImage.width * cgImage.height * 4)
+        let context = try XCTUnwrap(CGContext(
+            data: &pixels, width: cgImage.width, height: cgImage.height, bitsPerComponent: 8,
+            bytesPerRow: cgImage.width * 4, space: CGColorSpaceCreateDeviceRGB(),
+            bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue | CGBitmapInfo.byteOrder32Big.rawValue
+        ))
+        context.draw(cgImage, in: CGRect(x: 0, y: 0, width: cgImage.width, height: cgImage.height))
+        let offset = (row * cgImage.width + column) * 4
+        XCTAssertEqual(Array(pixels[offset..<(offset + 3)]), [255, 0, 0], "Footer background at \(column), \(row)")
+    }
+    #endif
+
+    private func decode(_ json: String) throws -> Footer {
+        let decoder = JSONDecoder()
+        decoder.keyDecodingStrategy = .convertFromSnakeCase
+        let stack = try JSONEncoder().encode(PaywallComponent.StackComponent(components: []))
+        let stackJSON = try XCTUnwrap(String(data: stack, encoding: .utf8))
+        let payload = json.replacingOccurrences(of: #"{"type":"stack","components":[]}"#, with: stackJSON)
+        return try decoder.decode(Footer.self, from: Data(payload.utf8))
+    }
+}
+
+#if canImport(UIKit) && !os(watchOS)
+@available(iOS 15.0, *)
+private struct FooterStateHost<Content: View>: View {
+
+    @ObservedObject var store: PaywallStateStore
+    let content: Content
+
+    var body: some View {
+        self.content
+            .environment(\.paywallStateValues, self.store.values)
+            .environment(\.paywallStateDefaults, self.store.defaults)
+    }
+
+}
+#endif
+#endif

@@ -1330,7 +1330,8 @@ extension TabsPackageInheritanceTests {
             (false, true, 400.0, false), (false, false, 800.0, false)
         ] {
             let context = PackageSelectionContext(
-                condition: .compact, customVariables: [:], windowSize: CGSize(width: width, height: 800),
+                condition: .compact, customVariables: [:], stateValues: [:], stateDefaults: [:],
+                windowSize: CGSize(width: width, height: 800),
                 isEligibleForIntroOffer: { _ in intro }, isEligibleForPromoOffer: { _ in promo }
             )
             let validated = tab.validatedSelection(
@@ -1339,7 +1340,7 @@ extension TabsPackageInheritanceTests {
             XCTAssertEqual(validated != nil, valid)
         }
         let unresolved = PackageSelectionContext(
-            condition: .compact, customVariables: [:],
+            condition: .compact, customVariables: [:], stateValues: [:], stateDefaults: [:], windowSize: nil,
             isEligibleForIntroOffer: { _ in true }, isEligibleForPromoOffer: { _ in true }
         )
         let pending = tab.validatedSelection(

@@ -44,9 +44,7 @@ struct ViewModelFactory {
         colorScheme: ColorScheme
     ) throws -> RootViewModel {
         // Compute global flag: if ANY component has unsupported conditions, discard all rule overrides
-        self.discardRules = componentsConfig.stack.containsUnsupportedConditions() ||
-            componentsConfig.header?.stack.containsUnsupportedConditions() == true ||
-            componentsConfig.stickyFooter?.stack.containsUnsupportedConditions() == true
+        self.discardRules = componentsConfig.containsUnsupportedConditions()
 
         let headerFirstItemMedia = componentsConfig.header.flatMap {
             !$0.stack.components.isEmpty
@@ -84,6 +82,7 @@ struct ViewModelFactory {
         )
 
         let stickyFooterViewModel = try componentsConfig.stickyFooter.flatMap {
+            let firstPackageIndex = self.packageValidator.packageInfos.count
             let stackViewModel = try toStackViewModel(
                 component: $0.stack,
                 packageValidator: self.packageValidator,
@@ -93,10 +92,14 @@ struct ViewModelFactory {
                 offering: offering,
                 colorScheme: colorScheme
             )
+            self.packageValidator.addAncestorFooter(
+                $0, startingAt: firstPackageIndex, discardRules: self.discardRules
+            )
 
             return StickyFooterComponentViewModel(
                 component: $0,
-                stackViewModel: stackViewModel
+                stackViewModel: stackViewModel,
+                discardRules: discardRules
             )
         }
 
@@ -280,7 +283,8 @@ struct ViewModelFactory {
             return .stickyFooter(
                 StickyFooterComponentViewModel(
                     component: component,
-                    stackViewModel: stackViewModel
+                    stackViewModel: stackViewModel,
+                    discardRules: discardRules
                 )
             )
         case .timeline(let component):

@@ -29,6 +29,10 @@ struct PackageVisibilityResolver {
     private let uiConfigProvider: UIConfigProvider
     private let presentedOverrides: PresentedOverrides<PresentedPackagePartial>?
     private var ancestorStacks: [(visible: Bool?, overrides: PresentedOverrides<PresentedStackPartial>?)] = []
+    private var ancestorFooter: (
+        layout: PaywallComponent.StickyFooterComponent.Layout?,
+        overrides: PresentedOverrides<PaywallComponent.PartialStickyFooterComponent>?
+    )?
     private(set) var dependsOnOfferEligibility: Bool
 
     init(
@@ -50,6 +54,13 @@ struct PackageVisibilityResolver {
             || overrides?.contains(where: \.dependsOnOfferEligibility) == true
     }
 
+    mutating func addAncestorFooter(_ component: PaywallComponent.StickyFooterComponent, discardRules: Bool) {
+        let overrides = component.overrides?.toPresentedOverrides(discardRules: discardRules)
+        self.ancestorFooter = (component.layout, overrides)
+        self.dependsOnOfferEligibility = self.dependsOnOfferEligibility
+            || overrides?.contains(where: \.dependsOnOfferEligibility) == true
+    }
+
     // swiftlint:disable:next function_parameter_count
     func visible(
         state: ComponentViewState,
@@ -58,6 +69,8 @@ struct PackageVisibilityResolver {
         isEligibleForPromoOffer: Bool,
         selectedPackageId: String?,
         customVariables: [String: CustomVariableValue],
+        footerStateValues: [String: PaywallComponent.ConditionValue] = [:],
+        footerStateDefaults: [String: PaywallComponent.ConditionValue] = [:],
         windowSize: CGSize? = nil
     ) -> Bool {
         let conditionContext = self.uiConfigProvider.conditionContext(
@@ -76,6 +89,24 @@ struct PackageVisibilityResolver {
         )
 
         guard partial?.visible ?? self.componentVisible ?? true else { return false }
+        if let ancestorFooter = self.ancestorFooter {
+            let footerConditionContext = self.uiConfigProvider.conditionContext(
+                selectedPackageId: selectedPackageId,
+                customVariables: customVariables,
+                stateValues: footerStateValues,
+                stateDefaults: footerStateDefaults,
+                windowSize: windowSize
+            )
+            let partial = PaywallComponent.PartialStickyFooterComponent.buildPartial(
+                state: state,
+                condition: condition,
+                isEligibleForIntroOffer: isEligibleForIntroOffer,
+                isEligibleForPromoOffer: isEligibleForPromoOffer,
+                conditionContext: footerConditionContext,
+                with: ancestorFooter.overrides
+            )
+            guard (partial?.layout ?? ancestorFooter.layout ?? .normal) != .hidden else { return false }
+        }
         return self.ancestorStacks.allSatisfy { ancestor in
             let partial = PresentedStackPartial.buildPartial(
                 state: state,

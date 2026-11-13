@@ -467,6 +467,16 @@ extension Array {
 
 // MARK: - Unsupported Condition Validation
 
+extension PaywallComponentsData.PaywallComponentsConfig {
+
+    func containsUnsupportedConditions() -> Bool {
+        self.stack.containsUnsupportedConditions() ||
+        self.header?.stack.containsUnsupportedConditions() == true ||
+        self.stickyFooter.map { PaywallComponent.stickyFooter($0).containsUnsupportedConditions() } == true
+    }
+
+}
+
 extension PaywallComponent {
 
     // swiftlint:disable:next cyclomatic_complexity
@@ -495,7 +505,8 @@ extension PaywallComponent {
         case .purchaseButton(let component):
             return component.stack.containsUnsupportedConditions()
         case .stickyFooter(let component):
-            return component.stack.containsUnsupportedConditions()
+            return component.overrides?.hasUnsupportedCondition() == true ||
+                component.stack.containsUnsupportedConditions()
         case .timeline(let component):
             return component.containsUnsupportedConditions()
         case .tabs(let component):
