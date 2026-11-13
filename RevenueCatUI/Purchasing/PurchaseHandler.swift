@@ -36,9 +36,9 @@ final class PurchaseHandler: ObservableObject {
 
     }
 
-    private var cancellables: Set<AnyCancellable> = Set()
-
     var appUserID: String { self.purchases.appUserID }
+
+    private var cancellables: Set<AnyCancellable> = Set()
 
     private let purchases: PaywallPurchasesType
     private let customerCenterPreviewContext: (@Sendable () -> (appUserID: String, isSandbox: Bool))?
