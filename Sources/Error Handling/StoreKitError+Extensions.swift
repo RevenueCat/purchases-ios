@@ -120,9 +120,6 @@ extension Product.PurchaseError: PurchasesErrorConvertible {
         #endif
 
         #if ENABLE_MULTISEAT_PURCHASES
-        // These errors first became available in Xcode/iOS 27.3. Xcode 27.3 ships with Swift 6.4.2,
-        // which is also included with Xcode 27.2, so we can't use the standard #if compiler(>=X.Y.Z)
-        // check. Xcode 27.3 ships StoreKit module version 816.2.10, so we gate on that instead.
         case .multiSeatPurchaseDisabled,
              .seatReductionNotAllowed:
             return ErrorUtils.purchaseNotAllowedError(error: self)
