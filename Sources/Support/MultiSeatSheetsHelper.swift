@@ -28,6 +28,7 @@ internal class MultiSeatSheetsHelper {
     @available(macOS, unavailable)
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
+    @MainActor
     func presentMultiSeatInvitationSheet(
         for product: StoreProduct,
         from controller: UIViewController
