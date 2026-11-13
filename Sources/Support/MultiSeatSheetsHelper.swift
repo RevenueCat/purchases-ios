@@ -47,7 +47,8 @@ internal class MultiSeatSheetsHelper {
     /// Determines if a multiseat sheet can be presented by the OS for a given StoreProduct.
     /// - Parameter storeProduct: The product that you would like to present a multiseat sheet for.
     /// - Throws: If a sheet cannot be presented
-    /// - Returns: The subscription group identifier for the product, if the OS can present a multiseat sheet for the product.
+    /// - Returns: The subscription group identifier for the product, if the OS can present a multiseat sheet
+    /// for the product.
     @available(iOS 27.3, macOS 27.3, tvOS 27.3, visionOS 27.3, watchOS 27.3, *)
     private func validateCanPresentMultiSeatSheet(for storeProduct: StoreProduct) throws -> String {
         guard self.systemInfo.storeKitVersion.isStoreKit2EnabledAndAvailable else {
@@ -76,7 +77,8 @@ internal class MultiSeatSheetsHelper {
 
         guard let subscriptionGroupIdentifier = storeProduct.subscriptionGroupIdentifier else {
             throw ErrorUtils.unsupportedError(
-                message: "Cannot present multiseat sheet for this product: the subscription group identifier is missing."
+                message: "Cannot present multiseat sheet for this product: " +
+                "the subscription group identifier is missing."
             )
         }
 
