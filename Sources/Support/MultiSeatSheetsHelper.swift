@@ -119,9 +119,11 @@ extension MultiSeatSheetsHelper {
         func doesProductSupportMultiSeatPurchase(
             storeProduct: StoreProduct
         ) -> Bool {
+            #if DEBUG
             if let overrideValue {
                 return overrideValue
             }
+            #endif
 
             #if ENABLE_MULTISEAT_PURCHASES
             if #available(iOS 27.3, macOS 27.3, tvOS 27.3, visionOS 27.3, watchOS 27.3, *) {
