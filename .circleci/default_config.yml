@@ -1067,6 +1067,33 @@ jobs:
           path: fastlane/test_output
       - github-notify-pr-on-fail
 
+  # Core unit tests on the Xcode 27.3 beta image, with ENABLE_MULTISEAT_PURCHASES enabled.
+  run-test-ios-latest-beta:
+    executor:
+      name: macos-executor
+      xcode_version: "27.3"
+
+    steps:
+      - checkout
+      - install-dependencies
+      - run:
+          name: Run iOS 27.3 tests
+          command: bundle exec fastlane test_ios
+          no_output_timeout: 15m
+          environment:
+            SCAN_DEVICE: iPhone 17 (27.3)
+            RC_STOREKIT_TEST_PREFLIGHT: "1"
+            SCAN_XCARGS: -collect-test-diagnostics never SWIFT_ACTIVE_COMPILATION_CONDITIONS='$(inherited) ENABLE_MULTISEAT_PURCHASES'
+      - compress_result_bundle:
+          directory: fastlane/test_output/xctest/ios
+          bundle_name: RevenueCat
+      - store_test_results:
+          path: fastlane/test_output
+      - store_artifacts:
+          path: fastlane/test_output/xctest
+          destination: scan-test-output-ios-latest-beta
+      - github-notify-pr-on-fail
+
   run-test-ios-26:
     executor:
       name: macos-executor
@@ -2452,6 +2479,12 @@ workflows:
           context:
             - slack-secrets
       - backend-integration-tests-offline:
+          requires:
+            - approve-full-tests
+          context:
+            - slack-secrets
+
+      - run-test-ios-latest-beta:
           requires:
             - approve-full-tests
           context:
