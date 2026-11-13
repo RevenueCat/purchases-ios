@@ -24,6 +24,7 @@ internal extension Tracking {
         func trackAdOpened(_ data: AdOpened)
         func trackAdRevenue(_ data: AdRevenue)
         func trackAdFailedToLoad(_ data: AdFailedToLoad)
+        func trackAdRewardEarnedUnverified(_ data: AdRewardEarnedUnverified)
     }
 
 }

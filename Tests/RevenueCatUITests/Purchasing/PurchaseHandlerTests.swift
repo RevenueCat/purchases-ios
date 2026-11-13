@@ -42,6 +42,95 @@ class PurchaseHandlerTests: TestCase {
         expect(handler.restoreError).to(beNil())
     }
 
+    func testCustomPurchaseSuccessClearsLoadingState() async throws {
+        try await self.checkCustomPurchaseLoadingState(userCancelled: false, error: nil)
+    }
+
+    func testCustomPurchaseCancellationClearsLoadingState() async throws {
+        try await self.checkCustomPurchaseLoadingState(userCancelled: true, error: nil)
+    }
+
+    func testCustomPurchaseFailureClearsLoadingState() async throws {
+        try await self.checkCustomPurchaseLoadingState(userCancelled: false, error: ErrorCode.storeProblemError)
+    }
+
+    func testCustomPurchaseCustomerInfoFailureClearsLoadingState() async throws {
+        let purchases = MockPurchases(purchasesAreCompletedBy: .myApp) { _, _, _ in
+            XCTFail("The app must complete its own purchase")
+            return (nil, TestData.customerInfo, false)
+        } restorePurchases: {
+            TestData.customerInfo
+        } trackEvent: { _ in
+        } customerInfo: {
+            throw ErrorCode.networkError
+        }
+        let handler = PurchaseHandler(
+            purchases: purchases,
+            performPurchase: { _ in (false, nil) },
+            eventTracker: .init(purchases: purchases)
+        )
+
+        do {
+            try await handler.purchase(package: TestData.packageWithIntroOffer)
+            XCTFail("Expected the customer info error")
+        } catch {
+            XCTAssertEqual(error as? ErrorCode, .networkError)
+        }
+
+        XCTAssertNil(handler.packageBeingPurchased)
+        XCTAssertFalse(handler.actionInProgress)
+    }
+
+    func testCustomPurchaseCanRetryAfterCancellation() async throws {
+        var packages: [Package] = []
+        let handler = PurchaseHandler.mock(purchasesAreCompletedBy: .myApp, performPurchase: { package in
+            packages.append(package)
+            return (userCancelled: packages.count == 1, error: nil)
+        })
+
+        try await handler.purchase(package: TestData.packageWithIntroOffer)
+        XCTAssertNil(handler.packageBeingPurchased)
+        expect(handler.purchaseResult) == .cancelled
+
+        try await handler.purchase(package: TestData.annualPackage)
+        XCTAssertNil(handler.packageBeingPurchased)
+        XCTAssertFalse(handler.actionInProgress)
+        XCTAssertEqual(packages.count, 2)
+        XCTAssertTrue(packages[0] === TestData.packageWithIntroOffer)
+        XCTAssertTrue(packages[1] === TestData.annualPackage)
+        expect(handler.purchaseResult) == .purchased(transaction: nil, customerInfo: TestData.customerInfo)
+    }
+
+    private func checkCustomPurchaseLoadingState(userCancelled: Bool, error expectedError: Error?) async throws {
+        weak var handlerReference: PurchaseHandler?
+        let handler = PurchaseHandler.mock(purchasesAreCompletedBy: .myApp, performPurchase: { package in
+            XCTAssertTrue(handlerReference?.packageBeingPurchased === package)
+            XCTAssertTrue(handlerReference?.actionInProgress == true)
+            return (userCancelled, expectedError)
+        })
+        handlerReference = handler
+
+        do {
+            try await handler.purchase(package: TestData.packageWithIntroOffer)
+            XCTAssertNil(expectedError)
+        } catch {
+            XCTAssertNotNil(expectedError)
+            XCTAssertEqual(error as? ErrorCode, expectedError as? ErrorCode)
+        }
+
+        XCTAssertNil(handler.packageBeingPurchased)
+        XCTAssertFalse(handler.actionInProgress)
+        XCTAssertFalse(handler.restoreInProgress)
+        if expectedError != nil {
+            XCTAssertNotNil(handler.purchaseError)
+            XCTAssertNil(handler.purchaseResult)
+        } else if userCancelled {
+            expect(handler.purchaseResult) == .cancelled
+        } else {
+            expect(handler.purchaseResult) == .purchased(transaction: nil, customerInfo: TestData.customerInfo)
+        }
+    }
+
     func testPurchaseSetsCustomerInfo() async throws {
         let handler: PurchaseHandler = .mock()
 
@@ -235,6 +324,151 @@ class PurchaseHandlerTests: TestCase {
             return false
         }))
         expect(cancelEvent.data.productId) == TestData.packageWithIntroOffer.storeProduct.productIdentifier
+    }
+
+    #if !os(tvOS)
+    func testCustomPurchaseReceivesSelectedPromotionalOffer() async throws {
+        let offer = self.promotionalOffer
+        var receivedContext: PaywallPurchaseContext?
+        let logic = MyAppPurchaseLogic(performPurchaseWithContext: { context in
+            receivedContext = context
+            return (userCancelled: false, error: nil)
+        }, performRestore: { (success: true, error: nil) })
+        let handler = PurchaseHandler.mock(
+            purchasesAreCompletedBy: .myApp,
+            performRestore: logic.performRestore,
+            performPurchaseWithContext: logic.performPurchaseWithContext
+        )
+
+        try await handler.purchase(package: TestData.packageWithIntroOffer, promotionalOffer: offer)
+
+        let context = try XCTUnwrap(receivedContext)
+        XCTAssertTrue(context.package === TestData.packageWithIntroOffer)
+        XCTAssertTrue(context.promotionalOffer === offer)
+        expect(handler.purchaseResult) == .purchased(transaction: nil, customerInfo: TestData.customerInfo)
+    }
+    #endif
+
+    func testCustomPurchaseWithoutOfferReceivesNil() async throws {
+        var receivedContext: PaywallPurchaseContext?
+        let handler = PurchaseHandler.mock(purchasesAreCompletedBy: .myApp, performPurchaseWithContext: { context in
+            receivedContext = context
+            return (userCancelled: false, error: nil)
+        })
+
+        try await handler.purchase(package: TestData.packageWithIntroOffer)
+
+        let context = try XCTUnwrap(receivedContext)
+        XCTAssertTrue(context.package === TestData.packageWithIntroOffer)
+        XCTAssertNil(context.promotionalOffer)
+    }
+
+    #if !os(tvOS)
+    func testLegacyCustomPurchaseStillReceivesPackageWhenOfferIsSelected() async throws {
+        var receivedPackage: Package?
+        let logic = MyAppPurchaseLogic(performPurchase: { package in
+            receivedPackage = package
+            return (userCancelled: false, error: nil)
+        }, performRestore: { (success: true, error: nil) })
+        let handler = PurchaseHandler.mock(purchasesAreCompletedBy: .myApp,
+                                           performPurchase: logic.performPurchase)
+
+        try await handler.purchase(package: TestData.packageWithIntroOffer, promotionalOffer: self.promotionalOffer)
+
+        XCTAssertTrue(receivedPackage === TestData.packageWithIntroOffer)
+        expect(handler.purchaseResult) == .purchased(transaction: nil, customerInfo: TestData.customerInfo)
+        _ = await logic.performPurchaseWithContext(.init(package: TestData.packageWithIntroOffer,
+                                                         promotionalOffer: self.promotionalOffer))
+        XCTAssertTrue(receivedPackage === TestData.packageWithIntroOffer)
+    }
+    #endif
+
+    func testContextPurchaseCancellation() async throws {
+        let handler = PurchaseHandler.mock(purchasesAreCompletedBy: .myApp, performPurchaseWithContext: { _ in
+            return (userCancelled: true, error: nil)
+        })
+
+        try await handler.purchase(package: TestData.packageWithIntroOffer, promotionalOffer: self.promotionalOffer)
+
+        expect(handler.purchaseResult) == .cancelled
+        XCTAssertFalse(handler.actionInProgress)
+        XCTAssertNil(handler.purchaseError)
+    }
+
+    func testContextPurchaseError() async throws {
+        let handler = PurchaseHandler.mock(purchasesAreCompletedBy: .myApp, performPurchaseWithContext: { _ in
+            return (userCancelled: false, error: ErrorCode.storeProblemError)
+        })
+
+        do {
+            try await handler.purchase(package: TestData.packageWithIntroOffer, promotionalOffer: self.promotionalOffer)
+            XCTFail("Expected the custom purchase error")
+        } catch {
+            XCTAssertEqual(error as? ErrorCode, .storeProblemError)
+        }
+
+        XCTAssertNotNil(handler.purchaseError)
+        XCTAssertFalse(handler.actionInProgress)
+    }
+
+    func testRevenueCatManagedPurchaseDoesNotCallCustomContextCallback() async throws {
+        let handler = PurchaseHandler.mock(performPurchaseWithContext: { _ in
+            XCTFail("RevenueCat-managed purchases must not invoke the custom callback")
+            return (userCancelled: false, error: nil)
+        })
+
+        try await handler.purchase(package: TestData.packageWithIntroOffer, promotionalOffer: self.promotionalOffer)
+
+        expect(handler.purchaseResult) == .purchased(transaction: nil, customerInfo: TestData.customerInfo)
+    }
+
+    #if !os(tvOS)
+    func testContextLogicKeepsLegacyPurchasePropertyCallable() async {
+        var receivedContext: PaywallPurchaseContext?
+        let logic = MyAppPurchaseLogic(performPurchaseWithContext: { context in
+            receivedContext = context
+            return (userCancelled: true, error: nil)
+        }, performRestore: { (success: true, error: nil) })
+
+        let result = await logic.performPurchase(TestData.packageWithIntroOffer)
+
+        XCTAssertTrue(result.userCancelled)
+        XCTAssertTrue(receivedContext?.package === TestData.packageWithIntroOffer)
+        XCTAssertNil(receivedContext?.promotionalOffer)
+    }
+
+    #endif
+
+    #if canImport(UIKit) && !os(tvOS) && !os(watchOS)
+
+    func testObjectiveCContextHandlerBridgePreservesOfferAndResults() async throws {
+        let delegate = ContextPurchaseHandlerSpy()
+        let bridged = PaywallViewController.bridgePurchaseHandlerWithContext(delegate)
+        let context = PaywallPurchaseContext(package: TestData.packageWithIntroOffer,
+                                             promotionalOffer: self.promotionalOffer)
+
+        let purchaseResult = await bridged.performPurchaseWithContext(context)
+        let restoreResult = await bridged.performRestore()
+
+        XCTAssertTrue(delegate.context === context)
+        XCTAssertTrue(purchaseResult.userCancelled)
+        XCTAssertEqual(purchaseResult.error as? ErrorCode, .storeProblemError)
+        XCTAssertTrue(restoreResult.success)
+        XCTAssertNil(restoreResult.error)
+    }
+    #endif
+
+    private var promotionalOffer: PromotionalOffer {
+        PromotionalOffer(
+            discount: MockStoreProductDiscount(
+                offerIdentifier: "promo", currencyCode: "USD", price: 1, localizedPriceString: "$1.00",
+                paymentMode: .payAsYouGo, subscriptionPeriod: .init(value: 1, unit: .month),
+                numberOfPeriods: 1, type: .promotional
+            ),
+            signedData: .init(
+                identifier: "promo", keyIdentifier: "key", nonce: UUID(), signature: "signature", timestamp: 1234
+            )
+        )
     }
 
     func testCancellingAPurchaseCompletedByMyAppDoesNotNeedCustomerInfo() async throws {
@@ -1026,4 +1260,556 @@ private final class KeyWindowFocusResignerSpy: KeyWindowFocusResigning {
 
 }
 
+#endif
+
+#if canImport(UIKit) && !os(tvOS) && !os(watchOS)
+@available(iOS 15.0, *)
+private final class ContextPurchaseHandlerSpy: NSObject, PaywallPurchaseHandlerWithContext {
+
+    var context: PaywallPurchaseContext?
+
+    func performPurchase(with context: PaywallPurchaseContext,
+                         completion: @escaping (Bool, Error?) -> Void) {
+        self.context = context
+        completion(true, ErrorCode.storeProblemError)
+    }
+
+    func performRestore(completion: @escaping (Bool, Error?) -> Void) {
+        completion(true, nil)
+    }
+
+}
+#endif
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@MainActor
+final class CustomPurchaseCompatibilityTests: TestCase {
+
+    func testLegacyPurchaseSuccessWithAndWithoutOffer() async throws {
+        try await self.checkPurchase(usesContext: false, userCancelled: false, error: nil)
+    }
+
+    func testContextPurchaseSuccessWithAndWithoutOffer() async throws {
+        try await self.checkPurchase(usesContext: true, userCancelled: false, error: nil)
+    }
+
+    func testLegacyPurchaseCancellationWithAndWithoutOffer() async throws {
+        try await self.checkPurchase(usesContext: false, userCancelled: true, error: nil)
+    }
+
+    func testContextPurchaseCancellationWithAndWithoutOffer() async throws {
+        try await self.checkPurchase(usesContext: true, userCancelled: true, error: nil)
+    }
+
+    func testLegacyPurchaseFailureWithAndWithoutOffer() async throws {
+        try await self.checkPurchase(usesContext: false, userCancelled: false, error: Self.purchaseError)
+    }
+
+    func testContextPurchaseFailureWithAndWithoutOffer() async throws {
+        try await self.checkPurchase(usesContext: true, userCancelled: false, error: Self.purchaseError)
+    }
+
+    func testLegacyCancellationWithErrorPreservesErrorPrecedence() async throws {
+        try await self.checkPurchase(usesContext: false, userCancelled: true, error: Self.purchaseError)
+    }
+
+    func testContextCancellationWithErrorPreservesErrorPrecedence() async throws {
+        try await self.checkPurchase(usesContext: true, userCancelled: true, error: Self.purchaseError)
+    }
+
+    func testCustomerInfoFailureDoesNotRepeatEitherCustomPurchase() async throws {
+        for usesContext in [false, true] {
+            var purchaseCount = 0
+            let expectedError = Self.purchaseError
+            let purchases = Self.purchases(customerInfo: { throw expectedError })
+            let callback: PerformPurchase = { _ in
+                purchaseCount += 1
+                return (userCancelled: false, error: nil)
+            }
+            let contextCallback: PerformPurchaseWithContext = { context in await callback(context.package) }
+            let handler = PurchaseHandler(
+                purchases: purchases,
+                performPurchase: usesContext ? nil : callback,
+                performPurchaseWithContext: usesContext ? contextCallback : nil,
+                eventTracker: .init(purchases: purchases)
+            )
+
+            do {
+                try await handler.purchase(package: TestData.packageWithIntroOffer)
+                XCTFail("Expected the customer info error")
+            } catch {
+                XCTAssertTrue(error as NSError === Self.purchaseError)
+            }
+
+            XCTAssertEqual(purchaseCount, 1)
+            XCTAssertFalse(handler.actionInProgress)
+            XCTAssertNil(handler.packageBeingPurchased)
+            XCTAssertNotNil(purchases.cachedPurchaseDataByProductID[TestData.packageWithIntroOffer.storeProduct.id])
+        }
+    }
+
+    func testRetryAfterCancellationOrFailureUsesFreshPurchaseContext() async throws {
+        for firstResult in [(userCancelled: true, error: nil as Error?), (false, Self.purchaseError as Error?)] {
+            var contexts: [PaywallPurchaseContext] = []
+            let firstOffer = Self.offer(identifier: "first")
+            let secondOffer = Self.offer(identifier: "second")
+            let handler = PurchaseHandler.mock(purchasesAreCompletedBy: .myApp, performPurchaseWithContext: { context in
+                contexts.append(context)
+                return contexts.count == 1 ? firstResult : (userCancelled: false, error: nil)
+            })
+            do {
+                try await handler.purchase(package: TestData.packageWithIntroOffer, promotionalOffer: firstOffer)
+            } catch {
+                XCTAssertTrue(error as NSError === Self.purchaseError)
+            }
+            XCTAssertNil(handler.packageBeingPurchased)
+
+            try await handler.purchase(package: TestData.annualPackage, promotionalOffer: secondOffer)
+
+            XCTAssertEqual(contexts.count, 2)
+            XCTAssertTrue(contexts[0].package === TestData.packageWithIntroOffer)
+            XCTAssertTrue(contexts[0].promotionalOffer === firstOffer)
+            XCTAssertTrue(contexts[1].package === TestData.annualPackage)
+            XCTAssertTrue(contexts[1].promotionalOffer === secondOffer)
+            XCTAssertNil(handler.purchaseError)
+            XCTAssertNil(handler.packageBeingPurchased)
+            expect(handler.purchaseResult) == .purchased(transaction: nil, customerInfo: TestData.customerInfo)
+        }
+    }
+
+    #if !os(tvOS)
+    func testContextCallbackSurvivesBothDefaultFactories() async throws {
+        for throughLogic in [false, true] {
+            var received: PaywallPurchaseContext?
+            let callback: PerformPurchaseWithContext = { context in
+                received = context
+                return (true, Self.purchaseError)
+            }
+            let restore: PerformRestore = { (false, Self.purchaseError) }
+            let handler: PurchaseHandler
+            if throughLogic {
+                handler = .default(myAppPurchaseLogic: .init(
+                    performPurchaseWithContext: callback,
+                    performRestore: restore
+                ))
+            } else {
+                handler = .default(performRestore: restore, performPurchaseWithContext: callback)
+            }
+            let context = PaywallPurchaseContext(package: TestData.annualPackage,
+                                                 promotionalOffer: Self.offer(identifier: "factory"))
+
+            let result = await (try XCTUnwrap(handler.performPurchaseWithContext))(context)
+            let restored = await (try XCTUnwrap(handler.performRestore))()
+
+            XCTAssertTrue(received === context)
+            XCTAssertTrue(result.userCancelled)
+            XCTAssertTrue(result.error as NSError? === Self.purchaseError)
+            XCTAssertFalse(restored.success)
+            XCTAssertTrue(restored.error as NSError? === Self.purchaseError)
+        }
+    }
+
+    func testLegacyMultipleTrailingClosuresPreserveResults() async {
+        var purchaseCalls = 0
+        var restoreCalls = 0
+        let logic = MyAppPurchaseLogic { _ in
+            purchaseCalls += 1
+            return (userCancelled: true, error: Self.purchaseError)
+        } performRestore: {
+            restoreCalls += 1
+            return (success: false, error: Self.purchaseError)
+        }
+
+        let result = await logic.performPurchaseWithContext(.init(
+            package: TestData.annualPackage,
+            promotionalOffer: Self.offer(identifier: "legacy-trailing")
+        ))
+        let restored = await logic.performRestore()
+
+        XCTAssertEqual(purchaseCalls, 1)
+        XCTAssertEqual(restoreCalls, 1)
+        XCTAssertTrue(result.userCancelled)
+        XCTAssertTrue(result.error as NSError? === Self.purchaseError)
+        XCTAssertFalse(restored.success)
+        XCTAssertTrue(restored.error as NSError? === Self.purchaseError)
+    }
+
+    func testUnlabeledPurchaseClosureKeepsReceivingPackage() async {
+        var receivedArgument: Any?
+        // Erase the argument's type so the callback body cannot influence overload selection.
+        let logic = MyAppPurchaseLogic { argument in
+            receivedArgument = argument
+            return (userCancelled: true, error: nil)
+        } performRestore: {
+            (success: true, error: nil)
+        }
+        let context = PaywallPurchaseContext(package: TestData.annualPackage,
+                                             promotionalOffer: Self.offer(identifier: "overload-selection"))
+
+        _ = await logic.performPurchaseWithContext(context)
+
+        XCTAssertTrue((receivedArgument as? Package) === context.package)
+    }
+
+    func testContextMultipleTrailingClosuresPreserveContextAndResults() async {
+        var receivedContext: PaywallPurchaseContext?
+        var restoreCalls = 0
+        // Exercise the public trailing-closure syntax so overload regressions fail to compile.
+        // swiftlint:disable multiple_closures_with_trailing_closure
+        let logic = MyAppPurchaseLogic(performPurchaseWithContext: { context in
+            receivedContext = context
+            return (userCancelled: true, error: Self.purchaseError)
+        }) {
+            restoreCalls += 1
+            return (success: false, error: Self.purchaseError)
+        }
+        // swiftlint:enable multiple_closures_with_trailing_closure
+        let context = PaywallPurchaseContext(package: TestData.annualPackage,
+                                             promotionalOffer: Self.offer(identifier: "context-trailing"))
+
+        let result = await logic.performPurchaseWithContext(context)
+        let restored = await logic.performRestore()
+
+        XCTAssertTrue(receivedContext === context)
+        XCTAssertTrue(result.userCancelled)
+        XCTAssertTrue(result.error as NSError? === Self.purchaseError)
+        XCTAssertEqual(restoreCalls, 1)
+        XCTAssertFalse(restored.success)
+        XCTAssertTrue(restored.error as NSError? === Self.purchaseError)
+    }
+
+    func testLegacyCallbackSurvivesBothDefaultFactories() async throws {
+        for throughLogic in [false, true] {
+            var received: Package?
+            let callback: PerformPurchase = { package in
+                received = package
+                return (false, Self.purchaseError)
+            }
+            let handler: PurchaseHandler
+            if throughLogic {
+                handler = .default(myAppPurchaseLogic: .init(
+                    performPurchase: callback,
+                    performRestore: { (true, nil) }
+                ))
+            } else {
+                handler = .default(performPurchase: callback)
+            }
+            let context = PaywallPurchaseContext(package: TestData.annualPackage,
+                                                 promotionalOffer: Self.offer(identifier: "legacy"))
+
+            let result = await (try XCTUnwrap(handler.performPurchaseWithContext))(context)
+
+            XCTAssertTrue(received === context.package)
+            XCTAssertFalse(result.userCancelled)
+            XCTAssertTrue(result.error as NSError? === Self.purchaseError)
+        }
+    }
+
+    func testNoCustomLogicLeavesBothCallbacksUnset() {
+        let handler = PurchaseHandler.default(myAppPurchaseLogic: nil)
+        XCTAssertNil(handler.performPurchaseWithContext)
+        XCTAssertNil(handler.performRestore)
+    }
+
+    func testMyAppLogicAdaptersPreserveAllResults() async {
+        for usesContext in [false, true] {
+            for cancelled in [false, true] {
+                for error in [nil, Self.purchaseError] {
+                    var receivedPackage: Package?
+                    var receivedOffer: PromotionalOffer?
+                    let legacy: PerformPurchase = { package in
+                        receivedPackage = package
+                        return (cancelled, error)
+                    }
+                    let contextual: PerformPurchaseWithContext = { context in
+                        receivedPackage = context.package
+                        receivedOffer = context.promotionalOffer
+                        return (cancelled, error)
+                    }
+                    let restore: PerformRestore = { (true, nil) }
+                    let logic = usesContext
+                        ? MyAppPurchaseLogic(performPurchaseWithContext: contextual, performRestore: restore)
+                        : MyAppPurchaseLogic(performPurchase: legacy, performRestore: restore)
+                    let offer = Self.offer(identifier: "adapter")
+                    let result = await logic.performPurchaseWithContext(.init(package: TestData.annualPackage,
+                                                                              promotionalOffer: offer))
+                    XCTAssertTrue(receivedPackage === TestData.annualPackage)
+                    XCTAssertTrue(receivedOffer === (usesContext ? offer : nil))
+                    XCTAssertEqual(result.userCancelled, cancelled)
+                    XCTAssertTrue(result.error as NSError? === error)
+
+                    let legacyResult = await logic.performPurchase(TestData.packageWithIntroOffer)
+                    XCTAssertTrue(receivedPackage === TestData.packageWithIntroOffer)
+                    XCTAssertNil(receivedOffer)
+                    XCTAssertEqual(legacyResult.userCancelled, cancelled)
+                    XCTAssertTrue(legacyResult.error as NSError? === error)
+                }
+            }
+        }
+    }
+
+    func testContextAwareLogicPreservesRestoreSuccessFailureAndErrors() async throws {
+        for success in [false, true] {
+            for error in [nil, Self.purchaseError] {
+                var restoreCalls = 0
+                let logic = MyAppPurchaseLogic(performPurchaseWithContext: { _ in
+                    XCTFail("Restoring must not execute a purchase")
+                    return (false, nil)
+                }, performRestore: {
+                    restoreCalls += 1
+                    return (success, error)
+                })
+                let handler = PurchaseHandler.mock(
+                    purchasesAreCompletedBy: .myApp,
+                    performRestore: logic.performRestore,
+                    performPurchaseWithContext: logic.performPurchaseWithContext
+                )
+                do {
+                    let result = try await handler.restorePurchases()
+                    XCTAssertNil(error)
+                    XCTAssertEqual(result.success, success)
+                    XCTAssertTrue(result.info === TestData.customerInfo)
+                } catch let caught {
+                    XCTAssertNotNil(error)
+                    XCTAssertTrue(caught as NSError === error)
+                }
+                XCTAssertEqual(restoreCalls, 1)
+                XCTAssertFalse(handler.restoreInProgress)
+                XCTAssertFalse(handler.actionInProgress)
+                XCTAssertEqual(handler.restoreError as NSError?, error)
+            }
+        }
+    }
+    #endif
+
+    func testRevenueCatManagedPurchaseReceivesOfferWithoutCallingEitherCustomHandler() async throws {
+        let received = Atomic<PaywallPurchaseContext?>(nil)
+        let offer = Self.offer(identifier: "native")
+        let purchases = Self.purchases(purchasesAreCompletedBy: .revenueCat, purchase: { package, offer, _ in
+            received.value = .init(package: package, promotionalOffer: offer)
+            return (nil, TestData.customerInfo, false)
+        })
+        let handler = PurchaseHandler(
+            purchases: purchases,
+            performPurchase: { _ in
+                XCTFail("The legacy custom handler must not run")
+                return (false, nil)
+            },
+            performPurchaseWithContext: { _ in
+                XCTFail("The context custom handler must not run")
+                return (false, nil)
+            },
+            eventTracker: .init(purchases: purchases)
+        )
+
+        try await handler.purchase(package: TestData.packageWithIntroOffer, promotionalOffer: offer)
+
+        let context = try XCTUnwrap(received.value)
+        XCTAssertTrue(context.package === TestData.packageWithIntroOffer)
+        XCTAssertTrue(context.promotionalOffer === offer)
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+fileprivate extension CustomPurchaseCompatibilityTests {
+
+    static let purchaseError = NSError(domain: "CustomPurchaseCompatibilityTests", code: 42)
+
+    func checkPurchase(usesContext: Bool, userCancelled: Bool, error expectedError: NSError?) async throws {
+        for offer in [nil, Self.offer(identifier: "selected")] {
+            let infoCalls = Atomic(0)
+            let purchases = Self.purchases(customerInfo: {
+                infoCalls.modify { $0 += 1 }
+                return TestData.customerInfo
+            })
+            let package = TestData.packageWithIntroOffer
+            var callbackCount = 0
+            weak var handlerReference: PurchaseHandler?
+            let callback: PerformPurchaseWithContext = { context in
+                callbackCount += 1
+                XCTAssertTrue(context.package === package)
+                XCTAssertTrue(context.promotionalOffer === (usesContext ? offer : nil))
+                XCTAssertTrue(handlerReference?.packageBeingPurchased === package)
+                XCTAssertTrue(handlerReference?.actionInProgress == true)
+                let cached = purchases.cachedPurchaseDataByProductID[package.storeProduct.id]
+                XCTAssertEqual(cached?.presentedOfferingContext.offeringIdentifier,
+                               package.presentedOfferingContext.offeringIdentifier)
+                XCTAssertNotNil(cached?.paywallEvent)
+                return (userCancelled, expectedError)
+            }
+            let legacyCallback: PerformPurchase = { package in
+                await callback(.init(package: package, promotionalOffer: nil))
+            }
+            let handler = PurchaseHandler(
+                purchases: purchases,
+                performPurchase: usesContext ? nil : legacyCallback,
+                performPurchaseWithContext: usesContext ? callback : nil,
+                eventTracker: .init(purchases: purchases)
+            )
+            handlerReference = handler
+            handler.trackPaywallImpression(.init(
+                paywallIdentifier: TestData.paywallWithIntroOffer.id,
+                offeringIdentifier: package.presentedOfferingContext.offeringIdentifier,
+                paywallRevision: TestData.paywallWithIntroOffer.revision,
+                sessionID: .init(), displayMode: .fullScreen, localeIdentifier: "en_US", darkMode: false, source: nil
+            ))
+
+            do {
+                try await handler.purchase(package: package, promotionalOffer: offer)
+                XCTAssertNil(expectedError)
+            } catch {
+                XCTAssertNotNil(expectedError)
+                XCTAssertTrue(error as NSError === expectedError)
+            }
+
+            XCTAssertEqual(callbackCount, 1)
+            XCTAssertFalse(handler.actionInProgress)
+            XCTAssertFalse(handler.restoreInProgress)
+            XCTAssertNil(handler.packageBeingPurchased)
+            XCTAssertEqual(infoCalls.value, expectedError == nil && !userCancelled ? 1 : 0)
+            XCTAssertEqual(handler.purchaseError as NSError?, expectedError)
+            if expectedError != nil {
+                XCTAssertNil(handler.purchaseResult)
+            } else if userCancelled {
+                expect(handler.purchaseResult) == .cancelled
+                expect(handler.sessionPurchaseResult) == .cancelled
+            } else {
+                expect(handler.purchaseResult) == .purchased(transaction: nil, customerInfo: TestData.customerInfo)
+                expect(handler.sessionPurchaseResult) == .purchased(
+                    transaction: nil, customerInfo: TestData.customerInfo
+                )
+            }
+            XCTAssertEqual(purchases.cachedPurchaseDataByProductID.isEmpty, userCancelled || expectedError != nil)
+        }
+    }
+
+    static func purchases(
+        purchasesAreCompletedBy: PurchasesAreCompletedBy = .myApp,
+        purchase: @escaping MockPurchases.PurchaseBlock = { _, _, _ in
+            XCTFail("RevenueCat must not make the app's purchase")
+            return (nil, TestData.customerInfo, false)
+        },
+        customerInfo: @escaping MockPurchases.CustomerInfoBlock = { TestData.customerInfo }
+    ) -> MockPurchases {
+        return MockPurchases(
+            purchasesAreCompletedBy: purchasesAreCompletedBy,
+            purchase: purchase,
+            restorePurchases: { TestData.customerInfo },
+            trackEvent: { _ in },
+            customerInfo: customerInfo
+        )
+    }
+
+    static func offer(identifier: String) -> PromotionalOffer {
+        return PromotionalOffer(
+            discount: MockStoreProductDiscount(
+                offerIdentifier: identifier, currencyCode: "USD", price: 1, localizedPriceString: "$1.00",
+                paymentMode: .payAsYouGo, subscriptionPeriod: .init(value: 1, unit: .month),
+                numberOfPeriods: 1, type: .promotional
+            ),
+            signedData: .init(identifier: identifier, keyIdentifier: "key", nonce: UUID(),
+                              signature: "signature", timestamp: 1234)
+        )
+    }
+
+}
+
+#if canImport(UIKit) && !os(tvOS) && !os(watchOS)
+@available(iOS 15.0, *)
+@MainActor
+final class ObjCPurchaseCompatibilityTests: TestCase {
+
+    func testLegacyBridgePreservesPurchaseAndRestoreResults() async throws {
+        for cancelled in [false, true] {
+            for error in [nil, NSError(domain: "ObjC legacy", code: 1)] {
+                let spy = DualPurchaseHandlerSpy()
+                spy.userCancelled = cancelled
+                spy.error = error
+                spy.restoreSuccess = !cancelled
+                let bridged = PaywallViewController.bridgePurchaseHandler(spy)
+
+                let purchased = await (try XCTUnwrap(bridged.performPurchase))(TestData.annualPackage)
+                let restored = await (try XCTUnwrap(bridged.performRestore))()
+
+                XCTAssertTrue(spy.package === TestData.annualPackage)
+                XCTAssertNil(spy.context)
+                XCTAssertEqual(spy.legacyCalls, 1)
+                XCTAssertEqual(spy.contextCalls, 0)
+                XCTAssertEqual(spy.restoreCalls, 1)
+                XCTAssertEqual(purchased.userCancelled, cancelled)
+                XCTAssertTrue(purchased.error as NSError? === error)
+                XCTAssertEqual(restored.success, !cancelled)
+                XCTAssertTrue(restored.error as NSError? === error)
+            }
+        }
+    }
+
+    func testContextBridgePreservesOfferPurchaseAndRestoreResults() async {
+        for cancelled in [false, true] {
+            for error in [nil, NSError(domain: "ObjC context", code: 2)] {
+                for offer in [nil, CustomPurchaseCompatibilityTests.offer(identifier: "objc")] {
+                    let spy = DualPurchaseHandlerSpy()
+                    spy.userCancelled = cancelled
+                    spy.error = error
+                    spy.restoreSuccess = !cancelled
+                    let bridged = PaywallViewController.bridgePurchaseHandlerWithContext(spy)
+                    let context = PaywallPurchaseContext(package: TestData.annualPackage, promotionalOffer: offer)
+
+                    let purchased = await bridged.performPurchaseWithContext(context)
+                    let restored = await bridged.performRestore()
+
+                    XCTAssertTrue(spy.context === context)
+                    XCTAssertTrue(spy.context?.promotionalOffer === offer)
+                    XCTAssertNil(spy.package)
+                    XCTAssertEqual(spy.legacyCalls, 0)
+                    XCTAssertEqual(spy.contextCalls, 1)
+                    XCTAssertEqual(spy.restoreCalls, 1)
+                    XCTAssertEqual(purchased.userCancelled, cancelled)
+                    XCTAssertTrue(purchased.error as NSError? === error)
+                    XCTAssertEqual(restored.success, !cancelled)
+                    XCTAssertTrue(restored.error as NSError? === error)
+                }
+            }
+        }
+    }
+
+    func testNilLegacyHandlerStillProducesNoCallbacks() {
+        let bridged = PaywallViewController.bridgePurchaseHandler(nil)
+        XCTAssertNil(bridged.performPurchase)
+        XCTAssertNil(bridged.performRestore)
+    }
+
+}
+
+@available(iOS 15.0, *)
+private final class DualPurchaseHandlerSpy: NSObject, PaywallPurchaseHandler, PaywallPurchaseHandlerWithContext {
+
+    var package: Package?
+    var context: PaywallPurchaseContext?
+    var userCancelled = false
+    var error: NSError?
+    var restoreSuccess = true
+    var legacyCalls = 0
+    var contextCalls = 0
+    var restoreCalls = 0
+
+    func performPurchase(for package: Package, completion: @escaping (Bool, Error?) -> Void) {
+        self.package = package
+        self.legacyCalls += 1
+        completion(self.userCancelled, self.error)
+    }
+
+    func performPurchase(with context: PaywallPurchaseContext, completion: @escaping (Bool, Error?) -> Void) {
+        self.context = context
+        self.contextCalls += 1
+        completion(self.userCancelled, self.error)
+    }
+
+    func performRestore(completion: @escaping (Bool, Error?) -> Void) {
+        self.restoreCalls += 1
+        completion(self.restoreSuccess, self.error)
+    }
+
+}
 #endif

@@ -93,14 +93,10 @@ struct PackageComponentView: View {
                 )
             }
             .environment(\.componentViewState, packageViewState)
-            // Overrides the existing PackageContext
-            .environmentObject(PackageContext(
-                // This is needed so text component children use this
-                // package and not selected package for processing variables
+            .modifier(PackageContentContextModifier(
                 package: package,
-                // However, reusing the same package variable context from parent
-                variableContext: packageContext.variableContext)
-            )
+                variableContext: self.packageContext.variableContext
+            ))
             .packageSelectorIfNeeded(
                 packageContext: self.packageContext,
                 package: package,
@@ -109,6 +105,38 @@ struct PackageComponentView: View {
                 hapticFeedbackEnabled: self.viewModel.hapticFeedbackEnabled
             )
         }
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private struct PackageContentContextModifier: ViewModifier {
+
+    @StateObject
+    private var packageContext: PackageContext
+
+    let package: Package
+    let variableContext: PackageContext.VariableContext
+
+    init(package: Package, variableContext: PackageContext.VariableContext) {
+        self.package = package
+        self.variableContext = variableContext
+        self._packageContext = StateObject(wrappedValue: PackageContext(
+            package: package,
+            variableContext: variableContext
+        ))
+    }
+
+    func body(content: Content) -> some View {
+        // Text descendants use this row's package while sharing the parent's pricing variables.
+        content
+            .environmentObject(self.packageContext)
+            .onChangeOf(self.package) { package in
+                self.packageContext.package = package
+            }
+            .onChangeOf(self.variableContext) { variableContext in
+                self.packageContext.variableContext = variableContext
+            }
     }
 
 }
