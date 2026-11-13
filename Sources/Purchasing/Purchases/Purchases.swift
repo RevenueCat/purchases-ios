@@ -334,6 +334,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
     private let diagnosticsTracker: DiagnosticsTrackerType?
     private let virtualCurrencyManager: VirtualCurrencyManagerType
     private let hostedCheckoutManager: HostedCheckoutManager
+    private let multiSeatSheetsHelper: MultiSeatSheetsHelper
 
     private let webBundleEventBus: WebBundleEventBus
 
@@ -662,6 +663,9 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         let manageSubsHelper = ManageSubscriptionsHelper(systemInfo: systemInfo,
                                                          customerInfoManager: customerInfoManager,
                                                          currentUserProvider: identityManager)
+
+        let multiSeatSheetsHelper = MultiSeatSheetsHelper(systemInfo: systemInfo)
+
         let beginRefundRequestHelper = BeginRefundRequestHelper(systemInfo: systemInfo,
                                                                 customerInfoManager: customerInfoManager,
                                                                 currentUserProvider: identityManager)
@@ -907,7 +911,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                   healthManager: healthManager,
                   transactionMetadataSyncHelper: transactionMetadataSyncHelper,
                   currentConfiguration: currentConfiguration,
-                  webBundleEventBus: webBundleEventBus
+                  webBundleEventBus: webBundleEventBus,
+                  multiSeatSheetsHelper: multiSeatSheetsHelper
         )
 
     }
@@ -950,7 +955,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
          healthManager: SDKHealthManager,
          transactionMetadataSyncHelper: TransactionMetadataSyncHelper,
          currentConfiguration: Configuration?,
-         webBundleEventBus: WebBundleEventBus
+         webBundleEventBus: WebBundleEventBus,
+         multiSeatSheetsHelper: MultiSeatSheetsHelper
     ) {
         self.webBundleEventBus = webBundleEventBus
 
@@ -1036,6 +1042,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             currentUserProvider: identityManager,
             poller: HostedCheckoutPoller.makeDefault(webBillingAPI: backend.webBilling)
         )
+        self.multiSeatSheetsHelper = multiSeatSheetsHelper
 
         super.init()
         self._authentication.internalDelegate = self
@@ -3094,6 +3101,47 @@ extension Purchases {
     }
 
 }
+
+// MARK: - Multiseat Sheet Presentations
+#if ENABLE_MULTISEAT_PURCHASES
+extension Purchases {
+
+    // UIKit
+    #if (os(iOS) || targetEnvironment(macCatalyst)) && canImport(UIKit)
+    @available(iOS 27.3, *)
+    @available(macOS, unavailable)
+    @available(watchOS, unavailable)
+    @available(tvOS, unavailable)
+    @available(visionOS, unavailable)
+    @_spi(Experimental)
+    @objc(presentMultiSeatInvitationSheetForStoreProduct:fromViewController:completion:)
+    public func presentMultiSeatInvitationSheet(
+        for storeProduct: StoreProduct,
+        from viewController: UIViewController
+    ) async throws {
+        try await self.multiSeatSheetsHelper.presentMultiSeatInvitationSheet(
+            for: storeProduct,
+            from: viewController
+        )
+    }
+
+    @available(iOS 27.3, *)
+    @available(macOS, unavailable)
+    @available(watchOS, unavailable)
+    @available(tvOS, unavailable)
+    @available(visionOS, unavailable)
+    @_spi(Experimental)
+    @objc(presentMultiSeatInvitationSheetForPackage:fromViewController:completion:)
+    public func presentMultiSeatInvitationSheet(
+        for package: Package,
+        from viewController: UIViewController
+    ) async throws {
+        try await self.presentMultiSeatInvitationSheet(for: package.storeProduct, from: viewController)
+    }
+    #endif
+
+}
+#endif
 
 internal extension Purchases {
 
