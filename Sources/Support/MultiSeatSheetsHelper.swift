@@ -51,6 +51,8 @@ internal class MultiSeatSheetsHelper {
 
         try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
             self.systemInfo.operationDispatcher.dispatchOnMainActor {
+                // `dispatchOnMainActor` takes a synchronous block, and this `Task` inherits the main actor from it.
+                _ = Task<Void, Never> {
                     do {
                         try await presenter.presentMultiSeatInvitationSheet(
                             from: controller,
@@ -64,6 +66,7 @@ internal class MultiSeatSheetsHelper {
                         continuation.resume(throwing: ErrorUtils.purchasesError(withStoreKitError: error))
                     }
                 }
+            }
         }
     }
     #endif
