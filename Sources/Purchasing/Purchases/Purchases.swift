@@ -3114,7 +3114,7 @@ extension Purchases {
     @available(tvOS, unavailable)
     @_spi(Experimental)
     @objc(presentMultiSeatInvitationSheetForStoreProduct:fromViewController:completion:)
-    func presentMultiSeatInvitationSheet(
+    public func presentMultiSeatInvitationSheet(
         for storeProduct: StoreProduct,
         from viewController: UIViewController
     ) async throws {
@@ -3130,7 +3130,7 @@ extension Purchases {
     @available(tvOS, unavailable)
     @_spi(Experimental)
     @objc(presentMultiSeatInvitationSheetForPackage:fromViewController:completion:)
-    func presentMultiSeatInvitationSheet(
+    public func presentMultiSeatInvitationSheet(
         for package: Package,
         from viewController: UIViewController
     ) async throws {
