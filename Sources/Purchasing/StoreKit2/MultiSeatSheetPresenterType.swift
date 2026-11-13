@@ -28,6 +28,7 @@ internal protocol MultiSeatSheetPresenterType: Sendable {
     @available(macOS, unavailable)
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
+    @available(visionOS, unavailable)
     @MainActor
     func presentMultiSeatInvitationSheet(
         from controller: UIViewController,
@@ -45,6 +46,7 @@ final internal class StoreKitMultiSeatSheetPresenter: MultiSeatSheetPresenterTyp
     @available(macOS, unavailable)
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
+    @available(visionOS, unavailable)
     @MainActor
     func presentMultiSeatInvitationSheet(
         from controller: UIViewController,
