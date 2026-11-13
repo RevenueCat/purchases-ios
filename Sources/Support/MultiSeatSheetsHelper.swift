@@ -17,8 +17,14 @@ internal class MultiSeatSheetsHelper {
 
     private let systemInfo: SystemInfo
 
-    init(systemInfo: SystemInfo) {
+    private let multiSeatSheetPresenter: MultiSeatSheetPresenterType
+
+    init(
+        systemInfo: SystemInfo,
+        multiSeatSheetPresenter: MultiSeatSheetPresenterType = StoreKitMultiSeatSheetPresenter()
+    ) {
         self.systemInfo = systemInfo
+        self.multiSeatSheetPresenter = multiSeatSheetPresenter
     }
 
 //    #if ENABLE_MULTISEAT_PURCHASES
@@ -37,7 +43,7 @@ internal class MultiSeatSheetsHelper {
             for: product
         )
 
-        try await AppStore.presentMultiSeatInvitationSheet(
+        try await self.multiSeatSheetPresenter.presentMultiSeatInvitationSheet(
             from: controller,
             subscriptionGroupID: subscriptionGroupIdentifier
         )
