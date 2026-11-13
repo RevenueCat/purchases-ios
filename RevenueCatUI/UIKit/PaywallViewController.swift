@@ -134,6 +134,10 @@ public class PaywallViewController: UIViewController {
 
     var exitOfferOfferingForTesting: Offering? { self.exitOfferOffering }
 
+    #if DEBUG
+    var contentForTesting: PaywallViewConfiguration.Content { self.configuration.content }
+    #endif
+
     var workflowContextForTesting: WorkflowContext? { self.configuration.injectedWorkflowContext }
 
     var presentationBridgeForTesting: PaywallPresentationBridge {
@@ -399,7 +403,7 @@ public class PaywallViewController: UIViewController {
         dismissRequestedHandler: ((_ controller: PaywallViewController) -> Void)? = nil
     ) {
         self.init(
-            content: .offeringIdentifier(offeringIdentifier, presentedOfferingContext: nil),
+            content: .offeringIdentifier(.init(offeringIdentifier), presentedOfferingContext: nil),
             fonts: fonts,
             displayCloseButton: displayCloseButton,
             shouldBlockTouchEvents: shouldBlockTouchEvents,
@@ -433,7 +437,7 @@ public class PaywallViewController: UIViewController {
         dismissRequestedHandler: ((_ controller: PaywallViewController) -> Void)? = nil
     ) {
         self.init(
-            content: .offeringIdentifier(offeringIdentifier, presentedOfferingContext: presentedOfferingContext),
+            content: .offeringIdentifier(.init(offeringIdentifier), presentedOfferingContext: presentedOfferingContext),
             fonts: fonts,
             displayCloseButton: displayCloseButton,
             shouldBlockTouchEvents: shouldBlockTouchEvents,
@@ -576,7 +580,7 @@ public class PaywallViewController: UIViewController {
     @objc(updateWithOfferingIdentifier:)
     public func update(with offeringIdentifier: String) {
         self.resetExitOfferStateForNewContent()
-        self.configuration.content = .offeringIdentifier(offeringIdentifier, presentedOfferingContext: nil)
+        self.configuration.content = .offeringIdentifier(.init(offeringIdentifier), presentedOfferingContext: nil)
     }
 
     /// - Warning: For internal use only
@@ -584,7 +588,7 @@ public class PaywallViewController: UIViewController {
     @objc(updateWithOfferingIdentifier:presentedOfferingContext:)
     public func update(with offeringIdentifier: String, presentedOfferingContext: PresentedOfferingContext?) {
         self.resetExitOfferStateForNewContent()
-        self.configuration.content = .offeringIdentifier(offeringIdentifier,
+        self.configuration.content = .offeringIdentifier(.init(offeringIdentifier),
                                                          presentedOfferingContext: presentedOfferingContext)
     }
 
