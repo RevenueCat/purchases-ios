@@ -16,15 +16,17 @@ import UIKit
 internal class MultiSeatSheetsHelper {
 
     private let systemInfo: SystemInfo
-
     private let multiSeatSheetPresenter: MultiSeatSheetPresenterType
+    private let supportsMultiSeatPurchaseCalculator: MultiSeatSheetsHelper.SupportsMultiSeatPurchaseCalculator
 
     init(
         systemInfo: SystemInfo,
-        multiSeatSheetPresenter: MultiSeatSheetPresenterType = StoreKitMultiSeatSheetPresenter()
+        multiSeatSheetPresenter: MultiSeatSheetPresenterType = StoreKitMultiSeatSheetPresenter(),
+        supportsMultiSeatPurchaseCalculator: MultiSeatSheetsHelper.SupportsMultiSeatPurchaseCalculator = .init()
     ) {
         self.systemInfo = systemInfo
         self.multiSeatSheetPresenter = multiSeatSheetPresenter
+        self.supportsMultiSeatPurchaseCalculator = supportsMultiSeatPurchaseCalculator
     }
 
 //    #if ENABLE_MULTISEAT_PURCHASES
@@ -34,6 +36,7 @@ internal class MultiSeatSheetsHelper {
     @available(macOS, unavailable)
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
+    @available(visionOS, unavailable)
     @MainActor
     func presentMultiSeatInvitationSheet(
         for product: StoreProduct,
@@ -43,10 +46,14 @@ internal class MultiSeatSheetsHelper {
             for: product
         )
 
-        try await self.multiSeatSheetPresenter.presentMultiSeatInvitationSheet(
-            from: controller,
-            subscriptionGroupID: subscriptionGroupIdentifier
-        )
+        do {
+            try await self.multiSeatSheetPresenter.presentMultiSeatInvitationSheet(
+                from: controller,
+                subscriptionGroupID: subscriptionGroupIdentifier
+            )
+        } catch {
+            throw ErrorUtils.purchasesError(withStoreKitError: error)
+        }
     }
     #endif
 
@@ -73,14 +80,6 @@ internal class MultiSeatSheetsHelper {
             )
         }
 
-        let supportsMultiSeatPurchase = (storeProduct.sk2Product?.supportsMultiSeatPurchase) ?? false
-        guard supportsMultiSeatPurchase else {
-            throw ErrorUtils.unsupportedError(
-                message: "Cannot present multiseat sheets for StoreKit 2 products " +
-                "that do not support multiseat purchases."
-            )
-        }
-
         guard let subscriptionGroupIdentifier = storeProduct.subscriptionGroupIdentifier else {
             throw ErrorUtils.unsupportedError(
                 message: "Cannot present multiseat sheet for this product: " +
@@ -88,8 +87,51 @@ internal class MultiSeatSheetsHelper {
             )
         }
 
+        // This call can be replaced with storeProduct.sk2Product?.supportsMultiSeatPurchase
+        // once multiseat subscriptions are supported in SKConfig files / SKTest.
+        guard self.supportsMultiSeatPurchaseCalculator.doesProductSupportMultiSeatPurchase(
+            storeProduct: storeProduct
+        ) else {
+            throw ErrorUtils.unsupportedError(
+                message: "Cannot present multiseat sheets for StoreKit 2 products " +
+                "that do not support multiseat purchases."
+            )
+        }
+
         return subscriptionGroupIdentifier
     }
 
 //    #endif
+}
+
+extension MultiSeatSheetsHelper {
+
+    /// Abstraction around SK2Product.supportsMultiSeatPurchase that allows us to override the value
+    /// when needed for tests. This is required as of the Xcode 27.3 beta, since SKConfig files/SKTest
+    /// don't yet support multiseat purchases. This can be removed and replaced by simply using a product
+    /// with multiseat purchases loaded from a SKConfig file in the future.
+    internal struct SupportsMultiSeatPurchaseCalculator {
+
+        private let overrideValue: Bool?
+
+        init(
+            overrideValue: Bool? = nil
+        ) {
+            self.overrideValue = overrideValue
+        }
+
+        func doesProductSupportMultiSeatPurchase(
+            storeProduct: StoreProduct
+        ) -> Bool {
+            if let overrideValue {
+                return overrideValue
+            }
+
+            if #available(iOS 27.3, macOS 27.3, tvOS 27.3, visionOS 27.3, watchOS 27.3, *) {
+                return (storeProduct.sk2Product?.supportsMultiSeatPurchase) ?? false
+            } else {
+                return false
+            }
+        }
+    }
 }
