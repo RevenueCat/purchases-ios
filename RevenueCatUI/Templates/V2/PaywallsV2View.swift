@@ -223,13 +223,13 @@ struct PaywallsV2View: View {
         if let override = selectedPackageContextOverride {
             selectedPackageContext = override
         } else if case .success(let paywallState) = initialState {
+            // `init` has no environment, so this selection is provisional until the body resolves
+            // variable and eligibility rules.
             selectedPackageContext = Self.makeSelectedPackageContext(
                 from: paywallState,
-                defaultPackage: Self.effectiveDefaultPackage(
-                    // Provisional: `init` has no environment, so variable/eligibility rules can't be
-                    // evaluated. `LoadedPaywallsV2View` reconciles once the body resolves the real context.
-                    pageDefaultPackage: paywallState.viewModelFactory.packageValidator
-                        .defaultSelectedPackage(in: .provisional),
+                defaultPackage: Self.defaultSelectedPackage(
+                    in: paywallState.viewModelFactory,
+                    context: .provisional,
                     workflowDefaultPackage: workflowDefaultPackage
                 ),
                 workflowPackages: workflowPackages,
@@ -713,9 +713,9 @@ struct LoadedPaywallsV2View: View {
     }
 
     private var defaultPackage: Package? {
-        return PaywallsV2View.effectiveDefaultPackage(
-            pageDefaultPackage: self.paywallState.viewModelFactory.packageValidator
-                .defaultSelectedPackage(in: self.packageSelectionContext),
+        return PaywallsV2View.defaultSelectedPackage(
+            in: self.paywallState.viewModelFactory,
+            context: self.packageSelectionContext,
             workflowDefaultPackage: self.workflowDefaultPackage
         )
     }
@@ -726,7 +726,7 @@ struct LoadedPaywallsV2View: View {
     /// `LoadedTabsComponentView`.
     private func reconcileSelection() {
         guard !self.selectedPackageContext.isPresentingSheet else { return }
-        let packageValidator = self.paywallState.viewModelFactory.packageValidator
+        let packageValidator = self.paywallState.viewModelFactory.rootSelectionValidator
 
         guard let resolved = packageValidator.reconciledSelection(
             current: self.selectedPackageContext.package,
@@ -751,7 +751,7 @@ struct LoadedPaywallsV2View: View {
 
     private func selectedPackageIsVisible() -> Bool {
         guard let package = self.selectedPackageContext.package else { return false }
-        return self.paywallState.viewModelFactory.packageValidator.couldBeRendering(
+        return self.paywallState.viewModelFactory.rootSelectionValidator.couldBeRendering(
             package,
             in: self.packageSelectionContext,
             offerEligibilityLoading: self.offerEligibilityLoading,
@@ -800,7 +800,8 @@ struct LoadedPaywallsV2View: View {
                 ComponentsView(
                     componentViewModels: [.root(paywallState.rootViewModel)],
                     onDismiss: self.onDismiss,
-                    defaultPackage: self.defaultPackage
+                    defaultPackage: self.defaultPackage,
+                    hasNonSheetPackages: !self.paywallState.viewModelFactory.packageValidator.packages.isEmpty
                 )
                 .fixMacButtons()
                 .environment(\.closeWorkflowAction, self.closeWorkflowAction ?? self.onDismiss)
@@ -846,6 +847,12 @@ struct LoadedPaywallsV2View: View {
             // A window resize (rotation, Split View, Stage Manager) can hide the
             // selected package via a window size condition.
             .onChangeOf(self.paywallWindowSize) { _ in
+                self.reconcileSelection()
+            }
+            .onChangeOf(self.customVariables) { _ in
+                self.reconcileSelection()
+            }
+            .onChangeOf(self.screenCondition) { _ in
                 self.reconcileSelection()
             }
         }
@@ -952,6 +959,18 @@ extension PaywallsV2View {
         workflowDefaultPackage: Package?
     ) -> Package? {
         return workflowDefaultPackage ?? pageDefaultPackage
+    }
+
+    static func defaultSelectedPackage(
+        in factory: ViewModelFactory,
+        context: PackageSelectionContext,
+        workflowDefaultPackage: Package?
+    ) -> Package? {
+        let pageDefaultPackage = factory.packageValidator.defaultSelectedPackage(in: context)
+        return Self.effectiveDefaultPackage(
+            pageDefaultPackage: pageDefaultPackage,
+            workflowDefaultPackage: workflowDefaultPackage
+        ) ?? factory.sheetPackageValidator.defaultSelectedPackage(in: context)
     }
 
     /// On-screen packages plus any inherited workflow packages, so `intro_offer_condition` overrides
