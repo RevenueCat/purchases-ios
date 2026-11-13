@@ -3270,6 +3270,7 @@ private extension Purchases {
                 self?.dispatchSyncSubscriberAttributes()
             }
         )
+        self.customerInfoManager.checkPromotionalEntitlementExpirations()
         self.transactionMetadataSyncHelper.syncIfNeeded(
             allowSharingAppStoreAccount: self.purchasesOrchestrator.allowSharingAppStoreAccount
         )
@@ -3472,6 +3473,7 @@ private extension Purchases {
 
         self.delegate?.purchases?(self, receivedUpdated: info)
         self.customerInfoManager.setLastSentCustomerInfo(info)
+        self.customerInfoManager.trackPromotionalEntitlementExpirations(of: info, appUserID: self.appUserID)
     }
 
     private func updateOfferingsCache(isAppBackgrounded: Bool) {
