@@ -29,6 +29,31 @@ class PurchaseHandlerTests: TestCase {
 
     lazy var purchaseResultPublisher = purchaseResult.dropFirst().eraseToAnyPublisher()
 
+    func testMappedHandlersReadTheCurrentIdentityFromTheOriginalPurchases() {
+        let appUserID = Atomic("customer-a")
+        let purchases = MockPurchases { _, _, _ in
+            return (transaction: nil, customerInfo: TestData.customerInfo, userCancelled: false)
+        } restorePurchases: {
+            return TestData.customerInfo
+        } trackEvent: { _ in
+        } customerInfo: {
+            return TestData.customerInfo
+        }
+        purchases.appUserIDProvider = { appUserID.value }
+        let handler = PurchaseHandler(
+            purchases: purchases,
+            eventTracker: .init(purchases: purchases, eventDispatcher: PaywallEventTrackerTestDispatcher.value)
+        )
+        let mappedHandlers = [
+            handler.map(purchase: { $0 }, restore: { $0 }),
+            handler.map(trackEvent: { $0 })
+        ]
+
+        XCTAssertEqual(mappedHandlers.map(\.appUserID), ["customer-a", "customer-a"])
+        appUserID.value = "customer-b"
+        XCTAssertEqual(mappedHandlers.map(\.appUserID), ["customer-b", "customer-b"])
+    }
+
     func testInitialState() async throws {
         let handler: PurchaseHandler = .mock()
 
