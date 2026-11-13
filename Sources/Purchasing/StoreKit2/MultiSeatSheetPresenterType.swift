@@ -50,7 +50,7 @@ final internal struct StoreKitMultiSeatSheetPresenter: MultiSeatSheetPresenterTy
         from controller: UIViewController,
         subscriptionGroupID: String
     ) async throws {
-        try await AppStore.presentMultiSeatInvitationSheet(
+        try await StoreKit.AppStore.presentMultiSeatInvitationSheet(
             from: controller,
             subscriptionGroupID: subscriptionGroupID
         )
