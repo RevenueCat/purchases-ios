@@ -318,7 +318,7 @@ final class WorkflowPresenter: NSObject, WorkflowPresenterType {
                     self.presentError(error, kind: .flowActionFailed)
                 }
             },
-            checkpointGateContext: self.makeCheckpointGateContext(for: presentation)
+            checkpointGateContext: self.makeCheckpointGateContext()
         )
         self.presentedViewController = viewController
         viewController.disableExitOffers()
@@ -333,11 +333,9 @@ extension WorkflowPresenter {
 
     /// Reports gate outcomes only to the presentation that is active when the context is made, so a context
     /// left over from an abandoned presentation cannot change a later one.
-    func makeCheckpointGateContext(for presentation: WorkflowPresentationRequest) -> CheckpointGateContext {
+    func makeCheckpointGateContext() -> CheckpointGateContext {
         let presentationID = self.presentationState?.id
         return CheckpointGateContext(
-            initialAppUserID: presentation.initialAppUserID,
-            initialActiveEntitlementIdentifiers: presentation.initialActiveEntitlementIdentifiers,
             currentAppUserID: self.appUserIDProvider,
             onOutcomeChanged: { [weak self] outcome in
                 guard let self, self.presentationState?.id == presentationID else { return }
