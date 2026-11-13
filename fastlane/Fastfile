@@ -522,7 +522,6 @@ platform :ios do
         scheme: 'RevenueCatUI',
         destination: "platform=" + platform + ",name=" + destination,
         sdk: sdk,
-        result_bundle_path: 'fastlane/test_output/v1-snapshots.xcresult',
         report_formats: [:junit],
         report_path: 'fastlane/test_output/v1-snapshots/tests.xml',
         test: true,
@@ -829,7 +828,6 @@ platform :ios do
       scheme: "RevenueCat",
       prelaunch_simulator: true,
       output_types: 'junit',
-      result_bundle: true,
       testplan: test_plan,
       configuration: 'Debug',
       output_directory: "fastlane/test_output/xctest/ios",
@@ -868,7 +866,6 @@ platform :ios do
       ensure_devices_found: true,
       prelaunch_simulator: true,
       output_types: 'junit',
-      result_bundle: true,
       configuration: 'Debug',
       output_directory: "fastlane/test_output/paywall_accessibility",
       number_of_retries: 2
@@ -897,7 +894,6 @@ platform :ios do
       scheme: "RevenueCat",
       prelaunch_simulator: true,
       output_types: 'junit',
-      result_bundle: true,
       testplan: test_plan,
       configuration: 'Debug',
       output_directory: "fastlane/test_output/xctest/tvos",
@@ -935,7 +931,6 @@ platform :ios do
       scheme: "RevenueCat",
       prelaunch_simulator: true,
       output_types: 'junit',
-      result_bundle: true,
       # Host app isn't available on watchOS
       testplan: test_plan,
       configuration: 'Debug',
@@ -956,7 +951,6 @@ platform :ios do
       scheme: 'RevenueCatAdMob',
       destination: "platform=" + platform + ",name=" + destination,
       sdk: sdk,
-      result_bundle_path: 'fastlane/test_output/revenuecat_admob.xcresult',
       report_formats: [:junit],
       report_path: 'fastlane/test_output/revenuecat_admob/tests.xml',
       test: true
@@ -974,7 +968,6 @@ platform :ios do
       scheme: 'RevenueCatAds',
       destination: "platform=" + platform + ",name=" + destination,
       sdk: sdk,
-      result_bundle_path: 'fastlane/test_output/revenuecat_ads.xcresult',
       report_formats: [:junit],
       report_path: 'fastlane/test_output/revenuecat_ads/tests.xml',
       test: true
@@ -1013,7 +1006,6 @@ platform :ios do
         scheme: hosted ? 'RevenueCatUITests' : 'RevenueCatUI',
         destination: platform == 'macOS' ? "platform=macOS" : "platform=" + platform + ",name=" + destination,
         sdk: sdk,
-        result_bundle_path: "fastlane/test_output/#{output_name}.xcresult",
         report_formats: [:junit],
         report_path: "fastlane/test_output/#{output_name}/tests.xml",
         test: true,
@@ -1037,7 +1029,6 @@ platform :ios do
       destination: "platform=" + platform + ",name=" + destination,
       sdk: sdk,
       configuration: 'Release',
-      result_bundle_path: 'fastlane/test_output/purchases_ui_service_stripped.xcresult',
       report_formats: [:junit],
       report_path: 'fastlane/test_output/purchases_ui_service_stripped/tests.xml',
       test: true,
@@ -2136,7 +2127,6 @@ platform :ios do
       ensure_devices_found: true,
       derived_data_path: "scan_derived_data",
       output_types: 'junit',
-      result_bundle: true,
       configuration: 'Debug',
       output_directory: "fastlane/test_output/xctest/ios",
       number_of_retries: 3
@@ -2159,7 +2149,6 @@ platform :ios do
         derived_data_path: "scan_derived_data",
         output_types: 'junit',
         output_style: 'raw',
-        result_bundle: true,
         testplan: options[:test_plan],
         xcargs: xcargs,
         only_test_configurations: [test_configuration],
@@ -2218,7 +2207,6 @@ platform :ios do
         derived_data_path: "scan_derived_data",
         output_types: 'junit',
         output_style: 'raw',
-        result_bundle: true,
         configuration: 'Debug',
         output_directory: "fastlane/test_output/xctest/ios"
       )
@@ -3199,7 +3187,6 @@ platform :mac do
         scheme: 'RevenueCat',
         destination: "platform=macOS,arch=arm64",
         output_style: :basic,
-        result_bundle_path: 'fastlane/test_output/xctest/macos/revenuecat.xcresult',
         report_formats: [:junit],
         report_path: 'fastlane/test_output/xctest/macos/revenuecat/tests.xml',
         test: true,
