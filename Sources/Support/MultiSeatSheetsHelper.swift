@@ -18,7 +18,7 @@ import StoreKit
 import UIKit
 #endif
 
-internal class MultiSeatSheetsHelper {
+internal struct MultiSeatSheetsHelper {
 
     private let systemInfo: SystemInfo
     private let multiSeatSheetPresenter: MultiSeatSheetPresenterType
