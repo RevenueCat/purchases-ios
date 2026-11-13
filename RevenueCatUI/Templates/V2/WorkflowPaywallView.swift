@@ -354,9 +354,7 @@ struct WorkflowPaywallView: View {
         self._backNavigationBridge = .init(wrappedValue: backNavigationBridge)
         self.onPresentationError = onPresentationError
         self.checkpointGateContext = checkpointGateContext
-        self._gateController = .init(wrappedValue: CheckpointWorkflowGateController(
-            currentAppUserID: { purchaseHandler.appUserID }
-        ))
+        self._gateController = .init(wrappedValue: CheckpointWorkflowGateController())
         self._isAwaitingEntryGate = .init(
             initialValue: checkpointGateContext != nil
                 && context.workflow.initialBranch == nil
@@ -1252,7 +1250,9 @@ struct WorkflowPaywallView: View {
             do {
                 let customerInfo = try await self.purchaseHandler.customerInfo()
                 guard self.ownsGateEntry(entryID) else { return }
-                decision = controller.update(forAppUserID: appUserID, customerInfo: customerInfo)
+                if self.purchaseHandler.appUserID == appUserID {
+                    decision = controller.update(customerInfo: customerInfo)
+                }
             } catch {
                 guard self.ownsGateEntry(entryID) else { return }
                 Logger.warning(Strings.workflow_gate_customer_read_failed(stepId: step.id, error: error))
@@ -1295,13 +1295,10 @@ struct WorkflowPaywallView: View {
     private func applyCheckpointOperation(customerInfo: CustomerInfo) -> WorkflowGateDecision {
         let operationAppUserID = self.checkpointOperationAppUserID
         self.checkpointOperationAppUserID = nil
-        if let operationAppUserID, !self.checkpointGate.isCurrentAppUserID(operationAppUserID) {
+        if let operationAppUserID, self.purchaseHandler.appUserID != operationAppUserID {
             return .blocked
         }
-        return self.checkpointGate.update(
-            forAppUserID: operationAppUserID ?? self.purchaseHandler.appUserID,
-            customerInfo: customerInfo
-        )
+        return self.checkpointGate.update(customerInfo: customerInfo)
     }
 
     private func failWorkflowPresentation(for stepId: String) {
