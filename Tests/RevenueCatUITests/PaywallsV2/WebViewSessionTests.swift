@@ -233,8 +233,8 @@ final class WebViewSessionTests: TestCase {
 
         XCTAssertEqual(resizes.count, 1)
         XCTAssertEqual(resizes[0].1, 300)
-        // Only the unknown request is answered; resize requests are applied without a reply.
-        XCTAssertEqual(try harness.outboundEnvelopes().map(\.kind), [.error])
+        // Only the unknown request gets an error reply.
+        XCTAssertEqual(try harness.outboundEnvelopes().filter { $0.kind == .error }.map(\.id), ["req-1"])
     }
 
     func testDropsMessageWithoutType() {
