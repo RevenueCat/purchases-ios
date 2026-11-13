@@ -12,8 +12,12 @@
 //  Created by Madeline Beyl on 8/25/21.
 
 import Foundation
-import RevenueCat_CustomEntitlementComputation
+@_spi(Experimental) import RevenueCat_CustomEntitlementComputation
 import StoreKit
+
+#if canImport(UIKit)
+import UIKit
+#endif
 
 func checkPurchasesAPI() {
     let purch = checkConfigure()!
@@ -253,6 +257,16 @@ private func checkAsyncMethods(purchases: Purchases) async {
             let _: RefundRequestStatus = try await purchases.beginRefundRequestForActiveEntitlement()
 #endif
         }
+
+        // #if ENABLE_MULTISEAT_PURCHASES
+        #if (os(iOS) || targetEnvironment(macCatalyst)) && canImport(UIKit)
+        if #available(iOS 27.3, *) {
+            let viewController: UIViewController! = nil
+            try await purchases.presentMultiSeatInvitationSheet(for: stp, from: viewController)
+            try await purchases.presentMultiSeatInvitationSheet(for: pack, from: viewController)
+        }
+        #endif
+        // #endif
 
         let _: [String: IntroEligibility] = await purchases.checkTrialOrIntroDiscountEligibility(productIdentifiers: [""])
         let _: [Package: IntroEligibility] = await purchases.checkTrialOrIntroDiscountEligibility(packages: [pack])
