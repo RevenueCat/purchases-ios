@@ -35,8 +35,9 @@ final class CheckpointWorkflowGateControllerTests: TestCase {
         XCTAssertFalse(self.controller.blocksForwardNavigation(step: self.hard))
     }
 
-    func testAnyInitialMatchingEntitlementPassesAndReportsOnce() {
-        self.reset(activeEntitlements: ["premium"])
+    func testAnyMatchingCustomerInfoEntitlementPassesAndReportsOnce() throws {
+        self.reset()
+        _ = try self.update(for: self.appUserID, activeEntitlements: ["premium"])
 
         XCTAssertEqual(self.controller.evaluate(step: self.hard), .passed)
         _ = self.controller.evaluate(step: self.hard)
@@ -44,8 +45,9 @@ final class CheckpointWorkflowGateControllerTests: TestCase {
         XCTAssertEqual(self.outcomes, [.notApplicable, .passed])
     }
 
-    func testMissingInitialEntitlementBlocksForwardNavigation() {
-        self.reset(activeEntitlements: ["unrelated"])
+    func testMissingCustomerInfoEntitlementBlocksForwardNavigation() throws {
+        self.reset()
+        _ = try self.update(for: self.appUserID, activeEntitlements: ["unrelated"])
 
         XCTAssertEqual(self.controller.evaluate(step: self.hard), .blocked)
         XCTAssertTrue(self.controller.blocksForwardNavigation(step: self.hard))
@@ -53,8 +55,19 @@ final class CheckpointWorkflowGateControllerTests: TestCase {
         XCTAssertEqual(self.outcomes, [.notApplicable, .notPassed])
     }
 
+    func testEnteringAGateDiscardsPreviouslyReadEntitlementsUntilCustomerInfoArrives() throws {
+        self.reset()
+        _ = try self.update(for: self.appUserID, activeEntitlements: ["pro"])
+
+        XCTAssertTrue(self.controller.beginEntry(step: self.hard))
+        XCTAssertTrue(self.controller.hasUnresolvedGate)
+        XCTAssertTrue(self.controller.blocksForwardNavigation(step: self.hard))
+        XCTAssertEqual(try self.update(for: self.appUserID, activeEntitlements: ["premium"]), .passed)
+        XCTAssertFalse(self.controller.hasUnresolvedGate)
+    }
+
     func testSoftAndAbsentGatingDoNotBlock() {
-        self.reset(activeEntitlements: [])
+        self.reset()
 
         XCTAssertEqual(self.controller.evaluate(step: Self.step(nil)), .notGated)
         XCTAssertEqual(self.controller.evaluate(step: Self.step(.soft)), .notGated)
@@ -64,7 +77,8 @@ final class CheckpointWorkflowGateControllerTests: TestCase {
     }
 
     func testInvalidGatingFailsClosedEvenWithActiveEntitlements() throws {
-        self.reset(activeEntitlements: ["pro"])
+        self.reset()
+        _ = try self.update(for: self.appUserID, activeEntitlements: ["pro"])
         let invalid = Self.step(.invalid)
 
         XCTAssertEqual(self.controller.evaluate(step: invalid), .blocked)
@@ -78,7 +92,7 @@ final class CheckpointWorkflowGateControllerTests: TestCase {
     }
 
     func testBacktrackingKeepsUnresolvedOutcomeAndReentryStaysBlocked() {
-        self.reset(activeEntitlements: [])
+        self.reset()
         _ = self.controller.evaluate(step: self.hard)
         let earlier = Self.step(nil)
 
@@ -90,7 +104,7 @@ final class CheckpointWorkflowGateControllerTests: TestCase {
     }
 
     func testCustomerInfoUpdateResolvesAReachedGateEvenWhileBacktracking() throws {
-        self.reset(activeEntitlements: [])
+        self.reset()
         _ = self.controller.evaluate(step: self.hard)
         _ = self.controller.evaluate(step: Self.step(nil))
 
@@ -108,7 +122,7 @@ final class CheckpointWorkflowGateControllerTests: TestCase {
     }
 
     func testCustomerInfoBeforeReachingAGateUpdatesTheEntryBaseline() throws {
-        self.reset(activeEntitlements: [])
+        self.reset()
 
         XCTAssertEqual(
             try self.update(for: self.appUserID, activeEntitlements: ["pro"]),
@@ -117,8 +131,9 @@ final class CheckpointWorkflowGateControllerTests: TestCase {
         XCTAssertEqual(self.controller.evaluate(step: self.hard), .passed)
     }
 
-    func testIdentityChangeInvalidatesInitialEntitlementsAndKeepsBacktrackedGateUnresolved() throws {
-        self.reset(activeEntitlements: ["pro"])
+    func testIdentityChangeInvalidatesReadEntitlementsAndKeepsBacktrackedGateUnresolved() throws {
+        self.reset()
+        _ = try self.update(for: self.appUserID, activeEntitlements: ["pro"])
         self.appUserID = "customer-b"
 
         XCTAssertEqual(self.controller.evaluate(step: self.hard), .blocked)
@@ -130,7 +145,7 @@ final class CheckpointWorkflowGateControllerTests: TestCase {
     }
 
     func testIdentityChangeFailsTheGateClosedUntilTheNewUsersInfoArrives() throws {
-        self.reset(activeEntitlements: [])
+        self.reset()
         _ = self.controller.evaluate(step: self.hard)
         _ = try self.update(for: "customer-a", activeEntitlements: ["pro"])
         self.appUserID = "customer-b"
@@ -141,7 +156,7 @@ final class CheckpointWorkflowGateControllerTests: TestCase {
     }
 
     func testIdentityChangeKeepsPassageWhenTheNewUserHoldsTheEntitlementAsAfterAnAlias() throws {
-        self.reset(activeEntitlements: [])
+        self.reset()
         _ = self.controller.evaluate(step: self.hard)
         _ = try self.update(for: "customer-a", activeEntitlements: ["pro"])
         self.appUserID = "customer-b"
@@ -153,7 +168,7 @@ final class CheckpointWorkflowGateControllerTests: TestCase {
     }
 
     func testIdentityChangeRevokesPassageWhenTheNewUserLacksTheEntitlement() throws {
-        self.reset(activeEntitlements: [])
+        self.reset()
         _ = self.controller.evaluate(step: self.hard)
         _ = try self.update(for: "customer-a", activeEntitlements: ["pro"])
         self.appUserID = "customer-b"
@@ -164,7 +179,7 @@ final class CheckpointWorkflowGateControllerTests: TestCase {
     }
 
     func testCustomerInfoReadForThePreviousUserIsIgnoredAfterAnIdentityChange() throws {
-        self.reset(activeEntitlements: [])
+        self.reset()
         _ = self.controller.evaluate(step: self.hard)
         self.appUserID = "customer-b"
 
@@ -173,7 +188,7 @@ final class CheckpointWorkflowGateControllerTests: TestCase {
     }
 
     func testInfoForAnOutdatedUserIsIgnoredAndALaterOneApplies() throws {
-        self.reset(activeEntitlements: [])
+        self.reset()
         _ = self.controller.evaluate(step: self.hard)
         self.appUserID = "customer-b"
         self.appUserID = "customer-c"
@@ -183,7 +198,8 @@ final class CheckpointWorkflowGateControllerTests: TestCase {
     }
 
     func testInfoAfterAnIdentityChangeBeforeAGateIsReachedSetsTheNewUsersEntryBaseline() throws {
-        self.reset(activeEntitlements: ["pro"])
+        self.reset()
+        _ = try self.update(for: self.appUserID, activeEntitlements: ["pro"])
         self.appUserID = "customer-b"
 
         XCTAssertEqual(try self.update(for: "customer-b", activeEntitlements: ["premium"]), .notGated)
@@ -191,29 +207,28 @@ final class CheckpointWorkflowGateControllerTests: TestCase {
     }
 
     func testOperationsAreCurrentOnlyForTheActiveAppUserID() {
-        self.reset(activeEntitlements: [])
+        self.reset()
 
         XCTAssertTrue(self.controller.isCurrentAppUserID("customer-a"))
         self.appUserID = "customer-b"
         XCTAssertFalse(self.controller.isCurrentAppUserID("customer-a"))
     }
 
-    func testResetClearsUnresolvedGateAndOldCallbackOwnership() {
-        self.reset(activeEntitlements: [])
+    func testResetClearsReadEntitlementsAndOldCallbackOwnership() throws {
+        self.reset()
         _ = self.controller.evaluate(step: self.hard)
+        _ = try self.update(for: self.appUserID, activeEntitlements: ["pro"])
         var nextOutcomes: [CheckpointGateOutcome] = []
 
         self.controller.reset(context: CheckpointGateContext(
-            initialAppUserID: "customer-a",
-            initialActiveEntitlementIdentifiers: ["pro"],
             currentAppUserID: { "customer-a" },
             onOutcomeChanged: { nextOutcomes.append($0) }
         ))
 
         XCTAssertFalse(self.controller.hasUnresolvedGate)
-        XCTAssertEqual(self.controller.evaluate(step: self.hard), .passed)
-        XCTAssertEqual(self.outcomes, [.notApplicable, .notPassed])
-        XCTAssertEqual(nextOutcomes, [.notApplicable, .passed])
+        XCTAssertEqual(self.controller.evaluate(step: self.hard), .blocked)
+        XCTAssertEqual(self.outcomes, [.notApplicable, .notPassed, .passed])
+        XCTAssertEqual(nextOutcomes, [.notApplicable, .notPassed])
     }
 
     private func update(for appUserID: String, activeEntitlements: [String]) throws -> WorkflowGateDecision {
@@ -223,10 +238,8 @@ final class CheckpointWorkflowGateControllerTests: TestCase {
         )
     }
 
-    private func reset(activeEntitlements: Set<String>) {
+    private func reset() {
         self.controller.reset(context: CheckpointGateContext(
-            initialAppUserID: "customer-a",
-            initialActiveEntitlementIdentifiers: activeEntitlements,
             currentAppUserID: { [unowned self] in self.appUserID },
             onOutcomeChanged: { [unowned self] in self.outcomes.append($0) }
         ))

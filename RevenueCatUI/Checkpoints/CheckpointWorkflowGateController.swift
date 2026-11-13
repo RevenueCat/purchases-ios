@@ -54,8 +54,8 @@ final class CheckpointWorkflowGateController {
 
     func reset(context: CheckpointGateContext?) {
         self.context = context
-        self.appUserID = context?.initialAppUserID
-        self.activeEntitlementIdentifiers = context?.initialActiveEntitlementIdentifiers ?? []
+        self.appUserID = context == nil ? nil : self.currentAppUserID()
+        self.activeEntitlementIdentifiers = []
         self.reachedGate = nil
         self.outcome = .notApplicable
         context?.onOutcomeChanged(self.outcome)
