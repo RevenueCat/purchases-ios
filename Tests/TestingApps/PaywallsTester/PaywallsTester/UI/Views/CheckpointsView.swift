@@ -32,6 +32,11 @@ struct CheckpointsView: View {
     @State private var configuredIdentifiers: [String] = []
     @State private var variables = [CheckpointVariable()]
     @State private var result: CheckpointDisplayResult?
+    @State private var checkpointCompleted = false
+    // Retries share an ID because the SDK can skip a retry while an earlier call is still presented.
+    // Reset or completion invalidates callbacks from that test.
+    @State private var testID = UUID()
+    @State private var latestRequestID = UUID()
     @State private var isSubscriberAttributeEditorPresented = false
 
     init() {
@@ -56,6 +61,7 @@ struct CheckpointsView: View {
         NavigationView {
             Form {
                 self.checkpointSection
+                self.protectedContentSection
                 self.resultSection
                 self.recentSection
                 #if DEBUG
@@ -125,11 +131,37 @@ struct CheckpointsView: View {
                 .focused(self.$isIdentifierFocused)
                 .onSubmit { self.triggerCheckpoint(self.trimmedIdentifier) }
 
-            Button("Hit checkpoint") { self.triggerCheckpoint(self.trimmedIdentifier) }
+            Button("Open protected content") { self.triggerCheckpoint(self.trimmedIdentifier) }
                 .contextMenu { self.presentationModeMenu(for: self.trimmedIdentifier) }
                 .disabled(self.trimmedIdentifier.isEmpty)
         } footer: {
             Text("Runs the checkpoint with the custom variables below.")
+        }
+    }
+
+    private var protectedContentSection: some View {
+        Section("Protected content") {
+            Label(
+                self.checkpointCompleted ? "Checkpoint completed" : "Locked · Not completed",
+                systemImage: self.checkpointCompleted ? "lock.open.fill" : "lock.fill"
+            )
+            .font(.headline)
+            .foregroundStyle(self.checkpointCompleted ? .green : .secondary)
+
+            if self.checkpointCompleted {
+                Text("Your premium library")
+                    .font(.headline)
+                Text(
+                    "You can read this content because the checkpoint callback ran. " +
+                    "A soft checkpoint can grant access without a purchase."
+                )
+                .foregroundStyle(.secondary)
+            } else {
+                Text("Run a checkpoint to open this content. Closing an unmet hard gate keeps it locked.")
+                    .foregroundStyle(.secondary)
+            }
+
+            Button("Reset test", action: self.resetTest)
         }
     }
 
@@ -181,9 +213,6 @@ struct CheckpointsView: View {
                 HStack {
                     Text("Outcome")
                     Spacer()
-                    if result.isWaiting {
-                        ProgressView()
-                    }
                     Text(result.outcome)
                         .foregroundStyle(.secondary)
                         .multilineTextAlignment(.trailing)
@@ -194,7 +223,7 @@ struct CheckpointsView: View {
                         .foregroundStyle(.secondary)
                 }
             } else {
-                Text("Hit a checkpoint to see its result here.")
+                Text("Open protected content to see the checkpoint result here.")
                     .foregroundStyle(.secondary)
             }
         }
@@ -213,6 +242,10 @@ struct CheckpointsView: View {
 
         self.isIdentifierFocused = false
         self.recordRecentIdentifier(identifier)
+        let currentTestID = self.testID
+        let requestID = UUID()
+        self.latestRequestID = requestID
+        self.checkpointCompleted = false
         self.result = .waiting(identifier: identifier)
 
         Purchases.shared.checkpoint(
@@ -220,13 +253,18 @@ struct CheckpointsView: View {
             customVariables: self.customVariables,
             presentationMode: presentationMode,
             errorPresenter: { params, completion in
-                self.result = .failed(
-                    identifier: params.checkpointIdentifier,
-                    error: params.error
-                )
+                if currentTestID == self.testID, requestID == self.latestRequestID {
+                    self.result = .failed(
+                        identifier: params.checkpointIdentifier,
+                        error: params.error
+                    )
+                }
                 completion.complete()
             },
             { checkpointResult in
+                guard currentTestID == self.testID else { return }
+                self.testID = UUID()
+                self.checkpointCompleted = true
                 self.result = .completed(identifier: identifier, result: checkpointResult)
             }
         )
@@ -237,6 +275,17 @@ struct CheckpointsView: View {
             identifier,
             currentIdentifiers: self.recentIdentifiers
         )
+    }
+
+}
+
+private extension CheckpointsView {
+
+    @MainActor
+    func resetTest() {
+        self.testID = UUID()
+        self.checkpointCompleted = false
+        self.result = nil
     }
 
 }
@@ -288,14 +337,12 @@ private struct CheckpointDisplayResult {
     let identifier: String
     let outcome: String
     let details: String?
-    var isWaiting = false
 
     static func waiting(identifier: String) -> Self {
         return Self(
             identifier: identifier,
-            outcome: "Waiting…",
-            details: "Backing out of a paywall never reports a result. Hit the checkpoint again.",
-            isWaiting: true
+            outcome: "No completion callback yet",
+            details: "Content stays locked until the callback runs. You can retry or reset the test."
         )
     }
 
