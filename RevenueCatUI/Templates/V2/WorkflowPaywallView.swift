@@ -389,7 +389,7 @@ struct WorkflowPaywallView: View {
         self.onPresentationError = onPresentationError
         self.checkpointGateContext = checkpointGateContext
         self._gateController = .init(wrappedValue: CheckpointWorkflowGateController(
-            currentAppUserID: checkpointGateContext?.currentAppUserID ?? { "" }
+            currentAppUserID: { purchaseHandler.appUserID }
         ))
         self._isAwaitingEntryGate = .init(
             initialValue: checkpointGateContext != nil
@@ -627,7 +627,7 @@ struct WorkflowPaywallView: View {
         .modifier(PaywallURLEventsModifier(purchaseHandler: self.purchaseHandler))
         .onReceive(self.purchaseHandler.$actionTypeInProgress.dropFirst()) { action in
             guard action != nil else { return }
-            self.checkpointOperationAppUserID = self.checkpointGateContext?.currentAppUserID()
+            self.checkpointOperationAppUserID = self.checkpointGateContext == nil ? nil : self.purchaseHandler.appUserID
             self.permitsPostPurchaseDismissal = self.checkpointGateContext == nil
         }
         .onReceive(self.purchaseHandler.$sessionPurchaseResult.dropFirst()) { result in
@@ -1291,7 +1291,7 @@ struct WorkflowPaywallView: View {
             return
         }
         let entryID = UUID()
-        let appUserID = self.checkpointGateContext?.currentAppUserID() ?? ""
+        let appUserID = self.purchaseHandler.appUserID
         self.gateController.entryID = entryID
         self.gateController.entryTask = Task { @MainActor in
             var decision = WorkflowGateDecision.blocked
@@ -1345,7 +1345,7 @@ struct WorkflowPaywallView: View {
             return .blocked
         }
         return self.checkpointGate.update(
-            forAppUserID: operationAppUserID ?? self.checkpointGateContext?.currentAppUserID() ?? "",
+            forAppUserID: operationAppUserID ?? self.purchaseHandler.appUserID,
             customerInfo: customerInfo
         )
     }
