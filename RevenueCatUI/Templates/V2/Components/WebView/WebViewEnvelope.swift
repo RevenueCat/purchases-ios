@@ -19,6 +19,10 @@ enum WebViewEnvelope {
     static let messageTypeResize = "resize"
     static let messageTypeFit = "fit"
     static let messageTypeContext = "context"
+    static let messageTypeOpenURL = "open_url"
+
+    static let maxOpenURLLength = 2048
+    static let openURLMinimumInterval: TimeInterval = 1
 
     static let maxResizePoints: CGFloat = 10_000
     static let resizeThreshold: CGFloat = 1
@@ -92,6 +96,68 @@ enum WebViewEnvelope {
         }
 
         return envelope
+    }
+
+}
+
+/// A validated `open_url` request payload (`{ url, method? }`) from the `web_view` content.
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+struct WebViewOpenURLRequest: Equatable {
+
+    typealias Method = PaywallComponent.ButtonComponent.URLMethod
+
+    let url: URL
+    let method: Method
+
+    // `deep_link` takes app schemes, but never ones that run code, read local data, or build Android
+    // intents. `http` is refused everywhere: universal links are `https`.
+    private static let blockedDeepLinkSchemes: Set<String> = [
+        "http", "javascript", "vbscript", "data", "file", "blob", "about", "content", "intent"
+    ]
+
+    /// Returns `nil` when the request must be refused: `external_browser` and `in_app_browser` take
+    /// `https` only, `deep_link` any scheme except the blocked ones, and URLs are capped at
+    /// ``WebViewEnvelope/maxOpenURLLength`` characters. `method` defaults to `external_browser`.
+    init?(payload: [String: PaywallWebViewValue]?) {
+        guard let urlString = payload?["url"]?.stringValue,
+              !urlString.isEmpty,
+              urlString.count <= WebViewEnvelope.maxOpenURLLength,
+              let url = URL(string: urlString),
+              let scheme = url.scheme?.lowercased() else {
+            return nil
+        }
+
+        let method: Method
+        if let rawMethod = payload?["method"] {
+            guard let parsed = rawMethod.stringValue.flatMap(Method.init(rawValue:)),
+                  parsed != .unknown else {
+                return nil
+            }
+            method = parsed
+        } else {
+            method = .externalBrowser
+        }
+
+        switch method {
+        case .externalBrowser, .inAppBrowser:
+            guard scheme == "https" else { return nil }
+        case .deepLink:
+            guard !Self.blockedDeepLinkSchemes.contains(scheme) else { return nil }
+        case .unknown:
+            return nil
+        }
+
+        if scheme == "https" {
+            // Embedded credentials can disguise the real host (`https://trusted.com@evil.com`).
+            guard url.host?.isEmpty == false,
+                  url.user == nil,
+                  url.password == nil else {
+                return nil
+            }
+        }
+
+        self.url = url
+        self.method = method
     }
 
 }
