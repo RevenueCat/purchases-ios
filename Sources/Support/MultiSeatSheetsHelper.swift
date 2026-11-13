@@ -30,7 +30,7 @@ internal class MultiSeatSheetsHelper {
     @available(tvOS, unavailable)
     func presentMultiSeatInvitationSheet(
         for product: StoreProduct,
-        from controller: UIViewController,
+        from controller: UIViewController
     ) async throws {
         let subscriptionGroupIdentifier = try validateCanPresentMultiSeatSheet(
             for: product

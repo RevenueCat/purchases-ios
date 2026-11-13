@@ -17,6 +17,10 @@
 import Foundation
 import StoreKit
 
+#if canImport(UIKit)
+import UIKit
+#endif
+
 // swiftlint:disable file_length
 
 /// Interface for ``Purchases``.
@@ -931,6 +935,60 @@ public protocol PurchasesType: AnyObject {
         @available(iOS 13.0, macOS 10.15, *)
         func showManageSubscriptions() async throws
 
+    #endif
+
+    #if ENABLE_MULTISEAT_PURCHASES
+    #if (os(iOS) || targetEnvironment(macCatalyst)) && canImport(UIKit)
+
+        /**
+         * Presents the App Store's multi-seat invitation sheet for the subscription group of the given product,
+         * allowing the subscriber to invite other people to share the seats of their multi-seat subscription.
+         *
+         * - Parameter storeProduct: A multi-seat subscription ``StoreProduct``. The sheet is presented for the
+         * product's subscription group.
+         * - Parameter viewController: The `UIViewController` to present the sheet from.
+         *
+         * - throws: An `Error` if the sheet can't be presented.
+         *
+         * ### Related Symbols
+         * - ``presentMultiSeatInvitationSheet(for:from:)-(Package,UIViewController)``
+         */
+        @available(iOS 27.3, *)
+        @available(macOS, unavailable)
+        @available(watchOS, unavailable)
+        @available(tvOS, unavailable)
+        @_spi(Experimental)
+        @objc(presentMultiSeatInvitationSheetForStoreProduct:fromViewController:completion:)
+        func presentMultiSeatInvitationSheet(
+            for storeProduct: StoreProduct,
+            from viewController: UIViewController
+        ) async throws
+
+        /**
+         * Presents the App Store's multi-seat invitation sheet for the subscription group of the given package's
+         * product, allowing the subscriber to invite other people to share the seats of their multi-seat subscription.
+         *
+         * - Parameter package: A ``Package`` whose ``Package/storeProduct`` is a multi-seat subscription.
+         * The sheet is presented for the product's subscription group.
+         * - Parameter viewController: The `UIViewController` to present the sheet from.
+         *
+         * - throws: An `Error` if the sheet can't be presented.
+         *
+         * ### Related Symbols
+         * - ``presentMultiSeatInvitationSheet(for:from:)-(StoreProduct,UIViewController)``
+         */
+        @available(iOS 27.3, *)
+        @available(macOS, unavailable)
+        @available(watchOS, unavailable)
+        @available(tvOS, unavailable)
+        @_spi(Experimental)
+        @objc(presentMultiSeatInvitationSheetForPackage:fromViewController:completion:)
+        func presentMultiSeatInvitationSheet(
+            for package: Package,
+            from viewController: UIViewController
+        ) async throws
+
+    #endif
     #endif
 
     #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
