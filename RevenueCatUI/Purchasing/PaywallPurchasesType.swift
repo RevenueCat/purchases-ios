@@ -17,6 +17,8 @@
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 protocol PaywallPurchasesType: Sendable {
 
+    var appUserID: String { get }
+
     var purchasesAreCompletedBy: PurchasesAreCompletedBy { get }
 
     /// Returns the preferred locales, including the locale override if set.
