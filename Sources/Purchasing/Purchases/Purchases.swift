@@ -3103,7 +3103,7 @@ extension Purchases {
 }
 
 // MARK: - Multiseat Sheet Presentations
-//#if ENABLE_MULTISEAT_PURCHASES
+#if ENABLE_MULTISEAT_PURCHASES
 extension Purchases {
 
     // UIKit
@@ -3141,7 +3141,7 @@ extension Purchases {
     #endif
 
 }
-//#endif
+#endif
 
 internal extension Purchases {
 

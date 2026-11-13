@@ -399,7 +399,7 @@ private func checkAsyncMethods(purchases: Purchases) async {
         let _: [PromotionalOffer] = await purchases.eligiblePromotionalOffers(forProduct: stp)
         #endif
 
-        // #if ENABLE_MULTISEAT_PURCHASES
+        #if ENABLE_MULTISEAT_PURCHASES
         #if (os(iOS) || targetEnvironment(macCatalyst)) && canImport(UIKit)
         if #available(iOS 27.3, *) {
             let viewController: UIViewController! = nil
@@ -407,7 +407,7 @@ private func checkAsyncMethods(purchases: Purchases) async {
             try await purchases.presentMultiSeatInvitationSheet(for: pack, from: viewController)
         }
         #endif
-        // #endif
+        #endif
 
         let webPurchaseRedemptionResult: WebPurchaseRedemptionResult = await purchases.redeemWebPurchase(
             webPurchaseRedemption

@@ -19,7 +19,7 @@ import XCTest
 #if (os(iOS) || targetEnvironment(macCatalyst)) && canImport(UIKit)
 import UIKit
 
-// #if ENABLE_MULTISEAT_PURCHASES
+#if ENABLE_MULTISEAT_PURCHASES
 
 class PurchasesMultiSeatSheetsTests: BasePurchasesTests {
 
@@ -109,6 +109,6 @@ private extension PurchasesMultiSeatSheetsTests {
 
 }
 
-// #endif
+#endif
 
 #endif

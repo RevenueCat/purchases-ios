@@ -29,9 +29,7 @@ internal class MultiSeatSheetsHelper {
         self.supportsMultiSeatPurchaseCalculator = supportsMultiSeatPurchaseCalculator
     }
 
-//    #if ENABLE_MULTISEAT_PURCHASES
-
-    #if (os(iOS) || targetEnvironment(macCatalyst)) && canImport(UIKit)
+    #if (os(iOS) || targetEnvironment(macCatalyst)) && canImport(UIKit) && ENABLE_MULTISEAT_PURCHASES
     @available(iOS 27.3, *)
     @available(macOS, unavailable)
     @available(watchOS, unavailable)
@@ -100,8 +98,6 @@ internal class MultiSeatSheetsHelper {
 
         return subscriptionGroupIdentifier
     }
-
-//    #endif
 }
 
 extension MultiSeatSheetsHelper {
@@ -127,11 +123,15 @@ extension MultiSeatSheetsHelper {
                 return overrideValue
             }
 
+            #if ENABLE_MULTISEAT_PURCHASES
             if #available(iOS 27.3, macOS 27.3, tvOS 27.3, visionOS 27.3, watchOS 27.3, *) {
                 return (storeProduct.sk2Product?.supportsMultiSeatPurchase) ?? false
             } else {
                 return false
             }
+            #else
+            return false
+            #endif
         }
     }
 }

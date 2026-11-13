@@ -18,12 +18,10 @@ import StoreKit
 import UIKit
 #endif
 
-// #if ENABLE_MULTISEAT_PURCHASES
-
 /// Abstraction over StoreKit's multi-seat sheet presentation APIs, so they can be easily mocked in tests.
 internal protocol MultiSeatSheetPresenterType: Sendable {
 
-    #if (os(iOS) || targetEnvironment(macCatalyst)) && canImport(UIKit)
+    #if (os(iOS) || targetEnvironment(macCatalyst)) && canImport(UIKit) && ENABLE_MULTISEAT_PURCHASES
     @available(iOS 27.3, *)
     @available(macOS, unavailable)
     @available(watchOS, unavailable)
@@ -41,7 +39,7 @@ internal protocol MultiSeatSheetPresenterType: Sendable {
 /// Default ``MultiSeatSheetPresenterType`` that forwards to `StoreKit.AppStore`.
 final internal class StoreKitMultiSeatSheetPresenter: MultiSeatSheetPresenterType {
 
-    #if (os(iOS) || targetEnvironment(macCatalyst)) && canImport(UIKit)
+    #if (os(iOS) || targetEnvironment(macCatalyst)) && canImport(UIKit) && ENABLE_MULTISEAT_PURCHASES
     @available(iOS 27.3, *)
     @available(macOS, unavailable)
     @available(watchOS, unavailable)
@@ -60,5 +58,3 @@ final internal class StoreKitMultiSeatSheetPresenter: MultiSeatSheetPresenterTyp
     #endif
 
 }
-
-// #endif

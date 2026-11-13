@@ -20,7 +20,7 @@ import XCTest
 #if (os(iOS) || targetEnvironment(macCatalyst)) && canImport(UIKit)
 import UIKit
 
-// #if ENABLE_MULTISEAT_PURCHASES
+#if ENABLE_MULTISEAT_PURCHASES
 
 @available(iOS 15.0, *)
 class MultiSeatSheetsHelperTests: StoreKitConfigTestCase {
@@ -285,6 +285,6 @@ private extension MultiSeatSheetsHelperTests {
 
 }
 
-// #endif
+#endif
 
 #endif

@@ -21,8 +21,7 @@ import UIKit
 final class MockMultiSeatSheetsHelper: MultiSeatSheetsHelper {
 
     // MARK: - UIKit
-
-    #if (os(iOS) || targetEnvironment(macCatalyst)) && canImport(UIKit)
+    #if (os(iOS) || targetEnvironment(macCatalyst)) && canImport(UIKit) && ENABLE_MULTISEAT_PURCHASES
 
     struct InvitationSheetInvocation {
         let product: StoreProduct
@@ -60,7 +59,6 @@ final class MockMultiSeatSheetsHelper: MultiSeatSheetsHelper {
             throw error
         }
     }
-
     #endif
 
 }
