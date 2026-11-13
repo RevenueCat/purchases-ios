@@ -52,7 +52,7 @@ final class PaywallCacheWarmingTests: TestCase {
     }
 
     func testOfferingsWithNoProductsDoesNotCheckEligibility() async throws {
-        await self.cache.warmUpEligibilityCache(
+        await self.cache.prewarmEligibilityCache(
             offerings: try Self.createOfferings([
                 Self.createOffering(
                     identifier: Self.offeringIdentifier,
@@ -87,7 +87,7 @@ final class PaywallCacheWarmingTests: TestCase {
         let expectedCurrent: Set<String> = ["product_1", "product_2"]
         let expectedRemaining: Set<String> = ["product_3"]
 
-        await self.cache.warmUpEligibilityCache(offerings: offerings)
+        await self.cache.prewarmEligibilityCache(offerings: offerings)
 
         // Two staggered calls: the current offering's products first, then the rest.
         expect(self.eligibilityChecker.invokedCheckTrialOrIntroPriceEligibilityFromOptimalStore) == true
@@ -119,11 +119,11 @@ final class PaywallCacheWarmingTests: TestCase {
             )
         ])
 
-        await self.cache.warmUpEligibilityCache(offerings: offerings)
-        await self.cache.warmUpEligibilityCache(offerings: offerings)
+        await self.cache.prewarmEligibilityCache(offerings: offerings)
+        await self.cache.prewarmEligibilityCache(offerings: offerings)
 
         expect(self.eligibilityChecker.invokedCheckTrialOrIntroPriceEligibilityFromOptimalStore) == true
-        // Only one call for the current offering; the second `warmUpEligibilityCache` is a no-op
+        // Only one call for the current offering; the second `prewarmEligibilityCache` is a no-op
         // because all products are already in the warmed set.
         expect(self.eligibilityChecker.invokedCheckTrialOrIntroPriceEligibilityFromOptimalStoreCount) == 1
 
@@ -163,8 +163,8 @@ final class PaywallCacheWarmingTests: TestCase {
             )
         ])
 
-        await self.cache.warmUpEligibilityCache(offerings: firstOfferings)
-        await self.cache.warmUpEligibilityCache(offerings: secondOfferings)
+        await self.cache.prewarmEligibilityCache(offerings: firstOfferings)
+        await self.cache.prewarmEligibilityCache(offerings: secondOfferings)
 
         // The second call should only warm up products that haven't been warmed yet.
         // Current offering already had `product_1`, so only `product_2` is new there.
@@ -189,9 +189,9 @@ final class PaywallCacheWarmingTests: TestCase {
             )
         ])
 
-        await self.cache.warmUpEligibilityCache(offerings: offerings)
+        await self.cache.prewarmEligibilityCache(offerings: offerings)
         await self.cache.clearEligibilityCache()
-        await self.cache.warmUpEligibilityCache(offerings: offerings)
+        await self.cache.prewarmEligibilityCache(offerings: offerings)
 
         expect(self.eligibilityChecker.invokedCheckTrialOrIntroPriceEligibilityFromOptimalStoreCount) == 2
 
@@ -706,6 +706,82 @@ final class PaywallCacheWarmingTests: TestCase {
             .union(Self.localizedImageRequests("localized-es")))
     }
 
+    func testStartPrewarmingWorkflowAssetsReturnsBeforeDownloadsComplete() async throws {
+        let fileRepository = BlockingCacheWarmingFileRepository()
+        let cache = PaywallCacheWarming(
+            introEligibiltyChecker: self.eligibilityChecker,
+            fileRepository: fileRepository
+        )
+        let workflow = PublishedWorkflow(
+            id: "workflow",
+            displayName: "Test",
+            initialStepId: "step",
+            singleStepFallbackId: nil,
+            steps: [:],
+            screens: ["screen": Self.workflowScreen(components: [
+                .image(.init(source: Self.cacheWarmingImage("image")))
+            ])]
+        )
+
+        let optionalTask = await cache.startPrewarmingWorkflowAssets(
+            workflow: workflow,
+            uiConfig: Self.emptyUIConfig
+        )
+        let task = try XCTUnwrap(optionalTask)
+        await expect { await fileRepository.requestStarted }.toEventually(beTrue())
+
+        let completedBeforeRelease = await fileRepository.requestCompleted
+        expect(completedBeforeRelease) == false
+        await fileRepository.completeRequest()
+        await task.value
+        let completedAfterRelease = await fileRepository.requestCompleted
+        expect(completedAfterRelease) == true
+    }
+
+    func testStartPrewarmingWorkflowAssetsDoesNotQueueDifferentWorkflows() async throws {
+        let fileRepository = BlockingCacheWarmingFileRepository()
+        let cache = PaywallCacheWarming(
+            introEligibiltyChecker: self.eligibilityChecker,
+            fileRepository: fileRepository
+        )
+        let workflow = { (id: String) in
+            PublishedWorkflow(
+                id: id,
+                displayName: "Test",
+                initialStepId: "step",
+                singleStepFallbackId: nil,
+                steps: [:],
+                screens: ["screen": Self.workflowScreen(components: [
+                    .image(.init(source: Self.cacheWarmingImage(id)))
+                ])]
+            )
+        }
+        let firstWorkflow = workflow("first")
+        let secondWorkflow = workflow("second")
+
+        let optionalFirstTask = await cache.startPrewarmingWorkflowAssets(
+            workflow: firstWorkflow,
+            uiConfig: Self.emptyUIConfig
+        )
+        let firstTask = try XCTUnwrap(optionalFirstTask)
+        await expect { await fileRepository.requestCount }.toEventually(equal(1))
+
+        let optionalSecondTask = await cache.startPrewarmingWorkflowAssets(
+            workflow: secondWorkflow,
+            uiConfig: Self.emptyUIConfig
+        )
+        let secondTask = try XCTUnwrap(optionalSecondTask)
+        await expect { await fileRepository.requestCount }.toEventually(equal(2))
+
+        await cache.prewarmWorkflowAssets(workflow: secondWorkflow, uiConfig: Self.emptyUIConfig)
+        let requestCount = await fileRepository.requestCount
+        expect(requestCount) == 2
+
+        await fileRepository.completeRequests()
+        await firstTask.value
+        await secondTask.value
+    }
+
     func testWorkflowAssetPrewarmingDownloadsLocalizedVideosForPreferredLocaleOnly() async {
         let requests = await self.localizedVideoPrewarmingRequests(preferredLocale: "es_ES")
 
@@ -738,8 +814,8 @@ final class PaywallCacheWarmingTests: TestCase {
         )
         let offerings = try Self.createOfferings([offering])
 
-        await cache.warmUpPaywallAssetsCache(offerings: offerings)
-        await cache.warmUpPaywallAssetsCache(offerings: offerings)
+        await cache.prewarmPaywallAssetsCache(offerings: offerings)
+        await cache.prewarmPaywallAssetsCache(offerings: offerings)
 
         let requests = await fileRepository.requests
         XCTAssertEqual(Set(requests), [
@@ -1510,7 +1586,7 @@ private extension PaywallCacheWarmingTests {
         let finished = self.expectation(description: "Eligibility warm-up finished")
         let cache = self.cache!
         self.eligibilityWarmupTasks.append(Task {
-            await cache.warmUpEligibilityCache(offerings: offerings)
+            await cache.prewarmEligibilityCache(offerings: offerings)
             finished.fulfill()
         })
         return finished
@@ -1602,6 +1678,37 @@ private actor MockCacheWarmingFileRepository: FileRepositoryType {
     ) async throws -> OutputURL {
         self.requests.append(.init(url: url, checksum: checksum))
         return url
+    }
+
+}
+
+private actor BlockingCacheWarmingFileRepository: FileRepositoryType {
+
+    var requestStarted: Bool { return self.requestCount > 0 }
+    private(set) var requestCount = 0
+    private(set) var requestCompleted = false
+    private var continuations: [CheckedContinuation<Void, Never>] = []
+
+    nonisolated func prefetch(urls: [InputURL]) {}
+
+    func generateOrGetCachedFileURL(
+        for url: InputURL,
+        withChecksum checksum: Checksum?
+    ) async throws -> OutputURL {
+        self.requestCount += 1
+        await withCheckedContinuation { self.continuations.append($0) }
+        self.requestCompleted = true
+        return url
+    }
+
+    func completeRequest() {
+        guard !self.continuations.isEmpty else { return }
+        self.continuations.removeFirst().resume()
+    }
+
+    func completeRequests() {
+        self.continuations.forEach { $0.resume() }
+        self.continuations.removeAll()
     }
 
 }

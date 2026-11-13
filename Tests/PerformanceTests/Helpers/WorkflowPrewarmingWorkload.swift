@@ -89,8 +89,10 @@ final class WorkflowPrewarmingWorkload {
         try? FileManager.default.removeItem(at: self.rootURL)
     }
 
-    func prepareIteration() async throws -> WorkflowPrewarmingIteration {
+    func prepareIteration(includingAssetPrewarming: Bool = false) async throws -> WorkflowPrewarmingIteration {
         let decodedScreens = Atomic<[String: Set<String>]>([:])
+        let operationDispatcher = PerformanceOperationDispatcher()
+        let fileRepository = includingAssetPrewarming ? PerformanceFileRepository() : nil
         let uiConfigProvider = UiConfigProvider(manager: self.manager)
         let provider = WorkflowsConfigProvider(
             manager: self.manager,
@@ -106,14 +108,25 @@ final class WorkflowPrewarmingWorkload {
         }
         let config = await uiConfigProvider.getUiConfig()
         _ = try XCTUnwrap(config)
+        let manager = WorkflowManager(
+            workflowsConfigProvider: provider,
+            paywallCache: fileRepository.map {
+                PaywallCacheWarming(
+                    introEligibiltyChecker: PerformanceEligibilityChecker(),
+                    fontsManager: PerformanceFontsManager(),
+                    fileRepository: $0,
+                    preferredLocalesProvider: { ["en_US"] }
+                )
+            },
+            operationDispatcher: operationDispatcher,
+            webBundleURLBatcher: WebBundleURLBatcher(eventBus: WebBundleEventBus())
+        )
+        let offerings = self.makeOfferings()
+        await manager.schedulePrewarming(offerings: offerings)
         return WorkflowPrewarmingIteration(
-            manager: WorkflowManager(
-                workflowsConfigProvider: provider,
-                paywallCache: nil,
-                operationDispatcher: .default,
-                webBundleURLBatcher: WebBundleURLBatcher(eventBus: WebBundleEventBus())
-            ),
-            offerings: self.makeOfferings(),
+            manager: manager,
+            operationDispatcher: operationDispatcher,
+            assetRequestCount: fileRepository?.requestCount,
             decodedScreens: decodedScreens,
             expectedScreens: self.expectedScreens
         )
@@ -147,16 +160,90 @@ final class WorkflowPrewarmingWorkload {
 
 struct WorkflowPrewarmingIteration {
     let manager: WorkflowManager
-    let offerings: Offerings
+    let operationDispatcher: PerformanceOperationDispatcher
+    let assetRequestCount: Atomic<Int>?
     let decodedScreens: Atomic<[String: Set<String>]>
     let expectedScreens: [String: Set<String>]
 
     func run() async {
-        await self.manager.publishWebBundleURLs(offerings: self.offerings)
+        await self.operationDispatcher.invokeDispatchedAsyncWorkerThreadBlocks()
     }
 
     func validate() {
         XCTAssertEqual(self.decodedScreens.value, self.expectedScreens,
                        "Every workflow and screen must decode in every iteration.")
+        if let assetRequestCount {
+            XCTAssertGreaterThanOrEqual(
+                assetRequestCount.value,
+                self.expectedScreens.count,
+                "Every workflow must exercise asset prewarming."
+            )
+        }
     }
+}
+
+private struct PerformanceEligibilityChecker: TrialOrIntroPriceEligibilityCheckerType {
+
+    func checkEligibility(productIdentifiers: Set<String>) async -> [String: IntroEligibility] {
+        return [:]
+    }
+
+}
+
+private final class PerformanceFileRepository: FileRepositoryType, @unchecked Sendable {
+
+    let requestCount: Atomic<Int> = .init(0)
+
+    func prefetch(urls: [InputURL]) {}
+
+    func generateOrGetCachedFileURL(
+        for url: InputURL,
+        withChecksum checksum: Checksum?
+    ) async throws -> OutputURL {
+        self.requestCount.modify { $0 += 1 }
+        return url
+    }
+
+}
+
+private final class PerformanceFontsManager: PaywallFontManagerType, @unchecked Sendable {
+
+    func fontIsAlreadyInstalled(fontName: String, fontFamily: String?) -> Bool {
+        return false
+    }
+
+    func installFont(_ font: DownloadableFont) async throws {}
+
+}
+
+final class PerformanceOperationDispatcher: OperationDispatcher, @unchecked Sendable {
+
+    private let dispatchedAsyncWorkerThreadBlocks: Atomic<[@Sendable () async -> Void]> = .init([])
+
+    @discardableResult
+    override func dispatchOnWorkerThread(
+        jitterableDelay delay: JitterableDelay = .none,
+        priority: TaskPriority = .background,
+        block: @escaping @Sendable () async -> Void
+    ) -> Task<Void, Never> {
+        self.dispatchedAsyncWorkerThreadBlocks.modify { $0.append(block) }
+        return Task {}
+    }
+
+    func invokeDispatchedAsyncWorkerThreadBlocks() async {
+        let blocks = self.dispatchedAsyncWorkerThreadBlocks.modify { blocks in
+            defer { blocks.removeAll() }
+            return blocks
+        }
+        guard !blocks.isEmpty else {
+            XCTFail("Expected a scheduled workflow prewarming pass.")
+            return
+        }
+        await withTaskGroup(of: Void.self) { group in
+            for block in blocks {
+                group.addTask { await block() }
+            }
+        }
+    }
+
 }

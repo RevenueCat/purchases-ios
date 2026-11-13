@@ -38,7 +38,7 @@ final class RecordingMemoryMetric: XCTMemoryMetric {
             $0.identifier == "com.apple.dt.XCTMetric_Memory.physical_peak"
         })
         guard peak.unitSymbol == "byte" else {
-            throw MemoryBaseline.Failure("Unsupported memory unit: \(peak.unitSymbol)")
+            throw PerformanceBaseline.Failure("Unsupported memory unit: \(peak.unitSymbol)")
         }
         self.samples.peaksMiB.append(peak.doubleValue / 1_048_576)
         return measurements

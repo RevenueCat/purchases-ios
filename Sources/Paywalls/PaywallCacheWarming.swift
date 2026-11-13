@@ -19,28 +19,67 @@ import Foundation
 protocol PaywallCacheWarmingType: Sendable {
 
     @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
-    func warmUpEligibilityCache(offerings: Offerings) async
+    func prewarmEligibilityCache(offerings: Offerings) async
 
     @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
     func clearEligibilityCache() async
 
     @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
-    func warmUpPaywallAssetsCache(offerings: Offerings) async
+    func prewarmPaywallAssetsCache(offerings: Offerings) async
 
     @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
-    func warmUpPaywallFontsCache(offerings: Offerings) async
+    func prewarmPaywallFontsCache(offerings: Offerings) async
 
     @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
     func prewarmWorkflowAssets(workflow: PublishedWorkflow, uiConfig: UIConfig) async
 
     @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
-    func hasStartedWorkflowAssetPrewarming(for workflowID: String) async -> Bool
+    func startPrewarmingWorkflowAssets(
+        workflow: PublishedWorkflow,
+        uiConfig: UIConfig
+    ) async -> Task<Void, Never>?
+
+    @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
+    func hasStartedPrewarmingWorkflowAssets(for workflowID: String) async -> Bool
 
 #if !os(tvOS) // For Paywalls
 
     @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
     func triggerFontDownloadIfNeeded(fontsConfig: UIConfig.FontsConfig) async
 
+#endif
+
+}
+
+extension PaywallCacheWarmingType {
+
+    /// Pre-downloads every screen's images and low-resolution videos plus downloadable `ui_config` fonts.
+    ///
+    /// The workflow ID and locale preferences are recorded before downloads start so the presentation and background
+    /// body-data paths cannot enqueue duplicate work for the same locale preferences. Individual downloads are
+    /// best-effort and do not fail workflow delivery.
+    @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
+    func prewarmWorkflowAssets(workflow: PublishedWorkflow, uiConfig: UIConfig) async {
+        guard let task = await self.startPrewarmingWorkflowAssets(
+            workflow: workflow,
+            uiConfig: uiConfig
+        ) else { return }
+        await withTaskCancellationHandler {
+            await task.value
+        } onCancel: {
+            task.cancel()
+        }
+    }
+
+}
+
+/// The lightweight asset references retained after a workflow's transient prewarming decode is released.
+private struct WorkflowAssetPrewarmingRequest: Sendable {
+
+    let imageURLs: Set<URLWithValidation>
+    let videoURLs: Set<URLWithValidation>
+#if !os(tvOS)
+    let fonts: [DownloadableFont]
 #endif
 
 }
@@ -94,7 +133,7 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
     ///
     /// Products that have already been warmed up are skipped on subsequent calls.
     /// Call ``clearEligibilityCache()`` to reset the tracking (e.g. when `CustomerInfo` changes).
-    func warmUpEligibilityCache(offerings: Offerings) async {
+    func prewarmEligibilityCache(offerings: Offerings) async {
         self.pendingCurrentOfferingProductIdentifiers.formUnion(
             offerings.productIdentifiersInCurrentOffering.subtracting(self.warmedEligibilityProductIdentifiers)
         )
@@ -106,7 +145,7 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
             Logger.debug(Strings.paywalls.joining_eligibility_cache_warmup)
             await task.value
         } else if !self.pendingEligibilityProductIdentifiers.isEmpty {
-            let task = Task { await self.warmUpPendingEligibility() }
+            let task = Task { await self.prewarmPendingEligibility() }
             self.eligibilityWarmupTask = task
             await task.value
         }
@@ -115,7 +154,7 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
     /// Resets the set of product identifiers that have been warmed up for intro eligibility.
     ///
     /// Should be called whenever the underlying eligibility cache is cleared (e.g. on
-    /// `CustomerInfo` changes) so that the next call to ``warmUpEligibilityCache(offerings:)``
+    /// `CustomerInfo` changes) so that the next call to ``prewarmEligibilityCache(offerings:)``
     /// re-populates the cache.
     func clearEligibilityCache() {
         // New warm-ups must not wait for checks started before eligibility was invalidated.
@@ -127,7 +166,7 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
         self.pendingEligibilityProductIdentifiers.removeAll(keepingCapacity: false)
     }
 
-    private func warmUpPendingEligibility() async {
+    private func prewarmPendingEligibility() async {
         while !Task.isCancelled {
             let products = self.pendingCurrentOfferingProductIdentifiers.isEmpty
                 ? self.pendingEligibilityProductIdentifiers
@@ -161,7 +200,7 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
     ///
     /// Workflow assets and web bundles are prewarmed from decoded workflows. Assets stored in an offering's
     /// `internalPaywallComponents` are intentionally excluded from offerings prewarming.
-    func warmUpPaywallAssetsCache(offerings: Offerings) async {
+    func prewarmPaywallAssetsCache(offerings: Offerings) async {
         guard !self.hasStartedPaywallAssetPrewarming else { return }
         // Claim this work before suspending so actor reentrancy cannot start duplicate downloads.
         self.hasStartedPaywallAssetPrewarming = true
@@ -176,7 +215,7 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
         }
     }
 
-    func warmUpPaywallFontsCache(offerings: Offerings) async {
+    func prewarmPaywallFontsCache(offerings: Offerings) async {
         let allFontsInPaywallsNamed = offerings.allFontsInPaywallsNamed
         let allFontURLs = Set(allFontsInPaywallsNamed.map(\.url))
         Logger.verbose(Strings.paywalls.warming_up_fonts(fontsURLS: allFontURLs))
@@ -190,15 +229,16 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
         }
     }
 
-    /// Pre-downloads every screen's images and low-resolution videos plus downloadable `ui_config` fonts.
-    ///
-    /// The workflow ID and locale preferences are recorded before downloads start so the presentation and background
-    /// body-data paths cannot enqueue duplicate work for the same locale preferences. Individual downloads are
-    /// best-effort and do not fail workflow delivery.
-    func prewarmWorkflowAssets(workflow: PublishedWorkflow, uiConfig: UIConfig) async {
+    /// Extracts the asset references needed for prewarming, allowing the decoded workflow graph to be released
+    /// before downloads begin. Returns `nil` when prewarming has already started for this workflow and locale
+    /// preference list.
+    private func prepareWorkflowAssetPrewarming(
+        workflow: PublishedWorkflow,
+        uiConfig: UIConfig
+    ) -> WorkflowAssetPrewarmingRequest? {
         let preferredLocaleIdentifiers = self.preferredLocalesProvider()
         guard self.assetPrewarmingLocalesByWorkflowID[workflow.id, default: []]
-            .insert(preferredLocaleIdentifiers).inserted else { return }
+            .insert(preferredLocaleIdentifiers).inserted else { return nil }
 
         // Intentionally prewarming all screens, not just those reachable from
         // `initialStepId`. This trades off potentially downloading assets for
@@ -222,19 +262,49 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
         }
         #endif
 
+        #if !os(tvOS)
+        return WorkflowAssetPrewarmingRequest(
+            imageURLs: imageURLs,
+            videoURLs: videoURLs,
+            fonts: fonts
+        )
+        #else
+        return WorkflowAssetPrewarmingRequest(
+            imageURLs: imageURLs,
+            videoURLs: videoURLs
+        )
+        #endif
+    }
+
+    /// Extracts lightweight asset references, then starts their download immediately.
+    func startPrewarmingWorkflowAssets(
+        workflow: PublishedWorkflow,
+        uiConfig: UIConfig
+    ) -> Task<Void, Never>? {
+        guard let request = self.prepareWorkflowAssetPrewarming(
+            workflow: workflow,
+            uiConfig: uiConfig
+        ) else { return nil }
+
+        return Task { [weak self] in
+            await self?.executeWorkflowAssetPrewarming(request)
+        }
+    }
+
+    private func executeWorkflowAssetPrewarming(_ request: WorkflowAssetPrewarmingRequest) async {
         await withTaskGroup(of: Void.self) { group in
-            for source in imageURLs {
+            for source in request.imageURLs {
                 group.addTask { [weak self] in
                     await self?.download(source)
                 }
             }
-            for source in videoURLs {
+            for source in request.videoURLs {
                 group.addTask { [weak self] in
                     await self?.download(source)
                 }
             }
             #if !os(tvOS)
-            for font in fonts {
+            for font in request.fonts {
                 group.addTask { [weak self] in
                     guard let self = self else { return }
                     await self.installFont(from: font)
@@ -244,7 +314,7 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
         }
     }
 
-    func hasStartedWorkflowAssetPrewarming(for workflowID: String) async -> Bool {
+    func hasStartedPrewarmingWorkflowAssets(for workflowID: String) async -> Bool {
         return self.assetPrewarmingLocalesByWorkflowID[workflowID]?
             .contains(self.preferredLocalesProvider()) ?? false
     }

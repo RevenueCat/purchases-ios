@@ -1004,7 +1004,7 @@ jobs:
           query: "PerformanceTests"
           include_test_dependencies: true
       - run:
-          name: Run memory performance tests
+          name: Run performance tests
           no_output_timeout: 15m
           command: |
             if [ "<< parameters.record_baselines >>" = "true" ]; then

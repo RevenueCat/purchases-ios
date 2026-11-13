@@ -67,7 +67,7 @@ final class WebBundleURLPublishingMemoryTests: XCTestCase {
         let peaks = metric.samples.peaksMiB.dropFirst()
         XCTAssertEqual(peaks.count, options.iterationCount)
         guard peaks.count == options.iterationCount else { return }
-        try MemoryBaseline.checkOrRecord(
+        try PerformanceBaseline.checkOrRecordMemory(
             peakMemoryMiB: peaks.reduce(0, +) / Double(peaks.count),
             tolerancePercent: 10,
             testName: "\(type(of: self))/\(#function)",
