@@ -11,8 +11,12 @@
 //
 //  Created by Nacho Soto on 10/10/22.
 
-@_spi(Internal) @testable import RevenueCat
+@_spi(Internal) @_spi(Experimental) @testable import RevenueCat
 import StoreKit
+
+#if canImport(UIKit)
+import UIKit
+#endif
 
 final class MockPurchases {
 
@@ -360,6 +364,36 @@ extension MockPurchases: PurchasesType {
     func showManageSubscriptions() async throws {
         self.unimplemented()
     }
+
+    #if ENABLE_MULTISEAT_PURCHASES
+    #if (os(iOS) || targetEnvironment(macCatalyst)) && canImport(UIKit)
+
+    @available(iOS 27.3, *)
+    @available(macOS, unavailable)
+    @available(watchOS, unavailable)
+    @available(tvOS, unavailable)
+    @available(visionOS, unavailable)
+    func presentMultiSeatInvitationSheet(
+        for storeProduct: StoreProduct,
+        from viewController: UIViewController
+    ) async throws {
+        self.unimplemented()
+    }
+
+    @available(iOS 27.3, *)
+    @available(macOS, unavailable)
+    @available(watchOS, unavailable)
+    @available(tvOS, unavailable)
+    @available(visionOS, unavailable)
+    func presentMultiSeatInvitationSheet(
+        for package: Package,
+        from viewController: UIViewController
+    ) async throws {
+        self.unimplemented()
+    }
+
+    #endif
+    #endif
 
     var attribution: Attribution {
         self.unimplemented()
