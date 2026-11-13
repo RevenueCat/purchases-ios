@@ -38,7 +38,7 @@ final class MockDiagnosticsTracker: DiagnosticsTrackerType, Sendable {
     // swiftlint:disable large_tuple
     // swiftlint:disable line_length
     let trackedHttpRequestPerformedParams: Atomic<[
-        (String, String?, TimeInterval, Bool, Int, Int?, HTTPResponseOrigin?, SignatureVerificationResult, Date?, Bool, ConnectionErrorReason?)
+        (String, String?, TimeInterval, Bool, Int, Int?, HTTPResponseOrigin?, SignatureVerificationResult, Date?, Bool, ConnectionErrorReason?, Int?)
     ]> = .init([])
     // swiftlint:enable large_tuple
     // swiftlint:enable line_length
@@ -52,6 +52,7 @@ final class MockDiagnosticsTracker: DiagnosticsTrackerType, Sendable {
                                    backendErrorCode: Int?,
                                    resultOrigin: HTTPResponseOrigin?,
                                    verificationResult: SignatureVerificationResult,
+                                   signatureVersion: Int?,
                                    responseRequestDate: Date?,
                                    isRetry: Bool,
                                    connectionErrorReason: ConnectionErrorReason? = nil) {
@@ -67,7 +68,8 @@ final class MockDiagnosticsTracker: DiagnosticsTrackerType, Sendable {
                  verificationResult,
                  responseRequestDate,
                  isRetry,
-                 connectionErrorReason)
+                 connectionErrorReason,
+                 signatureVersion)
             )
         }
     }

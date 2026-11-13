@@ -47,6 +47,7 @@ protocol DiagnosticsTrackerType: Sendable {
                                    backendErrorCode: Int?,
                                    resultOrigin: HTTPResponseOrigin?,
                                    verificationResult: SignatureVerificationResult,
+                                   signatureVersion: Int?,
                                    responseRequestDate: Date?,
                                    isRetry: Bool,
                                    connectionErrorReason: ConnectionErrorReason?)
@@ -292,6 +293,7 @@ final class DiagnosticsTracker: DiagnosticsTrackerType, Sendable {
                                    backendErrorCode: Int?,
                                    resultOrigin: HTTPResponseOrigin?,
                                    verificationResult: SignatureVerificationResult,
+                                   signatureVersion: Int?,
                                    responseRequestDate: Date?,
                                    isRetry: Bool,
                                    connectionErrorReason: ConnectionErrorReason?) {
@@ -300,6 +302,7 @@ final class DiagnosticsTracker: DiagnosticsTrackerType, Sendable {
             properties: DiagnosticsEvent.Properties(
                 verificationResult: verificationResult.result.name,
                 verificationFailureReason: verificationResult.failureReason?.rawValue,
+                signatureVersion: signatureVersion,
                 verificationDeviceClockOffsetMinutes: responseRequestDate.map {
                     Int(self.dateProvider.now().timeIntervalSince($0) / 60)
                 },

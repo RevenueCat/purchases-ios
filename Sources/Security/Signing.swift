@@ -106,12 +106,20 @@ final class Signing: SigningType {
         }
     }
 
+    static let signatureVersion2Prefix = "v2."
+
+    static func signatureVersion(of signature: String) -> Int {
+        return signature.hasPrefix(Self.signatureVersion2Prefix) ? 2 : 1
+    }
+
     func verificationResult(
         for signature: String,
         with parameters: SignatureParameters,
         publicKey: Signing.PublicKey
     ) -> SignatureVerificationResult {
-        guard let signature = Data(base64Encoded: signature) else {
+        let decodesPath = Self.signatureVersion(of: signature) == 2
+        let encodedSignature = decodesPath ? String(signature.dropFirst(Self.signatureVersion2Prefix.count)) : signature
+        guard let signature = Data(base64Encoded: encodedSignature) else {
             Logger.warn(Strings.signing.signature_not_base64(signature))
             return .failed(.invalidSignatureFormat)
         }
@@ -139,7 +147,7 @@ final class Signing: SigningType {
 
         let salt = signature.component(.salt)
         let payload = signature.component(.payload)
-        let messageToVerify = parameters.signature(salt: salt, authValue: authValue)
+        let messageToVerify = parameters.signature(salt: salt, authValue: authValue, decodesPath: decodesPath)
 
         #if DEBUG
         Logger.verbose(Strings.signing.verifying_signature(
@@ -280,12 +288,12 @@ extension Signing {
 
 extension Signing.SignatureParameters {
 
-    func signature(salt: Data, authValue: String) -> Data {
+    func signature(salt: Data, authValue: String, decodesPath: Bool = false) -> Data {
         let auth = self.path.authenticated ? authValue : ""
-        return salt + auth.asData + self.asData
+        return salt + auth.asData + self.asData(decodesPath: decodesPath)
     }
 
-    var asData: Data {
+    func asData(decodesPath: Bool) -> Data {
         let nonce: Data = self.nonce ?? .init()
         let relativePath: String
         if useFallbackPath, let fallbackRelativePath = self.path.fallbackRelativePath {
@@ -293,7 +301,7 @@ extension Signing.SignatureParameters {
         } else {
             relativePath = self.iamEnabled ? self.path.relativeIAMPath : self.path.relativePath
         }
-        let path: Data = relativePath.asData
+        let path: Data = (decodesPath ? relativePath.removingPercentEncoding ?? relativePath : relativePath).asData
         let postParameterHash: Data = self.requestBody?.postParameterHeader?.asData ?? .init()
         let headerParametersHash: Data = HTTPRequest.headerParametersForSignatureHeader(
             headers: self.requestHeaders,

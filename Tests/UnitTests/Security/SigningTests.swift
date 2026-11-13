@@ -1437,9 +1437,91 @@ class SigningTests: TestCase {
         expect(parameters.debugDescription).to(contain("path: '/v1/subscribers/user'"))
     }
 
+    // MARK: - Signature version 2
+
+    func testVersion2SignatureVerifiesOverDecodedPath() throws {
+        let parameters = Self.anonymousUserParameters()
+        expect(parameters.path.relativePath).to(contain("%3A"))
+
+        expect(
+            try self.verify(parameters, signedOverDecodedPath: true, prefix: Signing.signatureVersion2Prefix)
+        ) == .verified
+    }
+
+    func testVersion2SignatureDecodesNonASCIIIdsAndTheQueryStringOnce() throws {
+        let nonASCII = Self.anonymousUserParameters(path: .getCustomerInfo(appUserID: "José"))
+        expect(nonASCII.path.relativePath) == "/v1/subscribers/Jos%C3%A9"
+
+        let literalEscape = Self.anonymousUserParameters(path: .getCustomerInfo(appUserID: "%24literal"))
+        expect(literalEscape.path.relativePath) == "/v1/subscribers/%2524literal"
+
+        let query = Self.anonymousUserParameters(
+            path: .rewardVerificationStatus(appUserID: "user", clientTransactionID: "txn", adUnitID: "ca-app-pub/123 x")
+        )
+        expect(query.path.relativePath).to(contain("?ad_unit_id=ca-app-pub/123%20x"))
+
+        for parameters in [nonASCII, literalEscape, query] {
+            expect(
+                try self.verify(parameters, signedOverDecodedPath: true, prefix: Signing.signatureVersion2Prefix)
+            ) == .verified
+        }
+    }
+
+    func testVersion2SignatureIsNotVerifiedOverEncodedPath() throws {
+        expect(
+            try self.verify(Self.anonymousUserParameters(),
+                            signedOverDecodedPath: false,
+                            prefix: Signing.signatureVersion2Prefix)
+        ) == .failed(.payloadSignatureMismatch)
+    }
+
+    func testSignatureWithoutVersionPrefixIsVerifiedOverEncodedPath() throws {
+        expect(
+            try self.verify(Self.anonymousUserParameters(), signedOverDecodedPath: false, prefix: "")
+        ) == .verified
+    }
+
+    func testVersion2PrefixWithInvalidSignatureFailsWithInvalidFormat() {
+        expect(
+            self.signing.verificationResult(
+                for: Signing.signatureVersion2Prefix + "not base64!",
+                with: Self.anonymousUserParameters(),
+                publicKey: self.publicKey
+            )
+        ) == .failed(.invalidSignatureFormat)
+    }
+
 }
 
 private extension SigningTests {
+
+    static func anonymousUserParameters(
+        path: HTTPRequest.Path = .getCustomerInfo(appUserID: "$RCAnonymousID:1af512a3b9c848899fe427f39dd69f2b")
+    ) -> Signing.SignatureParameters {
+        return .init(
+            path: path,
+            iamEnabled: false,
+            message: "Hello World".asData,
+            nonce: "0123456789ab".asData,
+            etag: nil,
+            requestDate: Date().millisecondsSince1970
+        )
+    }
+
+    func verify(
+        _ parameters: Signing.SignatureParameters,
+        signedOverDecodedPath: Bool,
+        prefix: String
+    ) throws -> SignatureVerificationResult {
+        let intermediateKey = try self.createIntermediatePublicKeyData(expiration: Self.intermediateKeyFutureExpiration)
+        let salt = Self.createSalt()
+        let signature = try self.sign(parameters: parameters, salt: salt.asData, decodesPath: signedOverDecodedPath)
+        let fullSignature = Self.fullSignature(intermediateKey: intermediateKey, salt: salt, signature: signature)
+
+        return self.signing.verificationResult(for: prefix + fullSignature.base64EncodedString(),
+                                               with: parameters,
+                                               publicKey: self.publicKey)
+    }
 
     static func createRandomKey() -> (PrivateKey, PublicKey) {
         let key = PrivateKey()
@@ -1447,12 +1529,22 @@ private extension SigningTests {
         return (key, key.publicKey)
     }
 
-    func sign(parameters: Signing.SignatureParameters, salt: Data) throws -> Data {
-        return try self.sign(key: self.privateIntermediateKey, parameters: parameters, salt: salt)
+    func sign(parameters: Signing.SignatureParameters, salt: Data, decodesPath: Bool = false) throws -> Data {
+        return try self.sign(key: self.privateIntermediateKey,
+                             parameters: parameters,
+                             salt: salt,
+                             decodesPath: decodesPath)
     }
 
-    func sign(key: PrivateKey, parameters: Signing.SignatureParameters, salt: Data) throws -> Data {
-        return try key.signature(for: parameters.signature(salt: salt, authValue: Self.apiKey))
+    func sign(
+        key: PrivateKey,
+        parameters: Signing.SignatureParameters,
+        salt: Data,
+        decodesPath: Bool = false
+    ) throws -> Data {
+        return try key.signature(
+            for: parameters.signature(salt: salt, authValue: Self.apiKey, decodesPath: decodesPath)
+        )
     }
 
     static func fullSignature(intermediateKey: Data, salt: String, signature: Data) -> Data {

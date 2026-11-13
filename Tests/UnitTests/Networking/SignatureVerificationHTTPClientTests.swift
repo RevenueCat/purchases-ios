@@ -76,6 +76,7 @@ final class SignatureVerificationHTTPClientTests: BaseSignatureVerificationHTTPC
     }
 
     func testRequestIncludesRandomNonce() throws {
+        self.changeClient(.informational)
         let request = HTTPRequest.createWithResponseVerification(method: .get, path: Self.path)
 
         let headers: [String: String]? = waitUntilValue { completion in
@@ -90,6 +91,28 @@ final class SignatureVerificationHTTPClientTests: BaseSignatureVerificationHTTPC
         expect(headers).toNot(beEmpty())
         expect(headers?.keys).to(contain(HTTPClient.RequestHeader.nonce.rawValue))
         expect(headers?[HTTPClient.RequestHeader.nonce.rawValue]) == request.nonce?.base64EncodedString()
+        expect(headers?[HTTPClient.RequestHeader.signatureVersion.rawValue]) == "2"
+    }
+
+    func testRequestIncludesSignatureVersionWithoutNonceForEndpointWithStaticSignature() {
+        let path: HTTPRequest.Path = .getProductEntitlementMapping
+        expect(path.needsNonceForSigning) == false
+
+        self.changeClient(.informational)
+        let request = HTTPRequest(method: .get, path: path)
+
+        let headers: [String: String]? = waitUntilValue { completion in
+            stub(condition: isPath(request.path)) { request in
+                completion(request.allHTTPHeaderFields)
+                return .emptySuccessResponse()
+            }
+
+            self.client.perform(request) { (_: EmptyResponse) in }
+        }
+
+        expect(headers).toNot(beEmpty())
+        expect(headers?.keys).toNot(contain(HTTPClient.RequestHeader.nonce.rawValue))
+        expect(headers?[HTTPClient.RequestHeader.signatureVersion.rawValue]) == "2"
     }
 
     func testFailedVerificationIfResponseContainsNoSignature() {
@@ -1292,6 +1315,30 @@ final class EnforcedSignatureVerificationHTTPClientTests: BaseSignatureVerificat
     }
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    func testDiagnosticsTrackSignatureVersionOfResponse() throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        self.mockResponse(signature: Signing.signatureVersion2Prefix + Self.sampleSignature,
+                          requestDate: Self.date1)
+        self.signing.stubbedVerificationResult = .verified
+
+        let response: DataResponse? = waitUntilValue { completion in
+            self.client.perform(.createWithResponseVerification(method: .get, path: Self.path),
+                                completionHandler: completion)
+        }
+
+        expect(response).to(beSuccess())
+
+        // swiftlint:disable:next force_cast
+        let diagnosticsTracker = self.diagnosticsTracker as! MockDiagnosticsTracker
+        expect(diagnosticsTracker.trackedHttpRequestPerformedParams.value).toEventually(haveCount(1))
+
+        let trackedParameters = diagnosticsTracker.trackedHttpRequestPerformedParams.value.onlyElement
+        expect(trackedParameters?.7) == .verified
+        expect(trackedParameters?.11) == 2
+    }
+
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     func testDiagnosticsRetainVerificationResultForEnforcedFailure() throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
@@ -1315,6 +1362,29 @@ final class EnforcedSignatureVerificationHTTPClientTests: BaseSignatureVerificat
         expect(trackedParameters?.6).to(beNil())
         expect(trackedParameters?.7) == .failed(.payloadSignatureMismatch)
         expect(trackedParameters?.8?.millisecondsSince1970) == Self.date1.millisecondsSince1970
+        expect(trackedParameters?.11) == 1
+    }
+
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    func testDiagnosticsDoNotTrackSignatureVersionWhenVerificationNotRequested() throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        self.changeClient(.disabled)
+        self.mockResponse(signature: Signing.signatureVersion2Prefix + Self.sampleSignature,
+                          requestDate: Self.date1)
+
+        let response: DataResponse? = waitUntilValue { completion in
+            self.client.perform(.createWithResponseVerification(method: .get, path: Self.path),
+                                completionHandler: completion)
+        }
+
+        expect(response).to(beSuccess())
+        expect(response?.value?.verificationResult) == .notRequested
+
+        // swiftlint:disable:next force_cast
+        let diagnosticsTracker = self.diagnosticsTracker as! MockDiagnosticsTracker
+        expect(diagnosticsTracker.trackedHttpRequestPerformedParams.value).toEventually(haveCount(1))
+        expect(diagnosticsTracker.trackedHttpRequestPerformedParams.value.onlyElement?.11).to(beNil())
     }
 
     func testPerformRequestOverridesIt() {
