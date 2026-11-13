@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		4D5E7A272F1B3A0900A1B2C3 /* PurchasesMultiSeatSheetsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D5E7A262F1B3A0900A1B2C3 /* PurchasesMultiSeatSheetsTests.swift */; };
+		4D5E7A252F1B3A0900A1B2C3 /* MockMultiSeatSheetsHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D5E7A242F1B3A0900A1B2C3 /* MockMultiSeatSheetsHelper.swift */; };
 		6E3D303CC6866D3321E0AB80 /* NativePaywallNavigationPreference.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75E05D8CB2A9815AF566CCC8 /* NativePaywallNavigationPreference.swift */; };
 		9C2F3C5174C2557D06DDF622 /* NativePaywallCloseCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6CC48F7925622D08522BDDAF /* NativePaywallCloseCoordinator.swift */; };
 		D22A00000000000000000001 /* AnyDecodable+DimensionValue.swift in Sources */ = {isa = PBXBuildFile; fileRef = D22A00000000000000000002 /* AnyDecodable+DimensionValue.swift */; };
@@ -1363,6 +1365,7 @@
 		A55D08302722368600D919E0 /* SK2BeginRefundRequestHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = A55D082F2722368600D919E0 /* SK2BeginRefundRequestHelper.swift */; };
 		4D5E7A1F2F1B3A0900A1B2C3 /* MultiSeatSheetPresenterType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D5E7A1E2F1B3A0900A1B2C3 /* MultiSeatSheetPresenterType.swift */; };
 		A55D083427235DED00D919E0 /* BeginRefundRequestHelperTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A563F587271E076800246E0C /* BeginRefundRequestHelperTests.swift */; };
+		4D5E7A232F1B3A0900A1B2C3 /* MultiSeatSheetsHelperTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D5E7A222F1B3A0900A1B2C3 /* MultiSeatSheetsHelperTests.swift */; };
 		A55D083627236F0200D919E0 /* MockSK2BeginRefundRequestHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = A55D08312722471200D919E0 /* MockSK2BeginRefundRequestHelper.swift */; };
 		4D5E7A212F1B3A0900A1B2C3 /* MockMultiSeatSheetPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D5E7A202F1B3A0900A1B2C3 /* MockMultiSeatSheetPresenter.swift */; };
 		A55D5D66282ECCC100FA7623 /* PostAdServicesTokenOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = A55D5D65282ECCC100FA7623 /* PostAdServicesTokenOperation.swift */; };
@@ -1809,6 +1812,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		4D5E7A262F1B3A0900A1B2C3 /* PurchasesMultiSeatSheetsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchasesMultiSeatSheetsTests.swift; sourceTree = "<group>"; };
+		4D5E7A242F1B3A0900A1B2C3 /* MockMultiSeatSheetsHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockMultiSeatSheetsHelper.swift; sourceTree = "<group>"; };
 		75E05D8CB2A9815AF566CCC8 /* NativePaywallNavigationPreference.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativePaywallNavigationPreference.swift; sourceTree = "<group>"; };
 		6CC48F7925622D08522BDDAF /* NativePaywallCloseCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativePaywallCloseCoordinator.swift; sourceTree = "<group>"; };
 		D22A00000000000000000002 /* AnyDecodable+DimensionValue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AnyDecodable+DimensionValue.swift"; sourceTree = "<group>"; };
@@ -3328,6 +3333,7 @@
 		A55D5D65282ECCC100FA7623 /* PostAdServicesTokenOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostAdServicesTokenOperation.swift; sourceTree = "<group>"; };
 		A563F585271E072B00246E0C /* MockBeginRefundRequestHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockBeginRefundRequestHelper.swift; sourceTree = "<group>"; };
 		A563F587271E076800246E0C /* BeginRefundRequestHelperTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BeginRefundRequestHelperTests.swift; sourceTree = "<group>"; };
+		4D5E7A222F1B3A0900A1B2C3 /* MultiSeatSheetsHelperTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MultiSeatSheetsHelperTests.swift; sourceTree = "<group>"; };
 		A56C2E002819C33500995421 /* BackendPostAdServicesTokenTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackendPostAdServicesTokenTests.swift; sourceTree = "<group>"; };
 		A56DFDEF286643BF00EF2E32 /* PostAttributionDataOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostAttributionDataOperation.swift; sourceTree = "<group>"; };
 		A56DFDF1286665E600EF2E32 /* BackendPostAttributionDataTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackendPostAttributionDataTests.swift; sourceTree = "<group>"; };
@@ -4545,6 +4551,7 @@
 				57488C8129CB91D20000EE7E /* OfflineEntitlements */,
 				4FCEEA5F2A379CD6002C2112 /* Support */,
 				A563F587271E076800246E0C /* BeginRefundRequestHelperTests.swift */,
+				4D5E7A222F1B3A0900A1B2C3 /* MultiSeatSheetsHelperTests.swift */,
 				2D8FC8AB26E01AE70049A85C /* BasePurchasesOrchestratorTests.swift */,
 				4D7A3E272B85729E00ABDE67 /* PurchasesOrchestratorTests.swift */,
 				551800762FF46C8A0055FD1B /* KeychainTests.swift */,
@@ -5108,6 +5115,7 @@
 				2DDF41E524F6F5DC005BC22D /* MockSK1Product.swift */,
 				A55D08312722471200D919E0 /* MockSK2BeginRefundRequestHelper.swift */,
 				4D5E7A202F1B3A0900A1B2C3 /* MockMultiSeatSheetPresenter.swift */,
+				4D5E7A242F1B3A0900A1B2C3 /* MockMultiSeatSheetsHelper.swift */,
 				2DDF41E724F6F61B005BC22D /* MockSKProductDiscount.swift */,
 				57DE807F2807529F008D6C6F /* MockStorefront.swift */,
 				2D90F8C926FD257A009B9142 /* MockStoreKit2TransactionListener.swift */,
@@ -6020,6 +6028,7 @@
 				900D270D2F96A00000D32EDF /* PurchasesRewardVerificationTests.swift */,
 				4487A0AF2E9000000000000B /* PurchasesHostedCheckoutTests.swift */,
 				77AABEB72F0C23450018C1D3 /* PurchasesStoreMessagesTests.swift */,
+				4D5E7A262F1B3A0900A1B2C3 /* PurchasesMultiSeatSheetsTests.swift */,
 				FD4E63412F34E0B60040BA46 /* PurchasesIsPurchaseAllowedByRestoreBehaviorTests.swift */,
 				FDF6B1A92FB628E0006840E8 /* TestStoreProductTests.swift */,
 			);
@@ -8089,6 +8098,7 @@
 				55DACE97302E320C005EE017 /* MockTokenManager.swift in Sources */,
 				FDAADFD72BE2C67700BD1659 /* StoreKit2ObserverModePurchaseDetectorTests.swift in Sources */,
 				A55D083427235DED00D919E0 /* BeginRefundRequestHelperTests.swift in Sources */,
+				4D5E7A232F1B3A0900A1B2C3 /* MultiSeatSheetsHelperTests.swift in Sources */,
 				57DE80892807540D008D6C6F /* StorefrontTests.swift in Sources */,
 				16BCA3762E4D9BF400B39E7F /* MockSimpleCache.swift in Sources */,
 				5791FBD3299184EF00F1FEDA /* MockAsyncSequence.swift in Sources */,
@@ -8791,6 +8801,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4D5E7A252F1B3A0900A1B2C3 /* MockMultiSeatSheetsHelper.swift in Sources */,
+				4D5E7A272F1B3A0900A1B2C3 /* PurchasesMultiSeatSheetsTests.swift in Sources */,
 				FD1197332D6E6485002718E3 /* MockNSWindow.swift in Sources */,
 				EF0100000000000000000052 /* MockExternalPurchaseCustomLink.swift in Sources */,
 				EF0200000000000000000052 /* MockSDKSettingsConfigProvider.swift in Sources */,
