@@ -32,7 +32,8 @@ final class MockPurchases: PaywallPurchasesType, @unchecked Sendable {
     private let _purchasesAreCompletedBy: PurchasesAreCompletedBy
     let preferredLocales: [String]
     let preferredLocaleOverride: String?
-    var appUserID = ""
+    var appUserID: String { self.appUserIDProvider() }
+    var appUserIDProvider: @Sendable () -> String = { "" }
     var isUIPreviewMode = false
     var remoteConfigEnabled = false
 
@@ -223,6 +224,7 @@ extension PaywallPurchasesType {
             try await self.customerInfo()
         }
 
+        mapped.appUserIDProvider = { self.appUserID }
         mapped.cachedOfferings = self.cachedOfferings
         mapped.offeringsBlock = { try await self.offerings() }
         mapped.isUIPreviewMode = self.isUIPreviewMode
@@ -260,6 +262,7 @@ extension PaywallPurchasesType {
             try await self.customerInfo()
         }
 
+        mapped.appUserIDProvider = { self.appUserID }
         mapped.cachedOfferings = self.cachedOfferings
         mapped.offeringsBlock = { try await self.offerings() }
         mapped.isUIPreviewMode = self.isUIPreviewMode
