@@ -2152,7 +2152,7 @@ extension WorkflowPaywallViewTests {
     }
 
     @MainActor
-    func testPurchaseCompletionCallbackCanChangeIdentityBeforeGateDismissal() async throws {
+    func testPurchaseCompletionCallbackIdentityChangeDoesNotRevokeAPassedGate() async throws {
         let harness = try WorkflowGateHarness(activeEntitlements: [], operationEntitlements: ["pro"])
         let completions = Atomic(0)
         let dispose = try harness.host(Self.makeGatedContext(firstGating: Self.hardGating("pro")))
@@ -2167,8 +2167,8 @@ extension WorkflowPaywallViewTests {
         try await harness.purchaseHandler.purchase(package: TestData.annualPackage)
 
         await expect(completions.value).toEventually(equal(1))
-        await expect(harness.dismissals.value).toNever(beGreaterThan(0), until: .milliseconds(500))
-        expect(harness.outcomes.value.last) == .notPassed
+        await expect(harness.dismissals.value).toEventually(equal(1))
+        expect(harness.outcomes.value) == [.notApplicable, .notPassed, .passed]
     }
 
     @MainActor
