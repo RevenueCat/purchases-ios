@@ -2402,7 +2402,6 @@ private extension WorkflowPaywallViewTests {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private final class WorkflowGateHarness: @unchecked Sendable {
 
-    let appUserID: Atomic<String> = .init("customer-a")
     let outcomes: Atomic<[CheckpointGateOutcome]> = .init([])
     let dismissals: Atomic<Int> = .init(0)
     let disappearances: Atomic<Int> = .init(0)
@@ -2490,7 +2489,6 @@ private final class WorkflowGateHarness: @unchecked Sendable {
     @MainActor
     private var gateContext: CheckpointGateContext {
         return CheckpointGateContext(
-            currentAppUserID: { [appUserID] in appUserID.value },
             onOutcomeChanged: { [outcomes] outcome in outcomes.modify { $0.append(outcome) } }
         )
     }

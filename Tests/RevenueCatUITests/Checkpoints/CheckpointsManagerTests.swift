@@ -1435,7 +1435,6 @@ private extension CheckpointsManager {
             try CheckpointsManagerTests.customerInfo(activeEntitlements: [])
         },
         cachedCustomerInfoProvider: @escaping @MainActor () -> CustomerInfo? = { nil },
-        appUserIDProvider: @escaping AppUserIDProvider = { "customer-a" },
         customerInfoSynchronizer: @escaping CustomerInfoSynchronizer = { throw CancellationError() }
     ) {
         let checkpointPresenter: CheckpointPresenter
@@ -1456,8 +1455,7 @@ private extension CheckpointsManager {
             resolveCheckpoint: resolveCheckpoint,
             customerInfoProvider: customerInfoProvider,
             checkpointPresenter: checkpointPresenter,
-            cachedCustomerInfoProvider: cachedCustomerInfoProvider,
-            appUserIDProvider: appUserIDProvider
+            cachedCustomerInfoProvider: cachedCustomerInfoProvider
         )
     }
 

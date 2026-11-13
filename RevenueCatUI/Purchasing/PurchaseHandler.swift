@@ -36,6 +36,8 @@ final class PurchaseHandler: ObservableObject {
 
     }
 
+    var appUserID: String { self.purchases.appUserID }
+
     private var cancellables: Set<AnyCancellable> = Set()
 
     private let purchases: PaywallPurchasesType
@@ -1356,6 +1358,8 @@ private extension PurchaseHandler {
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private final class NotConfiguredPurchases: PaywallPurchasesType {
+
+    let appUserID = ""
 
     let purchasesAreCompletedBy: PurchasesAreCompletedBy
 
