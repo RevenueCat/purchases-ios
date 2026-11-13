@@ -38,6 +38,8 @@ final class PurchaseHandler: ObservableObject {
 
     private var cancellables: Set<AnyCancellable> = Set()
 
+    var appUserID: String { self.purchases.appUserID }
+
     private let purchases: PaywallPurchasesType
     private let customerCenterPreviewContext: (@Sendable () -> (appUserID: String, isSandbox: Bool))?
     private let customerCenterPreviewURLHandler: (@Sendable (URL) async throws -> Void)?
@@ -1356,6 +1358,8 @@ private extension PurchaseHandler {
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private final class NotConfiguredPurchases: PaywallPurchasesType {
+
+    let appUserID = ""
 
     let purchasesAreCompletedBy: PurchasesAreCompletedBy
 

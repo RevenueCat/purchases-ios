@@ -32,6 +32,7 @@ final class MockPurchases: PaywallPurchasesType, @unchecked Sendable {
     private let _purchasesAreCompletedBy: PurchasesAreCompletedBy
     let preferredLocales: [String]
     let preferredLocaleOverride: String?
+    var appUserID = ""
     var isUIPreviewMode = false
     var remoteConfigEnabled = false
 

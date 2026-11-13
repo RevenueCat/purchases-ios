@@ -499,16 +499,6 @@ final class WorkflowPresenterTests: TestCase {
         }
     }
 
-    func testGateContextReadsTheCurrentAppUserIDFromThePresenterProvider() {
-        var appUserID = "customer-a"
-        let presenter = WorkflowPresenter(presentationStarter: { _ in true }, appUserIDProvider: { appUserID })
-
-        let context = presenter.makeCheckpointGateContext()
-        appUserID = "customer-b"
-
-        XCTAssertEqual(context.currentAppUserID(), "customer-b")
-    }
-
     func testNavigatingBackAfterRestoreCompletesWithRestoredOutcome() throws {
         let presenter = WorkflowPresenter { _ in true }
 

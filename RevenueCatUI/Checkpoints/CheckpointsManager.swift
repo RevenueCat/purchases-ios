@@ -24,7 +24,6 @@ final class CheckpointsManager {
     typealias CustomerInfoProvider = @MainActor () async throws -> CustomerInfo
     typealias CachedCustomerInfoProvider = @MainActor () -> CustomerInfo?
     typealias PreferredUILocaleProvider = @MainActor () -> String?
-    typealias AppUserIDProvider = @MainActor () -> String
 
     private let resolveCheckpoint: (String, CheckpointCallParams) async throws -> CheckpointResolution
     private let customerInfoProvider: CustomerInfoProvider
@@ -40,7 +39,6 @@ final class CheckpointsManager {
         customerInfoProvider: @escaping CustomerInfoProvider,
         checkpointPresenter: CheckpointPresenterType? = nil,
         cachedCustomerInfoProvider: @escaping CachedCustomerInfoProvider = { nil },
-        appUserIDProvider: @escaping AppUserIDProvider = { "" },
         preferredUILocaleProvider: @escaping PreferredUILocaleProvider = { nil },
         customerInfoSynchronizer: @escaping CustomerInfoSynchronizer = { throw CancellationError() }
     ) {
@@ -49,7 +47,7 @@ final class CheckpointsManager {
         self.cachedCustomerInfoProvider = cachedCustomerInfoProvider
         self.preferredUILocaleProvider = preferredUILocaleProvider
         self.checkpointPresenter = checkpointPresenter ?? CheckpointPresenter(
-            workflowPresenter: WorkflowPresenter(appUserIDProvider: appUserIDProvider),
+            workflowPresenter: WorkflowPresenter(),
             cachedCustomerInfoProvider: cachedCustomerInfoProvider,
             customerInfoSynchronizer: customerInfoSynchronizer
         )
