@@ -493,7 +493,7 @@ final class WorkflowPresenterTests: TestCase {
         try presenter.startPresentation(presentation)
 
         presenter.stage(.outcome(.completed(customerInfo: TestData.customerInfo)))
-        presenter.makeCheckpointGateContext(for: presentation).onOutcomeChanged(.notPassed)
+        presenter.makeCheckpointGateContext().onOutcomeChanged(.notPassed)
         let execution = presenter.presentationDidDismiss(reason: .navigatedBack)
 
         guard case .backedOut? = execution else {
@@ -510,7 +510,7 @@ final class WorkflowPresenterTests: TestCase {
             PaywallViewController(offering: nil),
             didFinishRestoringWith: try Self.customerInfo(activeEntitlements: ["unrelated"])
         )
-        presenter.makeCheckpointGateContext(for: presentation).onOutcomeChanged(.notPassed)
+        presenter.makeCheckpointGateContext().onOutcomeChanged(.notPassed)
         let execution = presenter.presentationDidDismiss(reason: .close)
 
         guard case .backedOut? = execution else {
@@ -524,7 +524,7 @@ final class WorkflowPresenterTests: TestCase {
         try presenter.startPresentation(presentation)
 
         presenter.stage(.outcome(.failed))
-        presenter.makeCheckpointGateContext(for: presentation).onOutcomeChanged(.notPassed)
+        presenter.makeCheckpointGateContext().onOutcomeChanged(.notPassed)
         let execution = presenter.presentationDidDismiss()
 
         guard case .backedOut? = execution else {
@@ -537,7 +537,7 @@ final class WorkflowPresenterTests: TestCase {
         let presentation = Self.presentation()
         try presenter.startPresentation(presentation)
 
-        let context = presenter.makeCheckpointGateContext(for: presentation)
+        let context = presenter.makeCheckpointGateContext()
         context.onOutcomeChanged(.notPassed)
         context.onOutcomeChanged(.passed)
         let execution = presenter.presentationDidDismiss(reason: .navigatedBack)
@@ -552,7 +552,7 @@ final class WorkflowPresenterTests: TestCase {
         let presentation = Self.presentation()
         try presenter.startPresentation(presentation)
 
-        let context = presenter.makeCheckpointGateContext(for: presentation)
+        let context = presenter.makeCheckpointGateContext()
         context.onOutcomeChanged(.notPassed)
         context.onOutcomeChanged(.notApplicable)
         presenter.stage(.outcome(.completed(customerInfo: TestData.customerInfo)))
@@ -567,7 +567,7 @@ final class WorkflowPresenterTests: TestCase {
         let presenter = WorkflowPresenter { _ in true }
         let presentation = Self.presentation()
         try presenter.startPresentation(presentation)
-        let abandonedContext = presenter.makeCheckpointGateContext(for: presentation)
+        let abandonedContext = presenter.makeCheckpointGateContext()
         _ = presenter.presentationDidDismiss()
 
         try presenter.startPresentation(presentation)
@@ -579,24 +579,11 @@ final class WorkflowPresenterTests: TestCase {
         }
     }
 
-    func testGateContextCarriesTheCheckpointIdentityAndEntitlements() throws {
-        let presenter = WorkflowPresenter { _ in true }
-        let presentation = Self.presentation(
-            initialAppUserID: "customer-b",
-            initialActiveEntitlementIdentifiers: ["pro"]
-        )
-
-        let context = presenter.makeCheckpointGateContext(for: presentation)
-
-        XCTAssertEqual(context.initialAppUserID, "customer-b")
-        XCTAssertEqual(context.initialActiveEntitlementIdentifiers, ["pro"])
-    }
-
     func testGateContextReadsTheCurrentAppUserIDFromThePresenterProvider() {
         var appUserID = "customer-a"
         let presenter = WorkflowPresenter(presentationStarter: { _ in true }, appUserIDProvider: { appUserID })
 
-        let context = presenter.makeCheckpointGateContext(for: Self.presentation())
+        let context = presenter.makeCheckpointGateContext()
         appUserID = "customer-b"
 
         XCTAssertEqual(context.currentAppUserID(), "customer-b")
@@ -1309,7 +1296,6 @@ final class WorkflowPresenterTests: TestCase {
     private static func presentation(
         workflow: ResolvedCheckpointWorkflow? = nil,
         customVariables: [String: CustomVariableValue] = [:],
-        initialAppUserID: String = "customer-a",
         initialActiveEntitlementIdentifiers: Set<String> = [],
         errorPresentationHandler: @escaping ErrorPresentationHandler = { _, completion in
             completion.complete()
@@ -1320,7 +1306,6 @@ final class WorkflowPresenterTests: TestCase {
             workflow: workflow ?? self.workflow(),
             customVariables: customVariables,
             presentationMode: .modalSheet,
-            initialAppUserID: initialAppUserID,
             initialActiveEntitlementIdentifiers: initialActiveEntitlementIdentifiers,
             errorPresentationHandler: errorPresentationHandler
         )
@@ -1359,7 +1344,6 @@ final class WorkflowPresenterTests: TestCase {
             ),
             customVariables: customVariables,
             presentationMode: .modalSheet,
-            initialAppUserID: "customer-a",
             initialActiveEntitlementIdentifiers: [],
             errorPresentationHandler: errorPresentationHandler
         )

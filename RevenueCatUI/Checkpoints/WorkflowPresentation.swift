@@ -23,7 +23,6 @@ struct WorkflowPresentationRequest {
     let workflow: ResolvedCheckpointWorkflow
     let customVariables: [String: CustomVariableValue]
     let presentationMode: FlowPresentationMode
-    let initialAppUserID: String
     let initialActiveEntitlementIdentifiers: Set<String>
     let errorPresentationHandler: ErrorPresentationHandler
 
@@ -32,7 +31,6 @@ struct WorkflowPresentationRequest {
         workflow: ResolvedCheckpointWorkflow,
         customVariables: [String: CustomVariableValue],
         presentationMode: FlowPresentationMode,
-        initialAppUserID: String,
         initialActiveEntitlementIdentifiers: Set<String>,
         errorPresentationHandler: @escaping ErrorPresentationHandler
     ) {
@@ -40,7 +38,6 @@ struct WorkflowPresentationRequest {
         self.workflow = workflow
         self.customVariables = customVariables
         self.presentationMode = presentationMode
-        self.initialAppUserID = initialAppUserID
         self.initialActiveEntitlementIdentifiers = initialActiveEntitlementIdentifiers
         self.errorPresentationHandler = errorPresentationHandler
     }
