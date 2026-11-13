@@ -34,6 +34,9 @@ final class MockSecureItemStorage: SecureItemStorage {
     private(set) var lastSaveContents: Data?
     private(set) var lastSaveAttributes: SecureItemAttributes?
 
+    private(set) var addCallCount = 0
+    private(set) var lastAddAttributes: SecureItemAttributes?
+
     private(set) var deleteCallCount = 0
     private(set) var invokedDeleteItemIdentifiers: [String] = []
     private(set) var lastDeleteIdentifier: String?
@@ -57,6 +60,15 @@ final class MockSecureItemStorage: SecureItemStorage {
         self.lastSaveContents = contents
         self.lastSaveAttributes = attributes
         self.storedItems[identifier] = contents
+    }
+
+    func addItem(identifier: String, contents: Data, attributes: SecureItemAttributes) throws -> Bool {
+        if let errorToThrow { throw errorToThrow }
+        self.addCallCount += 1
+        self.lastAddAttributes = attributes
+        guard self.storedItems[identifier] == nil else { return false }
+        self.storedItems[identifier] = contents
+        return true
     }
 
     func deleteItem(identifier: String) throws {

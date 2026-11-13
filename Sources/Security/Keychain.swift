@@ -62,6 +62,18 @@ protocol SecureItemStorage {
     /// - Throws: a ``SecureStorageError`` if an error occurred during saving.
     func saveItem(identifier: String, contents: Data, attributes: SecureItemAttributes) throws
 
+    /// Save a single secure item, only if no item with that identifier exists yet.
+    ///
+    /// Unlike ``saveItem(identifier:contents:attributes:)``, this never overwrites an existing item.
+    ///
+    /// - Parameters:
+    ///   - identifier: The identifier of the item
+    ///   - contents: The contents of the new secure item
+    ///   - attributes: The new item's ``SecureItemAttributes``.
+    /// - Returns: `true` if the item was saved; `false` if an item with that identifier already exists.
+    /// - Throws: a ``SecureStorageError`` if an error occurred during saving.
+    func addItem(identifier: String, contents: Data, attributes: SecureItemAttributes) throws -> Bool
+
     /// Delete a single secure item, if it exists.
     ///
     /// If an item with the specified identifier does not exist, this method does nothing.
@@ -254,6 +266,24 @@ struct Keychain: SecureItemStorage {
         }
 
         if status != errSecSuccess {
+            throw SecureStorageError(rawValue: status)
+        }
+    }
+
+    func addItem(identifier: String, contents: Data, attributes: SecureItemAttributes) throws -> Bool {
+        var query = baseQuery
+        query[kSecAttrAccount] = identifier
+        query[kSecAttrAccessible] = attributes.accessbility
+        query[kSecValueData] = contents
+
+        let status = SecItemAdd(query as CFDictionary, nil)
+
+        switch status {
+        case errSecSuccess:
+            return true
+        case errSecDuplicateItem:
+            return false
+        default:
             throw SecureStorageError(rawValue: status)
         }
     }

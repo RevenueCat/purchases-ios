@@ -659,6 +659,9 @@
 		551800772FF46C8A0055FD1B /* KeychainTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 551800762FF46C8A0055FD1B /* KeychainTests.swift */; };
 		552CE0E12FD323EF006E41B4 /* Purchases+PreviewPaywall.swift in Sources */ = {isa = PBXBuildFile; fileRef = 552CE0E02FD323EF006E41B4 /* Purchases+PreviewPaywall.swift */; };
 		552CE1022FEF22AC006E41B4 /* Keychain.swift in Sources */ = {isa = PBXBuildFile; fileRef = 552CE1012FEF22AC006E41B4 /* Keychain.swift */; };
+		2C5C5ACF877FC962D1E946E7 /* SecureEnclaveDPoPStrategy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6FE3431CB8FB43328C502636 /* SecureEnclaveDPoPStrategy.swift */; };
+		5D45916A17155EFE4F494F9F /* KeychainDPoPStrategy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E3E863063B01A8AA50FFD3F /* KeychainDPoPStrategy.swift */; };
+		B558473AEADE7AA041380733 /* DPoPStrategy.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3C33B7779D1334F6CCBCF17 /* DPoPStrategy.swift */; };
 		5583B0113048918E00E87D02 /* CustomerInfoResponseIdentityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5583B0103048918E00E87D02 /* CustomerInfoResponseIdentityTests.swift */; };
 		55DACDE4302BC2C3005EE017 /* TokenAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55DACDE3302BC2C3005EE017 /* TokenAPI.swift */; };
 		55DACDEC302BC2D1005EE017 /* TokenManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55DACDEA302BC2D1005EE017 /* TokenManager.swift */; };
@@ -681,6 +684,7 @@
 		55DACE97302E320C005EE017 /* MockTokenManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55DACE96302E320C005EE017 /* MockTokenManager.swift */; };
 		55DACE98302E320C005EE017 /* MockTokenManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55DACE96302E320C005EE017 /* MockTokenManager.swift */; };
 		55DACEAC302E837B005EE017 /* TokenManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55DACEAB302E837B005EE017 /* TokenManagerTests.swift */; };
+		89240B365398551EF64F0479 /* HTTPClientDPoPTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8F450FB54CD360F3BFADBA0 /* HTTPClientDPoPTests.swift */; };
 		55DACF333034FA93005EE017 /* MockTokenAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A3DB72A2707F75F2BDC90D7 /* MockTokenAPI.swift */; };
 		55DACFD230366629005EE017 /* AuthenticationStrings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55DACFCC30366625005EE017 /* AuthenticationStrings.swift */; };
 		55DAD04D30377F26005EE017 /* SpendVirtualCurrenciesOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55DAD04730377F20005EE017 /* SpendVirtualCurrenciesOperation.swift */; };
@@ -1002,6 +1006,9 @@
 		57E6195028D291DC0093170C /* StoreKit2CachingProductsManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57E6194F28D291DC0093170C /* StoreKit2CachingProductsManagerTests.swift */; };
 		57E6C27C29723A94001AFE98 /* Signing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57E6C27B29723A94001AFE98 /* Signing.swift */; };
 		57E6C27E29723F9E001AFE98 /* SigningTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57E6C27D29723F9E001AFE98 /* SigningTests.swift */; };
+		E2B8576DB21A26D1F06FF35D /* SecureEnclaveDPoPStrategyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 101E74B392F511F6A753ED16 /* SecureEnclaveDPoPStrategyTests.swift */; };
+		DD18FAFE6A5906EEC18B9F43 /* KeychainDPoPStrategyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0C99B38CFB2CF6C1A81F063 /* KeychainDPoPStrategyTests.swift */; };
+		41345547264D012F00263BC3 /* DPoPStrategyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D386D7E9664430BF9B6D2F31 /* DPoPStrategyTests.swift */; };
 		57E6C2C72975AAE1001AFE98 /* FileReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5759B407296DFA75002472D5 /* FileReader.swift */; };
 		57E6C2C92975C777001AFE98 /* verifyReceiptSample1.txt in CopyFiles */ = {isa = PBXBuildFile; fileRef = 2DDE559A24C8B5E300DCB087 /* verifyReceiptSample1.txt */; };
 		57E6C2CA2975C777001AFE98 /* base64encodedreceiptsample1.txt in CopyFiles */ = {isa = PBXBuildFile; fileRef = 2DDE559B24C8B5E300DCB087 /* base64encodedreceiptsample1.txt */; };
@@ -2566,6 +2573,9 @@
 		552CE0E02FD323EF006E41B4 /* Purchases+PreviewPaywall.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Purchases+PreviewPaywall.swift"; sourceTree = "<group>"; };
 		552CE0E72FD32413006E41B4 /* Purchases+PreviewPaywallTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Purchases+PreviewPaywallTests.swift"; sourceTree = "<group>"; };
 		552CE1012FEF22AC006E41B4 /* Keychain.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Keychain.swift; sourceTree = "<group>"; };
+		6FE3431CB8FB43328C502636 /* SecureEnclaveDPoPStrategy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecureEnclaveDPoPStrategy.swift; sourceTree = "<group>"; };
+		5E3E863063B01A8AA50FFD3F /* KeychainDPoPStrategy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainDPoPStrategy.swift; sourceTree = "<group>"; };
+		A3C33B7779D1334F6CCBCF17 /* DPoPStrategy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DPoPStrategy.swift; sourceTree = "<group>"; };
 		5583B0103048918E00E87D02 /* CustomerInfoResponseIdentityTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomerInfoResponseIdentityTests.swift; sourceTree = "<group>"; };
 		55DACDE3302BC2C3005EE017 /* TokenAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokenAPI.swift; sourceTree = "<group>"; };
 		55DACDEA302BC2D1005EE017 /* TokenManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokenManager.swift; sourceTree = "<group>"; };
@@ -2584,6 +2594,7 @@
 		55DACE8F302E2BBB005EE017 /* MockSecureItemStorage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockSecureItemStorage.swift; sourceTree = "<group>"; };
 		55DACE96302E320C005EE017 /* MockTokenManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockTokenManager.swift; sourceTree = "<group>"; };
 		55DACEAB302E837B005EE017 /* TokenManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokenManagerTests.swift; sourceTree = "<group>"; };
+		C8F450FB54CD360F3BFADBA0 /* HTTPClientDPoPTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HTTPClientDPoPTests.swift; sourceTree = "<group>"; };
 		55DACFCC30366625005EE017 /* AuthenticationStrings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthenticationStrings.swift; sourceTree = "<group>"; };
 		55DAD04730377F20005EE017 /* SpendVirtualCurrenciesOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpendVirtualCurrenciesOperation.swift; sourceTree = "<group>"; };
 		55DAD169303E5269005EE017 /* SpendVirtualCurrenciesOperationBodyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpendVirtualCurrenciesOperationBodyTests.swift; sourceTree = "<group>"; };
@@ -2887,6 +2898,9 @@
 		57E6194F28D291DC0093170C /* StoreKit2CachingProductsManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreKit2CachingProductsManagerTests.swift; sourceTree = "<group>"; };
 		57E6C27B29723A94001AFE98 /* Signing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Signing.swift; sourceTree = "<group>"; };
 		57E6C27D29723F9E001AFE98 /* SigningTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SigningTests.swift; sourceTree = "<group>"; };
+		101E74B392F511F6A753ED16 /* SecureEnclaveDPoPStrategyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecureEnclaveDPoPStrategyTests.swift; sourceTree = "<group>"; };
+		F0C99B38CFB2CF6C1A81F063 /* KeychainDPoPStrategyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainDPoPStrategyTests.swift; sourceTree = "<group>"; };
+		D386D7E9664430BF9B6D2F31 /* DPoPStrategyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DPoPStrategyTests.swift; sourceTree = "<group>"; };
 		57E9CF0E290B2A4B00EE12D1 /* CachingTrialOrIntroPriceEligibilityChecker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CachingTrialOrIntroPriceEligibilityChecker.swift; sourceTree = "<group>"; };
 		57E9CF10290B2ADC00EE12D1 /* CachingTrialOrIntroPriceEligibilityCheckerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CachingTrialOrIntroPriceEligibilityCheckerTests.swift; sourceTree = "<group>"; };
 		D1AF9E0261895621CBBC5BD0 /* IntroEligibilityLogTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = IntroEligibilityLogTests.swift; sourceTree = "<group>"; };
@@ -5567,6 +5581,7 @@
 				57DC9F4927CD37BA00DA6AF9 /* HTTPStatusCodeTests.swift */,
 				57D04BB727D947C6006DAC06 /* HTTPResponseTests.swift */,
 				55DACEAB302E837B005EE017 /* TokenManagerTests.swift */,
+				C8F450FB54CD360F3BFADBA0 /* HTTPClientDPoPTests.swift */,
 				D9EC4160B6D09441B17D6DA8 /* URLMessageDescriptionTests.swift */,
 				A1B2C3D42FE1000000000009 /* RCContainer */,
 				A1B2C3D42FE2000000000007 /* RemoteConfig */,
@@ -6323,6 +6338,9 @@
 				4F8452672A5756CC00084550 /* HTTPRequestBody+Signing.swift */,
 				4FF6E4B82B069B8C000141ED /* HTTPRequest+Signing.swift */,
 				552CE1012FEF22AC006E41B4 /* Keychain.swift */,
+				6FE3431CB8FB43328C502636 /* SecureEnclaveDPoPStrategy.swift */,
+				5E3E863063B01A8AA50FFD3F /* KeychainDPoPStrategy.swift */,
+				A3C33B7779D1334F6CCBCF17 /* DPoPStrategy.swift */,
 			);
 			path = Security;
 			sourceTree = "<group>";
@@ -6375,6 +6393,9 @@
 			isa = PBXGroup;
 			children = (
 				57E6C27D29723F9E001AFE98 /* SigningTests.swift */,
+				101E74B392F511F6A753ED16 /* SecureEnclaveDPoPStrategyTests.swift */,
+				F0C99B38CFB2CF6C1A81F063 /* KeychainDPoPStrategyTests.swift */,
+				D386D7E9664430BF9B6D2F31 /* DPoPStrategyTests.swift */,
 				5518006F2FF46C720055FD1B /* SecureItemStorageTests.swift */,
 				4F34AEEB2A5DCCBA00F4BCB0 /* VerificationResultTests.swift */,
 			);
@@ -8719,6 +8740,9 @@
 				805B60C97993B311CEC93EAF /* ProductsFetcherSK2.swift in Sources */,
 				03C06FC72D46742D00600693 /* PaywallCarouselComponent.swift in Sources */,
 				552CE1022FEF22AC006E41B4 /* Keychain.swift in Sources */,
+				2C5C5ACF877FC962D1E946E7 /* SecureEnclaveDPoPStrategy.swift in Sources */,
+				5D45916A17155EFE4F494F9F /* KeychainDPoPStrategy.swift in Sources */,
+				B558473AEADE7AA041380733 /* DPoPStrategy.swift in Sources */,
 				DDD45A15A641C0FF0BEF6178 /* PaywallCountdownComponent.swift in Sources */,
 				51978277F6FF8880DDF3028D /* ExitOffer.swift in Sources */,
 				2A5E77D12F10B3B500BC5900 /* RevocationReason.swift in Sources */,
@@ -8970,6 +8994,7 @@
 				FD299C802FC5F08800A58C89 /* CompoundProductIdentifierResolverTests.swift in Sources */,
 				356523AC2CF890F400B6E3EA /* CustomerCenterEventsRequestTests.swift in Sources */,
 				55DACEAC302E837B005EE017 /* TokenManagerTests.swift in Sources */,
+				89240B365398551EF64F0479 /* HTTPClientDPoPTests.swift in Sources */,
 				1EFA95102CDB7FAA00CA5951 /* WebPurchaseRedemptionHelperTests.swift in Sources */,
 				FD1197302D6E6423002718E3 /* MockUIScene.swift in Sources */,
 				35AAEB4C2BBC39D100A12548 /* DiagnosticsFileHandlerTests.swift in Sources */,
@@ -9003,6 +9028,9 @@
 				2DDF41E624F6F5DC005BC22D /* MockSK1Product.swift in Sources */,
 				351B51BA26D450E800BD2BD7 /* ProductRequestDataExtensions.swift in Sources */,
 				57E6C27E29723F9E001AFE98 /* SigningTests.swift in Sources */,
+				E2B8576DB21A26D1F06FF35D /* SecureEnclaveDPoPStrategyTests.swift in Sources */,
+				DD18FAFE6A5906EEC18B9F43 /* KeychainDPoPStrategyTests.swift in Sources */,
+				41345547264D012F00263BC3 /* DPoPStrategyTests.swift in Sources */,
 				16DA8EF42E4F7A2500283940 /* VideoComponentTests.swift in Sources */,
 				AC01FEB700000000000000B6 /* WebViewComponentTests.swift in Sources */,
 				574A2F3F282D75E300150D40 /* OfferingsDecodingTests.swift in Sources */,
