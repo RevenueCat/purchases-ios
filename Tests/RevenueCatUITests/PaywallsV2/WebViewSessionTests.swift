@@ -195,6 +195,46 @@ final class WebViewSessionTests: TestCase {
         ))
 
         XCTAssertTrue(resizes.isEmpty)
+        // Fire-and-forget messages have no pending promise on the content side, so nothing is sent.
+        XCTAssertTrue(harness.capturedScripts.isEmpty)
+    }
+
+    func testUnknownRequestTypeRepliesWithError() throws {
+        let harness = Harness()
+        harness.connect()
+
+        harness.handle(.init(kind: .request, componentID: "web", type: "fetch", id: "req-1"))
+
+        let envelopes = try harness.outboundEnvelopes()
+        XCTAssertEqual(envelopes.count, 1)
+        let envelope = try XCTUnwrap(envelopes.first)
+        XCTAssertEqual(envelope.kind, .error)
+        XCTAssertEqual(envelope.componentID, "web")
+        XCTAssertEqual(envelope.type, "fetch")
+        XCTAssertEqual(envelope.id, "req-1")
+        XCTAssertEqual(envelope.error, #"No handler registered for request type "fetch""#)
+        XCTAssertNil(envelope.payload)
+    }
+
+    func testResizeStillAppliesAfterUnknownRequest() throws {
+        let harness = Harness(size: (width: false, height: true))
+        var resizes: [(CGFloat?, CGFloat?)] = []
+        harness.session.onContentResize = { resizes.append(($0, $1)) }
+        harness.connect()
+
+        harness.handle(.init(kind: .request, componentID: "web", type: "fetch", id: "req-1"))
+        harness.handle(.init(
+            kind: .request,
+            componentID: "web",
+            type: WebViewEnvelope.messageTypeResize,
+            id: "resize-1",
+            payload: ["height": .number(300)]
+        ))
+
+        XCTAssertEqual(resizes.count, 1)
+        XCTAssertEqual(resizes[0].1, 300)
+        // Only the unknown request gets an error reply.
+        XCTAssertEqual(try harness.outboundEnvelopes().filter { $0.kind == .error }.map(\.id), ["req-1"])
     }
 
     func testDropsMessageWithoutType() {
