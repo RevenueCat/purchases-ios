@@ -56,6 +56,15 @@ extension RulesEngine {
             case "rc.split":
                 return try SplitOperator.opSplit(args: args, vars: vars)
 
+            case "rc.time_since":
+                return try TimeOperators.opTimeSince(args: args, vars: vars)
+            case "rc.time_until":
+                return try TimeOperators.opTimeUntil(args: args, vars: vars)
+            case "rc.duration":
+                return try TimeOperators.opDuration(args: args, vars: vars)
+            case "rc.relative_date_start":
+                return try TimeOperators.opRelativeDateStart(args: args, vars: vars)
+
             default:
                 throw EvaluationError.unsupportedOperator(name: operatorName)
             }
