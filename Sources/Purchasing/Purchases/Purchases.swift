@@ -3112,6 +3112,7 @@ extension Purchases {
     @available(macOS, unavailable)
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
+    @available(visionOS, unavailable)
     @_spi(Experimental)
     @objc(presentMultiSeatInvitationSheetForStoreProduct:fromViewController:completion:)
     public func presentMultiSeatInvitationSheet(
@@ -3128,6 +3129,7 @@ extension Purchases {
     @available(macOS, unavailable)
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
+    @available(visionOS, unavailable)
     @_spi(Experimental)
     @objc(presentMultiSeatInvitationSheetForPackage:fromViewController:completion:)
     public func presentMultiSeatInvitationSheet(
