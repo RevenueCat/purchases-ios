@@ -118,6 +118,12 @@ extension Product.PurchaseError: PurchasesErrorConvertible {
             // paymentMethodBindingConfigurationRequired introduced in Xcode 26.5
             return ErrorUtils.storeProblemError(error: self)
         #endif
+
+        #if ENABLE_MULTISEAT_PURCHASES
+        case .multiSeatPurchaseDisabled,
+             .seatReductionNotAllowed:
+            return ErrorUtils.purchaseNotAllowedError(error: self)
+        #endif
         @unknown default:
             return ErrorUtils.unknownError(error: self)
         }
@@ -145,6 +151,13 @@ extension Product.PurchaseError: PurchasesErrorConvertible {
         case .paymentMethodBindingConfigurationRequired:
             // paymentMethodBindingConfigurationRequired introduced in Xcode 26.5
             return "payment_method_binding_configuration_required"
+        #endif
+
+        #if ENABLE_MULTISEAT_PURCHASES
+        case .multiSeatPurchaseDisabled:
+            return "multi_seat_purchase_disabled"
+        case .seatReductionNotAllowed:
+            return "seat_reduction_not_allowed"
         #endif
         @unknown default:
             return "unknown_store_kit_error"

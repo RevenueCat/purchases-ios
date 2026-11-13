@@ -65,4 +65,30 @@ class PurchaseErrorTests: BaseErrorTests {
                              underlyingError: error)
     }
 
+    #if ENABLE_MULTISEAT_PURCHASES
+    @available(iOS 27.3, tvOS 27.3, watchOS 27.3, macOS 27.3, visionOS 27.3, *)
+    func testMultiSeatPurchaseDisabledError() throws {
+        try AvailabilityChecks.iOS273APIAvailableOrSkipTest()
+
+        let error: Product.PurchaseError = .multiSeatPurchaseDisabled
+
+        verifyPurchasesError(error,
+                             expectedCode: .purchaseNotAllowedError,
+                             underlyingError: error)
+        expect(error.trackingDescription) == "multi_seat_purchase_disabled"
+    }
+
+    @available(iOS 27.3, tvOS 27.3, watchOS 27.3, macOS 27.3, visionOS 27.3, *)
+    func testSeatReductionNotAllowedError() throws {
+        try AvailabilityChecks.iOS273APIAvailableOrSkipTest()
+
+        let error: Product.PurchaseError = .seatReductionNotAllowed
+
+        verifyPurchasesError(error,
+                             expectedCode: .purchaseNotAllowedError,
+                             underlyingError: error)
+        expect(error.trackingDescription) == "seat_reduction_not_allowed"
+    }
+    #endif
+
 }
