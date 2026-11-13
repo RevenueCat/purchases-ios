@@ -221,7 +221,6 @@ final class CheckpointWorkflowGateControllerTests: TestCase {
         var nextOutcomes: [CheckpointGateOutcome] = []
 
         self.controller.reset(context: CheckpointGateContext(
-            currentAppUserID: { "customer-a" },
             onOutcomeChanged: { nextOutcomes.append($0) }
         ))
 
@@ -240,7 +239,6 @@ final class CheckpointWorkflowGateControllerTests: TestCase {
 
     private func reset() {
         self.controller.reset(context: CheckpointGateContext(
-            currentAppUserID: { [unowned self] in self.appUserID },
             onOutcomeChanged: { [unowned self] in self.outcomes.append($0) }
         ))
     }
