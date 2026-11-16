@@ -526,12 +526,12 @@ extension PurchaseHandler {
 #if !os(tvOS)
     func cachedInitialPaywallViewData(
         for content: PaywallViewConfiguration.Content,
-        injectedWorkflowContext: WorkflowContext?
+        workflowContext: WorkflowContext?
     ) -> ResolvedPaywallViewData? {
-        if let injectedWorkflowContext {
+        if let workflowContext {
             return .init(
-                offering: injectedWorkflowContext.initialOffering,
-                workflowContext: injectedWorkflowContext
+                offering: workflowContext.initialOffering,
+                workflowContext: workflowContext
             )
         }
 

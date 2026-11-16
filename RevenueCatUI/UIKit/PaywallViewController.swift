@@ -134,7 +134,7 @@ public class PaywallViewController: UIViewController {
 
     var exitOfferOfferingForTesting: Offering? { self.exitOfferOffering }
 
-    var workflowContextForTesting: WorkflowContext? { self.configuration.injectedWorkflowContext }
+    var workflowContextForTesting: WorkflowContext? { self.configuration.workflowContext }
 
     var presentationBridgeForTesting: PaywallPresentationBridge {
         return self.configuration.presentationBridge
@@ -263,7 +263,7 @@ public class PaywallViewController: UIViewController {
         var configuration = self.configuration
         configuration.introEligibility = introEligibility
         configuration.purchaseHandler = purchaseHandler ?? configuration.purchaseHandler
-        configuration.injectedWorkflowContext = workflowContext
+        configuration.workflowContext = workflowContext
         configuration.displaysPurchaseAndRestoreErrors = false
         configuration.workflowPresentationErrorHandler = workflowPresentationErrorHandler
         configuration.checkpointGateController = checkpointGateController

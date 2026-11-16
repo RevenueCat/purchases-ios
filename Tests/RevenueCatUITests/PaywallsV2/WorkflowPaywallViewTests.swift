@@ -1889,7 +1889,7 @@ extension WorkflowPaywallViewTests {
             introEligibility: .producing(eligibility: .eligible),
             purchaseHandler: purchaseHandler
         )
-        configuration.injectedWorkflowContext = context
+        configuration.workflowContext = context
         let urls: Atomic<[URL]> = .init([])
         let checkoutCount: Atomic<Int> = .init(0)
         let view = PaywallView(configuration: configuration)

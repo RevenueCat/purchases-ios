@@ -41,7 +41,7 @@ struct PaywallViewConfiguration {
     /// A pre-built workflow context to seed directly (injection/preview path), bypassing the
     /// backend fetch. When set, `PaywallView` renders the workflow paywall immediately. Set by the
     /// `PaywallView(workflowContext:)` initializer; tvOS has no workflow paywall UI.
-    var injectedWorkflowContext: WorkflowContext?
+    var workflowContext: WorkflowContext?
     /// Set only for a checkpoint-launched workflow, which reports whether its gate lets the checkpoint pass.
     var checkpointGateController: CheckpointWorkflowGateController?
     #endif

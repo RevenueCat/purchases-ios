@@ -134,7 +134,7 @@ final class PaywallViewConfigurationTests: TestCase {
 
         let result = handler.cachedInitialPaywallViewData(
             for: .defaultOffering,
-            injectedWorkflowContext: workflowContext
+            workflowContext: workflowContext
         )
 
         expect(result?.offering.identifier) == initialOffering.identifier

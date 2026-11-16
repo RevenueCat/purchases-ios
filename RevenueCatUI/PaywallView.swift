@@ -246,7 +246,7 @@ public struct PaywallView: View {
             purchaseHandler: purchaseHandler,
             promoOfferCache: .simulated(if: simulatePromoEligible)
         )
-        configuration.injectedWorkflowContext = workflowContext
+        configuration.workflowContext = workflowContext
 
         self.init(configuration: configuration)
     }
@@ -267,7 +267,7 @@ public struct PaywallView: View {
 
         let initialPaywallViewData = configuration.purchaseHandler.cachedInitialPaywallViewData(
             for: configuration.content,
-            injectedWorkflowContext: configuration.injectedWorkflowContext
+            workflowContext: configuration.workflowContext
         )
         self._workflowContext = .init(initialValue: initialPaywallViewData?.workflowContext)
         self._offering = .init(
