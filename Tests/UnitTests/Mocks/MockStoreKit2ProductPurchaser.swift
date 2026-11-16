@@ -22,6 +22,18 @@ class MockStoreKit2ProductPurchaser: StoreKit2ProductPurchaserType {
 
     // This mock is also constructed by tests that support OS versions before StoreKit 2.
     private var _stubbedPurchaseResult: Any?
+    private var _receivedProduct: Any?
+    private var _receivedOptions: Any?
+
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    var receivedProduct: (any PurchasableSK2Product)? {
+        return self._receivedProduct as? any PurchasableSK2Product
+    }
+
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    var receivedOptions: Set<StoreKit.Product.PurchaseOption>? {
+        return self._receivedOptions as? Set<StoreKit.Product.PurchaseOption>
+    }
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     var stubbedPurchaseResult: Box<Result<StoreKit.Product.PurchaseResult, Error>> {
@@ -41,6 +53,8 @@ class MockStoreKit2ProductPurchaser: StoreKit2ProductPurchaserType {
         presentationContext: RevenueCat.PresentationContext?
     ) async throws -> StoreKit.Product.PurchaseResult {
         self.invokedPurchaseCount += 1
+        self._receivedProduct = product
+        self._receivedOptions = options
         self.receivedPresentationContext = presentationContext
         return try self.stubbedPurchaseResult.value.get()
     }

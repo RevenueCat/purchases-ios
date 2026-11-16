@@ -14,7 +14,7 @@
 import Combine
 import Foundation
 import Nimble
-@testable @_spi(Internal) import RevenueCat
+@testable @_spi(Internal) @_spi(Experimental) import RevenueCat
 import StoreKit
 import XCTest
 
@@ -433,6 +433,35 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
 
         expect(self.mockStoreKit2ProductPurchaser.invokedPurchaseCount) == 1
         expect(self.mockStoreKit2ProductPurchaser.receivedPresentationContext?.window).to(equal(window))
+    }
+    #endif
+
+    #if compiler(>=6.4.4)
+    func testPurchaseWithPurchaseParamsPassesProductAndSeatsToProductPurchaser() async throws {
+        let product = try await self.fetchSk2Product()
+
+        self.mockStoreKit2ProductPurchaser = MockStoreKit2ProductPurchaser()
+        self.setUpOrchestrator(storeKit2ProductPurchaser: self.mockStoreKit2ProductPurchaser)
+        self.setUpStoreKit2Listener()
+        self.customerInfoManager.stubbedCustomerInfoResult = .success(self.mockCustomerInfo)
+
+        let params = PurchaseParams.Builder(product: StoreProduct(sk2Product: product))
+            .with(seats: 10)
+            .build()
+
+        _ = await withCheckedContinuation { continuation in
+            self.orchestrator.purchase(
+                params: params, trackDiagnostics: false
+            ) { transaction, customerInfo, error, userCancelled in
+                continuation.resume(returning: (transaction, customerInfo, error, userCancelled))
+            }
+        }
+
+        expect(self.mockStoreKit2ProductPurchaser.invokedPurchaseCount) == 1
+        let receivedProduct = try XCTUnwrap(self.mockStoreKit2ProductPurchaser.receivedProduct as? SK2Product)
+        expect(receivedProduct) == product
+        let receivedOptions = try XCTUnwrap(self.mockStoreKit2ProductPurchaser.receivedOptions)
+        expect(receivedOptions).to(contain(.seats(10)))
     }
     #endif
 
