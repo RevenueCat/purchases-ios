@@ -263,7 +263,7 @@ import AppKit
          * Availability: iOS 15.0+, macOS 12.0+, tvOS 15.0+, watchOS 8.0+, visionOS 1.0+
          */
         @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, visionOS 1.0, *)
-        @objc public func with(seats: Int) -> Self {
+        @_spi(Experimental) @objc public func with(seats: Int) -> Self {
             self.seats = seats
             return self
         }
