@@ -98,7 +98,11 @@ extension RootViewSheetDismissalTests {
             if case .button(let button) = $0 { return button.sheetPackageValidator }
             return nil
         }.first)
-        let sheetContext = fixture.context.activateSheet(validator: sheetValidator, selectionContext: .provisional)
+        let sheetContext = fixture.context.activateSheet(
+            validator: sheetValidator,
+            selectionContext: .provisional,
+            preserveCurrentSelection: false
+        )
         try await PackageResolutionTestFixture.settlePresentation()
         XCTAssertEqual(sheetContext.package?.identifier, "annual_xl")
         XCTAssertEqual(fixture.context.package?.identifier, "annual_xl")

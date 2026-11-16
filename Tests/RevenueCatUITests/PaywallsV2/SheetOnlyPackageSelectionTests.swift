@@ -11,6 +11,89 @@ import XCTest
 @MainActor
 final class SheetOnlyPackageSelectionTests: TestCase {
 
+    func testReopeningSheetKeepsThePreviousChoiceWhenRootHasNoPackages() {
+        let validator = PackageValidatorTests.canTrialValidator()
+        let context = PackageContext(
+            package: TestData.annualPackage,
+            variableContext: .init(packages: validator.packages)
+        )
+        let sheet = context.activateSheet(
+            validator: validator,
+            selectionContext: .provisional,
+            preserveCurrentSelection: true
+        )
+        sheet.update(package: TestData.monthlyPackage, variableContext: sheet.variableContext)
+        context.update(
+            package: RootView.restoredPackageAfterSheetDismissal(
+                packageBeforeOpeningSheet: TestData.annualPackage,
+                defaultPackage: TestData.annualPackage,
+                sheetSelectedPackage: sheet.package,
+                hasNonSheetPackages: false
+            ),
+            variableContext: sheet.variableContext,
+            isReconcile: true
+        )
+        context.presentedSheetContext = nil
+
+        let reopened = context.activateSheet(
+            validator: validator,
+            selectionContext: .provisional,
+            preserveCurrentSelection: true
+        )
+
+        XCTAssertEqual(reopened.package?.identifier, TestData.monthlyPackage.identifier)
+        XCTAssertEqual(context.package?.identifier, TestData.monthlyPackage.identifier)
+    }
+
+    func testSheetEntryReplacesAPreviousChoiceHiddenByCurrentVariables() {
+        let validator = PackageValidatorTests.canTrialValidator()
+        let context = PackageContext(
+            package: TestData.monthlyPackage,
+            variableContext: .init(packages: validator.packages)
+        )
+
+        let sheet = context.activateSheet(
+            validator: validator,
+            selectionContext: PackageValidatorTests.context(customVariables: ["can_trial": .bool(true)]),
+            preserveCurrentSelection: true
+        )
+
+        XCTAssertEqual(sheet.package?.identifier, TestData.annualPackage.identifier)
+        XCTAssertEqual(context.package?.identifier, TestData.annualPackage.identifier)
+    }
+
+    func testSheetEntryUsesItsDefaultWhenThePreviousChoiceBelongsToAnotherSheet() {
+        let validator = PackageValidatorTests.canTrialValidator()
+        let context = PackageContext(
+            package: TestData.weeklyPackage,
+            variableContext: .init(packages: [TestData.weeklyPackage])
+        )
+
+        let sheet = context.activateSheet(
+            validator: validator,
+            selectionContext: .provisional,
+            preserveCurrentSelection: true
+        )
+
+        XCTAssertEqual(sheet.package?.identifier, TestData.annualPackage.identifier)
+    }
+
+    func testSheetEntryUsesItsDefaultWhenRootHasPackages() {
+        let validator = PackageValidatorTests.canTrialValidator()
+        let context = PackageContext(
+            package: TestData.monthlyPackage,
+            variableContext: .init(packages: validator.packages)
+        )
+
+        let sheet = context.activateSheet(
+            validator: validator,
+            selectionContext: .provisional,
+            preserveCurrentSelection: false
+        )
+
+        XCTAssertEqual(sheet.package?.identifier, TestData.annualPackage.identifier)
+    }
+
     func testSheetOnlyProvisionalSelectionReconcilesUsingRealVariables() {
         let factory = ViewModelFactory()
         PackageValidatorTests.canTrialValidator().packageInfos.forEach { factory.sheetPackageValidator.add($0) }

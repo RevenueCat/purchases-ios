@@ -221,7 +221,8 @@ struct RootPackageSelectionSheetModifier: ViewModifier {
             )
             self.sheetPackageContext = self.packageContext.activateSheet(
                 validator: validator,
-                selectionContext: selectionContext
+                selectionContext: selectionContext,
+                preserveCurrentSelection: !self.hasNonSheetPackages
             )
             self.sheetViewModel = sheet
         })

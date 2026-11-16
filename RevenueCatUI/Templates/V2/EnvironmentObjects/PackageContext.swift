@@ -121,10 +121,26 @@ class PackageContext: ObservableObject {
     var isPresentingSheet: Bool { self.presentedSheetContext != nil }
 
     @MainActor
-    func activateSheet(validator: PackageValidator?, selectionContext: PackageSelectionContext) -> PackageContext {
+    func activateSheet(
+        validator: PackageValidator?,
+        selectionContext: PackageSelectionContext,
+        preserveCurrentSelection: Bool
+    ) -> PackageContext {
         let packages = validator?.packages ?? []
+        let selectedPackage: Package?
+        if packages.isEmpty {
+            selectedPackage = self.package
+        } else if preserveCurrentSelection,
+                  let current = self.package,
+                  validator?.visiblePackages(in: selectionContext).contains(where: {
+                      $0.identifier == current.identifier
+                  }) == true {
+            selectedPackage = current
+        } else {
+            selectedPackage = validator?.defaultSelectedPackage(in: selectionContext)
+        }
         let context = PackageContext(
-            package: packages.isEmpty ? self.package : validator?.defaultSelectedPackage(in: selectionContext),
+            package: selectedPackage,
             variableContext: packages.isEmpty ? self.variableContext : .init(
                 packages: packages,
                 showZeroDecimalPlacePrices: self.variableContext.showZeroDecimalPlacePrices
