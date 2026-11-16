@@ -142,7 +142,6 @@ final class WorkflowPresenter: NSObject, WorkflowPresenterType {
             throw CheckpointError.operationAlreadyInProgress
         }
         let gateController = CheckpointWorkflowGateController()
-        if presentation.workflow.workflow.initialBranch != nil { gateController.markInitialBranchPending() }
         self.presentationState = PresentationState(
             checkpointIdentifier: presentation.checkpointIdentifier,
             customVariables: presentation.customVariables,
