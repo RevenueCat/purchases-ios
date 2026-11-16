@@ -119,7 +119,7 @@ extension Product.PurchaseError: PurchasesErrorConvertible {
             return ErrorUtils.storeProblemError(error: self)
         #endif
 
-        #if ENABLE_MULTISEAT_PURCHASES
+        #if compiler(>=6.4.4)
         case .multiSeatPurchaseDisabled:
             return ErrorUtils.productNotAvailableForPurchaseError(error: self)
 
@@ -155,7 +155,7 @@ extension Product.PurchaseError: PurchasesErrorConvertible {
             return "payment_method_binding_configuration_required"
         #endif
 
-        #if ENABLE_MULTISEAT_PURCHASES
+        #if compiler(>=6.4.4)
         case .multiSeatPurchaseDisabled:
             return "multi_seat_purchase_disabled"
         case .seatReductionNotAllowed:
