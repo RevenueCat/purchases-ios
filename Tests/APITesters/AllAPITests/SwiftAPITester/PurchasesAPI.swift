@@ -210,7 +210,7 @@ private func checkPurchasesPurchasingAPI(purchases: Purchases) {
     }
     let productParams = productParamsBuilder.build()
 
-    #if ENABLE_MULTISEAT_PURCHASES
+    #if compiler(>=6.4.4)
     if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, visionOS 1.0, *) {
         let _: PurchaseParams = PurchaseParams.Builder(package: pack).with(seats: 3).build()
         let _: PurchaseParams = PurchaseParams.Builder(product: storeProduct).with(seats: 3).build()

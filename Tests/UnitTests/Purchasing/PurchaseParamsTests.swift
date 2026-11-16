@@ -133,7 +133,7 @@ class PurchaseParamsTests: TestCase {
         expect(paramsWithAllOptions.package).to(equal(package))
     }
 
-    #if ENABLE_MULTISEAT_PURCHASES
+    #if compiler(>=6.4.4)
     func testPurchaseParamsBuilderWithSeats() async throws {
         if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, visionOS 1.0, *) {
             let product = MockSK1Product(mockProductIdentifier: "com.product.id1")

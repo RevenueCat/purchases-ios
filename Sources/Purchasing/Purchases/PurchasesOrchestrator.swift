@@ -527,7 +527,7 @@ final class PurchasesOrchestrator {
 
         #endif
 
-        #if ENABLE_MULTISEAT_PURCHASES
+        #if compiler(>=6.4.4)
         let seats: Int? = params.seats
         #else
         let seats: Int? = nil
@@ -925,7 +925,7 @@ final class PurchasesOrchestrator {
                 #endif
             }
 
-            #if ENABLE_MULTISEAT_PURCHASES
+            #if compiler(>=6.4.4)
             if let seats {
                 Logger.debug(
                     Strings.storeKit.sk2_purchasing_added_seats(seats)

@@ -35,7 +35,7 @@ internal final class PurchaseParamsValidator: Sendable {
 // MARK: - Seats Validation
 private extension PurchaseParamsValidator {
     private func validateSeats(for purchaseParams: PurchaseParams) throws {
-        #if ENABLE_MULTISEAT_PURCHASES
+        #if compiler(>=6.4.4)
         guard let seats = purchaseParams.seats else { return }
 
         guard purchaseParams.quantity == nil else {

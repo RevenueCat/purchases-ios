@@ -56,7 +56,7 @@ import AppKit
 
     #endif
 
-    #if ENABLE_MULTISEAT_PURCHASES
+    #if compiler(>=6.4.4)
 
     let seats: Int?
 
@@ -83,7 +83,7 @@ import AppKit
         self.promotionalOfferOptions = builder.promotionalOfferOptions
         #endif
 
-        #if ENABLE_MULTISEAT_PURCHASES
+        #if compiler(>=6.4.4)
         self.seats = builder.seats
         #endif
 
@@ -111,7 +111,7 @@ import AppKit
 
         #endif
 
-        #if ENABLE_MULTISEAT_PURCHASES
+        #if compiler(>=6.4.4)
 
         private(set) var seats: Int?
 
@@ -250,7 +250,7 @@ import AppKit
             return self
         }
 
-        #if ENABLE_MULTISEAT_PURCHASES
+        #if compiler(>=6.4.4)
 
         /**
          * Sets the number of seats to purchase for a multi-seat subscription.
