@@ -122,6 +122,20 @@ final class WebViewSession: NSObject, ObservableObject, WKScriptMessageHandler {
             self.handleResize(envelope.payload)
         default:
             self.logRejected("unknown-message-type")
+            // Reject unhandled requests right away so the content's pending promise doesn't wait
+            // for its timeout. Mirrors the web host's reply for unregistered request types.
+            if envelope.kind == .request {
+                self.send(
+                    .init(
+                        kind: .error,
+                        componentID: self.componentID,
+                        type: type,
+                        id: envelope.id,
+                        error: "No handler registered for request type \"\(type)\""
+                    ),
+                    allowBeforeNavigation: false
+                )
+            }
         }
     }
 
