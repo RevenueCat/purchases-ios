@@ -45,7 +45,7 @@ final class WorkflowPresenter: NSObject, WorkflowPresenterType {
         case terminalError
         case reported(CheckpointPresentationOutcome)
 
-        var outcome: CheckpointPresentationOutcome {
+        var result: CheckpointPresentationOutcome {
             switch self {
             case .none:
                 return .completed(customerInfo: nil)
@@ -67,29 +67,29 @@ final class WorkflowPresenter: NSObject, WorkflowPresenterType {
         let customVariables: [String: CustomVariableValue]
         let errorPresentationHandler: ErrorPresentationHandler
         let initialActiveEntitlementIdentifiers: Set<String>
-        var outcomeState: WorkflowOutcomeState = .none
+        var workflowOutcome: WorkflowOutcomeState = .none
         var dismissalReason: WorkflowDismissalReason = .close
         let gateController: CheckpointWorkflowGateController
 
         mutating func record(_ update: PresentationUpdate) -> Bool {
             switch update {
             case let .outcome(outcome):
-                guard !self.outcomeState.outcome.hasCustomerInfo || outcome.hasCustomerInfo else { return false }
+                guard !self.workflowOutcome.result.hasCustomerInfo || outcome.hasCustomerInfo else { return false }
                 if case .failed = outcome {
-                    guard case .terminalError = self.outcomeState else {
-                        self.outcomeState = .recoverableError
+                    guard case .terminalError = self.workflowOutcome else {
+                        self.workflowOutcome = .recoverableError
                         return true
                     }
                     return false
                 }
-                self.outcomeState = .reported(outcome)
+                self.workflowOutcome = .reported(outcome)
             case .recoverableErrorHandled:
-                guard case .recoverableError = self.outcomeState else { return false }
-                self.outcomeState = .none
+                guard case .recoverableError = self.workflowOutcome else { return false }
+                self.workflowOutcome = .none
             case let .workflowPresentationError(error):
-                guard !self.outcomeState.hasReportedOutcome else { return false }
+                guard !self.workflowOutcome.hasReportedOutcome else { return false }
                 Logger.error(error.localizedDescription)
-                self.outcomeState = .terminalError
+                self.workflowOutcome = .terminalError
             case let .dismissalReason(reason):
                 self.dismissalReason = reason
             }
@@ -216,16 +216,16 @@ final class WorkflowPresenter: NSObject, WorkflowPresenterType {
         guard let state = self.takePresentationState() else { return nil }
 
         let execution: CheckpointPresentationOutcome
-        switch state.gateController.outcome {
+        switch state.gateController.status {
         case .notPassed:
             execution = .backedOut
         case .passed:
-            execution = state.outcomeState.outcome
+            execution = state.workflowOutcome.result
         case .notApplicable:
-            if state.dismissalReason == .navigatedBack, !state.outcomeState.outcome.hasCustomerInfo {
+            if state.dismissalReason == .navigatedBack, !state.workflowOutcome.result.hasCustomerInfo {
                 execution = .backedOut
             } else {
-                execution = state.outcomeState.outcome
+                execution = state.workflowOutcome.result
             }
         }
         self.finish(execution)

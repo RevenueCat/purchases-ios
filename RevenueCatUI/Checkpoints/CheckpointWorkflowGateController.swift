@@ -13,7 +13,7 @@
 @_spi(Internal) import RevenueCat
 
 /// Whether the workflow's gate permits the pending checkpoint to pass.
-enum CheckpointGateOutcome: Equatable {
+enum CheckpointGateStatus: Equatable {
     case notApplicable
     case passed
     case notPassed
@@ -33,7 +33,7 @@ final class CheckpointWorkflowGateController {
     /// Entry work belongs to this presentation, including while SwiftUI rebuilds its view value.
     var entryTask: Task<Void, Never>?
 
-    var outcome: CheckpointGateOutcome {
+    var status: CheckpointGateStatus {
         switch self.gateState {
         case .notReached:
             return .notApplicable
@@ -56,7 +56,7 @@ final class CheckpointWorkflowGateController {
     }
 
     var hasUnresolvedGate: Bool {
-        return self.outcome == .notPassed
+        return self.status == .notPassed
     }
 
     /// A branch can select an enforced gate, so passage stays blocked until its destination is known.
