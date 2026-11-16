@@ -517,7 +517,9 @@
 		4D21041E2CF548790095D254 /* GradientView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D21041D2CF548790095D254 /* GradientView.swift */; };
 		4D2A00682CD1EED3008318CA /* PurchaseParamsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D2A00672CD1EED2008318CA /* PurchaseParamsTests.swift */; };
 		4D2C7D0B2CC40A35002562BC /* PurchaseParams.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D2C7D0A2CC40A35002562BC /* PurchaseParams.swift */; };
+		7E1A5E0B2EC9A1B000C0FFEE /* PurchaseParamsValidator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E1A5E0A2EC9A1B000C0FFEE /* PurchaseParamsValidator.swift */; };
 		4D322E382B7E7B170004AF53 /* PurchasesOrchestratorSK2Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D322E372B7E7B170004AF53 /* PurchasesOrchestratorSK2Tests.swift */; };
+		7E1A5E0F2EC9A1B000C0FFEE /* PurchaseParamsValidatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E1A5E0E2EC9A1B000C0FFEE /* PurchaseParamsValidatorTests.swift */; };
 		4D322E3A2B7E7B570004AF53 /* PurchasesOrchestratorSK1Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D322E392B7E7B570004AF53 /* PurchasesOrchestratorSK1Tests.swift */; };
 		4D322E3C2B7E7E250004AF53 /* PurchasesOrchestratorCommonTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D322E3B2B7E7E250004AF53 /* PurchasesOrchestratorCommonTests.swift */; };
 		4D3BA4CC2D37D15E00668AFC /* PaywallTimelineComponent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D3BA4CB2D37D15E00668AFC /* PaywallTimelineComponent.swift */; };
@@ -2435,7 +2437,9 @@
 		4D24EF3F2B04EA6000E586D2 /* StoreEnvironmentTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreEnvironmentTests.swift; sourceTree = "<group>"; };
 		4D2A00672CD1EED2008318CA /* PurchaseParamsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchaseParamsTests.swift; sourceTree = "<group>"; };
 		4D2C7D0A2CC40A35002562BC /* PurchaseParams.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchaseParams.swift; sourceTree = "<group>"; };
+		7E1A5E0A2EC9A1B000C0FFEE /* PurchaseParamsValidator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchaseParamsValidator.swift; sourceTree = "<group>"; };
 		4D322E372B7E7B170004AF53 /* PurchasesOrchestratorSK2Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchasesOrchestratorSK2Tests.swift; sourceTree = "<group>"; };
+		7E1A5E0E2EC9A1B000C0FFEE /* PurchaseParamsValidatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchaseParamsValidatorTests.swift; sourceTree = "<group>"; };
 		4D322E392B7E7B570004AF53 /* PurchasesOrchestratorSK1Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchasesOrchestratorSK1Tests.swift; sourceTree = "<group>"; };
 		4D322E3B2B7E7E250004AF53 /* PurchasesOrchestratorCommonTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchasesOrchestratorCommonTests.swift; sourceTree = "<group>"; };
 		4D3BA4CB2D37D15E00668AFC /* PaywallTimelineComponent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallTimelineComponent.swift; sourceTree = "<group>"; };
@@ -4554,6 +4558,7 @@
 				551800762FF46C8A0055FD1B /* KeychainTests.swift */,
 				4D322E392B7E7B570004AF53 /* PurchasesOrchestratorSK1Tests.swift */,
 				4D322E372B7E7B170004AF53 /* PurchasesOrchestratorSK2Tests.swift */,
+				7E1A5E0E2EC9A1B000C0FFEE /* PurchaseParamsValidatorTests.swift */,
 				4D322E3B2B7E7E250004AF53 /* PurchasesOrchestratorCommonTests.swift */,
 				2D34D9D127481D9B00C05DB6 /* TrialOrIntroPriceEligibilityCheckerSK2Tests.swift */,
 				35E1CE1F26E022C20008560A /* TrialOrIntroPriceEligibilityCheckerSK1Tests.swift */,
@@ -7382,6 +7387,7 @@
 				757E74002F5E00000066DCDC /* ConfiguredStoreEnvironment.swift */,
 				887E7B582C13CD2C002977DE /* PurchasesAreCompletedBy.swift */,
 				4D2C7D0A2CC40A35002562BC /* PurchaseParams.swift */,
+				7E1A5E0A2EC9A1B000C0FFEE /* PurchaseParamsValidator.swift */,
 				57FD7B1428DA4037009CA4E4 /* PurchasesType.swift */,
 				B35042C326CDB79A00905B95 /* Purchases.swift */,
 				B35042C526CDD3B100905B95 /* PurchasesDelegate.swift */,
@@ -8059,6 +8065,7 @@
 				1EFA95162CDBAB7500CA5951 /* MockWebPurchaseRedemptionHelper.swift in Sources */,
 				4F5D52D92A5713A800E1C758 /* DebugViewSwiftUITests.swift in Sources */,
 				4D322E382B7E7B170004AF53 /* PurchasesOrchestratorSK2Tests.swift in Sources */,
+				7E1A5E0F2EC9A1B000C0FFEE /* PurchaseParamsValidatorTests.swift in Sources */,
 				FDAC7B572CD3FD8500DFC0D9 /* MockWinBackOfferEligibilityCalculator.swift in Sources */,
 				2D9C5EC826F280510057FC45 /* StoreProductTests.swift in Sources */,
 				FDAADFD42BE2B99900BD1659 /* MockStoreKit2ObserverModePurchaseDetector.swift in Sources */,
@@ -8555,6 +8562,7 @@
 				F5714EA826D7A83A00635477 /* Store+Extensions.swift in Sources */,
 				35F82BAB26A84E130051DF03 /* Dictionary+Extensions.swift in Sources */,
 				4D2C7D0B2CC40A35002562BC /* PurchaseParams.swift in Sources */,
+				7E1A5E0B2EC9A1B000C0FFEE /* PurchaseParamsValidator.swift in Sources */,
 				DB3395D52F840A570079250C /* WorkflowsResponse.swift in Sources */,
 				C0DE0000000000000000010E /* WorkflowStep+ExperimentData.swift in Sources */,
 				A18C47900B744E1891DD1081 /* WorkflowStepGating.swift in Sources */,

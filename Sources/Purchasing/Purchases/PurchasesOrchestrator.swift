@@ -81,6 +81,7 @@ final class PurchasesOrchestrator {
     private let checkpointsManager = Atomic<AnyObject?>(nil)
     private let checkpointResolver: CheckpointWorkflowResolver
     private let storeKit2ProductPurchaser: StoreKit2ProductPurchaserType
+    private let purchaseParamsValidator: PurchaseParamsValidator
 
     let notificationCenter: NotificationCenter
 
@@ -161,6 +162,7 @@ final class PurchasesOrchestrator {
                      eventsManager: EventsManagerType?,
                      webPurchaseRedemptionHelper: WebPurchaseRedemptionHelperType,
                      checkpointResolver: CheckpointWorkflowResolver = DisabledCheckpointWorkflowResolver(),
+                     purchaseParamsValidator: PurchaseParamsValidator? = nil,
                      dateProvider: DateProvider = DateProvider(),
                      notificationCenter: NotificationCenter = .default
     ) {
@@ -190,6 +192,7 @@ final class PurchasesOrchestrator {
             storeKit2ProductPurchaser: storeKit2ProductPurchaser,
             webPurchaseRedemptionHelper: webPurchaseRedemptionHelper,
             checkpointResolver: checkpointResolver,
+            purchaseParamsValidator: purchaseParamsValidator,
             dateProvider: dateProvider,
             notificationCenter: notificationCenter
         )
@@ -251,6 +254,7 @@ final class PurchasesOrchestrator {
          storeKit2ProductPurchaser: StoreKit2ProductPurchaserType,
          webPurchaseRedemptionHelper: WebPurchaseRedemptionHelperType,
          checkpointResolver: CheckpointWorkflowResolver = DisabledCheckpointWorkflowResolver(),
+         purchaseParamsValidator: PurchaseParamsValidator? = nil,
          dateProvider: DateProvider = DateProvider(),
          notificationCenter: NotificationCenter = .default
     ) {
@@ -279,6 +283,7 @@ final class PurchasesOrchestrator {
         self.storeKit2ProductPurchaser = storeKit2ProductPurchaser
         self.webPurchaseRedemptionHelper = webPurchaseRedemptionHelper
         self.checkpointResolver = checkpointResolver
+        self.purchaseParamsValidator = purchaseParamsValidator ?? PurchaseParamsValidator(systemInfo: systemInfo)
         self.dateProvider = dateProvider
         self.notificationCenter = notificationCenter
 
@@ -478,6 +483,16 @@ final class PurchasesOrchestrator {
     }
 
     func purchase(params: PurchaseParams, trackDiagnostics: Bool, completion: @escaping PurchaseCompletedBlock) {
+        do {
+            try self.purchaseParamsValidator.validate(purchaseParams: params)
+        } catch {
+            let publicError = ErrorUtils.purchasesError(withUntypedError: error).asPublicError
+            self.operationDispatcher.dispatchOnMainActor {
+                completion(nil, nil, publicError, false)
+            }
+            return
+        }
+
         var product = params.product
         if product == nil {
             product = params.package?.storeProduct

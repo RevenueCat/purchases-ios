@@ -93,6 +93,10 @@ enum PurchaseStrings {
     case unable_to_find_root_view_controller_for_simulated_purchase
     case invalid_quantity(quantity: Int)
 
+    case invalid_seats(seats: Int)
+    case seats_not_supported_for_test_store
+    case seats_and_quantity_not_supported
+
     // Test Store
     case sync_purchases_simulated_store
     case restore_purchases_simulated_store
@@ -370,6 +374,15 @@ extension PurchaseStrings: LogMessage {
 
         case let .invalid_quantity(quantity):
             return "Quantity must be between 1 and 10, but got \(quantity)."
+
+        case let .invalid_seats(seats):
+            return "Seats must be at least 1, but got \(seats)."
+
+        case .seats_not_supported_for_test_store:
+            return "Multiseat purchases are not supported for Test Store products."
+
+        case .seats_and_quantity_not_supported:
+            return "A purchase cannot contain both quantity and seats."
 
         case .sync_purchases_simulated_store:
             return "Syncing purchases not available in Test Store. Returning current CustomerInfo."
