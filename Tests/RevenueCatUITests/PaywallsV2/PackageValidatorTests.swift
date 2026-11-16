@@ -790,7 +790,7 @@ final class PackageValidatorTests: TestCase {
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-private extension PackageValidatorTests {
+extension PackageValidatorTests {
 
     /// The customer's shape, reduced to two packages: an annual card selected by default and hidden when
     /// `can_trial = false`, and a monthly card that only shows in that case.
@@ -818,12 +818,14 @@ private extension PackageValidatorTests {
 
     static func context(
         customVariables: [String: CustomVariableValue] = [:],
+        windowSize: CGSize? = nil,
         isEligibleForIntroOffer: @escaping (Package) -> Bool = { _ in false },
         isEligibleForPromoOffer: @escaping (Package) -> Bool = { _ in false }
     ) -> PackageSelectionContext {
         return PackageSelectionContext(
             condition: .compact,
             customVariables: customVariables,
+            windowSize: windowSize,
             isEligibleForIntroOffer: isEligibleForIntroOffer,
             isEligibleForPromoOffer: isEligibleForPromoOffer
         )

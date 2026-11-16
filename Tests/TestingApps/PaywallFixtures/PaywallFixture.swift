@@ -52,6 +52,7 @@ enum PaywallFixture: String, CaseIterable {
 
     /// A button opening a bottom sheet, for checking what is reachable while it is up.
     case sheetOverContent = "sheet_over_content"
+    case tabsAndSharedSheets = "tabs_and_shared_sheets"
     case carouselTabs = "carousel_tabs"
     case nestedBillingTabs = "nested_billing_tabs"
 
@@ -87,6 +88,8 @@ enum PaywallFixture: String, CaseIterable {
             return "Reported tabbed paywall (real config)"
         case .sheetOverContent:
             return "Sheet over content"
+        case .tabsAndSharedSheets:
+            return "Tabs and shared package sheets"
         case .competingSheetDefaults:
             return "Competing sheet defaults"
         case .manualRootSelectionVisibility:
@@ -127,6 +130,8 @@ enum PaywallFixture: String, CaseIterable {
             return Self.decodeResource("reported_tabs")
         case .sheetOverContent:
             return Self.sheetOverContentComponentsData()
+        case .tabsAndSharedSheets:
+            return Self.tabsAndSharedSheetsComponentsData()
         case .competingSheetDefaults:
             return Self.competingSheetDefaultsComponentsData()
         case .manualRootSelectionVisibility:
@@ -164,6 +169,11 @@ enum PaywallFixture: String, CaseIterable {
                 Self.package(identifier: "annual_xl", packageType: .custom, title: "Annual XL",
                              price: 199.99, priceString: "$199.99", period: .init(value: 1, unit: .year),
                              offeringIdentifier: self.rawValue)
+            ]
+        case .tabsAndSharedSheets:
+            return [
+                Self.monthlyPackage(offeringIdentifier: self.rawValue),
+                Self.annualPackage(offeringIdentifier: self.rawValue)
             ]
         case .decorativeMedia:
             return [

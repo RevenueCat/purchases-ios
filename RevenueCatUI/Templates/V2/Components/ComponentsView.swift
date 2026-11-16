@@ -38,6 +38,7 @@ struct ComponentsView: View {
     private let safeAreaExemptChildIndex: Int?
     private let onDismiss: () -> Void
     private let defaultPackage: Package?
+    private let hasNonSheetPackages: Bool
 
     private var bodyHeroInsetAlreadyRestored: Bool {
         guard let bodyHeroIdentifier else { return false }
@@ -49,12 +50,14 @@ struct ComponentsView: View {
         componentViewModels: [PaywallComponentViewModel],
         onDismiss: @escaping () -> Void,
         defaultPackage: Package? = nil,
+        hasNonSheetPackages: Bool = true,
         safeAreaExemptChildIndex: Int? = nil
     ) {
         self.componentViewModels = componentViewModels
         self.safeAreaExemptChildIndex = safeAreaExemptChildIndex
         self.onDismiss = onDismiss
         self.defaultPackage = defaultPackage
+        self.hasNonSheetPackages = hasNonSheetPackages
     }
 
     var body: some View {
@@ -107,7 +110,8 @@ struct ComponentsView: View {
             RootView(
                 viewModel: viewModel,
                 onDismiss: onDismiss,
-                defaultPackage: defaultPackage
+                defaultPackage: defaultPackage,
+                hasNonSheetPackages: hasNonSheetPackages
             )
         case .text(let viewModel):
             TextComponentView(viewModel: viewModel)

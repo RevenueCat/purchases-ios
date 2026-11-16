@@ -435,6 +435,12 @@ struct LoadedTabsComponentView: View {
             }
             .onChangeOf(self.packageContext.isPresentingSheet) { isPresenting in
                 if !isPresenting {
+                    // Sheet updates are ignored by parent selection tracking while presented.
+                    // Dismissal can keep the same package, so no package change will refresh this cache.
+                    if activeTabViewModel.packages.isEmpty {
+                        self.selectionState.parentOwnedPackage = self.packageContext.package
+                        self.selectionState.parentOwnedVariableContext = self.packageContext.variableContext
+                    }
                     self.reconcileSelection(tierPackageContext, tabViewModel: activeTabViewModel)
                 }
             }
