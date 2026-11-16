@@ -324,7 +324,7 @@ struct WorkflowPaywallView: View {
     private let displayCloseButton: Bool
     private let onDismiss: () -> Void
     private let onPresentationError: WorkflowPresentationErrorHandler?
-    private let checkpointGateContext: CheckpointGateContext?
+    private let checkpointGateController: CheckpointWorkflowGateController?
 
     @StateObject private var presentationBridge: PaywallPresentationBridge
 
@@ -358,8 +358,6 @@ struct WorkflowPaywallView: View {
     /// Placeholder render of the initial branch's fallback screen, shown while `initialTrigger` resolves
     /// and dropped as soon as the routed step's real page is built.
     @State private var skeletonPage: RenderedPage?
-    /// Created inert and started on first use, so re-creating this view never reports a gate outcome.
-    @State private var gateController: CheckpointWorkflowGateController
     /// Whether a checkpoint's enforced initial gate has not been checked yet, so its page stays unrendered.
     @State private var isAwaitingEntryGate: Bool
     /// The customer a purchase or restore started for, so its result cannot count for a later customer.
@@ -377,7 +375,7 @@ struct WorkflowPaywallView: View {
         onDismiss: @escaping () -> Void,
         presentationBridge: PaywallPresentationBridge = PaywallPresentationBridge(),
         onPresentationError: WorkflowPresentationErrorHandler? = nil,
-        checkpointGateContext: CheckpointGateContext? = nil
+        checkpointGateController: CheckpointWorkflowGateController? = nil
     ) {
         self.context = context
         self.purchaseHandler = purchaseHandler
@@ -387,10 +385,9 @@ struct WorkflowPaywallView: View {
         self.onDismiss = onDismiss
         self._presentationBridge = .init(wrappedValue: presentationBridge)
         self.onPresentationError = onPresentationError
-        self.checkpointGateContext = checkpointGateContext
-        self._gateController = .init(wrappedValue: CheckpointWorkflowGateController())
+        self.checkpointGateController = checkpointGateController
         self._isAwaitingEntryGate = .init(
-            initialValue: checkpointGateContext != nil
+            initialValue: checkpointGateController != nil
                 && context.workflow.initialBranch == nil
                 && context.workflow.steps[context.workflow.initialStepId]?.gating?.isEnforced == true
         )
@@ -435,7 +432,7 @@ struct WorkflowPaywallView: View {
             initialPage = initialPresentationError == nil
                 ? page(showCloseButton: displayCloseButton, skeleton: false)
                 : nil
-            if checkpointGateContext != nil,
+            if checkpointGateController != nil,
                context.workflow.steps[initialStepId]?.gating?.isEnforced == true {
                 skeletonPage = page(showCloseButton: false, skeleton: true)
             }
@@ -551,7 +548,6 @@ struct WorkflowPaywallView: View {
         // exitOfferOffering is not step-aware — it is non-nil for any step whenever configured.
         .onAppear {
             self.hasEndedPresentation = false
-            _ = self.checkpointGate
             pageActions.view = self
             self.presentationBridge.workflowDidAppear(onCompletion: self.completeAndDismiss)
             switch self.presentationState {
@@ -625,8 +621,9 @@ struct WorkflowPaywallView: View {
         .modifier(PaywallURLEventsModifier(purchaseHandler: self.purchaseHandler))
         .onReceive(self.purchaseHandler.$actionTypeInProgress.dropFirst()) { action in
             guard action != nil else { return }
-            self.checkpointOperationAppUserID = self.checkpointGateContext == nil ? nil : self.purchaseHandler.appUserID
-            self.permitsPostPurchaseDismissal = self.checkpointGateContext == nil
+            self.checkpointOperationAppUserID = self.checkpointGateController == nil
+                ? nil : self.purchaseHandler.appUserID
+            self.permitsPostPurchaseDismissal = self.checkpointGateController == nil
         }
         .onReceive(self.purchaseHandler.$sessionPurchaseResult.dropFirst()) { result in
             guard case let .purchased(_, customerInfo)? = result else { return }
@@ -766,7 +763,8 @@ struct WorkflowPaywallView: View {
         .environment(\.workflowTriggerAction, pageActions.triggerAction)
         .environment(\.workflowNavigateBackHandler, pageActions.navigateBack)
         .environment(\.workflowPostPurchaseDismissal, {
-            guard self.permitsPostPurchaseDismissal, !self.checkpointGate.hasUnresolvedGate else { return }
+            guard self.permitsPostPurchaseDismissal,
+                  self.checkpointGateController?.hasUnresolvedGate != true else { return }
             self.handleDismiss()
         })
     }
@@ -813,7 +811,7 @@ struct WorkflowPaywallView: View {
         }
 
         self.cancelGateEntry()
-        let hasUnresolvedGate = self.checkpointGate.hasUnresolvedGate
+        let hasUnresolvedGate = self.checkpointGateController?.hasUnresolvedGate ?? false
         switch Self.dismissalAction(
             canNavigateBack: self.navigator.canNavigateBack,
             hasPurchasedInSession: self.purchaseHandler.hasPurchasedInSession,
@@ -911,7 +909,7 @@ struct WorkflowPaywallView: View {
             hasPurchasedInSession: self.purchaseHandler.hasPurchasedInSession,
             hasCompletedWorkflowInSession: self.hasCompletedWorkflowInSession ||
                 self.workflowCompletedInSessionBinding.wrappedValue,
-            hasUnresolvedGate: self.checkpointGate.hasUnresolvedGate
+            hasUnresolvedGate: self.checkpointGateController?.hasUnresolvedGate ?? false
         )
         self.stepEventCoordinator.trackTerminalCompletion(
             currentStep: self.navigator.currentStep,
@@ -980,8 +978,8 @@ struct WorkflowPaywallView: View {
         }
 
         // Consume workflow triggers while a read is pending, leaving ordinary back actions available.
-        guard !self.hasEndedPresentation, self.gateController.entryID == nil else { return true }
-        if let fromStep, self.checkpointGate.blocksForwardNavigation(step: fromStep) {
+        guard !self.hasEndedPresentation, self.checkpointGateController?.entryID == nil else { return true }
+        if let fromStep, self.checkpointGateController?.blocksForwardNavigation(step: fromStep) == true {
             return true
         }
 
@@ -1259,18 +1257,10 @@ struct WorkflowPaywallView: View {
 
     // MARK: - Checkpoint gate
 
-    private var checkpointGate: CheckpointWorkflowGateController {
-        if let checkpointGateContext, !self.gateController.hasContext {
-            self.gateController.reset(context: checkpointGateContext)
-            if self.resolvesInitialStep { self.gateController.markInitialBranchPending() }
-        }
-        return self.gateController
-    }
-
     /// Keeps the initial page hidden until its gate read finishes.
     private func resolvesEntryGate() -> Bool {
         guard self.isAwaitingEntryGate, let step = self.navigator.currentStep else { return true }
-        guard self.gateController.entryID == nil else { return false }
+        guard self.checkpointGateController?.entryID == nil else { return false }
         self.enterThroughGate(step: step) {
             self.isAwaitingEntryGate = false
             self.skeletonPage = nil
@@ -1283,15 +1273,14 @@ struct WorkflowPaywallView: View {
     /// Marks passage blocked synchronously, then reads entitlements for this visit and this identity.
     private func enterThroughGate(step: WorkflowStep, enter: @escaping @MainActor () -> Void) {
         self.cancelGateEntry()
-        let controller = self.checkpointGate
-        guard controller.beginEntry(step: step) else {
+        guard let controller = self.checkpointGateController, controller.beginEntry(step: step) else {
             enter()
             return
         }
         let entryID = UUID()
         let appUserID = self.purchaseHandler.appUserID
-        self.gateController.entryID = entryID
-        self.gateController.entryTask = Task { @MainActor in
+        controller.entryID = entryID
+        controller.entryTask = Task { @MainActor in
             var decision = WorkflowGateDecision.blocked
             do {
                 let customerInfo = try await self.purchaseHandler.customerInfo()
@@ -1304,8 +1293,8 @@ struct WorkflowPaywallView: View {
                 Logger.warning(Strings.workflow_gate_customer_read_failed(stepId: step.id, error: error))
             }
             guard self.ownsGateEntry(entryID) else { return }
-            self.gateController.entryID = nil
-            self.gateController.entryTask = nil
+            controller.entryID = nil
+            controller.entryTask = nil
             if decision == .passed {
                 if self.isAwaitingEntryGate {
                     self.seenPages = []
@@ -1319,13 +1308,13 @@ struct WorkflowPaywallView: View {
     }
 
     private func ownsGateEntry(_ id: UUID) -> Bool {
-        return !Task.isCancelled && !self.hasEndedPresentation && self.gateController.entryID == id
+        return !Task.isCancelled && !self.hasEndedPresentation && self.checkpointGateController?.entryID == id
     }
 
     private func cancelGateEntry() {
-        self.gateController.entryID = nil
-        self.gateController.entryTask?.cancel()
-        self.gateController.entryTask = nil
+        self.checkpointGateController?.entryID = nil
+        self.checkpointGateController?.entryTask?.cancel()
+        self.checkpointGateController?.entryTask = nil
     }
 
     private func completeCheckpointGate() {
@@ -1344,7 +1333,7 @@ struct WorkflowPaywallView: View {
         if let operationAppUserID, self.purchaseHandler.appUserID != operationAppUserID {
             return .blocked
         }
-        return self.checkpointGate.update(customerInfo: customerInfo)
+        return self.checkpointGateController?.update(customerInfo: customerInfo) ?? .notGated
     }
 
     private func failWorkflowPresentation(for stepId: String) {
