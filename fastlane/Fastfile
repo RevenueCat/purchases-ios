@@ -1627,16 +1627,6 @@ platform :ios do
     github_release(version: version_number)
   end
 
-  desc "Release to CocoaPods"
-  lane :push_revenuecat_pod do |options|
-    pod_push_with_error_handling(path: "RevenueCat.podspec", synchronous: true)
-  end
-
-  desc "Release to CocoaPods"
-  lane :push_revenuecatui_pod do |options|
-    pod_push_with_error_handling(path: "RevenueCatUI.podspec", synchronous: true)
-  end
-
   desc "Tag current branch with current version number"
   lane :tag_current_branch do |options|
     version_number = current_version_number
