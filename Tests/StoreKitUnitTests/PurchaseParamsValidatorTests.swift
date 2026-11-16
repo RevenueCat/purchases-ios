@@ -208,6 +208,26 @@ extension PurchaseParamsValidatorTests {
                                     validator: Self.storeKit1Validator())
     }
 
+    func testParamsWithSeatsForSK1ProductFailValidationWhenUsingStoreKit2() {
+        let product = Self.sk1Product(Self.monthlyID, isSubscription: true)
+        self.expectValidationToFail(PurchaseParams.Builder(product: product).with(seats: 2),
+                                    errorCode: .featureNotSupportedWithStoreKit1,
+                                    validator: Self.storeKit2Validator())
+    }
+
+    func testParamsWithSeatsForSK1PackageFailValidationWhenUsingStoreKit2() {
+        let package = Self.package(with: Self.sk1Product(Self.monthlyID, isSubscription: true))
+        self.expectValidationToFail(PurchaseParams.Builder(package: package).with(seats: 2),
+                                    errorCode: .featureNotSupportedWithStoreKit1,
+                                    validator: Self.storeKit2Validator())
+    }
+
+    func testParamsWithoutSeatsForSK1ProductPassValidationWhenUsingStoreKit2() {
+        let product = Self.sk1Product(Self.monthlyID, isSubscription: true)
+        self.expectValidationToPass(PurchaseParams.Builder(product: product),
+                                    validator: Self.storeKit2Validator())
+    }
+
 }
 #endif
 
@@ -239,6 +259,11 @@ private extension PurchaseParamsValidatorTests {
     static func storeKit1Validator() -> PurchaseParamsValidator {
         return PurchaseParamsValidator(systemInfo: MockSystemInfo(finishTransactions: true,
                                                                   storeKitVersion: .storeKit1))
+    }
+
+    static func storeKit2Validator() -> PurchaseParamsValidator {
+        return PurchaseParamsValidator(systemInfo: MockSystemInfo(finishTransactions: true,
+                                                                  storeKitVersion: .storeKit2))
     }
 
     /// SK1 has no notion of consumable vs. non-consumable: both are products without a subscription period.

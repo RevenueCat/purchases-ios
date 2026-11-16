@@ -44,7 +44,7 @@ private extension PurchaseParamsValidator {
             )
         }
 
-        guard systemInfo.storeKitVersion != .storeKit1 else {
+        guard !self.isStoreKit1(purchaseParams) else {
             throw ErrorUtils.featureNotSupportedWithStoreKit1Error()
         }
 
@@ -60,6 +60,19 @@ private extension PurchaseParamsValidator {
             )
         }
         #endif
+    }
+
+    /// Whether the purchase would be made with StoreKit 1, either because the SDK is configured
+    /// for StoreKit 1 or because the product (or package's product) is backed by an `SK1Product`.
+    /// The purchase path is chosen based on the product, so both must be checked.
+    func isStoreKit1(_ purchaseParams: PurchaseParams) -> Bool {
+        if self.systemInfo.storeKitVersion == .storeKit1 {
+            return true
+        }
+
+        let isProductSK1 = purchaseParams.product?.sk1Product != nil
+        let isPackageSK1 = purchaseParams.package?.storeProduct.sk1Product != nil
+        return isProductSK1 || isPackageSK1
     }
 }
 
