@@ -463,6 +463,38 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         let receivedOptions = try XCTUnwrap(self.mockStoreKit2ProductPurchaser.receivedOptions)
         expect(receivedOptions).to(contain(.seats(10)))
     }
+
+    func testPurchaseWithPackagePurchaseParamsPassesProductAndSeatsToProductPurchaser() async throws {
+        let product = try await self.fetchSk2Product()
+        let package = Package(identifier: "package",
+                              packageType: .monthly,
+                              storeProduct: StoreProduct(sk2Product: product),
+                              offeringIdentifier: "offering",
+                              webCheckoutUrl: nil)
+
+        self.mockStoreKit2ProductPurchaser = MockStoreKit2ProductPurchaser()
+        self.setUpOrchestrator(storeKit2ProductPurchaser: self.mockStoreKit2ProductPurchaser)
+        self.setUpStoreKit2Listener()
+        self.customerInfoManager.stubbedCustomerInfoResult = .success(self.mockCustomerInfo)
+
+        let params = PurchaseParams.Builder(package: package)
+            .with(seats: 10)
+            .build()
+
+        _ = await withCheckedContinuation { continuation in
+            self.orchestrator.purchase(
+                params: params, trackDiagnostics: false
+            ) { transaction, customerInfo, error, userCancelled in
+                continuation.resume(returning: (transaction, customerInfo, error, userCancelled))
+            }
+        }
+
+        expect(self.mockStoreKit2ProductPurchaser.invokedPurchaseCount) == 1
+        let receivedProduct = try XCTUnwrap(self.mockStoreKit2ProductPurchaser.receivedProduct as? SK2Product)
+        expect(receivedProduct) == product
+        let receivedOptions = try XCTUnwrap(self.mockStoreKit2ProductPurchaser.receivedOptions)
+        expect(receivedOptions).to(contain(.seats(10)))
+    }
     #endif
 
     func testPurchaseWithPurchaseParamsPostsReceipt() async throws {
