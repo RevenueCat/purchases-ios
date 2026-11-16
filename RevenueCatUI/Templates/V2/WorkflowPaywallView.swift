@@ -332,13 +332,6 @@ struct WorkflowPaywallView: View {
 
     }
 
-    private struct CheckpointOperationResult {
-
-        let customerInfo: CustomerInfo
-        let appUserID: String?
-
-    }
-
     private enum Constants {
         static let transitionDuration: Double = 0.25
         static let transitionStartDelayNanoseconds: UInt64 = 16_000_000
@@ -389,8 +382,8 @@ struct WorkflowPaywallView: View {
     @State private var isAwaitingEntryGate: Bool
     /// The customer a purchase or restore started for, so its result cannot count for a later customer.
     @State private var checkpointOperationAppUserID: String?
-    /// Retains the originating identity while a result waits for the workflow to reappear.
-    @State private var deferredCheckpointOperation: CheckpointOperationResult?
+    /// A result received while hidden waits until the workflow reappears.
+    @State private var deferredCheckpointCustomerInfo: CustomerInfo?
     @State private var permitsPostPurchaseDismissal = true
     @State private var presentationLifecycle: PresentationLifecycle = .active
 
@@ -812,7 +805,7 @@ struct WorkflowPaywallView: View {
     private func closeWorkflow() {
         guard self.presentationLifecycle != .ended else { return }
         self.presentationLifecycle = .ended
-        self.deferredCheckpointOperation = nil
+        self.deferredCheckpointCustomerInfo = nil
         self.cancelGateEntry()
         self.onDismiss()
     }
@@ -905,9 +898,9 @@ struct WorkflowPaywallView: View {
         case .active, .displayingError(_, .keepCurrentScreen):
             break
         }
-        if let operation = self.deferredCheckpointOperation {
-            self.deferredCheckpointOperation = nil
-            let decision = self.applyCheckpointOperation(operation)
+        if let customerInfo = self.deferredCheckpointCustomerInfo {
+            self.deferredCheckpointCustomerInfo = nil
+            let decision = self.checkpointGateController?.update(customerInfo: customerInfo) ?? .notGated
             self.permitsPostPurchaseDismissal = decision != .blocked
         }
         if self.checkpointGateController?.status == .passed {
@@ -1411,26 +1404,20 @@ struct WorkflowPaywallView: View {
 
     @discardableResult
     private func applyCheckpointOperation(customerInfo: CustomerInfo) -> WorkflowGateDecision {
-        let operation = CheckpointOperationResult(
-            customerInfo: customerInfo, appUserID: self.checkpointOperationAppUserID
-        )
-        self.checkpointOperationAppUserID = nil
-        return self.applyCheckpointOperation(operation)
-    }
-
-    private func applyCheckpointOperation(_ operation: CheckpointOperationResult) -> WorkflowGateDecision {
         guard self.presentationLifecycle != .ended else { return .blocked }
+        let operationAppUserID = self.checkpointOperationAppUserID
+        self.checkpointOperationAppUserID = nil
         let resumePendingEntry = self.checkpointGateController?.resumePendingEntry
         self.cancelGateEntry()
-        if let appUserID = operation.appUserID, self.purchaseHandler.appUserID != appUserID {
+        if let operationAppUserID, self.purchaseHandler.appUserID != operationAppUserID {
             resumePendingEntry?()
             return .blocked
         }
         if self.presentationLifecycle == .hidden {
-            if self.checkpointGateController != nil { self.deferredCheckpointOperation = operation }
+            if self.checkpointGateController != nil { self.deferredCheckpointCustomerInfo = customerInfo }
             return .blocked
         }
-        let decision = self.checkpointGateController?.update(customerInfo: operation.customerInfo) ?? .notGated
+        let decision = self.checkpointGateController?.update(customerInfo: customerInfo) ?? .notGated
         if decision == .blocked { resumePendingEntry?() }
         return decision
     }

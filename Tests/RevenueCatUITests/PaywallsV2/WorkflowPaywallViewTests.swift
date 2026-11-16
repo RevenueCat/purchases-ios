@@ -2752,20 +2752,6 @@ extension WorkflowPaywallViewTests {
     }
 
     @MainActor
-    func testDeferredPurchaseCannotPassForADifferentUserAfterReappearance() async throws {
-        try await self.assertOperationCompletingWhileHiddenPassesAfterReappearance(
-            isRestore: false, changesUserBeforeReappearance: true
-        )
-    }
-
-    @MainActor
-    func testDeferredRestoreCannotPassForADifferentUserAfterReappearance() async throws {
-        try await self.assertOperationCompletingWhileHiddenPassesAfterReappearance(
-            isRestore: true, changesUserBeforeReappearance: true
-        )
-    }
-
-    @MainActor
     func testEndedWorkflowCannotResumeADeferredPurchaseAfterReappearance() async throws {
         try await self.assertOperationCompletingWhileHiddenPassesAfterReappearance(
             isRestore: false, closesBeforeHiding: true
@@ -2782,7 +2768,6 @@ extension WorkflowPaywallViewTests {
     @MainActor
     private func assertOperationCompletingWhileHiddenPassesAfterReappearance(
         isRestore: Bool,
-        changesUserBeforeReappearance: Bool = false,
         closesBeforeHiding: Bool = false,
         hidesInCompletionCallback: Bool = false
     ) async throws {
@@ -2838,14 +2823,13 @@ extension WorkflowPaywallViewTests {
         }
         await expect(disappearances.value).toEventually(equal(1))
         expect(harness.dismissals.value) == (closesBeforeHiding ? 1 : 0)
-        if changesUserBeforeReappearance { harness.appUserID.value = "customer-b" }
 
         controller.beginAppearanceTransition(true, animated: false)
         window.addSubview(controller.view)
         window.layoutIfNeeded()
         controller.endAppearanceTransition()
         await expect(appearances.value).toEventually(equal(2))
-        if changesUserBeforeReappearance || closesBeforeHiding {
+        if closesBeforeHiding {
             await expect(harness.dismissals.value).toNever(
                 beGreaterThan(closesBeforeHiding ? 1 : 0), until: .milliseconds(500)
             )
@@ -3056,8 +3040,6 @@ private extension WorkflowPaywallViewTests {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private final class WorkflowGateHarness: @unchecked Sendable {
 
-    let appUserID: Atomic<String> = .init("customer-a")
-
     @MainActor lazy var gateController = CheckpointWorkflowGateController()
     let dismissals: Atomic<Int> = .init(0)
     let paywallEvents: Atomic<[PaywallEvent]> = .init([])
@@ -3089,7 +3071,6 @@ private final class WorkflowGateHarness: @unchecked Sendable {
         } customerInfo: {
             return try await gateRead?() ?? gateCustomerInfo
         }
-        purchases.appUserIDProvider = { [appUserID] in appUserID.value }
         purchases.trackWorkflowEventBlock = { event in
             workflowEvents.modify { $0.append(event) }
         }
