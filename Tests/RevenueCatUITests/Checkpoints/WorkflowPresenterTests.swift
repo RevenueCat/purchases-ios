@@ -507,17 +507,22 @@ final class WorkflowPresenterTests: TestCase {
 
     func testNotPassedGateBacksOutOnCloseDespiteAGrantingRestore() throws {
         var controllers: [CheckpointWorkflowGateController] = []
-        let presenter = WorkflowPresenter { _, controller in
-            controllers.append(controller)
-            return true
-        }
+        let presenter = WorkflowPresenter(
+            productEntitlementMappingProvider: { ["monthly": ["pro"]] },
+            presentationStarter: { _, controller in
+                controllers.append(controller)
+                return true
+            }
+        )
         let presentation = Self.presentation()
         try presenter.startPresentation(presentation)
 
+        let controller = DismissRecordingPaywallViewController()
         presenter.paywallViewController(
-            PaywallViewController(offering: nil),
-            didFinishRestoringWith: try Self.customerInfo(activeEntitlements: ["unrelated"])
+            controller,
+            didFinishRestoringWith: try Self.customerInfo(activeEntitlements: ["pro"])
         )
+        XCTAssertEqual(controller.dismissCallCount, 1)
         try XCTUnwrap(controllers.last).markInitialBranchPending()
         let execution = presenter.presentationDidDismiss(reason: .close)
 

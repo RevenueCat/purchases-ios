@@ -1543,7 +1543,7 @@ extension WorkflowPaywallViewTests {
             introEligibility: .producing(eligibility: .eligible),
             purchaseHandler: .mock(resolveBranch: { _ in "step_terminal" })
         )
-        configuration.injectedWorkflowContext = context
+        configuration.workflowContext = context
         let provider = configuration.presentationBridge
         expect(provider.displayedOffering).to(beNil())
         expect(context.initialOffering.identifier).notTo(equal(offering.identifier))
@@ -1575,7 +1575,7 @@ extension WorkflowPaywallViewTests {
                 introEligibility: .producing(eligibility: .eligible),
                 purchaseHandler: .mock()
             )
-            configuration.injectedWorkflowContext = context
+            configuration.workflowContext = context
             let provider = configuration.presentationBridge
             var dispose: (() -> Void)? = try PaywallView(configuration: configuration).addToHierarchy()
             defer { dispose?() }
@@ -1599,7 +1599,7 @@ extension WorkflowPaywallViewTests {
             introEligibility: .producing(eligibility: .eligible),
             purchaseHandler: .mock()
         )
-        configuration.injectedWorkflowContext = context
+        configuration.workflowContext = context
         let provider = configuration.presentationBridge
         let dispose = try PaywallView(configuration: configuration).addToHierarchy()
         defer { dispose() }
@@ -1672,7 +1672,7 @@ extension WorkflowPaywallViewTests {
             introEligibility: .producing(eligibility: .eligible),
             purchaseHandler: .mock()
         )
-        configuration.injectedWorkflowContext = context
+        configuration.workflowContext = context
         let dispose = try PaywallView(configuration: configuration).addToHierarchy()
         defer { dispose() }
 
