@@ -26,9 +26,10 @@ import UIKit
 /// only after the presented UI has fully dismissed.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @MainActor
+// swiftlint:disable:next type_body_length
 final class WorkflowPresenter: NSObject, WorkflowPresenterType {
 
-    typealias PresentationStarter = (WorkflowPresentationRequest) throws -> Bool
+    typealias PresentationStarter = (WorkflowPresentationRequest, CheckpointWorkflowGateController) throws -> Bool
     private typealias Continuation = CheckedContinuation<CheckpointPresentationOutcome, Error>
 
     enum PresentationUpdate {
@@ -44,7 +45,7 @@ final class WorkflowPresenter: NSObject, WorkflowPresenterType {
         case terminalError
         case reported(CheckpointPresentationOutcome)
 
-        var outcome: CheckpointPresentationOutcome {
+        var result: CheckpointPresentationOutcome {
             switch self {
             case .none:
                 return .completed(customerInfo: nil)
@@ -66,28 +67,29 @@ final class WorkflowPresenter: NSObject, WorkflowPresenterType {
         let customVariables: [String: CustomVariableValue]
         let errorPresentationHandler: ErrorPresentationHandler
         let initialActiveEntitlementIdentifiers: Set<String>
-        var outcomeState: WorkflowOutcomeState = .none
+        var workflowOutcome: WorkflowOutcomeState = .none
         var dismissalReason: WorkflowDismissalReason = .close
+        let gateController: CheckpointWorkflowGateController
 
         mutating func record(_ update: PresentationUpdate) -> Bool {
             switch update {
             case let .outcome(outcome):
-                guard !self.outcomeState.outcome.hasCustomerInfo || outcome.hasCustomerInfo else { return false }
+                guard !self.workflowOutcome.result.hasCustomerInfo || outcome.hasCustomerInfo else { return false }
                 if case .failed = outcome {
-                    guard case .terminalError = self.outcomeState else {
-                        self.outcomeState = .recoverableError
+                    guard case .terminalError = self.workflowOutcome else {
+                        self.workflowOutcome = .recoverableError
                         return true
                     }
                     return false
                 }
-                self.outcomeState = .reported(outcome)
+                self.workflowOutcome = .reported(outcome)
             case .recoverableErrorHandled:
-                guard case .recoverableError = self.outcomeState else { return false }
-                self.outcomeState = .none
+                guard case .recoverableError = self.workflowOutcome else { return false }
+                self.workflowOutcome = .none
             case let .workflowPresentationError(error):
-                guard !self.outcomeState.hasReportedOutcome else { return false }
+                guard !self.workflowOutcome.hasReportedOutcome else { return false }
                 Logger.error(error.localizedDescription)
-                self.outcomeState = .terminalError
+                self.workflowOutcome = .terminalError
             case let .dismissalReason(reason):
                 self.dismissalReason = reason
             }
@@ -139,20 +141,22 @@ final class WorkflowPresenter: NSObject, WorkflowPresenterType {
         guard self.presentationState == nil else {
             throw CheckpointError.operationAlreadyInProgress
         }
+        let gateController = CheckpointWorkflowGateController()
         self.presentationState = PresentationState(
             checkpointIdentifier: presentation.checkpointIdentifier,
             customVariables: presentation.customVariables,
             errorPresentationHandler: presentation.errorPresentationHandler,
-            initialActiveEntitlementIdentifiers: presentation.initialActiveEntitlementIdentifiers
+            initialActiveEntitlementIdentifiers: presentation.initialActiveEntitlementIdentifiers,
+            gateController: gateController
         )
 
         do {
             if let presentationStarter = self.presentationStarter {
-                guard try presentationStarter(presentation) else {
+                guard try presentationStarter(presentation, gateController) else {
                     throw CheckpointError.presentationContextUnavailable
                 }
             } else {
-                try self.presentAutomatically(presentation)
+                try self.presentAutomatically(presentation, gateController: gateController)
             }
         } catch {
             self.presentationState = nil
@@ -212,10 +216,17 @@ final class WorkflowPresenter: NSObject, WorkflowPresenterType {
         guard let state = self.takePresentationState() else { return nil }
 
         let execution: CheckpointPresentationOutcome
-        if state.dismissalReason == .navigatedBack, !state.outcomeState.outcome.hasCustomerInfo {
+        switch state.gateController.status {
+        case .notPassed:
             execution = .backedOut
-        } else {
-            execution = state.outcomeState.outcome
+        case .passed:
+            execution = state.workflowOutcome.result
+        case .notApplicable:
+            if state.dismissalReason == .navigatedBack, !state.workflowOutcome.result.hasCustomerInfo {
+                execution = .backedOut
+            } else {
+                execution = state.workflowOutcome.result
+            }
         }
         self.finish(execution)
         return execution
@@ -253,11 +264,14 @@ final class WorkflowPresenter: NSObject, WorkflowPresenterType {
         self.stage(.dismissalReason(reason))
     }
 
-    private func presentAutomatically(_ presentation: WorkflowPresentationRequest) throws {
+    private func presentAutomatically(
+        _ presentation: WorkflowPresentationRequest,
+        gateController: CheckpointWorkflowGateController
+    ) throws {
         guard let presentationContext = UIApplication.extensionSafeApplication?.currentPresentationViewController else {
             throw CheckpointError.noPresentationContext
         }
-        let viewController = try self.makePaywallViewController(for: presentation)
+        let viewController = try self.makePaywallViewController(for: presentation, gateController: gateController)
         viewController.delegate = self
         viewController.modalPresentationStyle = presentation.presentationMode.modalPresentationStyle
         presentationContext.present(viewController, animated: true)
@@ -267,7 +281,8 @@ final class WorkflowPresenter: NSObject, WorkflowPresenterType {
     }
 
     func makePaywallViewController(
-        for presentation: WorkflowPresentationRequest
+        for presentation: WorkflowPresentationRequest,
+        gateController: CheckpointWorkflowGateController
     ) throws -> PaywallViewController {
         let workflowContext = try WorkflowPreview.makeContext(
             workflow: presentation.workflow.workflow,
@@ -296,7 +311,8 @@ final class WorkflowPresenter: NSObject, WorkflowPresenterType {
                     Logger.error(error.localizedDescription)
                     self.presentError(error, kind: .flowActionFailed)
                 }
-            }
+            },
+            checkpointGateController: gateController
         )
         self.presentedViewController = viewController
         viewController.disableExitOffers()

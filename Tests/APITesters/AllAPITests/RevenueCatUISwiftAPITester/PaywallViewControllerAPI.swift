@@ -6,7 +6,7 @@
 //
 
 import RevenueCat
-import RevenueCatUI
+@_spi(Internal) import RevenueCatUI
 import SwiftUI
 
 #if canImport(UIKit) && !os(tvOS) && !os(watchOS)
@@ -126,6 +126,20 @@ func checkContextPaywallViewControllerAPI(offering: Offering?, fontProvider: Pay
     let _ = PaywallViewController(performPurchaseWithContext: nil)
     let _ = PaywallViewController(fonts: fontProvider, performPurchaseWithContext: nil, performRestore: restore)
     let optionalPurchase: PerformPurchaseWithContext? = purchase
+    let context = PresentedOfferingContext(offeringIdentifier: "offering")
+    let _ = PaywallViewController(offeringIdentifier: "offering", presentedOfferingContext: context,
+                                 performPurchaseWithContext: optionalPurchase)
+    let _ = PaywallViewController(offeringIdentifier: "offering", presentedOfferingContext: context,
+                                 fonts: fontProvider, displayCloseButton: true, shouldBlockTouchEvents: true,
+                                 performPurchaseWithContext: purchase, performRestore: restore,
+                                 dismissRequestedHandler: { _ in })
+    let _ = PaywallViewController(offeringIdentifier: "offering", presentedOfferingContext: context,
+                                 performPurchaseWithContext: nil, performRestore: restore)
+    let _ = PaywallViewController(offeringIdentifier: "offering", presentedOfferingContext: context,
+                                 performPurchase: nil, performRestore: restore)
+    let _ = PaywallViewController(offeringIdentifier: "offering", presentedOfferingContext: context) { controller in
+        let _: PaywallViewController = controller
+    }
     let _ = PaywallViewController(offering: offering, fonts: fontProvider,
                                  performPurchaseWithContext: optionalPurchase, performRestore: restore)
     let _ = PaywallViewController(performPurchaseWithContext: purchase)

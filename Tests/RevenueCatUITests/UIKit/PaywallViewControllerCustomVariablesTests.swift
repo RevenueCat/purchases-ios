@@ -14,7 +14,7 @@
 
 import Nimble
 @_spi(Internal) @testable import RevenueCat
-@testable import RevenueCatUI
+@_spi(Internal) @testable import RevenueCatUI
 import XCTest
 
 #if canImport(UIKit) && !os(tvOS) && !os(watchOS)
@@ -47,6 +47,29 @@ final class PaywallCustomVariablesTests: TestCase {
         expect(controller.customVariables).to(equal([
             "string_value": "kept",
             "1boolean": true
+        ]))
+    }
+
+    func testOfferingIdentifierWithContextPurchaseLogicAllowsConfigurationBeforeLoading() {
+        let controller = PaywallViewController(
+            offeringIdentifier: "main",
+            presentedOfferingContext: .init(offeringIdentifier: "main"),
+            performPurchaseWithContext: { _ in (userCancelled: false, error: nil) },
+            performRestore: { (success: true, error: nil) }
+        )
+
+        expect(controller.isViewLoaded).to(beFalse())
+
+        controller.setCustomVariable("premium", forKey: "tier")
+        controller.setCustomVariableNumber(2, forKey: "count")
+        controller.setCustomVariableBool(true, forKey: "is_pro")
+
+        expect(controller.isViewLoaded).to(beFalse())
+        controller.loadViewIfNeeded()
+        expect(controller.customVariables).to(equal([
+            "tier": .string("premium"),
+            "count": .number(2),
+            "is_pro": .bool(true)
         ]))
     }
 

@@ -104,7 +104,7 @@ struct CustomerCenterInjectedPaywall: View {
             ),
             promoOfferCache: promoOfferCache
         )
-        configuration.injectedWorkflowContext = workflow
+        configuration.workflowContext = workflow
         return PaywallView(configuration: configuration)
             .onRequestedDismissal { onClose() }
             .paywallSource(.customerCenter)

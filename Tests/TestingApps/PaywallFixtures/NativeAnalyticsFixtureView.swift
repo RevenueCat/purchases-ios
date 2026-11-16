@@ -25,7 +25,7 @@ struct NativeAnalyticsFixtureView: View {
             introEligibility: .producing(eligibility: .eligible),
             purchaseHandler: self.recorder.purchaseHandler
         )
-        configuration.injectedWorkflowContext = self.context
+        configuration.workflowContext = self.context
         return PaywallView(configuration: configuration)
     }
 
