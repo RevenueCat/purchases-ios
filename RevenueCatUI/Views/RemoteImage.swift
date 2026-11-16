@@ -243,7 +243,7 @@ private struct ColorSchemeRemoteImage<Content: View>: View {
                 }
             } else {
                 if let expectedSize = self.expectedSize {
-                    content(Image.clearImage(size: expectedSize), expectedSize)
+                    content(Image.clearImage, expectedSize)
                 } else {
                     emptyView(error: nil)
                 }
@@ -333,7 +333,9 @@ private struct ColorSchemeRemoteImage<Content: View>: View {
 
 private extension Image {
     /// Returns a fully transparent SwiftUI Image of the given size.
-    static func clearImage(size: CGSize) -> Image {
+    static let clearImage: Image = {
+        let size = CGSize(width: 1, height: 1)
+
         #if os(iOS) || os(visionOS)
         let renderer = UIGraphicsImageRenderer(size: size)
         let uiImage = renderer.image { ctx in
@@ -361,5 +363,5 @@ private extension Image {
         return Image(nsImage: nsImage)
 
         #endif
-    }
+    }()
 }
