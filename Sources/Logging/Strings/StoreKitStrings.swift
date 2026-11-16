@@ -41,6 +41,8 @@ enum StoreKitStrings {
 
     case sk2_purchasing_added_custom_introductory_offer_eligibility_jws
 
+    case sk2_purchasing_added_seats(Int)
+
     case sk2_purchasing_added_custom_promotional_offer_jws(offerID: String)
 
     case sk2_purchasing_added_uuid_option(UUID)
@@ -172,6 +174,9 @@ extension StoreKitStrings: LogMessage {
 
         case .sk2_purchasing_added_custom_introductory_offer_eligibility_jws:
             return "Adding Product.PurchaseOption for developer-provided introductoryOfferEligibilityJWS"
+
+        case let .sk2_purchasing_added_seats(seats):
+            return "Adding Product.PurchaseOption for seats (\(seats) seats)"
 
         case let .sk2_purchasing_added_custom_promotional_offer_jws(offerID):
             return "Adding Product.PurchaseOption for developer-provided promotionalOfferJWS with offer ID '\(offerID)'"

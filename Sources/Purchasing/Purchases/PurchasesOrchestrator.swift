@@ -526,6 +526,12 @@ final class PurchasesOrchestrator {
 
         #endif
 
+        #if ENABLE_MULTISEAT_PURCHASES
+        let seats: Int? = params.seats
+        #else
+        let seats: Int? = nil
+        #endif
+
         // Validate quantity if provided
         if let quantity = params.quantity {
             guard quantity >= 1 && quantity <= 10 else {
@@ -547,6 +553,7 @@ final class PurchasesOrchestrator {
                  presentationContext: params.presentationContext,
                  metadata: metadata,
                  quantity: params.quantity,
+                 seats: seats,
                  trackDiagnostics: trackDiagnostics,
                  completion: completion)
     }
@@ -562,6 +569,7 @@ final class PurchasesOrchestrator {
                   metadata: [String: String]? = nil,
                   paywallEvent: PaywallEvent? = nil,
                   quantity: Int? = nil,
+                  seats: Int? = nil,
                   trackDiagnostics: Bool,
                   completion: @escaping PurchaseCompletedBlock) {
         Self.logPurchase(product: product, package: package, offer: promotionalOffer)
@@ -613,6 +621,7 @@ final class PurchasesOrchestrator {
                           metadata: metadata,
                           paywallEvent: paywallEvent,
                           quantity: quantity,
+                          seats: seats,
                           completion: completionWithTracking)
         } else if let simulatedStoreProduct = product.testStoreProduct {
             let context = SimulatedStorePurchaseContext(
@@ -749,6 +758,7 @@ final class PurchasesOrchestrator {
                   metadata: [String: String]? = nil,
                   paywallEvent: PaywallEvent? = nil,
                   quantity: Int? = nil,
+                  seats: Int? = nil,
                   completion: @escaping PurchaseCompletedBlock) {
         _ = Task<Void, Never> {
             do {
@@ -763,6 +773,7 @@ final class PurchasesOrchestrator {
                     metadata: metadata,
                     paywallEvent: paywallEvent,
                     quantity: quantity,
+                    seats: seats,
                     presentationContext: presentationContext
                 )
 
@@ -805,6 +816,7 @@ final class PurchasesOrchestrator {
                   metadata: [String: String]? = nil,
                   paywallEvent: PaywallEvent? = nil,
                   quantity: Int? = nil,
+                  seats: Int? = nil,
                   presentationContext: PresentationContext? = nil) async throws -> PurchaseResultData {
         // Run the purchase + receipt post as a task that a concurrent queue-initiated receipt post for
         // the same product can await, so the attributed purchase post reaches the backend first. The
@@ -822,6 +834,7 @@ final class PurchasesOrchestrator {
                 metadata: metadata,
                 paywallEvent: paywallEvent,
                 quantity: quantity,
+                seats: seats,
                 presentationContext: presentationContext
             )
         }
@@ -859,6 +872,7 @@ final class PurchasesOrchestrator {
         metadata: [String: String]? = nil,
         paywallEvent: PaywallEvent? = nil,
         quantity: Int? = nil,
+        seats: Int? = nil,
         presentationContext: PresentationContext? = nil
     ) async throws -> PurchaseResultData {
         let result: Product.PurchaseResult
@@ -909,6 +923,17 @@ final class PurchasesOrchestrator {
                 options.insert(.introductoryOfferEligibility(compactJWS: introductoryOfferEligibilityJWS))
                 #endif
             }
+
+            #if ENABLE_MULTISEAT_PURCHASES
+            if let seats {
+                Logger.debug(
+                    Strings.storeKit.sk2_purchasing_added_seats(seats)
+                )
+                // No need for OS availability checks here since the .seats()'s availabilities match
+                // that of this function
+                options.insert(.seats(seats))
+            }
+            #endif
 
             if let promotionalOfferOptions {
                 // iOS, tvOS, watchOS, visionOS, & macOS version availability
