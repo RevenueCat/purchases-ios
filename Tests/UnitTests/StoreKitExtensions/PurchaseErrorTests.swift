@@ -65,7 +65,7 @@ class PurchaseErrorTests: BaseErrorTests {
                              underlyingError: error)
     }
 
-    #if ENABLE_MULTISEAT_PURCHASES
+    #if compiler(>=6.4.4)
     @available(iOS 27.3, tvOS 27.3, watchOS 27.3, macOS 27.3, visionOS 27.3, *)
     func testMultiSeatPurchaseDisabledError() throws {
         try AvailabilityChecks.iOS273APIAvailableOrSkipTest()
