@@ -482,6 +482,7 @@ final class PurchasesOrchestrator {
         }
     }
 
+    // swiftlint:disable:next function_body_length
     func purchase(params: PurchaseParams, trackDiagnostics: Bool, completion: @escaping PurchaseCompletedBlock) {
         do {
             try self.purchaseParamsValidator.validate(purchaseParams: params)
