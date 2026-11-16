@@ -12,7 +12,7 @@
 //  Created by Madeline Beyl on 8/25/21.
 
 import Foundation
-import RevenueCat_CustomEntitlementComputation
+@_spi(Experimental) import RevenueCat_CustomEntitlementComputation
 import StoreKit
 
 func checkPurchasesAPI() {
@@ -214,6 +214,13 @@ private func checkPurchaseParams() {
     }
 
     let _: PurchaseParams = productParamsBuilder.build()
+
+    #if ENABLE_MULTISEAT_PURCHASES
+    if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, visionOS 1.0, *) {
+        let _: PurchaseParams = PurchaseParams.Builder(package: pack).with(seats: 3).build()
+        let _: PurchaseParams = PurchaseParams.Builder(product: storeProduct).with(seats: 3).build()
+    }
+    #endif
 }
 
 private func checkAsyncMethods(purchases: Purchases) async {

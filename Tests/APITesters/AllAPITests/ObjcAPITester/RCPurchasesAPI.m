@@ -174,6 +174,15 @@ NSURL *url;
     }
     RCPurchaseParams *productParams = [productParamBuilder build];
 
+    #if ENABLE_MULTISEAT_PURCHASES
+    if (@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, visionOS 1.0, *)) {
+        RCPurchaseParams * __unused packageSeatsParams = [[[[RCPurchaseParamsBuilder alloc] initWithPackage:pack]
+                                                           withSeats:3] build];
+        RCPurchaseParams * __unused productSeatsParams = [[[[RCPurchaseParamsBuilder alloc] initWithProduct:storeProduct]
+                                                           withSeats:3] build];
+    }
+    #endif
+
     // Win-back offers
     if (@available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *)) {
         [p eligibleWinBackOffersForProduct:storeProduct
