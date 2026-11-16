@@ -3309,6 +3309,8 @@ private extension WorkflowPaywallViewTests {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private final class WorkflowGateHarness: @unchecked Sendable {
 
+    let appUserID: Atomic<String> = .init("customer-a")
+
     @MainActor lazy var gateController = CheckpointWorkflowGateController()
     let dismissals: Atomic<Int> = .init(0)
     let disappearances: Atomic<Int> = .init(0)
@@ -3351,6 +3353,7 @@ private final class WorkflowGateHarness: @unchecked Sendable {
         } customerInfo: {
             return try await gateRead?() ?? gateCustomerInfo
         }
+        purchases.appUserIDProvider = { [appUserID] in appUserID.value }
         purchases.trackWorkflowEventBlock = { event in
             workflowEvents.modify { $0.append(event) }
         }
