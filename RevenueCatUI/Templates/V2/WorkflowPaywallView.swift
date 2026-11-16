@@ -1319,7 +1319,7 @@ struct WorkflowPaywallView: View {
             return
         }
         let appUserID = self.purchaseHandler.appUserID
-        controller.entryCompletion = enter
+        controller.resumePendingEntry = enter
         controller.entryTask = Task { @MainActor in
             var decision = WorkflowGateDecision.blocked
             do {
@@ -1334,7 +1334,7 @@ struct WorkflowPaywallView: View {
             }
             guard self.canApplyGateEntryResult() else { return }
             controller.entryTask = nil
-            controller.entryCompletion = nil
+            controller.resumePendingEntry = nil
             if decision == .passed {
                 if self.isAwaitingEntryGate {
                     self.seenPages = []
@@ -1354,7 +1354,7 @@ struct WorkflowPaywallView: View {
     private func cancelGateEntry() {
         self.checkpointGateController?.entryTask?.cancel()
         self.checkpointGateController?.entryTask = nil
-        self.checkpointGateController?.entryCompletion = nil
+        self.checkpointGateController?.resumePendingEntry = nil
     }
 
     private func completeCheckpointGateAfterOperationCallbacks() {
@@ -1377,10 +1377,10 @@ struct WorkflowPaywallView: View {
     private func applyCheckpointOperation(customerInfo: CustomerInfo) -> WorkflowGateDecision {
         let operationAppUserID = self.checkpointOperationAppUserID
         self.checkpointOperationAppUserID = nil
-        let pendingEntry = self.checkpointGateController?.entryCompletion
+        let resumePendingEntry = self.checkpointGateController?.resumePendingEntry
         self.cancelGateEntry()
         if let operationAppUserID, self.purchaseHandler.appUserID != operationAppUserID {
-            pendingEntry?()
+            resumePendingEntry?()
             return .blocked
         }
         guard !self.hasEndedPresentation else {
@@ -1388,7 +1388,7 @@ struct WorkflowPaywallView: View {
             return .blocked
         }
         let decision = self.checkpointGateController?.update(customerInfo: customerInfo) ?? .notGated
-        if decision == .blocked { pendingEntry?() }
+        if decision == .blocked { resumePendingEntry?() }
         return decision
     }
 
