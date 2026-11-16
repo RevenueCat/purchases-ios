@@ -31,6 +31,44 @@ final class CheckpointWorkflowGateControllerTests: TestCase {
         XCTAssertFalse(self.controller.hasUnresolvedGate)
     }
 
+    func testPendingBranchStaysUnresolvedAfterCustomerInfoArrives() throws {
+        self.controller.markInitialBranchPending()
+
+        XCTAssertEqual(try self.update(activeEntitlements: ["pro"]), .notGated)
+        XCTAssertEqual(self.controller.outcome, .notPassed)
+        XCTAssertTrue(self.controller.hasUnresolvedGate)
+    }
+
+    func testUngatedEntryClearsPendingBranch() {
+        for gating: WorkflowStepGating? in [nil, .soft] {
+            self.controller.markInitialBranchPending()
+
+            XCTAssertFalse(self.controller.beginEntry(step: Self.step(gating)))
+            XCTAssertEqual(self.controller.outcome, .notApplicable)
+            XCTAssertFalse(self.controller.hasUnresolvedGate)
+        }
+    }
+
+    func testHardGateEntryReplacesPendingBranch() throws {
+        self.controller.markInitialBranchPending()
+
+        XCTAssertTrue(self.controller.beginEntry(step: self.hard))
+        XCTAssertEqual(self.controller.outcome, .notPassed)
+        XCTAssertEqual(try self.update(activeEntitlements: ["pro"]), .passed)
+        XCTAssertEqual(self.controller.outcome, .passed)
+    }
+
+    func testUngatedEntryPreservesReachedGateAndTracksEntitlementLoss() throws {
+        _ = self.controller.beginEntry(step: self.hard)
+        _ = try self.update(activeEntitlements: ["pro"])
+
+        XCTAssertFalse(self.controller.beginEntry(step: Self.step(nil)))
+        XCTAssertEqual(self.controller.outcome, .passed)
+        XCTAssertEqual(try self.update(activeEntitlements: []), .blocked)
+        XCTAssertEqual(self.controller.outcome, .notPassed)
+        XCTAssertTrue(self.controller.hasUnresolvedGate)
+    }
+
     func testAnyMatchingCustomerInfoEntitlementPasses() throws {
         _ = try self.update(activeEntitlements: ["premium"])
 
