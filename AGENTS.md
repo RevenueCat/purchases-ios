@@ -106,6 +106,18 @@ Key top-level directories: `Sources/`, `RevenueCatUI/`, `Tests/`, `Examples/`, `
 - **MVVM Pattern**: ViewModels with SwiftUI views
 - **Main Components**: `PaywallView`, `CustomerCenterView`
 
+#### SwiftUI update performance
+
+When changing or reviewing RevenueCatUI, distinguish a `body` update from layout or pixel rendering. An extra `body` call is a performance concern when it causes measurable work or a user-visible hitch; don't optimize update counts alone.
+
+- Keep changing state and its readers as close as practical to the view that uses it. Own a view-created reference model with `@StateObject`; use `@ObservedObject` for a model owned elsewhere. Pass a child only the values it needs instead of making it observe a broad model.
+- Publish only values that can change and affect the UI. Check for an actual value change before writing or calling `objectWillChange.send()`. Avoid expensive formatting, filtering, or object creation in `body`.
+- Treat `@EnvironmentObject` and custom environment snapshots as shared dependencies. In Paywalls V2, `PaywallStateStore` republishes a whole state dictionary into the environment; measure fan-out before adding more readers or changing its update path.
+- Preserve stable, unique identity for dynamic views. Avoid computed IDs, position-based IDs for reorderable items, and branches that replace a view when only a modifier value changes. Keep `List` / `ForEach` row construction predictable; don't put filtering or `AnyView` inside a large list's row builder without measuring the cost.
+- Use `.equatable()` only for a measured, value-driven view whose equality covers every input that affects its output. It is not a general redraw switch.
+- For code that runs on iOS 15, use `ObservableObject` and the existing SwiftUI property wrappers. `@Observable` requires iOS 17; use it only with an availability-gated path and an older-OS fallback.
+- For performance changes, reproduce the interaction, profile a Release build, and compare the same workload before and after. Use `_printChanges()` only for temporary debugging; remove it before shipping. Validate behavior on the oldest supported OS. The existing `PerformanceTests` cover memory, not SwiftUI view-update counts.
+
 ### Thread Safety
 
 The SDK is heavily concurrent — StoreKit callbacks, delegate calls, caching, and network responses can all arrive on different threads. See **`Contributing/ThreadSafety.md`** for the full guide. Key primitives:
