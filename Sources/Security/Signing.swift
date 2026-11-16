@@ -135,7 +135,7 @@ final class Signing: SigningType {
             return .failed(.unknown)
         }
 
-        let authValue = parameters.requestHeaders.bearerAuthorizationValue ?? self.apiKey
+        let authValue = parameters.requestHeaders.authorizationCredential ?? self.apiKey
 
         let salt = signature.component(.salt)
         let payload = signature.component(.payload)

@@ -823,61 +823,46 @@ class HTTPRequestTests: TestCase {
         }
     }
 
-    // MARK: - Bearer authorization header
+    // MARK: - Authorization credential
 
-    func testBearerAuthorizationValueIsNilWhenNoAuthorizationHeaderIsSet() {
+    func testAuthorizationCredentialIsNilWhenNoAuthorizationHeaderIsSet() {
         let headers: HTTPRequest.Headers = [:]
 
-        expect(headers.bearerAuthorizationValue).to(beNil())
+        expect(headers.authorizationCredential).to(beNil())
     }
 
-    func testBearerAuthorizationValueParsesBearerToken() {
+    func testAuthorizationCredentialParsesBearerToken() {
         var headers: HTTPRequest.Headers = [:]
         headers.authorizationValue = "Bearer abc123"
 
-        expect(headers.bearerAuthorizationValue) == "abc123"
+        expect(headers.authorizationCredential) == "abc123"
     }
 
-    func testBearerAuthorizationValueIsNilForNonBearerScheme() {
+    func testAuthorizationCredentialParsesDPoPToken() {
+        var headers: HTTPRequest.Headers = [:]
+        headers.authorizationValue = "DPoP abc123"
+
+        expect(headers.authorizationCredential) == "abc123"
+    }
+
+    func testAuthorizationCredentialIsNilForOtherSchemes() {
         var headers: HTTPRequest.Headers = [:]
         headers.authorizationValue = "Basic abc123"
 
-        expect(headers.bearerAuthorizationValue).to(beNil())
+        expect(headers.authorizationCredential).to(beNil())
     }
 
-    func testBearerAuthorizationValueIsNilWhenSchemeHasNoSeparatingSpace() {
+    func testAuthorizationCredentialIsNilWhenSchemeHasNoSeparatingSpace() {
         var headers: HTTPRequest.Headers = [:]
         headers.authorizationValue = "Bearer"
 
-        expect(headers.bearerAuthorizationValue).to(beNil())
+        expect(headers.authorizationCredential).to(beNil())
     }
 
-    func testBearerAuthorizationValueIsNilWhenPrefixIsSimilarButNotExactMatch() {
+    func testAuthorizationCredentialIsNilWhenPrefixIsSimilarButNotExactMatch() {
         var headers: HTTPRequest.Headers = [:]
         headers.authorizationValue = "Bearertoken abc123"
 
-        expect(headers.bearerAuthorizationValue).to(beNil())
-    }
-
-    func testSettingBearerAuthorizationValueUpdatesAuthorizationHeader() {
-        var headers: HTTPRequest.Headers = [:]
-        headers.bearerAuthorizationValue = "my-access-token"
-
-        expect(headers.authorizationValue) == "Bearer my-access-token"
-    }
-
-    func testSettingBearerAuthorizationValueToNilClearsAuthorizationHeader() {
-        var headers: HTTPRequest.Headers = [:]
-        headers.authorizationValue = "Bearer abc123"
-        headers.bearerAuthorizationValue = nil
-
-        expect(headers.authorizationValue).to(beNil())
-    }
-
-    func testBearerAuthorizationValueRoundTrips() {
-        var headers: HTTPRequest.Headers = [:]
-        headers.bearerAuthorizationValue = "round-trip-token"
-
-        expect(headers.bearerAuthorizationValue) == "round-trip-token"
+        expect(headers.authorizationCredential).to(beNil())
     }
 }

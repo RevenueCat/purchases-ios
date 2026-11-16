@@ -84,23 +84,18 @@ extension HTTPRequest.Method {
 
 extension HTTPRequest.Headers {
 
-    var bearerAuthorizationValue: String? {
-        get {
-            guard let value = authorizationValue else { return nil }
-            guard let firstSpaceIndex = value.firstIndex(of: " ") else { return nil }
-            guard value[..<firstSpaceIndex] == "Bearer" else { return nil }
+    /// The credential from a `Bearer` or `DPoP` authorization header: the API key or an IAM access token.
+    var authorizationCredential: String? {
+        guard let value = authorizationValue else { return nil }
+        guard let firstSpaceIndex = value.firstIndex(of: " ") else { return nil }
+        guard Self.credentialSchemes.contains(String(value[..<firstSpaceIndex])) else { return nil }
 
-            let afterSpace = value.index(after: firstSpaceIndex)
-            return String(value[afterSpace...])
-        }
-        set {
-            if let newValue {
-                self.authorizationValue = "Bearer \(newValue)"
-            } else {
-                self.authorizationValue = nil
-            }
-        }
+        let afterSpace = value.index(after: firstSpaceIndex)
+        return String(value[afterSpace...])
     }
+
+    // DPoP-bound access tokens use the `DPoP` scheme (RFC 9449 section 7.1)
+    private static let credentialSchemes: Set<String> = ["Bearer", "DPoP"]
 
     var authorizationValue: String? {
         get {

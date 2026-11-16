@@ -1296,6 +1296,14 @@ class SigningTests: TestCase {
     }
 
     func testVerificationUsesBearerTokenFromHeadersInsteadOfAPIKeyWhenPresent() throws {
+        try self.verifyResponseSignedWithAccessToken(authorizationScheme: "Bearer")
+    }
+
+    func testVerificationUsesDPoPTokenFromHeadersInsteadOfAPIKeyWhenPresent() throws {
+        try self.verifyResponseSignedWithAccessToken(authorizationScheme: "DPoP")
+    }
+
+    private func verifyResponseSignedWithAccessToken(authorizationScheme: String) throws {
         let message = "Hello World"
         let nonce = "0123456789ab"
         let requestDate = Date().millisecondsSince1970
@@ -1306,7 +1314,7 @@ class SigningTests: TestCase {
         let request = HTTPRequest(method: .get, path: .getCustomerInfo(appUserID: "user"), nonce: nonce.asData)
         let accessToken = "iam-access-token-123"
         let requestHeaders: HTTPRequest.Headers = [
-            HTTPClient.RequestHeader.authorization.rawValue: "Bearer \(accessToken)"
+            HTTPClient.RequestHeader.authorization.rawValue: "\(authorizationScheme) \(accessToken)"
         ]
 
         let parameters: Signing.SignatureParameters = .init(
