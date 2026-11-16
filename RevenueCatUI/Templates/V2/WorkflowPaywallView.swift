@@ -981,7 +981,7 @@ struct WorkflowPaywallView: View {
         }
 
         // Consume workflow triggers while a read is pending, leaving ordinary back actions available.
-        guard !self.hasEndedPresentation, self.checkpointGateController?.entryID == nil else { return true }
+        guard !self.hasEndedPresentation, self.checkpointGateController?.entryTask == nil else { return true }
         if let fromStep, self.checkpointGateController?.blocksForwardNavigation(step: fromStep) == true {
             return true
         }
@@ -1263,7 +1263,7 @@ struct WorkflowPaywallView: View {
     /// Keeps the initial page hidden until its gate read finishes.
     private func resolvesEntryGate() -> Bool {
         guard self.isAwaitingEntryGate, let step = self.navigator.currentStep else { return true }
-        guard self.checkpointGateController?.entryID == nil else { return false }
+        guard self.checkpointGateController?.entryTask == nil else { return false }
         self.enterThroughGate(step: step) {
             self.isAwaitingEntryGate = false
             self.skeletonPage = nil
@@ -1280,23 +1280,20 @@ struct WorkflowPaywallView: View {
             enter()
             return
         }
-        let entryID = UUID()
         let appUserID = self.purchaseHandler.appUserID
-        controller.entryID = entryID
         controller.entryTask = Task { @MainActor in
             var decision = WorkflowGateDecision.blocked
             do {
                 let customerInfo = try await self.purchaseHandler.customerInfo()
-                guard self.ownsGateEntry(entryID) else { return }
+                guard self.canApplyGateEntryResult() else { return }
                 if self.purchaseHandler.appUserID == appUserID {
                     decision = controller.update(customerInfo: customerInfo)
                 }
             } catch {
-                guard self.ownsGateEntry(entryID) else { return }
+                guard self.canApplyGateEntryResult() else { return }
                 Logger.warning(Strings.workflow_gate_customer_read_failed(stepId: step.id, error: error))
             }
-            guard self.ownsGateEntry(entryID) else { return }
-            controller.entryID = nil
+            guard self.canApplyGateEntryResult() else { return }
             controller.entryTask = nil
             if decision == .passed {
                 if self.isAwaitingEntryGate {
@@ -1310,12 +1307,11 @@ struct WorkflowPaywallView: View {
         }
     }
 
-    private func ownsGateEntry(_ id: UUID) -> Bool {
-        return !Task.isCancelled && !self.hasEndedPresentation && self.checkpointGateController?.entryID == id
+    private func canApplyGateEntryResult() -> Bool {
+        return !Task.isCancelled && !self.hasEndedPresentation
     }
 
     private func cancelGateEntry() {
-        self.checkpointGateController?.entryID = nil
         self.checkpointGateController?.entryTask?.cancel()
         self.checkpointGateController?.entryTask = nil
     }

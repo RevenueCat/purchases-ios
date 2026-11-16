@@ -2587,6 +2587,32 @@ extension WorkflowPaywallViewTests {
     }
 
     @MainActor
+    func testCancelledEntryReadCannotPassTheGateWhenTheRequestIgnoresCancellation() async throws {
+        let pendingRead = Atomic<CheckedContinuation<CustomerInfo, Never>?>(nil)
+        let customerInfo = try CheckpointTestFixtures.customerInfo(activeEntitlements: ["pro"])
+        let harness = try WorkflowGateHarness(activeEntitlements: [], customerInfo: {
+            await withCheckedContinuation { pendingRead.value = $0 }
+        })
+        let dispose = try harness.host(Self.makeGatedContext(firstGating: Self.hardGating("pro")))
+            .addToHierarchy()
+        defer {
+            pendingRead.value?.resume(returning: customerInfo)
+            dispose()
+        }
+
+        await expect(pendingRead.value != nil).toEventually(beTrue(), timeout: .seconds(3))
+        let entryTask = try XCTUnwrap(harness.gateController.entryTask)
+        entryTask.cancel()
+        try XCTUnwrap(pendingRead.value).resume(returning: customerInfo)
+        pendingRead.value = nil
+        await entryTask.value
+
+        expect(harness.gateController.outcome) == .notPassed
+        expect(harness.dismissals.value) == 0
+        expect(harness.paywallEvents.value).to(beEmpty())
+    }
+
+    @MainActor
     func testQualifyingPurchasePassesTheHardGateAndDismissesOnce() async throws {
         let harness = try WorkflowGateHarness(activeEntitlements: [], operationEntitlements: ["premium"])
         let dispose = try harness.host(Self.makeGatedContext(firstGating: Self.hardGating("pro", "premium")))
@@ -2733,7 +2759,8 @@ private final class WorkflowGateHarness: @unchecked Sendable {
 
     init(
         activeEntitlements: Set<String>,
-        operationEntitlements: [String] = []
+        operationEntitlements: [String] = [],
+        customerInfo: (@Sendable () async throws -> CustomerInfo)? = nil
     ) throws {
         let gateCustomerInfo = try CheckpointTestFixtures.customerInfo(activeEntitlements: Array(activeEntitlements))
         let operationCustomerInfo = try CheckpointTestFixtures.customerInfo(activeEntitlements: operationEntitlements)
@@ -2746,7 +2773,7 @@ private final class WorkflowGateHarness: @unchecked Sendable {
         } trackEvent: { event in
             paywallEvents.modify { $0.append(event) }
         } customerInfo: {
-            return gateCustomerInfo
+            return try await customerInfo?() ?? gateCustomerInfo
         }
         purchases.trackWorkflowEventBlock = { event in
             workflowEvents.modify { $0.append(event) }
