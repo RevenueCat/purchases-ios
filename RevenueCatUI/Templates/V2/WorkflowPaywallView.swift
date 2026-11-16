@@ -366,6 +366,8 @@ struct WorkflowPaywallView: View {
     @State private var isAwaitingEntryGate: Bool
     /// The customer a purchase or restore started for, so its result cannot count for a later customer.
     @State private var checkpointOperationAppUserID: String?
+    /// A result received while temporarily hidden is applied when this workflow appears again.
+    @State private var deferredCheckpointCustomerInfo: CustomerInfo?
     @State private var permitsPostPurchaseDismissal = true
     @State private var hasEndedPresentation = false
 
@@ -565,6 +567,16 @@ struct WorkflowPaywallView: View {
                 return
             case .active, .displayingError(_, .keepCurrentScreen):
                 break
+            }
+            if let customerInfo = self.deferredCheckpointCustomerInfo {
+                self.deferredCheckpointCustomerInfo = nil
+                // Identity was checked when this deferred result arrived. Preserve any newer operation capture.
+                let decision = self.checkpointGateController?.update(customerInfo: customerInfo) ?? .notGated
+                self.permitsPostPurchaseDismissal = decision != .blocked
+                if decision == .passed {
+                    self.completeCheckpointGateAfterOperationCallbacks()
+                    return
+                }
             }
             if self.resolvesInitialStep, self.transitionState.currentPage == nil {
                 self.checkpointGateController?.markInitialBranchPending()
@@ -1356,13 +1368,16 @@ struct WorkflowPaywallView: View {
 
     @discardableResult
     private func applyCheckpointOperation(customerInfo: CustomerInfo) -> WorkflowGateDecision {
-        guard !self.hasEndedPresentation else { return .blocked }
         let operationAppUserID = self.checkpointOperationAppUserID
         self.checkpointOperationAppUserID = nil
         let pendingEntry = self.checkpointGateController?.entryCompletion
         self.cancelGateEntry()
         if let operationAppUserID, self.purchaseHandler.appUserID != operationAppUserID {
             pendingEntry?()
+            return .blocked
+        }
+        guard !self.hasEndedPresentation else {
+            if self.checkpointGateController != nil { self.deferredCheckpointCustomerInfo = customerInfo }
             return .blocked
         }
         let decision = self.checkpointGateController?.update(customerInfo: customerInfo) ?? .notGated

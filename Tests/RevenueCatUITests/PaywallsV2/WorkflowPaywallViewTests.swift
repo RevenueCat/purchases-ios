@@ -2714,6 +2714,58 @@ extension WorkflowPaywallViewTests {
     }
 
     @MainActor
+    func testPurchaseCompletingWhileHiddenPassesTheGateAfterReappearance() async throws {
+        try await self.assertOperationCompletingWhileHiddenPassesAfterReappearance(isRestore: false)
+    }
+
+    @MainActor
+    func testRestoreCompletingWhileHiddenPassesTheGateAfterReappearance() async throws {
+        try await self.assertOperationCompletingWhileHiddenPassesAfterReappearance(isRestore: true)
+    }
+
+    @MainActor
+    private func assertOperationCompletingWhileHiddenPassesAfterReappearance(isRestore: Bool) async throws {
+        let harness = try WorkflowGateHarness(activeEntitlements: [], operationEntitlements: ["pro"])
+        let appearances = Atomic(0)
+        let disappearances = Atomic(0)
+        let controller = UIHostingController(rootView: harness.host(
+            try Self.makeGatedContext(firstGating: Self.hardGating("pro"))
+        )
+        .onPurchaseCompleted { _ in harness.callbacks.modify { $0.append("purchase") } }
+        .onRestoreCompleted { _ in harness.callbacks.modify { $0.append("restore") } }
+        .onAppear { appearances.modify { $0 += 1 } }
+        .onDisappear { disappearances.modify { $0 += 1 } })
+        let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 390, height: 844))
+        window.rootViewController = controller
+        window.makeKeyAndVisible()
+        defer { window.isHidden = true; window.rootViewController = nil }
+        controller.beginAppearanceTransition(true, animated: false)
+        controller.endAppearanceTransition()
+        await harness.waitUntilPresented()
+
+        controller.beginAppearanceTransition(false, animated: false)
+        controller.view.removeFromSuperview()
+        controller.endAppearanceTransition()
+        await expect(disappearances.value).toEventually(equal(1))
+
+        if isRestore {
+            try await harness.restore()
+        } else {
+            try await harness.purchaseHandler.purchase(package: TestData.annualPackage)
+        }
+        expect(harness.dismissals.value) == 0
+
+        controller.beginAppearanceTransition(true, animated: false)
+        window.addSubview(controller.view)
+        window.layoutIfNeeded()
+        controller.endAppearanceTransition()
+        await expect(appearances.value).toEventually(equal(2))
+        await expect(harness.dismissals.value).toEventually(equal(1))
+        expect(harness.gateController.outcome) == .passed
+        expect(harness.callbacks.value) == [isRestore ? "restore" : "purchase", "dismiss"]
+    }
+
+    @MainActor
     private func assertPassedGateSurvivesReappearance(initialBranch: Bool) async throws {
         let reads = Atomic(0)
         let info = try CheckpointTestFixtures.customerInfo(activeEntitlements: ["pro"])
