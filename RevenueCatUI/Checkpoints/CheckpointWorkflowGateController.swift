@@ -32,6 +32,8 @@ final class CheckpointWorkflowGateController {
 
     /// Entry work belongs to this presentation, including while SwiftUI rebuilds its view value.
     var entryTask: Task<Void, Never>?
+    /// Renders the destination when an operation result supersedes its pending read but keeps the gate blocked.
+    var entryCompletion: (@MainActor () -> Void)?
 
     var status: CheckpointGateStatus {
         switch self.gateState {
