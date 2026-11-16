@@ -2752,45 +2752,109 @@ extension WorkflowPaywallViewTests {
     }
 
     @MainActor
-    private func assertOperationCompletingWhileHiddenPassesAfterReappearance(isRestore: Bool) async throws {
+    func testDeferredPurchaseCannotPassForADifferentUserAfterReappearance() async throws {
+        try await self.assertOperationCompletingWhileHiddenPassesAfterReappearance(
+            isRestore: false, changesUserBeforeReappearance: true
+        )
+    }
+
+    @MainActor
+    func testDeferredRestoreCannotPassForADifferentUserAfterReappearance() async throws {
+        try await self.assertOperationCompletingWhileHiddenPassesAfterReappearance(
+            isRestore: true, changesUserBeforeReappearance: true
+        )
+    }
+
+    @MainActor
+    func testEndedWorkflowCannotResumeADeferredPurchaseAfterReappearance() async throws {
+        try await self.assertOperationCompletingWhileHiddenPassesAfterReappearance(
+            isRestore: false, closesBeforeHiding: true
+        )
+    }
+
+    @MainActor
+    func testPassedPurchaseFinishesAfterTheCompletionCallbackTemporarilyHidesTheWorkflow() async throws {
+        try await self.assertOperationCompletingWhileHiddenPassesAfterReappearance(
+            isRestore: false, hidesInCompletionCallback: true
+        )
+    }
+
+    @MainActor
+    private func assertOperationCompletingWhileHiddenPassesAfterReappearance(
+        isRestore: Bool,
+        changesUserBeforeReappearance: Bool = false,
+        closesBeforeHiding: Bool = false,
+        hidesInCompletionCallback: Bool = false
+    ) async throws {
         let harness = try WorkflowGateHarness(activeEntitlements: [], operationEntitlements: ["pro"])
+        let coordinator = NativePaywallCloseCoordinator()
+        let hidePresentation = Atomic<(@MainActor @Sendable () -> Void)?>(nil)
         let appearances = Atomic(0)
         let disappearances = Atomic(0)
         let controller = UIHostingController(rootView: harness.host(
-            try Self.makeGatedContext(firstGating: Self.hardGating("pro"))
+            try Self.makeGatedContext(
+                firstGating: Self.hardGating("pro"), includeNativeNavigationButtons: closesBeforeHiding
+            )
         )
-        .onPurchaseCompleted { _ in harness.callbacks.modify { $0.append("purchase") } }
+        .environment(\.nativePaywallCloseEnabled, true)
+        .environment(\.nativePaywallCloseCoordinator, coordinator)
+        .onPurchaseCompleted { _ in
+            harness.callbacks.modify { $0.append("purchase") }
+            if hidesInCompletionCallback { MainActor.assumeIsolated { hidePresentation.value?() } }
+        }
         .onRestoreCompleted { _ in harness.callbacks.modify { $0.append("restore") } }
         .onAppear { appearances.modify { $0 += 1 } }
         .onDisappear { disappearances.modify { $0 += 1 } })
         let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 390, height: 844))
         window.rootViewController = controller
         window.makeKeyAndVisible()
-        defer { window.isHidden = true; window.rootViewController = nil }
+        defer {
+            hidePresentation.value = nil
+            window.isHidden = true
+            window.rootViewController = nil
+        }
+        hidePresentation.value = {
+            controller.beginAppearanceTransition(false, animated: false)
+            controller.view.removeFromSuperview()
+            controller.endAppearanceTransition()
+        }
         controller.beginAppearanceTransition(true, animated: false)
         controller.endAppearanceTransition()
         await harness.waitUntilPresented()
+        if closesBeforeHiding {
+            await expect(coordinator.actions.contains { $0.isWorkflowClose }).toEventually(beTrue())
+            try await XCTUnwrap(coordinator.actions.first { $0.isWorkflowClose }).perform()
+        }
 
-        controller.beginAppearanceTransition(false, animated: false)
-        controller.view.removeFromSuperview()
-        controller.endAppearanceTransition()
-        await expect(disappearances.value).toEventually(equal(1))
+        if !hidesInCompletionCallback {
+            hidePresentation.value?()
+            await expect(disappearances.value).toEventually(equal(1))
+        }
 
         if isRestore {
             try await harness.restore()
         } else {
             try await harness.purchaseHandler.purchase(package: TestData.annualPackage)
         }
-        expect(harness.dismissals.value) == 0
+        await expect(disappearances.value).toEventually(equal(1))
+        expect(harness.dismissals.value) == (closesBeforeHiding ? 1 : 0)
+        if changesUserBeforeReappearance { harness.appUserID.value = "customer-b" }
 
         controller.beginAppearanceTransition(true, animated: false)
         window.addSubview(controller.view)
         window.layoutIfNeeded()
         controller.endAppearanceTransition()
         await expect(appearances.value).toEventually(equal(2))
-        await expect(harness.dismissals.value).toEventually(equal(1))
-        expect(harness.gateController.status) == .passed
-        expect(harness.callbacks.value) == [isRestore ? "restore" : "purchase", "dismiss"]
+        if changesUserBeforeReappearance || closesBeforeHiding {
+            await expect(harness.dismissals.value).toNever(
+                beGreaterThan(closesBeforeHiding ? 1 : 0), until: .milliseconds(500)
+            )
+            expect(harness.gateController.status) == .notPassed
+        } else {
+            await expect(harness.dismissals.value).toEventually(equal(1))
+            expect(harness.gateController.status) == .passed
+            expect(harness.callbacks.value) == [isRestore ? "restore" : "purchase", "dismiss"]
+        }
     }
 
     @MainActor
@@ -2992,6 +3056,8 @@ private extension WorkflowPaywallViewTests {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private final class WorkflowGateHarness: @unchecked Sendable {
 
+    let appUserID: Atomic<String> = .init("customer-a")
+
     @MainActor lazy var gateController = CheckpointWorkflowGateController()
     let dismissals: Atomic<Int> = .init(0)
     let paywallEvents: Atomic<[PaywallEvent]> = .init([])
@@ -3023,6 +3089,7 @@ private final class WorkflowGateHarness: @unchecked Sendable {
         } customerInfo: {
             return try await gateRead?() ?? gateCustomerInfo
         }
+        purchases.appUserIDProvider = { [appUserID] in appUserID.value }
         purchases.trackWorkflowEventBlock = { event in
             workflowEvents.modify { $0.append(event) }
         }

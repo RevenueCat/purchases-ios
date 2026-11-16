@@ -320,6 +320,25 @@ struct WorkflowPaywallView: View {
 
     }
 
+    private enum PresentationLifecycle {
+
+        case active
+        case hidden
+        case ended
+
+        mutating func hide() {
+            if self == .active { self = .hidden }
+        }
+
+    }
+
+    private struct CheckpointOperationResult {
+
+        let customerInfo: CustomerInfo
+        let appUserID: String?
+
+    }
+
     private enum Constants {
         static let transitionDuration: Double = 0.25
         static let transitionStartDelayNanoseconds: UInt64 = 16_000_000
@@ -370,10 +389,10 @@ struct WorkflowPaywallView: View {
     @State private var isAwaitingEntryGate: Bool
     /// The customer a purchase or restore started for, so its result cannot count for a later customer.
     @State private var checkpointOperationAppUserID: String?
-    /// A result received while temporarily hidden is applied when this workflow appears again.
-    @State private var deferredCheckpointCustomerInfo: CustomerInfo?
+    /// Retains the originating identity while a result waits for the workflow to reappear.
+    @State private var deferredCheckpointOperation: CheckpointOperationResult?
     @State private var permitsPostPurchaseDismissal = true
-    @State private var hasEndedPresentation = false
+    @State private var presentationLifecycle: PresentationLifecycle = .active
 
     init(
         context: WorkflowContext,
@@ -557,8 +576,8 @@ struct WorkflowPaywallView: View {
         // Must use exitOfferContext(for:currentStepId:), not context.exitOfferOffering, because
         // exitOfferOffering is not step-aware — it is non-nil for any step whenever configured.
         .onAppear {
-            guard !self.hasCompletedWorkflowInSession else { return }
-            self.hasEndedPresentation = false
+            guard self.presentationLifecycle != .ended, !self.hasCompletedWorkflowInSession else { return }
+            self.presentationLifecycle = .active
             pageActions.view = self
             self.presentationBridge.workflowDidAppear(onCompletion: self.completeAndDismiss)
             switch self.presentationState {
@@ -572,15 +591,14 @@ struct WorkflowPaywallView: View {
             case .active, .displayingError(_, .keepCurrentScreen):
                 break
             }
-            if let customerInfo = self.deferredCheckpointCustomerInfo {
-                self.deferredCheckpointCustomerInfo = nil
-                // Identity was checked when this deferred result arrived. Preserve any newer operation capture.
-                let decision = self.checkpointGateController?.update(customerInfo: customerInfo) ?? .notGated
+            if let operation = self.deferredCheckpointOperation {
+                self.deferredCheckpointOperation = nil
+                let decision = self.applyCheckpointOperation(operation)
                 self.permitsPostPurchaseDismissal = decision != .blocked
-                if decision == .passed {
-                    self.completeCheckpointGateAfterOperationCallbacks()
-                    return
-                }
+            }
+            if self.checkpointGateController?.status == .passed {
+                self.completeCheckpointGateAfterOperationCallbacks()
+                return
             }
             if self.resolvesInitialStep, self.transitionState.currentPage == nil {
                 self.checkpointGateController?.markInitialBranchPending()
@@ -605,7 +623,7 @@ struct WorkflowPaywallView: View {
         }
         .onDisappear {
             pageActions.view = nil
-            self.hasEndedPresentation = true
+            self.presentationLifecycle.hide()
             self.cancelGateEntry()
             self.nativeButtonCoordinator?.activatePage(nil)
             self.presentationBridge.workflowDidDisappear()
@@ -830,8 +848,9 @@ struct WorkflowPaywallView: View {
     }
 
     private func closeWorkflow() {
-        guard !self.hasEndedPresentation else { return }
-        self.hasEndedPresentation = true
+        guard self.presentationLifecycle != .ended else { return }
+        self.presentationLifecycle = .ended
+        self.deferredCheckpointOperation = nil
         self.cancelGateEntry()
         self.onDismiss()
     }
@@ -843,7 +862,7 @@ struct WorkflowPaywallView: View {
     }
 
     private func handleDismiss(dismissalReason: WorkflowDismissalReason = .close) {
-        guard !self.transitionState.isTransitioning, !self.hasEndedPresentation else {
+        guard !self.transitionState.isTransitioning, self.presentationLifecycle == .active else {
             return
         }
 
@@ -929,7 +948,7 @@ struct WorkflowPaywallView: View {
     }
 
     private func completeAndDismiss() {
-        guard !self.hasEndedPresentation,
+        guard self.presentationLifecycle == .active,
               self.checkpointGateController?.hasUnresolvedGate != true else { return }
         self.hasCompletedWorkflowInSession = true
         self.workflowCompletedInSessionBinding.wrappedValue = true
@@ -1016,7 +1035,8 @@ struct WorkflowPaywallView: View {
         }
 
         // Consume workflow triggers while a read is pending, leaving ordinary back actions available.
-        guard !self.hasEndedPresentation, self.checkpointGateController?.entryTask == nil else { return true }
+        guard self.presentationLifecycle == .active,
+              self.checkpointGateController?.entryTask == nil else { return true }
         if let fromStep, self.checkpointGateController?.blocksForwardNavigation(step: fromStep) == true {
             return true
         }
@@ -1266,7 +1286,7 @@ struct WorkflowPaywallView: View {
     /// view reappears but the back stack survives, so building twice would leave `seenPages` holding
     /// only this step and break back navigation.
     private func startInitialStep() {
-        guard !self.hasEndedPresentation,
+        guard self.presentationLifecycle == .active,
               !self.hasCompletedWorkflowInSession,
               self.transitionState.currentPage == nil,
               !self.presentationState.hasFailed else { return }
@@ -1348,7 +1368,7 @@ struct WorkflowPaywallView: View {
     }
 
     private func canApplyGateEntryResult() -> Bool {
-        return !Task.isCancelled && !self.hasEndedPresentation
+        return !Task.isCancelled && self.presentationLifecycle == .active
     }
 
     private func cancelGateEntry() {
@@ -1367,7 +1387,7 @@ struct WorkflowPaywallView: View {
     }
 
     private func completeCheckpointGate() {
-        guard !self.hasEndedPresentation else { return }
+        guard self.presentationLifecycle == .active else { return }
         self.isAwaitingEntryGate = false
         self.skeletonPage = nil
         self.completeAndDismiss()
@@ -1375,19 +1395,26 @@ struct WorkflowPaywallView: View {
 
     @discardableResult
     private func applyCheckpointOperation(customerInfo: CustomerInfo) -> WorkflowGateDecision {
-        let operationAppUserID = self.checkpointOperationAppUserID
+        let operation = CheckpointOperationResult(
+            customerInfo: customerInfo, appUserID: self.checkpointOperationAppUserID
+        )
         self.checkpointOperationAppUserID = nil
+        return self.applyCheckpointOperation(operation)
+    }
+
+    private func applyCheckpointOperation(_ operation: CheckpointOperationResult) -> WorkflowGateDecision {
+        guard self.presentationLifecycle != .ended else { return .blocked }
         let resumePendingEntry = self.checkpointGateController?.resumePendingEntry
         self.cancelGateEntry()
-        if let operationAppUserID, self.purchaseHandler.appUserID != operationAppUserID {
+        if let appUserID = operation.appUserID, self.purchaseHandler.appUserID != appUserID {
             resumePendingEntry?()
             return .blocked
         }
-        guard !self.hasEndedPresentation else {
-            if self.checkpointGateController != nil { self.deferredCheckpointCustomerInfo = customerInfo }
+        if self.presentationLifecycle == .hidden {
+            if self.checkpointGateController != nil { self.deferredCheckpointOperation = operation }
             return .blocked
         }
-        let decision = self.checkpointGateController?.update(customerInfo: customerInfo) ?? .notGated
+        let decision = self.checkpointGateController?.update(customerInfo: operation.customerInfo) ?? .notGated
         if decision == .blocked { resumePendingEntry?() }
         return decision
     }
