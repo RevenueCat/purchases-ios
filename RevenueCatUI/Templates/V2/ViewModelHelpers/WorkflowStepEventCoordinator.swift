@@ -162,6 +162,8 @@ final class WorkflowStepEventCoordinator {
 
     private struct PendingStepStarted {
         let id = UUID()
+        /// Stamped at navigation, so a held event keeps the time the step was entered.
+        let creationData = WorkflowEvent.CreationData()
         let step: WorkflowStep
         let fromStepId: String
         let entryReason: WorkflowEvent.EntryReason
@@ -180,7 +182,8 @@ final class WorkflowStepEventCoordinator {
             pending.step,
             fromStepId: pending.fromStepId,
             entryReason: pending.entryReason,
-            navigationDurationMs: navigationDurationMs
+            navigationDurationMs: navigationDurationMs,
+            creationData: pending.creationData
         )
     }
 

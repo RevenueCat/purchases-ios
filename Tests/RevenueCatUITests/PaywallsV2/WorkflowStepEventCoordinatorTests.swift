@@ -152,10 +152,12 @@ final class WorkflowStepEventCoordinatorTests: TestCase {
 
         expect(self.recorded.map(Self.kind)) == ["completed"]
 
+        let heldUntil = Date()
         frames.now = 10.425
         frames.fire()
 
         expect(self.recorded.map(Self.kind)) == ["completed", "started"]
+        expect(self.recorded[1].creationData.date) <= heldUntil
         let started = try XCTUnwrap(Self.startedData(self.recorded[1]))
         expect(started.stepId) == "step_2"
         expect(started.fromStepId) == "step_1"

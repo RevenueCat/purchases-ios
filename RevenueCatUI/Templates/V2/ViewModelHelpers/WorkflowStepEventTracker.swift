@@ -81,16 +81,18 @@ final class WorkflowStepEventTracker {
     }
 
     /// Emits `stepStarted`. `navigationDurationMs` is only known for user navigation whose first frame
-    /// was observed; see ``WorkflowStepEventCoordinator``.
+    /// was observed; see ``WorkflowStepEventCoordinator``. A held event passes the `creationData` from when
+    /// the navigation happened.
     func trackStepStarted(
         _ step: WorkflowStep,
         fromStepId: String?,
         entryReason: WorkflowEvent.EntryReason,
-        navigationDurationMs: Int? = nil
+        navigationDurationMs: Int? = nil,
+        creationData: WorkflowEvent.CreationData = .init()
     ) {
         self.sink(
             .stepStarted(
-                .init(),
+                creationData,
                 self.data(
                     for: step,
                     fromStepId: fromStepId,
