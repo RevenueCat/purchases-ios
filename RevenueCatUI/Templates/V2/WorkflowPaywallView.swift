@@ -576,39 +576,7 @@ struct WorkflowPaywallView: View {
         // Must use exitOfferContext(for:currentStepId:), not context.exitOfferOffering, because
         // exitOfferOffering is not step-aware — it is non-nil for any step whenever configured.
         .onAppear {
-            guard self.presentationLifecycle != .ended, !self.hasCompletedWorkflowInSession else { return }
-            self.presentationLifecycle = .active
-            pageActions.view = self
-            self.presentationBridge.workflowDidAppear(onCompletion: self.completeAndDismiss)
-            switch self.presentationState {
-            case .displayingError(_, .endFlow):
-                self.exitOfferOfferingBinding.wrappedValue = nil
-                self.reportPresentationError(for: self.navigator.currentStepId)
-                return
-            case .failureReported:
-                self.exitOfferOfferingBinding.wrappedValue = nil
-                return
-            case .active, .displayingError(_, .keepCurrentScreen):
-                break
-            }
-            if let operation = self.deferredCheckpointOperation {
-                self.deferredCheckpointOperation = nil
-                let decision = self.applyCheckpointOperation(operation)
-                self.permitsPostPurchaseDismissal = decision != .blocked
-            }
-            if self.checkpointGateController?.status == .passed {
-                self.completeCheckpointGateAfterOperationCallbacks()
-                return
-            }
-            if self.resolvesInitialStep, self.transitionState.currentPage == nil {
-                self.checkpointGateController?.markInitialBranchPending()
-            }
-            guard self.resolvesEntryGate() else { return }
-            self.syncExitOfferBinding()
-            self.stepEventCoordinator.trackInitialStep(
-                self.navigator.currentStep,
-                hasRenderedPage: self.transitionState.currentPage != nil
-            )
+            self.handleAppear(pageActions: pageActions)
         }
         // This catches dismissal paths that do not pass through a workflow failure: close button,
         // post-purchase auto-dismiss, swipe-to-dismiss on a sheet, and programmatic parent dismiss.
@@ -662,19 +630,13 @@ struct WorkflowPaywallView: View {
         )
         .modifier(PaywallURLEventsModifier(purchaseHandler: self.purchaseHandler))
         .onReceive(self.purchaseHandler.$actionTypeInProgress.dropFirst()) { action in
-            guard action != nil else { return }
-            self.checkpointOperationAppUserID = self.checkpointGateController == nil
-                ? nil : self.purchaseHandler.appUserID
-            self.permitsPostPurchaseDismissal = self.checkpointGateController == nil
+            self.handlePurchaseActionChange(action)
         }
         .onReceive(self.purchaseHandler.$sessionPurchaseResult.dropFirst()) { result in
-            guard case let .purchased(_, customerInfo)? = result else { return }
-            let decision = self.applyCheckpointOperation(customerInfo: customerInfo)
-            self.permitsPostPurchaseDismissal = decision != .blocked
+            self.handleSessionPurchaseResult(result)
         }
         .onReceive(self.purchaseHandler.$restoredCustomerInfo.dropFirst()) { restoreResult in
-            guard let restoreResult else { return }
-            self.applyCheckpointOperation(customerInfo: restoreResult.customerInfo)
+            self.handleRestoredCustomerInfo(restoreResult)
         }
         .onChangeOf(self.purchaseHandler.sessionPurchaseResult) { result in
             guard case .purchased? = result else { return }
@@ -925,6 +887,60 @@ struct WorkflowPaywallView: View {
 
         self.presentationState = .active
         self.handleDismiss(dismissalReason: .navigatedBack)
+    }
+
+    private func handleAppear(pageActions: PageActions) {
+        guard self.presentationLifecycle != .ended, !self.hasCompletedWorkflowInSession else { return }
+        self.presentationLifecycle = .active
+        pageActions.view = self
+        self.presentationBridge.workflowDidAppear(onCompletion: self.completeAndDismiss)
+        switch self.presentationState {
+        case .displayingError(_, .endFlow):
+            self.exitOfferOfferingBinding.wrappedValue = nil
+            self.reportPresentationError(for: self.navigator.currentStepId)
+            return
+        case .failureReported:
+            self.exitOfferOfferingBinding.wrappedValue = nil
+            return
+        case .active, .displayingError(_, .keepCurrentScreen):
+            break
+        }
+        if let operation = self.deferredCheckpointOperation {
+            self.deferredCheckpointOperation = nil
+            let decision = self.applyCheckpointOperation(operation)
+            self.permitsPostPurchaseDismissal = decision != .blocked
+        }
+        if self.checkpointGateController?.status == .passed {
+            self.completeCheckpointGateAfterOperationCallbacks()
+            return
+        }
+        if self.resolvesInitialStep, self.transitionState.currentPage == nil {
+            self.checkpointGateController?.markInitialBranchPending()
+        }
+        guard self.resolvesEntryGate() else { return }
+        self.syncExitOfferBinding()
+        self.stepEventCoordinator.trackInitialStep(
+            self.navigator.currentStep,
+            hasRenderedPage: self.transitionState.currentPage != nil
+        )
+    }
+
+    private func handlePurchaseActionChange(_ action: PurchaseHandler.ActionType?) {
+        guard action != nil else { return }
+        self.checkpointOperationAppUserID = self.checkpointGateController == nil
+            ? nil : self.purchaseHandler.appUserID
+        self.permitsPostPurchaseDismissal = self.checkpointGateController == nil
+    }
+
+    private func handleSessionPurchaseResult(_ result: PaywallPurchaseResult?) {
+        guard case let .purchased(_, customerInfo)? = result else { return }
+        let decision = self.applyCheckpointOperation(customerInfo: customerInfo)
+        self.permitsPostPurchaseDismissal = decision != .blocked
+    }
+
+    private func handleRestoredCustomerInfo(_ restoreResult: PurchaseHandler.RestoreResult?) {
+        guard let restoreResult else { return }
+        self.applyCheckpointOperation(customerInfo: restoreResult.customerInfo)
     }
 
     private func syncExitOfferBinding() {
