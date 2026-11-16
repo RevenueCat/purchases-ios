@@ -24,6 +24,99 @@ class TextComponentViewLoadingTests: BaseSnapshotTest {
 
     private static let snapshotSize = CGSize(width: 300, height: 60)
 
+    func testLiteralTextRendersWithoutPackageOrOfferContexts() throws {
+        let viewModel = try TextComponentViewModel(
+            localizationProvider: .init(locale: Locale(identifier: "en_US"), localizedStrings: [
+                "text_key": .string("Hello, world")
+            ]),
+            uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
+            component: .init(text: "text_key", color: .init(light: .hex("#000000")))
+        )
+        // No environment objects: a literal text must not resolve any package or offer dependency.
+        let controller = UIHostingController(rootView: TextComponentView(viewModel: viewModel))
+        XCTAssertFalse(try self.render(controller).isEmpty)
+    }
+
+    func testHostedPriceUpdatesWhenSelectedPackageChanges() throws {
+        let packages = [TestData.monthlyPackage, TestData.annualPackage]
+        let context = PackageContext(package: packages[0], variableContext: .init(packages: packages))
+        let view = try Self.makeTextComponentView(
+            text: "{{ product.price }}", isLoading: false, packageContext: context
+        )
+        let controller = UIHostingController(rootView: view)
+        let monthly = try self.render(controller)
+
+        context.update(package: packages[1], variableContext: context.variableContext)
+        XCTAssertNotEqual(try self.render(controller), monthly)
+
+        context.update(package: packages[0], variableContext: context.variableContext)
+        XCTAssertEqual(try self.render(controller), monthly)
+    }
+
+    func testSelectionOverridesRenderWithoutPackageOrOfferContexts() throws {
+        for condition in [PaywallComponent.ExtendedCondition.selected, .selectedPackage(
+            operator: .in, packages: [TestData.annualPackage.identifier]
+        )] {
+            let viewModel = try TextComponentViewModel(
+                localizationProvider: .init(locale: Locale(identifier: "en_US"), localizedStrings: [
+                    "text_key": .string("Subscribe"),
+                    "selected_key": .string("Selected")
+                ]),
+                uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
+                component: .init(text: "text_key", color: .init(light: .hex("#000000")), overrides: [
+                    .init(extendedConditions: [condition], properties: .init(text: "selected_key"))
+                ])
+            )
+            let controller = UIHostingController(rootView: TextComponentView(viewModel: viewModel)
+                .environment(\.componentViewState, .default)
+                .environment(\.selectedPackageId, TestData.monthlyPackage.identifier))
+            let unselected = try self.render(controller)
+
+            controller.rootView = TextComponentView(viewModel: viewModel)
+                .environment(\.componentViewState, .selected)
+                .environment(\.selectedPackageId, TestData.annualPackage.identifier)
+            XCTAssertNotEqual(try self.render(controller), unselected)
+        }
+    }
+
+    func testPackageSelectionDoesNotReprocessFortyLiteralTexts() throws {
+        var fontResolutionCount = 0
+        let viewModel = try Self.makeCountingTextViewModel { fontResolutionCount += 1 }
+        let packages = [TestData.monthlyPackage, TestData.annualPackage]
+        let context = PackageContext(package: packages[0], variableContext: .init(packages: packages))
+        let controller = UIHostingController(rootView: TextSelectionObservationTestView(
+            packageContext: context, viewModel: viewModel, packageIdentifier: packages[0].identifier
+        ).previewRequiredPaywallsV2Properties(packageContext: context))
+        _ = try self.render(controller)
+        let initialResolutionCount = fontResolutionCount
+        XCTAssertGreaterThanOrEqual(initialResolutionCount, 40)
+
+        for package in [packages[1], packages[0]] {
+            context.update(package: package, variableContext: context.variableContext)
+            _ = try self.render(controller)
+            XCTAssertEqual(fontResolutionCount, initialResolutionCount)
+        }
+    }
+
+    func testSelectedOnlyTextIgnoresSelectionChangesBetweenOtherPackages() throws {
+        var fontResolutionCount = 0
+        let viewModel = try Self.makeCountingTextViewModel(
+            overrides: [.init(conditions: [.selected], properties: .init(visible: false))]
+        ) { fontResolutionCount += 1 }
+        let packages = [TestData.monthlyPackage, TestData.annualPackage]
+        let context = PackageContext(package: packages[0], variableContext: .init(packages: packages))
+        let controller = UIHostingController(rootView: TextSelectionObservationTestView(
+            packageContext: context, viewModel: viewModel, packageIdentifier: TestData.lifetimePackage.identifier
+        ).previewRequiredPaywallsV2Properties(packageContext: context))
+        _ = try self.render(controller)
+        let initialResolutionCount = fontResolutionCount
+        XCTAssertGreaterThanOrEqual(initialResolutionCount, 40)
+
+        context.update(package: packages[1], variableContext: context.variableContext)
+        _ = try self.render(controller)
+        XCTAssertEqual(fontResolutionCount, initialResolutionCount)
+    }
+
     func testTextIsRedactedWhileLoading() throws {
         // The string on screen is still "Hello, world"; an intro-offer override can replace it,
         // so the placeholder stays until eligibility resolves.
@@ -71,6 +164,25 @@ class TextComponentViewLoadingTests: BaseSnapshotTest {
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private extension TextComponentViewLoadingTests {
+
+    static func makeCountingTextViewModel(
+        overrides: PaywallComponent.ComponentOverrides<PaywallComponent.PartialTextComponent>? = nil,
+        onStyleBuild: @escaping () -> Void
+    ) throws -> TextComponentViewModel {
+        let uiConfig = PreviewUIConfig.make(fonts: [
+            "render_counter": .init(ios: .init(name: "RevenueCatNonexistentFont"))
+        ])
+        // The existing font failure callback runs each time a text style is built.
+        let provider = UIConfigProvider(uiConfig: uiConfig, failedToLoadFont: { _ in onStyleBuild() })
+        return try TextComponentViewModel(
+            localizationProvider: .init(locale: Locale(identifier: "en_US"), localizedStrings: [
+                "text_key": .string("Subscribe")
+            ]),
+            uiConfigProvider: provider,
+            component: .init(text: "text_key", fontName: "render_counter", color: .init(light: .hex("#000000")),
+                             overrides: overrides)
+        )
+    }
 
     func render(_ controller: UIViewController) throws -> Data {
         let rendered = self.expectation(description: "Text rendered")
@@ -123,6 +235,28 @@ private extension TextComponentViewLoadingTests {
                 \.offerEligibilityLoading,
                 isLoading ? [.intro, .promo] : []
             )
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private struct TextSelectionObservationTestView: View {
+
+    @ObservedObject var packageContext: PackageContext
+    let viewModel: TextComponentViewModel
+    let packageIdentifier: String
+
+    var body: some View {
+        VStack(spacing: 0) {
+            ForEach(0..<40) { _ in
+                TextComponentView(viewModel: self.viewModel)
+            }
+        }
+        .environment(\.selectedPackageId, self.packageContext.package?.identifier)
+        .environment(
+            \.componentViewState,
+            self.packageContext.package?.identifier == self.packageIdentifier ? .selected : .default
+        )
     }
 
 }

@@ -94,18 +94,17 @@ class OtherIntegrationTests: BaseBackendIntegrationTests {
 
         let purchases = try self.purchases
 
-        // 1. Invalidate cache
-        purchases.invalidateOfferingsCache()
         self.logger.clearMessages()
 
-        // 2. Request offerings multiple times in parallel
+        // Force these requests onto the network path so an app-start cache refresh cannot
+        // make them bypass the request de-duplication behavior this test verifies.
         await withThrowingTaskGroup(of: Void.self) {
             for _ in 0..<requestCount {
-                $0.addTask { _ = try await purchases.offerings() }
+                $0.addTask { _ = try await purchases.fetchCurrentOfferings() }
             }
         }
 
-        // 3. Verify N-1 requests were de-duped
+        // Verify N-1 requests were de-duped
         self.logger.verifyMessageWasLogged(
             "Network operation 'GetOfferingsOperation' found with the same cache key",
             level: .debug,
@@ -494,6 +493,18 @@ class OtherIntegrationTests: BaseBackendIntegrationTests {
         expect(testCurrency3.name).to(equal("Test Currency 3"))
         expect(testCurrency3.serverDescription).to(beNil())
     }
+}
+
+private extension Purchases {
+
+    func fetchCurrentOfferings() async throws -> Offerings {
+        return try await withCheckedThrowingContinuation { continuation in
+            self.getOfferings(fetchPolicy: .default, fetchCurrent: true) { offerings, error in
+                continuation.resume(with: Result(offerings, error))
+            }
+        }
+    }
+
 }
 
 private extension OtherIntegrationTests {

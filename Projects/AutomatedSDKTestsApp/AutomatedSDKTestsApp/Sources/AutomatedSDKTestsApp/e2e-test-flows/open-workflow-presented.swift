@@ -5,9 +5,9 @@
 //  Copyright © 2025 RevenueCat, Inc. All rights reserved.
 //
 
-import SwiftUI
 import RevenueCat
 import RevenueCatUI
+import SwiftUI
 
 extension E2ETestFlowView {
     /// Opens the workflow paywall via the `.presentPaywall(offering:)` modifier rather than a raw

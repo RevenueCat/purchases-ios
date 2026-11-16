@@ -6,15 +6,15 @@
 //  Copyright © 2025 RevenueCat, Inc. All rights reserved.
 //
 
-import SwiftUI
 import RevenueCat
 import RevenueCatUI
+import SwiftUI
 
 extension E2ETestFlowView {
     struct SubscribeFromV2Paywall: View {
-        
+
         @State private var presentPaywall = false
-        
+
         var body: some View {
             VStack {
                 Text("V2 Paywall - default offering")
@@ -23,7 +23,7 @@ extension E2ETestFlowView {
                     presentPaywall = true
                 }
                 .buttonStyle(.borderedProminent)
-                
+
                 EntitlementView(identifier: "pro")
             }
             .sheet(isPresented: $presentPaywall) {

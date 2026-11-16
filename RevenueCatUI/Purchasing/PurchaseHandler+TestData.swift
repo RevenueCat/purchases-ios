@@ -33,6 +33,7 @@ extension PurchaseHandler {
         purchasesAreCompletedBy: PurchasesAreCompletedBy = .revenueCat,
         performPurchase: PerformPurchase? = nil,
         performRestore: PerformRestore? = nil,
+        performPurchaseWithContext: PerformPurchaseWithContext? = nil,
         preferredLocaleOverride: String? = nil,
         remoteConfigEnabled: Bool = false,
         resolveBranch: @escaping @Sendable (WorkflowBranch) async -> WorkflowStepID = { $0.fallbackStepId },
@@ -71,6 +72,7 @@ extension PurchaseHandler {
             resolveBranch: resolveBranch,
             performPurchase: performPurchase,
             performRestore: performRestore,
+            performPurchaseWithContext: performPurchaseWithContext,
             purchaseResultPublisher: purchaseResultPublisher,
             eventTracker: .init(purchases: purchases, eventDispatcher: paywallEventMockDispatcher)
         )

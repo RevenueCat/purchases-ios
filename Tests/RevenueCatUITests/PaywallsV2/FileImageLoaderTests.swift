@@ -22,6 +22,51 @@ import XCTest
 @MainActor
 final class FileImageLoaderTests: TestCase {
 
+    func testRepeatedCachedLoadSkipsDiskAccessAfterFileIsRemoved() throws {
+        let fileManager = ImageLoaderFileManager()
+        let fileRepository = self.makeFileRepository(fileManager: fileManager)
+        let url = try XCTUnwrap(URL(string: "https://assets.example.com/\(UUID().uuidString).png"))
+        let cachedURL = try XCTUnwrap(fileRepository.generateLocalFilesystemURL(forRemoteURL: url, withChecksum: nil))
+        try Self.writeImageData(Self.makeImageData(variant: .red), to: cachedURL)
+
+        let loader = FileImageLoader(fileRepository: fileRepository, url: url)
+        let result = try XCTUnwrap(loader.result)
+        expect(loader.wasLoadedFromCache) == true
+        expect(fileManager.attributeReadCount.value) == 1
+        try FileManager.default.removeItem(at: cachedURL)
+
+        let repeatedLoader = FileImageLoader(fileRepository: fileRepository, url: url)
+
+        expect(repeatedLoader.result?.image) == result.image
+        expect(repeatedLoader.result?.size) == result.size
+        expect(repeatedLoader.wasLoadedFromCache) == true
+        expect(fileManager.attributeReadCount.value) == 1
+    }
+
+    func testAsyncLoadCachesImageForSubsequentLoaders() async throws {
+        let fileManager = ImageLoaderFileManager()
+        let fileRepository = self.makeFileRepository(fileManager: fileManager)
+        let url = try XCTUnwrap(URL(string: "https://assets.example.com/\(UUID().uuidString).png"))
+        let loader = FileImageLoader(fileRepository: fileRepository, url: url)
+        expect(loader.result).to(beNil())
+        expect(loader.wasLoadedFromCache) == false
+        expect(fileManager.attributeReadCount.value) == 1
+
+        let cachedURL = try XCTUnwrap(fileRepository.generateLocalFilesystemURL(forRemoteURL: url, withChecksum: nil))
+        try Self.writeImageData(Self.makeImageData(variant: .blue), to: cachedURL)
+        await loader.load()
+        let result = try XCTUnwrap(loader.result)
+        expect(fileManager.attributeReadCount.value) == 2
+        try FileManager.default.removeItem(at: cachedURL)
+
+        let repeatedLoader = FileImageLoader(fileRepository: fileRepository, url: url)
+
+        expect(repeatedLoader.result?.image) == result.image
+        expect(repeatedLoader.result?.size) == result.size
+        expect(repeatedLoader.wasLoadedFromCache) == true
+        expect(fileManager.attributeReadCount.value) == 2
+    }
+
     func testUpdateURLLoadsNewCachedImage() throws {
         guard #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) else {
             throw XCTSkip("API only available on iOS 16")
@@ -238,10 +283,10 @@ final class FileImageLoaderTests: TestCase {
 
     // MARK: - Helpers
 
-    private func makeFileRepository() -> FileRepository {
+    private func makeFileRepository(fileManager: FileManager = .default) -> FileRepository {
         return FileRepository(
             networkService: URLSession.shared,
-            fileManager: FileManager.default,
+            fileManager: fileManager,
             basePath: "FileImageLoaderTests-\(UUID().uuidString)"
         )
     }
@@ -253,7 +298,9 @@ final class FileImageLoaderTests: TestCase {
     }
 
     private static func makeLocalURL(filename: String) -> URL {
-        return FileManager.default.temporaryDirectory.appendingPathComponent(filename)
+        return FileManager.default.temporaryDirectory
+            .appendingPathComponent(UUID().uuidString)
+            .appendingPathComponent(filename)
     }
 
     // We need valid image bytes because FileImageLoader uses URL.asImageAndSize,
@@ -262,6 +309,17 @@ final class FileImageLoaderTests: TestCase {
     private static func makeImageData(variant: TestImageVariant) throws -> Data {
         let base64 = variant.base64PNG
         return try XCTUnwrap(Data(base64Encoded: base64))
+    }
+
+}
+
+private final class ImageLoaderFileManager: FileManager, @unchecked Sendable {
+
+    let attributeReadCount = Atomic(0)
+
+    override func attributesOfItem(atPath path: String) throws -> [FileAttributeKey: Any] {
+        self.attributeReadCount.increment()
+        return try super.attributesOfItem(atPath: path)
     }
 
 }

@@ -53,11 +53,14 @@ class WorkflowManagerTests: TestCase {
         expect(self.mockProvider.invokedGetWorkflowParameters) == ["wf_1"]
     }
 
-    func testGetWorkflowSchedulesAssetPrewarmingOnSuccess() async throws {
+    func testGetWorkflowPublishesWebBundleURLsAndPrewarmsAssetsOnDemand() async throws {
         guard #available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *) else {
             throw XCTSkip("prewarmWorkflowAssets requires iOS 15+")
         }
-        let expected = try Self.workflowDataResult(id: "wf_1")
+        let expected = try Self.workflowDataResult(
+            id: "wf_1",
+            webViewURLs: ["https://example.com/presented"]
+        )
         self.mockProvider.stubbedGetWorkflowResult = ["wf_1": expected]
 
         _ = try await self.manager.getWorkflow(workflowId: "wf_1")
@@ -66,7 +69,9 @@ class WorkflowManagerTests: TestCase {
         expect(self.mockPaywallCache.invokedPrewarmWorkflowAssets) == true
         expect(self.mockPaywallCache.invokedPrewarmWorkflowAssetsWorkflow?.id) == "wf_1"
         expect(self.mockPaywallCache.invokedPrewarmWorkflowAssetsUiConfig) == expected.uiConfig
-        expect(self.mockWebBundleURLBatcher.invokedPublishPresentedWorkflowIDs) == ["wf_1"]
+        expect(Self.webBundleURLStrings(in: self.mockWebBundleURLBatcher.invokedPublishScreenURLBatches)) == [
+            [["https://example.com/presented"]]
+        ]
     }
 
     func testGetWorkflowFailsWithWorkflowNotFoundWhenProviderReportsNotFound() async {
@@ -143,7 +148,10 @@ class WorkflowManagerTests: TestCase {
         guard #available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *) else {
             throw XCTSkip("prewarmWorkflowAssets requires iOS 15+")
         }
-        let expected = try Self.workflowDataResult(id: "wf_1")
+        let expected = try Self.workflowDataResult(
+            id: "wf_1",
+            webViewURLs: ["https://example.com/cached"]
+        )
         self.mockProvider.stubbedCachedWorkflowResult = ["default": expected]
 
         let result = self.manager.cachedWorkflow(forOfferingId: "default")
@@ -154,7 +162,9 @@ class WorkflowManagerTests: TestCase {
         expect(self.mockPaywallCache.invokedPrewarmWorkflowAssets) == true
         expect(self.mockPaywallCache.invokedPrewarmWorkflowAssetsWorkflow?.id) == "wf_1"
         expect(self.mockPaywallCache.invokedPrewarmWorkflowAssetsUiConfig) == expected.uiConfig
-        expect(self.mockWebBundleURLBatcher.invokedPublishPresentedWorkflowIDs) == ["wf_1"]
+        expect(Self.webBundleURLStrings(in: self.mockWebBundleURLBatcher.invokedPublishScreenURLBatches)) == [
+            [["https://example.com/cached"]]
+        ]
     }
 
     // MARK: - scheduleAssetPrewarmingForPrefetchedWorkflows
@@ -208,33 +218,6 @@ class WorkflowManagerTests: TestCase {
 
         expect(self.mockProvider.invokedDecodeCachedWorkflowForAssetPrewarmingParameters) == ["wf_1"]
         expect(self.mockPaywallCache.invokedPrewarmWorkflowAssetsCount) == 1
-    }
-
-    func testScheduleAssetPrewarmingDecodesAgainOnlyForNewPreferredLocales() async throws {
-        guard #available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *) else {
-            throw XCTSkip("prewarmWorkflowAssets requires iOS 15+")
-        }
-        let locales: Atomic<[String]> = .init(["en_US"])
-        let cache = PaywallCacheWarming(
-            introEligibiltyChecker: MockTrialOrIntroPriceEligibilityChecker(),
-            preferredLocalesProvider: { locales.value }
-        )
-        let manager = WorkflowManager(
-            workflowsConfigProvider: self.mockProvider,
-            paywallCache: cache,
-            operationDispatcher: self.mockOperationDispatcher,
-            webBundleURLBatcher: self.mockWebBundleURLBatcher
-        )
-        self.mockProvider.stubbedWorkflowIDsWithCachedBodyData = ["wf_1"]
-        self.mockProvider.stubbedGetWorkflowResult = ["wf_1": try Self.workflowDataResult(id: "wf_1")]
-
-        for locale in ["en_US", "en_US", "es_ES", "es_ES", "en_US"] {
-            locales.value = [locale]
-            await manager.scheduleAssetPrewarmingForPrefetchedWorkflows(includingOfferingId: nil)
-            await self.mockOperationDispatcher.invokeAllDispatchedAsyncWorkerThreadBlocks()
-        }
-
-        expect(self.mockProvider.invokedDecodeCachedWorkflowForAssetPrewarmingParameters) == ["wf_1", "wf_1"]
     }
 
     func testScheduleAssetPrewarmingDoesNotDecodeInline() async {
@@ -360,7 +343,10 @@ class WorkflowManagerTests: TestCase {
         guard #available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *) else {
             throw XCTSkip("publishWebBundleURLs requires iOS 15+")
         }
-        let expected = try Self.workflowDataResult(id: "wf_1")
+        let expected = try Self.workflowDataResult(
+            id: "wf_1",
+            webViewURLs: ["https://example.com/workflow"]
+        )
         self.mockProvider.stubbedWorkflowIdForOfferingId = ["default": "wf_1"]
         self.mockProvider.stubbedGetWorkflowResult = ["wf_1": expected]
         let offerings = Self.offerings()
@@ -371,15 +357,19 @@ class WorkflowManagerTests: TestCase {
         expect(self.mockProvider.invokedDecodeCachedWorkflowForAssetPrewarmingParameters) == ["wf_1"]
         expect(self.mockProvider.invokedGetWorkflowParameters).to(beEmpty())
         expect(self.mockWebBundleURLBatcher.invokedPublishCount) == 1
-        expect(self.mockWebBundleURLBatcher.invokedPublishOfferings) === offerings
-        expect(self.mockWebBundleURLBatcher.invokedPublishWorkflowsByOfferingId["default"]?.id) == "wf_1"
+        expect(Self.webBundleURLStrings(in: self.mockWebBundleURLBatcher.invokedPublishScreenURLBatches)) == [
+            [["https://example.com/workflow"]]
+        ]
     }
 
     func testPublishWebBundleURLsDecodesSharedWorkflowOnlyOnce() async throws {
         guard #available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *) else {
             throw XCTSkip("publishWebBundleURLs requires iOS 15+")
         }
-        let expected = try Self.workflowDataResult(id: "wf_1")
+        let expected = try Self.workflowDataResult(
+            id: "wf_1",
+            webViewURLs: ["https://example.com/shared"]
+        )
         self.mockProvider.stubbedWorkflowIdForOfferingId = [
             "default": "wf_1",
             "placement_a": "wf_1",
@@ -399,10 +389,43 @@ class WorkflowManagerTests: TestCase {
         await self.manager.publishWebBundleURLs(offerings: offerings)
 
         expect(self.mockProvider.invokedDecodeCachedWorkflowForAssetPrewarmingParameters) == ["wf_1"]
-        expect(self.mockWebBundleURLBatcher.invokedPublishWorkflowsByOfferingId.mapValues(\.id)) == [
-            "default": "wf_1",
-            "placement_a": "wf_1",
-            "placement_b": "wf_1"
+        expect(Self.webBundleURLStrings(in: self.mockWebBundleURLBatcher.invokedPublishScreenURLBatches)) == [
+            [["https://example.com/shared"]]
+        ]
+    }
+
+    func testPublishWebBundleURLsPreservesTargetOfferingOrder() async throws {
+        guard #available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *) else {
+            throw XCTSkip("publishWebBundleURLs requires iOS 15+")
+        }
+        self.mockProvider.stubbedWorkflowIdForOfferingId = [
+            "default": "wf_current",
+            "placement": "wf_placement"
+        ]
+        self.mockProvider.stubbedGetWorkflowResult = [
+            "wf_current": try Self.workflowDataResult(
+                id: "wf_current",
+                webViewURLs: ["https://example.com/current"]
+            ),
+            "wf_placement": try Self.workflowDataResult(
+                id: "wf_placement",
+                webViewURLs: ["https://example.com/placement"]
+            )
+        ]
+        let offerings = Self.offerings(
+            placements: .init(
+                fallbackOfferingId: nil,
+                offeringIdsByPlacement: ["placement_id": "placement"]
+            )
+        )
+
+        await self.manager.publishWebBundleURLs(offerings: offerings)
+
+        expect(Self.webBundleURLStrings(in: self.mockWebBundleURLBatcher.invokedPublishScreenURLBatches)) == [
+            [
+                ["https://example.com/current"],
+                ["https://example.com/placement"]
+            ]
         ]
     }
 
@@ -471,7 +494,10 @@ class WorkflowManagerTests: TestCase {
         guard #available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *) else {
             throw XCTSkip("publishWebBundleURLs requires iOS 15+")
         }
-        let expected = try Self.workflowDataResult(id: "wf_1")
+        let expected = try Self.workflowDataResult(
+            id: "wf_1",
+            webViewURLs: ["https://example.com/retried"]
+        )
         self.mockProvider.stubbedWorkflowIdForOfferingId = ["default": "wf_1"]
         self.mockProvider.stubbedGetWorkflowError = ["wf_1": .notFound]
         let offerings = Self.offerings()
@@ -483,7 +509,10 @@ class WorkflowManagerTests: TestCase {
 
         expect(self.mockProvider.invokedDecodeCachedWorkflowForAssetPrewarmingParameters) == ["wf_1", "wf_1"]
         expect(self.mockWebBundleURLBatcher.invokedPublishCount) == 2
-        expect(self.mockWebBundleURLBatcher.invokedPublishWorkflowsByOfferingId["default"]?.id) == "wf_1"
+        expect(Self.webBundleURLStrings(in: self.mockWebBundleURLBatcher.invokedPublishScreenURLBatches)) == [
+            [],
+            [["https://example.com/retried"]]
+        ]
     }
 
     func testPublishWebBundleURLsSkipsUncachedWorkflowsWithoutFetching() async throws {
@@ -499,7 +528,7 @@ class WorkflowManagerTests: TestCase {
         expect(self.mockProvider.invokedDecodeCachedWorkflowForAssetPrewarmingParameters) == ["wf_1"]
         expect(self.mockProvider.invokedGetWorkflowParameters).to(beEmpty())
         expect(self.mockWebBundleURLBatcher.invokedPublishCount) == 1
-        expect(self.mockWebBundleURLBatcher.invokedPublishWorkflowsByOfferingId).to(beEmpty())
+        expect(self.mockWebBundleURLBatcher.invokedPublishScreenURLBatches.last ?? []).to(beEmpty())
     }
 
     func testPublishWebBundleURLsSkipsOfferingsWithoutAWorkflowMapping() async throws {
@@ -547,7 +576,7 @@ class WorkflowManagerTests: TestCase {
 
         expect(provider.decodeCount) == 1
         expect(self.mockPaywallCache.invokedPrewarmWorkflowAssetsCount) == 1
-        expect(self.mockWebBundleURLBatcher.invokedPublishWorkflowsByOfferingId["default"]?.id) == "wf_1"
+        expect(self.mockWebBundleURLBatcher.invokedPublishScreenURLBatches.count) == 1
     }
 
     func testWorkflowPrewarmingDecodeCoordinatorCoalescesConcurrentRequestsForSameWorkflow() async throws {
@@ -637,11 +666,46 @@ class WorkflowManagerTests: TestCase {
         )
     }
 
-    private static func workflowDataResult(id: String) throws -> WorkflowDataResult {
-        return .init(workflow: try self.publishedWorkflow(id: id), uiConfig: .empty, enrolledVariants: nil)
+    private static func webBundleURLStrings(
+        in invocations: [[WebBundleScreenURLBatch]]
+    ) -> [[[String]]] {
+        return invocations.map { batches in
+            batches.map { batch in batch.urls.map(\.url.absoluteString) }
+        }
     }
 
-    private static func publishedWorkflow(id: String) throws -> PublishedWorkflow {
+    private static func workflowDataResult(
+        id: String,
+        webViewURLs: [String] = []
+    ) throws -> WorkflowDataResult {
+        return .init(
+            workflow: try self.publishedWorkflow(id: id, webViewURLs: webViewURLs),
+            uiConfig: .empty,
+            enrolledVariants: nil
+        )
+    }
+
+    private static func publishedWorkflow(
+        id: String,
+        webViewURLs: [String] = []
+    ) throws -> PublishedWorkflow {
+        #if os(watchOS) || os(tvOS) || !canImport(WebKit)
+        if !webViewURLs.isEmpty {
+            throw XCTSkip("Web view components are not supported on this platform")
+        }
+        #endif
+
+        let components = webViewURLs.enumerated().map { index, url in
+            """
+            {
+              "type": "web_view",
+              "id": "web-\(index)",
+              "protocol_version": 1,
+              "url": "\(url)",
+              "size": { "width": { "type": "fill" }, "height": { "type": "fill" } }
+            }
+            """
+        }.joined(separator: ",\n")
         let json = """
         {
           "id": "\(id)",
@@ -660,7 +724,9 @@ class WorkflowManagerTests: TestCase {
                 "base": {
                   "stack": {
                     "type": "stack",
-                    "components": [],
+                    "components": [
+                      \(components)
+                    ],
                     "dimension": { "type": "vertical", "alignment": "center", "distribution": "center" },
                     "size": { "width": { "type": "fill" }, "height": { "type": "fill" } },
                     "padding": { "top": 0, "bottom": 0, "leading": 0, "trailing": 0 },

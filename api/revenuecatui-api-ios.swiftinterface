@@ -364,8 +364,12 @@ public typealias PaywallInteractionHandler = @_Concurrency.MainActor @Sendable (
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @available(tvOS, unavailable, message: "RevenueCatUI does not support tvOS yet")
 @_Concurrency.MainActor @preconcurrency public struct PaywallView : SwiftUICore.View {
-  @_Concurrency.MainActor @preconcurrency public init(fonts: any RevenueCatUI.PaywallFontProvider = DefaultPaywallFontProvider(), displayCloseButton: Swift.Bool = false, performPurchase: RevenueCatUI.PerformPurchase? = nil, performRestore: RevenueCatUI.PerformRestore? = nil)
-  @_Concurrency.MainActor @preconcurrency public init(offering: RevenueCat.Offering, fonts: any RevenueCatUI.PaywallFontProvider = DefaultPaywallFontProvider(), displayCloseButton: Swift.Bool = false, performPurchase: RevenueCatUI.PerformPurchase? = nil, performRestore: RevenueCatUI.PerformRestore? = nil)
+  @available(*, deprecated, message: "Use the initializer with performPurchaseWithContext instead.")
+  @_Concurrency.MainActor @preconcurrency public init(fonts: any RevenueCatUI.PaywallFontProvider = DefaultPaywallFontProvider(), displayCloseButton: Swift.Bool = false, performPurchase: RevenueCatUI.PerformPurchase?, performRestore: RevenueCatUI.PerformRestore? = nil)
+  @available(*, deprecated, message: "Use the initializer with performPurchaseWithContext instead.")
+  @_Concurrency.MainActor @preconcurrency public init(offering: RevenueCat.Offering, fonts: any RevenueCatUI.PaywallFontProvider = DefaultPaywallFontProvider(), displayCloseButton: Swift.Bool = false, performPurchase: RevenueCatUI.PerformPurchase?, performRestore: RevenueCatUI.PerformRestore? = nil)
+  @_disfavoredOverload @_Concurrency.MainActor @preconcurrency public init(fonts: any RevenueCatUI.PaywallFontProvider = DefaultPaywallFontProvider(), displayCloseButton: Swift.Bool = false, performPurchaseWithContext: RevenueCatUI.PerformPurchaseWithContext? = nil, performRestore: RevenueCatUI.PerformRestore? = nil)
+  @_disfavoredOverload @_Concurrency.MainActor @preconcurrency public init(offering: RevenueCat.Offering, fonts: any RevenueCatUI.PaywallFontProvider = DefaultPaywallFontProvider(), displayCloseButton: Swift.Bool = false, performPurchaseWithContext: RevenueCatUI.PerformPurchaseWithContext? = nil, performRestore: RevenueCatUI.PerformRestore? = nil)
   @_Concurrency.MainActor @preconcurrency public var body: some SwiftUICore.View {
     get
   }
@@ -385,7 +389,11 @@ extension RevenueCat.Purchases {
 }
 @_inheritsConvenienceInitializers @_hasMissingDesignatedInitializers @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 @objc(RCPaywallFooterViewController) @_Concurrency.MainActor @preconcurrency final public class PaywallFooterViewController : RevenueCatUI.PaywallViewController {
+  @available(*, deprecated, message: "Use the initializer with performPurchaseWithContext instead.")
   @_Concurrency.MainActor @preconcurrency public init(offering: RevenueCat.Offering? = nil, performPurchase: @escaping RevenueCatUI.PerformPurchase, performRestore: @escaping RevenueCatUI.PerformRestore, dismissRequestedHandler: ((_ controller: RevenueCatUI.PaywallViewController) -> Swift.Void)? = nil)
+  @_disfavoredOverload @_Concurrency.MainActor @preconcurrency public init(offering: RevenueCat.Offering? = nil, performPurchaseWithContext: @escaping RevenueCatUI.PerformPurchaseWithContext, performRestore: @escaping RevenueCatUI.PerformRestore, dismissRequestedHandler: ((_ controller: RevenueCatUI.PaywallViewController) -> Swift.Void)? = nil)
+  @objc @_Concurrency.MainActor @preconcurrency public init(offering: RevenueCat.Offering? = nil, purchaseHandlerWithContext: any RevenueCatUI.PaywallPurchaseHandlerWithContext, dismissRequestedHandler: ((_ controller: RevenueCatUI.PaywallViewController) -> Swift.Void)? = nil)
+  @available(*, deprecated, message: "Use the initializer with purchaseHandlerWithContext instead.")
   @objc @_Concurrency.MainActor @preconcurrency public init(offering: RevenueCat.Offering? = nil, purchaseHandler: (any RevenueCatUI.PaywallPurchaseHandler)?, dismissRequestedHandler: ((_ controller: RevenueCatUI.PaywallViewController) -> Swift.Void)? = nil)
   @objc @_Concurrency.MainActor @preconcurrency public init(offering: RevenueCat.Offering? = nil, dismissRequestedHandler: ((_ controller: RevenueCatUI.PaywallViewController) -> Swift.Void)? = nil)
   @available(*, deprecated, message: "use init with Offering instead")
@@ -406,8 +414,12 @@ extension RevenueCat.Purchases {
   @objc @_Concurrency.MainActor @preconcurrency public func setCustomVariableNumber(_ value: Swift.Double, forKey key: Swift.String)
   @objc @_Concurrency.MainActor @preconcurrency public func setCustomVariableBool(_ value: Swift.Bool, forKey key: Swift.String)
   @objc @_Concurrency.MainActor @preconcurrency convenience public init(offering: RevenueCat.Offering? = nil, displayCloseButton: Swift.Bool = false, shouldBlockTouchEvents: Swift.Bool = false, dismissRequestedHandler: ((_ controller: RevenueCatUI.PaywallViewController) -> Swift.Void)? = nil)
-  @_Concurrency.MainActor @preconcurrency convenience public init(offering: RevenueCat.Offering? = nil, fonts: any RevenueCatUI.PaywallFontProvider, displayCloseButton: Swift.Bool = false, shouldBlockTouchEvents: Swift.Bool = false, performPurchase: RevenueCatUI.PerformPurchase? = nil, performRestore: RevenueCatUI.PerformRestore? = nil, dismissRequestedHandler: ((_ controller: RevenueCatUI.PaywallViewController) -> Swift.Void)? = nil)
+  @available(*, deprecated, message: "Use the initializer with performPurchaseWithContext instead.")
+  @_Concurrency.MainActor @preconcurrency convenience public init(offering: RevenueCat.Offering? = nil, fonts: any RevenueCatUI.PaywallFontProvider, displayCloseButton: Swift.Bool = false, shouldBlockTouchEvents: Swift.Bool = false, performPurchase: RevenueCatUI.PerformPurchase?, performRestore: RevenueCatUI.PerformRestore? = nil, dismissRequestedHandler: ((_ controller: RevenueCatUI.PaywallViewController) -> Swift.Void)? = nil)
+  @available(*, deprecated, message: "Use the initializer with purchaseHandlerWithContext instead.")
   @objc @_Concurrency.MainActor @preconcurrency convenience public init(offering: RevenueCat.Offering? = nil, displayCloseButton: Swift.Bool = false, shouldBlockTouchEvents: Swift.Bool = false, purchaseHandler: (any RevenueCatUI.PaywallPurchaseHandler)?, dismissRequestedHandler: ((_ controller: RevenueCatUI.PaywallViewController) -> Swift.Void)? = nil)
+  @_disfavoredOverload @_Concurrency.MainActor @preconcurrency convenience public init(offering: RevenueCat.Offering? = nil, fonts: any RevenueCatUI.PaywallFontProvider = DefaultPaywallFontProvider(), displayCloseButton: Swift.Bool = false, shouldBlockTouchEvents: Swift.Bool = false, performPurchaseWithContext: RevenueCatUI.PerformPurchaseWithContext? = nil, performRestore: RevenueCatUI.PerformRestore? = nil, dismissRequestedHandler: ((_ controller: RevenueCatUI.PaywallViewController) -> Swift.Void)? = nil)
+  @objc @_Concurrency.MainActor @preconcurrency convenience public init(offering: RevenueCat.Offering? = nil, displayCloseButton: Swift.Bool = false, shouldBlockTouchEvents: Swift.Bool = false, purchaseHandlerWithContext: any RevenueCatUI.PaywallPurchaseHandlerWithContext, dismissRequestedHandler: ((_ controller: RevenueCatUI.PaywallViewController) -> Swift.Void)? = nil)
   @available(*, deprecated, message: "use init with Offering instead")
   @_Concurrency.MainActor @preconcurrency convenience public init(offeringIdentifier: Swift.String, fonts: any RevenueCatUI.PaywallFontProvider = DefaultPaywallFontProvider(), displayCloseButton: Swift.Bool = false, shouldBlockTouchEvents: Swift.Bool = false, dismissRequestedHandler: ((_ controller: RevenueCatUI.PaywallViewController) -> Swift.Void)? = nil)
   @_Concurrency.MainActor @preconcurrency @objc required dynamic public init?(coder: Foundation.NSCoder)
@@ -457,6 +469,11 @@ extension RevenueCatUI.PaywallViewController : UIKit.UIAdaptivePresentationContr
   @objc func performPurchase(for package: RevenueCat.Package, completion: @escaping (_ userCancelled: Swift.Bool, _ error: (any Swift.Error)?) -> Swift.Void)
   @objc func performRestore(completion: @escaping (_ success: Swift.Bool, _ error: (any Swift.Error)?) -> Swift.Void)
 }
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+@_Concurrency.MainActor @objc(RCPaywallPurchaseHandlerWithContext) public protocol PaywallPurchaseHandlerWithContext {
+  @objc @_Concurrency.MainActor func performPurchase(with context: RevenueCatUI.PaywallPurchaseContext, completion: @escaping (_ userCancelled: Swift.Bool, _ error: (any Swift.Error)?) -> Swift.Void)
+  @objc @_Concurrency.MainActor func performRestore(completion: @escaping (_ success: Swift.Bool, _ error: (any Swift.Error)?) -> Swift.Void)
+}
 @available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 7.0, *)
 extension SwiftUICore.View {
   @_Concurrency.MainActor @preconcurrency public func onWebPurchaseRedemptionAttempt(perform completion: @escaping @Sendable (RevenueCat.WebPurchaseRedemptionResult) -> Swift.Void) -> some SwiftUICore.View
@@ -478,8 +495,11 @@ extension RevenueCatUI.PaywallPresentationMode {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public struct MyAppPurchaseLogic {
   public let performPurchase: RevenueCatUI.PerformPurchase
+  public let performPurchaseWithContext: RevenueCatUI.PerformPurchaseWithContext
   public let performRestore: RevenueCatUI.PerformRestore
+  @available(*, deprecated, message: "Use the initializer with performPurchaseWithContext instead.")
   public init(performPurchase: @escaping RevenueCatUI.PerformPurchase, performRestore: @escaping RevenueCatUI.PerformRestore)
+  @_disfavoredOverload public init(performPurchaseWithContext: @escaping RevenueCatUI.PerformPurchaseWithContext, performRestore: @escaping RevenueCatUI.PerformRestore)
 }
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @available(tvOS, unavailable, message: "RevenueCatUI does not support tvOS yet")
@@ -562,6 +582,14 @@ public typealias WebCheckoutOpenedHandler = @_Concurrency.MainActor @Sendable ()
 public typealias URLOpenedHandler = @_Concurrency.MainActor @Sendable (_ url: Foundation.URL) -> Swift.Void
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public typealias PerformPurchase = @_Concurrency.MainActor @Sendable (_ packageToPurchase: RevenueCat.Package) async -> (userCancelled: Swift.Bool, error: (any Swift.Error)?)
+@_hasMissingDesignatedInitializers @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@objc(RCPaywallPurchaseContext) final public class PaywallPurchaseContext : ObjectiveC.NSObject, Swift.Sendable {
+  @objc final public let package: RevenueCat.Package
+  @objc final public let promotionalOffer: RevenueCat.PromotionalOffer?
+  @objc deinit
+}
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+public typealias PerformPurchaseWithContext = @_Concurrency.MainActor @Sendable (_ context: RevenueCatUI.PaywallPurchaseContext) async -> (userCancelled: Swift.Bool, error: (any Swift.Error)?)
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public typealias PerformRestore = @_Concurrency.MainActor @Sendable () async -> (success: Swift.Bool, error: (any Swift.Error)?)
 public typealias PurchaseFailureHandler = @_Concurrency.MainActor @Sendable (Foundation.NSError) -> Swift.Void

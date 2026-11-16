@@ -24,6 +24,7 @@ final class MockAdTracker: Tracking.Tracker {
     private(set) var loadedData: [AdLoaded] = []
     private(set) var displayedData: [AdDisplayed] = []
     private(set) var openedData: [AdOpened] = []
+    private(set) var rewardEarnedUnverifiedData: [AdRewardEarnedUnverified] = []
 
     func trackAdLoaded(_ data: AdLoaded) {
         self.calls.append(Call(
@@ -73,6 +74,16 @@ final class MockAdTracker: Tracking.Tracker {
             adUnitId: data.adUnitId
         ))
         self.failedToLoadData.append(data)
+    }
+
+    func trackAdRewardEarnedUnverified(_ data: AdRewardEarnedUnverified) {
+        self.calls.append(Call(
+            method: "trackAdRewardEarnedUnverified",
+            adFormat: data.adFormat.rawValue,
+            placement: data.placement,
+            adUnitId: data.adUnitId
+        ))
+        self.rewardEarnedUnverifiedData.append(data)
     }
 }
 
@@ -159,6 +170,29 @@ final class AdapterTrackingTests: AdapterTestCase {
             placement: nil,
             adUnitId: "ca-app-pub-000"
         ))
+    }
+
+    func testTrackRewardEarnedWithoutVerificationTracksTheAdWithVerificationDisabled() {
+        let fakeAd = FakeFullScreenAd()
+        let delegate = Tracking.FullScreenContentDelegate(
+            adapter: self.adapter,
+            delegate: nil,
+            placement: "extra_life",
+            adUnitID: "ca-app-pub-rewarded",
+            adFormat: .rewarded,
+            responseInfoProvider: { nil }
+        )
+        self.adapter.fullScreenDelegateStore.set(delegate, for: fakeAd)
+
+        self.adapter.trackRewardEarnedWithoutVerification(for: fakeAd)
+
+        XCTAssertEqual(self.mockTracker.calls, [MockAdTracker.Call(
+            method: "trackAdRewardEarnedUnverified",
+            adFormat: AdFormat.rewarded.rawValue,
+            placement: "extra_life",
+            adUnitId: "ca-app-pub-rewarded"
+        )])
+        XCTAssertEqual(self.mockTracker.rewardEarnedUnverifiedData.first?.rewardVerificationEnabled, false)
     }
 
     func testTrackingNoOpsWhenNotConfigured() {

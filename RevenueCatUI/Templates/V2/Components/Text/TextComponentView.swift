@@ -22,6 +22,75 @@ import SwiftUI
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct TextComponentView: View {
 
+    private let viewModel: TextComponentViewModel
+
+    init(viewModel: TextComponentViewModel) {
+        self.viewModel = viewModel
+    }
+
+    var body: some View {
+        if self.viewModel.dependsOnComponentViewState {
+            SelectedTextComponentView { state in
+                self.content(state: state)
+            }
+        } else {
+            self.content(state: .default)
+        }
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private extension TextComponentView {
+
+    @ViewBuilder
+    func content(state: ComponentViewState) -> some View {
+        if self.viewModel.dependsOnSelectedPackageId {
+            SelectedPackageTextComponentView { selectedPackageId in
+                TextComponentContent(
+                    viewModel: self.viewModel,
+                    componentViewState: state,
+                    selectedPackageId: selectedPackageId
+                )
+            }
+        } else {
+            TextComponentContent(viewModel: self.viewModel, componentViewState: state, selectedPackageId: nil)
+        }
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private struct SelectedTextComponentView<Content: View>: View {
+
+    @Environment(\.componentViewState)
+    private var componentViewState
+
+    let content: (ComponentViewState) -> Content
+
+    var body: some View {
+        self.content(self.componentViewState)
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private struct SelectedPackageTextComponentView<Content: View>: View {
+
+    @Environment(\.selectedPackageId)
+    private var selectedPackageId
+
+    let content: (String?) -> Content
+
+    var body: some View {
+        self.content(self.selectedPackageId)
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private struct PackageDependentTextComponentView<Content: View>: View {
+
     @EnvironmentObject
     private var packageContext: PackageContext
 
@@ -31,8 +100,20 @@ struct TextComponentView: View {
     @EnvironmentObject
     private var paywallPromoOfferCache: PaywallPromoOfferCache
 
-    @Environment(\.componentViewState)
-    private var componentViewState
+    let content: (PackageContext, Bool, PromotionalOffer?) -> Content
+
+    var body: some View {
+        self.content(
+            self.packageContext,
+            self.introOfferEligibilityContext.isEligible(package: self.packageContext.package),
+            self.paywallPromoOfferCache.get(for: self.packageContext.package)
+        )
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private struct TextComponentContent: View {
 
     @Environment(\.screenCondition)
     private var screenCondition
@@ -45,9 +126,6 @@ struct TextComponentView: View {
 
     @Environment(\.customPaywallVariables)
     private var customVariables
-
-    @Environment(\.selectedPackageId)
-    private var selectedPackageId
 
     @Environment(\.paywallStateValues)
     private var paywallStateValues
@@ -85,13 +163,31 @@ struct TextComponentView: View {
         return self.accessibilityVoiceOverEnabled
     }
 
-    private let viewModel: TextComponentViewModel
+    let viewModel: TextComponentViewModel
+    let componentViewState: ComponentViewState
+    let selectedPackageId: String?
 
-    internal init(viewModel: TextComponentViewModel) {
-        self.viewModel = viewModel
+    var body: some View {
+        if self.viewModel.dependsOnPackageContext {
+            PackageDependentTextComponentView { packageContext, isEligibleForIntroOffer, promoOffer in
+                self.render(
+                    packageContext: packageContext,
+                    isEligibleForIntroOffer: isEligibleForIntroOffer,
+                    promoOffer: promoOffer
+                )
+            }
+        } else {
+            self.render(packageContext: nil, isEligibleForIntroOffer: false, promoOffer: nil)
+        }
     }
 
-    private func shouldRedactWhileLoading(
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private extension TextComponentContent {
+
+    func shouldRedactWhileLoading(
+        packageContext: PackageContext?,
         isEligibleForIntroOffer: Bool,
         isEligibleForPromoOffer: Bool
     ) -> Bool {
@@ -107,7 +203,7 @@ struct TextComponentView: View {
                 isEligibleForPromoOffer: isEligibleForPromoOffer,
                 loading: self.offerEligibilityAvailability.loading(
                     self.offerEligibilityLoading,
-                    for: self.packageContext.package
+                    for: packageContext?.package
                 )
             ),
             conditionContext: self.viewModel.uiConfigProvider.conditionContext(
@@ -120,20 +216,22 @@ struct TextComponentView: View {
         )
     }
 
-    var body: some View {
-        let isEligibleForIntroOffer = self.introOfferEligibilityContext.isEligible(
-            package: self.packageContext.package
-        )
-        let promoOffer = self.paywallPromoOfferCache.get(for: self.packageContext.package)
+    @MainActor
+    func render(
+        packageContext: PackageContext?,
+        isEligibleForIntroOffer: Bool,
+        promoOffer: PromotionalOffer?
+    ) -> some View {
         let shouldRedactWhileLoading = self.shouldRedactWhileLoading(
+            packageContext: packageContext,
             isEligibleForIntroOffer: isEligibleForIntroOffer,
             isEligibleForPromoOffer: promoOffer != nil
         )
-        viewModel.styles(
+        return self.viewModel.styles(
             state: self.componentViewState,
             condition: self.screenCondition,
             selectedPackageId: self.selectedPackageId,
-            packageContext: self.packageContext,
+            packageContext: packageContext,
             isEligibleForIntroOffer: isEligibleForIntroOffer,
             promoOffer: promoOffer,
             countdownTime: countdownTime,
@@ -201,6 +299,44 @@ struct NonLocalizedMarkdownText: View {
     }
 
     var markdownText: AttributedString? {
+        let key = MarkdownCache.Key(text: self.text, font: self.font, fontWeight: self.fontWeight)
+        if let hit = MarkdownCache.shared[key] {
+            return hit
+        }
+        guard let parsed = self.parseMarkdown() else { return nil }
+        MarkdownCache.shared[key] = parsed
+        return parsed
+    }
+
+    var body: some View {
+        Group {
+            if let markdownText = self.markdownText {
+                // Use markdown if we can successfully parse it
+                Text(markdownText)
+                    .environment(\.openURL, OpenURLAction { url in
+                        self.openLink(url)
+                        return .handled
+                    })
+                    .applyIfLet(self.spokenAccessibilityLabel) { view, label in
+                        view.accessibilityLabel(label)
+                    }
+                    .markdownLinkAccessibilityActions(
+                        Self.markdownLinks(in: markdownText),
+                        openLink: self.openLink
+                    )
+            } else {
+                // Display text as is because markdown is priority
+                Text(self.text)
+                    .font(self.font)
+                    .fontWeight(self.fontWeight)
+                    .applyIfLet(self.spokenAccessibilityLabel) { view, label in
+                        view.accessibilityLabel(label)
+                    }
+            }
+        }
+    }
+
+    private func parseMarkdown() -> AttributedString? {
         /*
          The intended behavior is:
          * If the font weight of the text is <= Bold, Markdown bold should be Bold
@@ -237,34 +373,6 @@ struct NonLocalizedMarkdownText: View {
         attrString = MarkdownUnderlineFormatter.apply(to: attrString)
 
         return attrString
-    }
-
-    var body: some View {
-        Group {
-            if let markdownText = self.markdownText {
-                // Use markdown if we can successfully parse it
-                Text(markdownText)
-                    .environment(\.openURL, OpenURLAction { url in
-                        self.openLink(url)
-                        return .handled
-                    })
-                    .applyIfLet(self.spokenAccessibilityLabel) { view, label in
-                        view.accessibilityLabel(label)
-                    }
-                    .markdownLinkAccessibilityActions(
-                        Self.markdownLinks(in: markdownText),
-                        openLink: self.openLink
-                    )
-            } else {
-                // Display text as is because markdown is priority
-                Text(self.text)
-                    .font(self.font)
-                    .fontWeight(self.fontWeight)
-                    .applyIfLet(self.spokenAccessibilityLabel) { view, label in
-                        view.accessibilityLabel(label)
-                    }
-            }
-        }
     }
 
     private func openLink(_ url: URL) {
@@ -350,6 +458,68 @@ private extension View {
         } else {
             self
         }
+    }
+
+}
+
+/// Bounds the number of retained strings, including changing countdown text.
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private final class MarkdownCache {
+
+    static let shared = MarkdownCache()
+
+    private let cache = NSCache<Key, Entry>()
+
+    private init() {
+        self.cache.countLimit = 256
+    }
+
+    subscript(key: Key) -> AttributedString? {
+        get { self.cache.object(forKey: key)?.value }
+        set {
+            if let newValue {
+                self.cache.setObject(Entry(value: newValue), forKey: key)
+            } else {
+                self.cache.removeObject(forKey: key)
+            }
+        }
+    }
+
+    final class Key: NSObject {
+
+        let text: String
+        let font: Font
+        let fontWeight: Font.Weight
+
+        init(text: String, font: Font, fontWeight: Font.Weight) {
+            self.text = text
+            self.font = font
+            self.fontWeight = fontWeight
+        }
+
+        override var hash: Int {
+            var hasher = Hasher()
+            hasher.combine(self.text)
+            hasher.combine(self.font)
+            hasher.combine(self.fontWeight)
+            return hasher.finalize()
+        }
+
+        override func isEqual(_ object: Any?) -> Bool {
+            guard let other = object as? Key else { return false }
+            return self.text == other.text && self.font == other.font && self.fontWeight == other.fontWeight
+        }
+
+    }
+
+    private final class Entry {
+
+        let value: AttributedString
+
+        init(value: AttributedString) {
+            self.value = value
+        }
+
     }
 
 }

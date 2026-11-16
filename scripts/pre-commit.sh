@@ -71,7 +71,7 @@ verify_no_included_apikeys() {
   FILES_TO_CHECK=(
     "${SCRIPT_DIR}/../Tests/BackendIntegrationTests/Constants.swift"
     "${SCRIPT_DIR}/../Examples/MagicWeather/MagicWeather/Constants.swift"
-    "${SCRIPT_DIR}/../Examples/MagicWeatherSwiftUI/Shared/Constants.swift"
+    "${SCRIPT_DIR}/../Examples/MagicWeatherSwiftUI/MagicWeatherSwiftUI/Constants.swift"
     "${SCRIPT_DIR}/../Tests/TestingApps/PurchaseTesterSwiftUI/Core/Constants.swift"
     "${SCRIPT_DIR}/../Tests/TestingApps/PaywallsTester/PaywallsTester/Config/Constants.swift"
     "${SCRIPT_DIR}/../Examples/SampleCat/SampleCat/Constants.swift"

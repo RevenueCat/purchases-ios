@@ -162,6 +162,31 @@ extension BaseStoreKitIntegrationTests {
                                            line: line)
     }
 
+    func verifyTransactionWasFinished(
+        _ transaction: StoreTransaction,
+        count: Int? = 1,
+        file: FileString = #file,
+        line: UInt = #line
+    ) async throws {
+        switch Self.storeKitVersion {
+        case .storeKit1:
+            // StoreKit 1 can deliver duplicate updates, so exact finish-request counts are unreliable.
+            try await self.verifySpecificTransactionIsEventuallyFinished(
+                transaction,
+                count: nil,
+                file: file,
+                line: line
+            )
+        case .storeKit2:
+            try await self.verifySpecificTransactionIsEventuallyFinished(
+                transaction,
+                count: count,
+                file: file,
+                line: line
+            )
+        }
+    }
+
     func verifySpecificTransactionIsEventuallyFinished(
         _ transaction: StoreTransaction,
         count: Int? = 1,
@@ -207,13 +232,17 @@ extension BaseStoreKitIntegrationTests {
         count: Int? = 1,
         file: FileString = #file,
         line: UInt = #line
-    ) {
+    ) async throws {
         let expectedLogRegexPattern = Self.finishingTransactionLogRegexPattern(productIdentifier: productIdentifier)
-        self.logger.verifyMessageWasLogged(regexPattern: expectedLogRegexPattern,
-                                           level: .info,
-                                           expectedCount: count,
-                                           file: file,
-                                           line: line)
+        try await self.logger.verifyMessageIsEventuallyLogged(
+            regexPattern: expectedLogRegexPattern,
+            level: .info,
+            expectedCount: count,
+            timeout: .seconds(5),
+            pollInterval: .milliseconds(100),
+            file: file,
+            line: line
+        )
     }
 
     func verifyNoTransactionsWereFinished(

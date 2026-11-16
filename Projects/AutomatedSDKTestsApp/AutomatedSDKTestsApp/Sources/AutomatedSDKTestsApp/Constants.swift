@@ -34,7 +34,7 @@ enum Constants {
         }
         return "\(scheme)//\(host)"
     }()
-    
+
     /*
      The force server error strategy to configure Purchases with
      To be used in (e2e) tests in order to simulate server failures
@@ -47,7 +47,9 @@ enum Constants {
             return strategy
         }
 
-        guard let value = Bundle.main.object(forInfoDictionaryKey: "REVENUECAT_FORCE_SERVER_ERROR_STRATEGY") as? String else {
+        guard let value = Bundle.main.object(
+            forInfoDictionaryKey: "REVENUECAT_FORCE_SERVER_ERROR_STRATEGY"
+        ) as? String else {
             return .never
         }
 

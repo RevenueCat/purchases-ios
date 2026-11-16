@@ -58,7 +58,8 @@ public struct PaywallView: View {
 
     private var workflowPresentationErrorHandler: WorkflowPresentationErrorHandler?
 
-    private var workflowBackNavigationBridge: WorkflowBackNavigationBridge
+    @State
+    private var presentationBridge: PaywallPresentationBridge
 
     private var initializationError: NSError?
 
@@ -80,10 +81,11 @@ public struct PaywallView: View {
     /// an error will be displayed.
     /// - Warning: `Purchases` must have been configured prior to displaying it.
     /// If you want to handle that, you can use ``init(offering:)`` instead.
+    @available(*, deprecated, message: "Use the initializer with performPurchaseWithContext instead.")
     public init(
         fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
         displayCloseButton: Bool = false,
-        performPurchase: PerformPurchase? = nil,
+        performPurchase: PerformPurchase?,
         performRestore: PerformRestore? = nil
     ) {
         let purchaseHandler = PurchaseHandler.default(performPurchase: performPurchase, performRestore: performRestore)
@@ -106,11 +108,12 @@ public struct PaywallView: View {
     /// due to invalid data, a default paywall will be displayed.
     /// - Note: Specifying this parameter means that it will ignore the offering configured in an active experiment.
     /// - Warning: `Purchases` must have been configured prior to displaying it.
+    @available(*, deprecated, message: "Use the initializer with performPurchaseWithContext instead.")
     public init(
         offering: Offering,
         fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
         displayCloseButton: Bool = false,
-        performPurchase: PerformPurchase? = nil,
+        performPurchase: PerformPurchase?,
         performRestore: PerformRestore? = nil
     ) {
         let purchaseHandler = PurchaseHandler.default(performPurchase: performPurchase, performRestore: performRestore)
@@ -123,6 +126,62 @@ public struct PaywallView: View {
                 purchaseHandler: purchaseHandler
             )
         )
+    }
+
+    /// Create a view to display the paywall in `Offerings.current`.
+    /// - Parameters:
+    ///   - fonts: The font provider for the paywall.
+    ///   - displayCloseButton: Whether to display a close button.
+    ///   - performPurchaseWithContext: An optional callback responsible for applying the selected promotional offer.
+    ///     Only used when `purchasesAreCompletedBy` is `.myApp`.
+    ///   - performRestore: An optional callback that restores purchases. Only used when `purchasesAreCompletedBy`
+    ///     is `.myApp`.
+    /// - Note: If loading the current `Offering` fails (if the user is offline, for example),
+    /// an error will be displayed.
+    /// - Warning: `Purchases` must have been configured prior to displaying it.
+    /// If you want to handle that, you can use ``init(offering:)`` instead.
+    @_disfavoredOverload // Keep existing trailing-closure calls bound to the legacy initializer.
+    public init(
+        fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
+        displayCloseButton: Bool = false,
+        performPurchaseWithContext: PerformPurchaseWithContext? = nil,
+        performRestore: PerformRestore? = nil
+    ) {
+        self.init(configuration: .init(
+            fonts: fonts,
+            displayCloseButton: displayCloseButton,
+            purchaseHandler: .default(performRestore: performRestore,
+                                      performPurchaseWithContext: performPurchaseWithContext)
+        ))
+    }
+
+    /// Create a view to display the paywall in a given `Offering`.
+    /// - Parameters:
+    ///   - offering: The offering to display, overriding the current offering and experiment assignment.
+    ///   - fonts: The font provider for the paywall.
+    ///   - displayCloseButton: Whether to display a close button.
+    ///   - performPurchaseWithContext: An optional callback responsible for applying the selected promotional offer.
+    ///     Only used when `purchasesAreCompletedBy` is `.myApp`.
+    ///   - performRestore: An optional callback that restores purchases. Only used when `purchasesAreCompletedBy`
+    ///     is `.myApp`.
+    /// - Note: If `offering` does not have a current paywall (`hasPaywall == false`), or it fails to load
+    /// due to invalid data, a default paywall will be displayed.
+    /// - Warning: `Purchases` must have been configured prior to displaying it.
+    @_disfavoredOverload // Keep existing trailing-closure calls bound to the legacy initializer.
+    public init(
+        offering: Offering,
+        fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
+        displayCloseButton: Bool = false,
+        performPurchaseWithContext: PerformPurchaseWithContext? = nil,
+        performRestore: PerformRestore? = nil
+    ) {
+        self.init(configuration: .init(
+            offering: offering,
+            fonts: fonts,
+            displayCloseButton: displayCloseButton,
+            purchaseHandler: .default(performRestore: performRestore,
+                                      performPurchaseWithContext: performPurchaseWithContext)
+        ))
     }
 
     // swiftlint:disable:next missing_docs
@@ -222,7 +281,7 @@ public struct PaywallView: View {
         self.promoOfferCache = configuration.promoOfferCache
         self.displaysPurchaseAndRestoreErrors = configuration.displaysPurchaseAndRestoreErrors
         self.workflowPresentationErrorHandler = configuration.workflowPresentationErrorHandler
-        self.workflowBackNavigationBridge = configuration.workflowBackNavigationBridge
+        self._presentationBridge = .init(initialValue: configuration.presentationBridge)
 
         self.initializationError = Self.checkForConfigurationConsistency(purchaseHandler: configuration.purchaseHandler)
     }
@@ -230,12 +289,12 @@ public struct PaywallView: View {
     private static func checkForConfigurationConsistency(purchaseHandler: PurchaseHandler) -> NSError? {
         switch purchaseHandler.purchasesAreCompletedBy {
         case .myApp:
-            if purchaseHandler.performPurchase == nil || purchaseHandler.performRestore == nil {
+            if purchaseHandler.performPurchaseWithContext == nil || purchaseHandler.performRestore == nil {
                 let missingBlocks: String
-                if purchaseHandler.performPurchase == nil && purchaseHandler.performRestore == nil {
-                    missingBlocks = "performPurchase and performRestore are"
-                } else if purchaseHandler.performPurchase == nil {
-                    missingBlocks = "performPurchase is"
+                if purchaseHandler.performPurchaseWithContext == nil && purchaseHandler.performRestore == nil {
+                    missingBlocks = "performPurchaseWithContext and performRestore are"
+                } else if purchaseHandler.performPurchaseWithContext == nil {
+                    missingBlocks = "performPurchaseWithContext is"
                 } else {
                     missingBlocks = "performRestore is"
                 }
@@ -248,7 +307,7 @@ public struct PaywallView: View {
                 return error
             }
         case .revenueCat:
-            if purchaseHandler.performPurchase != nil || purchaseHandler.performRestore != nil {
+            if purchaseHandler.performPurchaseWithContext != nil || purchaseHandler.performRestore != nil {
                 Logger.warning(PaywallError.purchaseAndRestoreDefinedForRevenueCat)
             }
         }
@@ -390,6 +449,9 @@ public struct PaywallView: View {
                     locale: purchaseHandler.preferredLocaleOverride ?? .current,
                     showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
                 )
+                .modifier(DisplayedOfferingRegistrationModifier(
+                    bridge: self.presentationBridge, offering: { self.offering }
+                ))
             #endif
             // Show the actually V2 paywall for full screen
             case .fullScreen:
@@ -402,7 +464,7 @@ public struct PaywallView: View {
                         displayCloseButton: self.displayCloseButton,
                         promoOfferCache: self.promoOfferCache,
                         onDismiss: self.dismissRequested,
-                        backNavigationBridge: self.workflowBackNavigationBridge,
+                        presentationBridge: self.presentationBridge,
                         onPresentationError: self.workflowPresentationErrorHandler
                     )
                     .modifier(NativePaywallNavigationModifier(
@@ -421,6 +483,9 @@ public struct PaywallView: View {
                         colorScheme: colorScheme,
                         promoOfferCache: self.promoOfferCache
                     )
+                    .modifier(DisplayedOfferingRegistrationModifier(
+                        bridge: self.presentationBridge, offering: { self.offering }
+                    ))
                     .modifier(NativePaywallNavigationModifier(
                         paywallComponents: paywallComponents, workflowContext: workflowContext
                     ))
@@ -448,6 +513,9 @@ public struct PaywallView: View {
                 showZeroDecimalPlacePrices: showZeroDecimalPlacePrices,
                 error: error
             )
+            .modifier(DisplayedOfferingRegistrationModifier(
+                bridge: self.presentationBridge, offering: { self.offering }
+            ))
         }
     }
 
@@ -480,6 +548,33 @@ private extension PaywallView {
 }
 
 // MARK: -
+
+/// Exposes this view's current offering through the presentation bridge while it is visible.
+/// Clears only this view's registration when it disappears.
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@available(tvOS, unavailable)
+struct DisplayedOfferingRegistrationModifier: ViewModifier {
+
+    private let bridge: PaywallPresentationBridge
+    private let offering: @MainActor () -> Offering?
+    @State private var registrationID = UUID()
+
+    init(bridge: PaywallPresentationBridge, offering: @escaping @MainActor () -> Offering?) {
+        self.bridge = bridge
+        self.offering = offering
+    }
+
+    func body(content: Content) -> some View {
+        content
+            .onAppear {
+                self.bridge.paywallDidAppear(id: self.registrationID, offering: self.offering)
+            }
+            .onDisappear {
+                self.bridge.paywallDidDisappear(id: self.registrationID)
+            }
+    }
+
+}
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @available(tvOS, unavailable)

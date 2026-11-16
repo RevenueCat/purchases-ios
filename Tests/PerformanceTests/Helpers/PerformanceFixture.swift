@@ -15,41 +15,45 @@ import Foundation
 @testable import RevenueCat
 import XCTest
 
+struct MultipleWorkflowWebBundleURLFixture: Decodable {
+
+    let sourceFixture: String
+    let workflowCount: Int
+
+}
+
 enum PerformanceFixture {
 
-    static func makeManager(rootURL: URL) throws -> RemoteConfigManager {
+    static func makeManager(
+        rootURL: URL,
+        sourceFixture: String,
+        workflowCount: Int
+    ) throws -> RemoteConfigManager {
+        precondition(workflowCount > 0)
         let diskCache = RemoteConfigDiskCache(cache: SynchronizedLargeItemCache(
             cache: FileManager.default,
             basePath: "performance",
             directoryType: .applicationSupport(overrideURL: rootURL)
         ))
         let blobStore = RemoteConfigBlobStore(directoryURL: rootURL.appendingPathComponent("blobs"))
-        var topics: [String: RemoteConfiguration.ConfigTopic] = [:]
-        func store(_ data: Data, topic: RemoteConfigTopic, key: String) {
-            let ref = Data(SHA256.hash(data: data).prefix(24)).base64EncodedString()
-                .replacingOccurrences(of: "+", with: "-").replacingOccurrences(of: "/", with: "_")
-            XCTAssertTrue(data.withUnsafeBytes { blobStore.write(ref: ref, bytes: $0) })
-            topics[topic.wireName, default: [:]][key] = .init(
-                blobRef: ref,
-                prefetch: true,
-                content: topic == .workflows ? ["offering_identifier": .string("[performance-benchmark-1]")] : [:]
-            )
-        }
-
+        let store = PerformanceFixtureStore(blobStore: blobStore)
         let url = try XCTUnwrap(Bundle(for: WorkflowPrewarmingMemoryTests.self)
-            .url(forResource: "performance-benchmark-1-revision-24", withExtension: "json"))
+            .url(forResource: sourceFixture, withExtension: "json"))
         let data = try Data(contentsOf: url)
         let workflow = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
-        let identifier = try XCTUnwrap(workflow["id"] as? String)
-        store(data, topic: .workflows, key: identifier)
+        try store.storeWorkflows(data: data, workflow: workflow, count: workflowCount)
         let uiConfig = try XCTUnwrap(workflow["ui_config"] as? [String: Any])
         for (key, value) in uiConfig {
-            store(try JSONSerialization.data(withJSONObject: value, options: [.sortedKeys]), topic: .uiConfig, key: key)
+            store.store(
+                try JSONSerialization.data(withJSONObject: value, options: [.sortedKeys]),
+                topic: .uiConfig,
+                key: key
+            )
         }
         XCTAssertTrue(diskCache.write(.init(
             manifest: "performance-fixture",
-            activeTopics: topics.keys.sorted(),
-            topics: .init(entries: topics)
+            activeTopics: store.topics.keys.sorted(),
+            topics: .init(entries: store.topics)
         )))
         let backend = OfflinePerformanceBackend()
         return RemoteConfigManager(
@@ -62,6 +66,70 @@ enum PerformanceFixture {
                 downloader: backend
             ),
             currentUserProvider: backend
+        )
+    }
+
+    static func multipleWorkflowWebBundleURLFixture() throws -> MultipleWorkflowWebBundleURLFixture {
+        let url = try XCTUnwrap(Bundle(for: WorkflowPrewarmingMemoryTests.self)
+            .url(forResource: "web-bundle-url-publishing-multiple-workflows", withExtension: "json"))
+        return try JSONDecoder.default.decode(
+            MultipleWorkflowWebBundleURLFixture.self,
+            from: Data(contentsOf: url)
+        )
+    }
+
+}
+
+private final class PerformanceFixtureStore {
+
+    let blobStore: RemoteConfigBlobStore
+    var topics: [String: RemoteConfiguration.ConfigTopic] = [:]
+
+    init(blobStore: RemoteConfigBlobStore) {
+        self.blobStore = blobStore
+    }
+
+    /// Uses deterministic copies of the approved published workflow to isolate the cost of retaining several
+    /// decoded graphs without adding a large collection of otherwise identical fixture files.
+    func storeWorkflows(data: Data, workflow: [String: Any], count: Int) throws {
+        if count == 1 {
+            self.store(
+                data,
+                topic: .workflows,
+                key: try XCTUnwrap(workflow["id"] as? String),
+                offeringIdentifier: "[performance-benchmark-1]"
+            )
+            return
+        }
+
+        for index in 0..<count {
+            let workflowIdentifier = String(format: "wff%016x", index + 1)
+            let offeringIdentifier = String(format: "[performance-retention-%02d]", index + 1)
+            var workflowCopy = workflow
+            workflowCopy["id"] = workflowIdentifier
+            workflowCopy["display_name"] = offeringIdentifier
+            self.store(
+                try JSONSerialization.data(withJSONObject: workflowCopy, options: [.sortedKeys]),
+                topic: .workflows,
+                key: workflowIdentifier,
+                offeringIdentifier: offeringIdentifier
+            )
+        }
+    }
+
+    func store(
+        _ data: Data,
+        topic: RemoteConfigTopic,
+        key: String,
+        offeringIdentifier: String? = nil
+    ) {
+        let ref = Data(SHA256.hash(data: data).prefix(24)).base64EncodedString()
+            .replacingOccurrences(of: "+", with: "-").replacingOccurrences(of: "/", with: "_")
+        XCTAssertTrue(data.withUnsafeBytes { self.blobStore.write(ref: ref, bytes: $0) })
+        self.topics[topic.wireName, default: [:]][key] = .init(
+            blobRef: ref,
+            prefetch: true,
+            content: offeringIdentifier.map { ["offering_identifier": .string($0)] } ?? [:]
         )
     }
 

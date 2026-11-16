@@ -5,9 +5,9 @@
 //  Copyright © 2025 RevenueCat, Inc. All rights reserved.
 //
 
-import SwiftUI
 import RevenueCat
 import RevenueCatUI
+import SwiftUI
 
 extension E2ETestFlowView {
     /// Opens an offering that has neither a paywall nor a workflow attached. The SDK should

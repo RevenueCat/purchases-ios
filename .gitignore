@@ -97,7 +97,7 @@ Examples/**/*.xcodeproj
 Projects/**/xcshareddata/
 Projects/**/*.xcworkspacedata
 
-Examples/**/.xcworkspacedata
+Examples/**/*.xcworkspacedata
 Examples/**/*.xcscheme
 Examples/**/xcshareddata/**
 

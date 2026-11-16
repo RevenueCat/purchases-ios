@@ -43,6 +43,17 @@ extension View {
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+fileprivate extension DisplayableColorScheme {
+    /// The color to apply for a solid (hex) scheme, or `nil` for gradients and colors with errors.
+    func solidColor(for colorScheme: ColorScheme) -> Color? {
+        guard case .hex = self.effectiveColor(for: colorScheme), !self.hasError else {
+            return nil
+        }
+        return self.toDynamicColor(with: colorScheme)
+    }
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 fileprivate extension View {
     @ViewBuilder
     func foregroundColorScheme(
@@ -53,10 +64,11 @@ fileprivate extension View {
         case .hex:
             // Do not apply a clear text color
             // Use the default color
-            if color.hasError {
-                self
+            if let solidColor = color.solidColor(for: colorScheme) {
+                // SwiftUI draws `Text` links in the tint color, so tint too to keep links in the text color.
+                self.foregroundColor(solidColor).tint(solidColor)
             } else {
-                self.foregroundColor(color.toDynamicColor(with: colorScheme))
+                self
             }
         case .linear(let degrees, _):
             self.overlay {

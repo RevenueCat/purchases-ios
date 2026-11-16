@@ -204,6 +204,40 @@ extension TestLogHandler {
         }
     }
 
+    func verifyMessageIsEventuallyLogged(
+        regexPattern: String,
+        level: LogLevel? = nil,
+        expectedCount: Int? = nil,
+        timeout: NimbleTimeInterval = PollingDefaults.timeout,
+        pollInterval: NimbleTimeInterval = PollingDefaults.pollInterval,
+        file: FileString = #file,
+        line: UInt = #line
+    ) async throws {
+        let condition = Self.regexEntryCondition(pattern: regexPattern, level: level)
+
+        try await asyncWait(
+            description: "Message with pattern '\(regexPattern)' not found. Logged messages: \(self.messages)",
+            timeout: timeout,
+            pollInterval: pollInterval,
+            file: file,
+            line: line
+        ) {
+            self.messages.contains(where: condition)
+        }
+
+        if let expectedCount = expectedCount {
+            try await asyncWait(
+                description: "Message with pattern '\(regexPattern)' expected \(expectedCount) times",
+                timeout: timeout,
+                pollInterval: pollInterval,
+                file: file,
+                line: line
+            ) {
+                self.messagesMatching(condition) == expectedCount
+            }
+        }
+    }
+
     /// - Parameter allowNoMessages: by default, this method requires logs to not be empty
     /// to eliminate the possibility of false positives due to log handler not being installed properly.
     func verifyMessageWasNotLogged(

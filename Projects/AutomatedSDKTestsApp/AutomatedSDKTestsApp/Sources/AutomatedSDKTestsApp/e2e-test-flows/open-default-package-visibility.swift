@@ -5,9 +5,9 @@
 //  Copyright © 2026 RevenueCat, Inc. All rights reserved.
 //
 
-import SwiftUI
 @_spi(Internal) import RevenueCat
 import RevenueCatUI
+import SwiftUI
 
 extension E2ETestFlowView {
     /// Covers a paywall whose default-selected package is hidden by a conditional-visibility rule.

@@ -111,7 +111,8 @@ final class AdMobPresenterTests: AdapterTestCase {
             checkpointIdentifier: checkpointIdentifier,
             adIdentifier: "ad-unit",
             mediator: mediator,
-            adFormat: adFormat
+            adFormat: adFormat,
+            rewardVerificationEnabled: true
         )
     }
 

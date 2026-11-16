@@ -281,23 +281,6 @@ commands:
           paths:
             - vendor/bundle
 
-  compress_result_bundle:
-    parameters:
-      directory:
-        type: string
-      bundle_name:
-        type: string
-    steps:
-      - run:
-          name: Compress result bundle
-          command: |
-            BUNDLE="<< parameters.directory >>/<< parameters.bundle_name >>.xcresult"
-            if [ -d "$BUNDLE" ]; then
-              tar -czf "$BUNDLE.tar.gz" -C "<< parameters.directory >>" "<< parameters.bundle_name >>.xcresult"
-              rm -r "$BUNDLE"
-            fi
-          when: always
-
   scan:
     parameters:
       directory:
@@ -312,9 +295,6 @@ commands:
           command: bundle exec fastlane scan
       - store_test_results:
           path: fastlane/test_output
-      - store_artifacts:
-          path: fastlane/test_output/report.html
-          destination: test_report.html
 
   scan-and-archive:
     parameters:
@@ -330,9 +310,6 @@ commands:
           command: bundle exec fastlane scan
       - store_test_results:
           path: fastlane/test_output
-      - store_artifacts:
-          path: fastlane/test_output/report.html
-          destination: test_report.html
       - run:
           name: Archive
           working_directory: << parameters.directory >>
@@ -353,9 +330,6 @@ commands:
           command: bundle exec fastlane scan
       - store_test_results:
           path: fastlane/test_output
-      - store_artifacts:
-          path: fastlane/test_output/report.html
-          destination: test_report.html
       - run:
           name: Archive all platforms
           working_directory: << parameters.directory >>
@@ -558,18 +532,12 @@ commands:
           no_output_timeout: 5m
           environment:
             SCAN_DEVICE: << parameters.device >>
-      - compress_result_bundle:
-          directory: fastlane/test_output/xctest/ios
-          bundle_name: BackendIntegrationTests
       - create-snapshot-pr-if-needed:
           condition: << pipeline.parameters.generate_snapshots >>
           job: "create_snapshot_pr"
           version: "BackendIntegrationTests"
       - store_test_results:
           path: fastlane/test_output
-      - store_artifacts:
-          path: fastlane/test_output/xctest
-          destination: scan-test-output
 
   checkout-with-minimal-permissions:
     steps:
@@ -637,14 +605,8 @@ jobs:
           no_output_timeout: 10m
           environment:
             DEVICE: iPhone 17,OS=27.0
-      - compress_result_bundle:
-          directory: fastlane/test_output
-          bundle_name: revenuecat_admob
       - store_test_results:
           path: fastlane/test_output/revenuecat_admob/tests.xml
-      - store_artifacts:
-          path: fastlane/test_output
-          destination: scan-test-output
 
   revenuecat-ads-tests:
     executor:
@@ -667,14 +629,8 @@ jobs:
           no_output_timeout: 10m
           environment:
             DEVICE: iPhone 17,OS=27.0
-      - compress_result_bundle:
-          directory: fastlane/test_output
-          bundle_name: revenuecat_ads
       - store_test_results:
           path: fastlane/test_output/revenuecat_ads/tests.xml
-      - store_artifacts:
-          path: fastlane/test_output
-          destination: scan-test-output
 
   spm-receipt-parser:
     executor:
@@ -726,26 +682,12 @@ jobs:
           no_output_timeout: 5m
           environment:
             DEVICE: iPhone 14,OS=16.4
-      - compress_result_bundle:
-          directory: fastlane/test_output
-          bundle_name: revenuecatui
-      - run:
-          name: Preserve RevenueCatUI iOS 16 result bundle
-          when: always
-          command: |
-            cd fastlane/test_output 2>/dev/null || exit 0
-            if [ -f revenuecatui.xcresult.tar.gz ]; then
-              mv revenuecatui.xcresult.tar.gz revenuecatui-iOS16.xcresult.tar.gz
-            fi
       - create-snapshot-pr-if-needed:
           condition: << pipeline.parameters.generate_revenuecatui_snapshots >>
           job: "create_snapshot_pr"
           version: "revenuecatui-16"
       - store_test_results:
           path: fastlane/test_output/revenuecatui/tests.xml
-      - store_artifacts:
-          path: fastlane/test_output
-          destination: scan-test-output-revenuecatui-16
       - run:
           name: Clean test output before RevenueCatUI iOS 15 run
           command: rm -rf fastlane/test_output
@@ -761,26 +703,12 @@ jobs:
           no_output_timeout: 5m
           environment:
             DEVICE: iPhone 13,OS=15.5
-      - compress_result_bundle:
-          directory: fastlane/test_output
-          bundle_name: revenuecatui
-      - run:
-          name: Preserve RevenueCatUI iOS 15 result bundle
-          when: always
-          command: |
-            cd fastlane/test_output 2>/dev/null || exit 0
-            if [ -f revenuecatui.xcresult.tar.gz ]; then
-              mv revenuecatui.xcresult.tar.gz revenuecatui-iOS15.xcresult.tar.gz
-            fi
       - create-snapshot-pr-if-needed:
           condition: << pipeline.parameters.generate_revenuecatui_snapshots >>
           job: "create_snapshot_pr"
           version: "revenuecatui-15"
       - store_test_results:
           path: fastlane/test_output/revenuecatui/tests.xml
-      - store_artifacts:
-          path: fastlane/test_output
-          destination: scan-test-output-revenuecatui-15
 
   run-revenuecat-ui-ios-18-and-17:
     executor:
@@ -817,26 +745,12 @@ jobs:
           no_output_timeout: 15m
           environment:
             DEVICE: iPhone 16,OS=18.5
-      - compress_result_bundle:
-          directory: fastlane/test_output
-          bundle_name: revenuecatui
-      - run:
-          name: Preserve RevenueCatUI iOS 18 result bundle
-          when: always
-          command: |
-            cd fastlane/test_output 2>/dev/null || exit 0
-            if [ -f revenuecatui.xcresult.tar.gz ]; then
-              mv revenuecatui.xcresult.tar.gz revenuecatui-iOS18.xcresult.tar.gz
-            fi
       - create-snapshot-pr-if-needed:
           condition: << pipeline.parameters.generate_revenuecatui_snapshots >>
           job: "create_snapshot_pr"
           version: "revenuecatui-18"
       - store_test_results:
           path: fastlane/test_output/revenuecatui/tests.xml
-      - store_artifacts:
-          path: fastlane/test_output
-          destination: scan-test-output-revenuecatui-18
       - run:
           name: Clean test output before RevenueCatUI iOS 17 run
           command: rm -rf fastlane/test_output
@@ -848,26 +762,12 @@ jobs:
           no_output_timeout: 15m
           environment:
             DEVICE: iPhone 15 Pro,OS=17.5
-      - compress_result_bundle:
-          directory: fastlane/test_output
-          bundle_name: revenuecatui
-      - run:
-          name: Preserve RevenueCatUI iOS 17 result bundle
-          when: always
-          command: |
-            cd fastlane/test_output 2>/dev/null || exit 0
-            if [ -f revenuecatui.xcresult.tar.gz ]; then
-              mv revenuecatui.xcresult.tar.gz revenuecatui-iOS17.xcresult.tar.gz
-            fi
       - create-snapshot-pr-if-needed:
           condition: << pipeline.parameters.generate_revenuecatui_snapshots >>
           job: "create_snapshot_pr"
           version: "revenuecatui-17"
       - store_test_results:
           path: fastlane/test_output/revenuecatui/tests.xml
-      - store_artifacts:
-          path: fastlane/test_output
-          destination: scan-test-output-revenuecatui-17
 
   record-and-upload-paywalls-v1-snapshots:
     executor:
@@ -887,9 +787,6 @@ jobs:
             DEVICE: iPhone 17,OS=26.5
       - store_test_results:
           path: fastlane/test_output/v1-snapshots/tests.xml
-      - store_artifacts:
-          path: fastlane/test_output
-          destination: v1-snapshots
 
   run-revenuecat-ui-ios-27:
     environment:
@@ -940,14 +837,8 @@ jobs:
           condition: << pipeline.parameters.generate_revenuecatui_snapshots >>
           job: "create_snapshot_pr"
           version: "revenuecatui-27"
-      - compress_result_bundle:
-          directory: fastlane/test_output
-          bundle_name: revenuecatui
       - store_test_results:
           path: fastlane/test_output/revenuecatui/tests.xml
-      - store_artifacts:
-          path: fastlane/test_output
-          destination: scan-test-output
 
   run-revenuecat-ui-ios-26:
     environment:
@@ -995,14 +886,8 @@ jobs:
           condition: << pipeline.parameters.generate_revenuecatui_snapshots >>
           job: "create_snapshot_pr"
           version: "revenuecatui-26"
-      - compress_result_bundle:
-          directory: fastlane/test_output
-          bundle_name: revenuecatui
       - store_test_results:
           path: fastlane/test_output/revenuecatui/tests.xml
-      - store_artifacts:
-          path: fastlane/test_output
-          destination: scan-test-output
 
   spm-revenuecat-ui-watchos:
     executor:
@@ -1027,14 +912,8 @@ jobs:
           condition: << pipeline.parameters.generate_revenuecatui_snapshots >>
           job: "create_snapshot_pr"
           version: "revenuecatui-watchos"
-      - compress_result_bundle:
-          directory: fastlane/test_output
-          bundle_name: revenuecatui
       - store_test_results:
           path: fastlane/test_output/revenuecatui/tests.xml
-      - store_artifacts:
-          path: fastlane/test_output
-          destination: scan-test-output
 
   spm-revenuecat-ui-macos:
     executor:
@@ -1054,14 +933,8 @@ jobs:
           environment:
             PLATFORM: macOS
             BUILD_SDK: macosx
-      - compress_result_bundle:
-          directory: fastlane/test_output
-          bundle_name: revenuecatui
       - store_test_results:
           path: fastlane/test_output/revenuecatui/tests.xml
-      - store_artifacts:
-          path: fastlane/test_output
-          destination: scan-test-output
 
   run-test-tvos-and-macos:
     executor:
@@ -1079,18 +952,12 @@ jobs:
             SCAN_XCARGS: -collect-test-diagnostics never
             RC_STOREKIT_TEST_PREFLIGHT: "1"
           no_output_timeout: 5m
-      - compress_result_bundle:
-          directory: fastlane/test_output/xctest/tvos
-          bundle_name: RevenueCat
       - create-snapshot-pr-if-needed:
           condition: << pipeline.parameters.generate_snapshots >>
           job: "create_snapshot_pr"
           version: "tvos"
       - store_test_results:
           path: fastlane/test_output
-      - store_artifacts:
-          path: fastlane/test_output/xctest
-          destination: scan-test-output-tvos
       - run:
           name: Clean test output before macOS run
           command: rm -rf fastlane/test_output
@@ -1100,18 +967,12 @@ jobs:
           name: Run macOS tests
           command: bundle exec fastlane mac test_macos
           no_output_timeout: 15m
-      - compress_result_bundle:
-          directory: fastlane/test_output/xctest/macos
-          bundle_name: RevenueCat
       - create-snapshot-pr-if-needed:
           condition: << pipeline.parameters.generate_snapshots >>
           job: "create_snapshot_pr"
           version: "macos"
       - store_test_results:
           path: fastlane/test_output
-      - store_artifacts:
-          path: fastlane/test_output/xctest
-          destination: scan-test-output-macos
 
   performance-automation-tests:
     docker:
@@ -1156,10 +1017,7 @@ jobs:
               -scheme PerformanceTests \
               -destination 'platform=iOS Simulator,name=iPhone 17,OS=27.0' \
               -parallel-testing-enabled NO \
-              -resultBundlePath /tmp/performance-tests.xcresult \
               ENABLE_TESTABILITY=YES CODE_SIGNING_ALLOWED=NO ONLY_ACTIVE_ARCH=YES
-      - store_artifacts:
-          path: /tmp/performance-tests.xcresult
       - store_artifacts:
           path: Tests/PerformanceTests/Baselines.json
       - when:
@@ -1201,18 +1059,12 @@ jobs:
             SCAN_DEVICE: iPhone 17 (27.0)
             RC_STOREKIT_TEST_PREFLIGHT: "1"
             SCAN_XCARGS: -collect-test-diagnostics never
-      - compress_result_bundle:
-          directory: fastlane/test_output/xctest/ios
-          bundle_name: RevenueCat
       - create-snapshot-pr-if-needed:
           condition: << pipeline.parameters.generate_snapshots >>
           job: "create_snapshot_pr"
           version: "ios-27"
       - store_test_results:
           path: fastlane/test_output
-      - store_artifacts:
-          path: fastlane/test_output/xctest
-          destination: scan-test-output-ios-27
       - github-notify-pr-on-fail
 
   run-test-ios-26:
@@ -1259,18 +1111,12 @@ jobs:
           no_output_timeout: 15m
           environment:
             SCAN_DEVICE: iPhone 17 (26.2)
-      - compress_result_bundle:
-          directory: fastlane/test_output/xctest/ios
-          bundle_name: RevenueCat
       - create-snapshot-pr-if-needed:
           condition: << pipeline.parameters.generate_snapshots >>
           job: "create_snapshot_pr"
           version: "ios-26"
       - store_test_results:
           path: fastlane/test_output
-      - store_artifacts:
-          path: fastlane/test_output/xctest
-          destination: scan-test-output-ios-26
       - github-notify-pr-on-fail
 
   build-samplecat:
@@ -1365,26 +1211,12 @@ jobs:
           no_output_timeout: 15m
           environment:
             SCAN_DEVICE: iPhone 16 (18.5)
-      - compress_result_bundle:
-          directory: fastlane/test_output/xctest/ios
-          bundle_name: RevenueCat
-      - run:
-          name: Preserve iOS 18 result bundle
-          when: always
-          command: |
-            cd fastlane/test_output/xctest/ios 2>/dev/null || exit 0
-            if [ -f RevenueCat.xcresult.tar.gz ]; then
-              mv RevenueCat.xcresult.tar.gz RevenueCat-iOS18.xcresult.tar.gz
-            fi
       - create-snapshot-pr-if-needed:
           condition: << pipeline.parameters.generate_snapshots >>
           job: "create_snapshot_pr"
           version: "ios-18"
       - store_test_results:
           path: fastlane/test_output
-      - store_artifacts:
-          path: fastlane/test_output/xctest
-          destination: scan-test-output-ios-18
       - run:
           name: Clean test output before iOS 17 run
           command: rm -rf fastlane/test_output
@@ -1396,26 +1228,12 @@ jobs:
           no_output_timeout: 15m
           environment:
             SCAN_DEVICE: iPhone 15 (17.5)
-      - compress_result_bundle:
-          directory: fastlane/test_output/xctest/ios
-          bundle_name: RevenueCat
-      - run:
-          name: Preserve iOS 17 result bundle
-          when: always
-          command: |
-            cd fastlane/test_output/xctest/ios 2>/dev/null || exit 0
-            if [ -f RevenueCat.xcresult.tar.gz ]; then
-              mv RevenueCat.xcresult.tar.gz RevenueCat-iOS17.xcresult.tar.gz
-            fi
       - create-snapshot-pr-if-needed:
           condition: << pipeline.parameters.generate_snapshots >>
           job: "create_snapshot_pr"
           version: "ios-17"
       - store_test_results:
           path: fastlane/test_output
-      - store_artifacts:
-          path: fastlane/test_output/xctest
-          destination: scan-test-output-ios-17
 
   run-test-ios-16-and-15:
     executor:
@@ -1459,26 +1277,12 @@ jobs:
           no_output_timeout: 5m
           environment:
             SCAN_DEVICE: iPhone 14 (16.4)
-      - compress_result_bundle:
-          directory: fastlane/test_output/xctest/ios
-          bundle_name: RevenueCat
-      - run:
-          name: Preserve iOS 16 result bundle
-          when: always
-          command: |
-            cd fastlane/test_output/xctest/ios 2>/dev/null || exit 0
-            if [ -f RevenueCat.xcresult.tar.gz ]; then
-              mv RevenueCat.xcresult.tar.gz RevenueCat-iOS16.xcresult.tar.gz
-            fi
       - create-snapshot-pr-if-needed:
           condition: << pipeline.parameters.generate_snapshots >>
           job: "create_snapshot_pr"
           version: "ios-16"
       - store_test_results:
           path: fastlane/test_output
-      - store_artifacts:
-          path: fastlane/test_output/xctest
-          destination: scan-test-output-ios-16
       - run:
           name: Clean test output before iOS 15 run
           command: rm -rf fastlane/test_output
@@ -1508,26 +1312,12 @@ jobs:
           no_output_timeout: 5m
           environment:
             SCAN_DEVICE: iPhone 13 (15.5)
-      - compress_result_bundle:
-          directory: fastlane/test_output/xctest/ios
-          bundle_name: RevenueCat
-      - run:
-          name: Preserve iOS 15 result bundle
-          when: always
-          command: |
-            cd fastlane/test_output/xctest/ios 2>/dev/null || exit 0
-            if [ -f RevenueCat.xcresult.tar.gz ]; then
-              mv RevenueCat.xcresult.tar.gz RevenueCat-iOS15.xcresult.tar.gz
-            fi
       - create-snapshot-pr-if-needed:
           condition: << pipeline.parameters.generate_snapshots >>
           job: "create_snapshot_pr"
           version: "ios-15"
       - store_test_results:
           path: fastlane/test_output
-      - store_artifacts:
-          path: fastlane/test_output/xctest
-          destination: scan-test-output-ios-15
 
   run-test-watchos:
     executor:
@@ -1546,18 +1336,12 @@ jobs:
             # Xcode 27 can hang in simctl diagnose after all watchOS tests pass.
             SCAN_XCARGS: -collect-test-diagnostics never
             BUILD_SDK: watchsimulator
-      - compress_result_bundle:
-          directory: fastlane/test_output/xctest/watchos
-          bundle_name: RevenueCat
       - create-snapshot-pr-if-needed:
           condition: << pipeline.parameters.generate_snapshots >>
           job: "create_snapshot_pr"
           version: "watchos"
       - store_test_results:
           path: fastlane/test_output
-      - store_artifacts:
-          path: fastlane/test_output/xctest
-          destination: scan-test-output
 
   build-tv-watch-mac-and-visionos:
     executor:
@@ -1593,9 +1377,6 @@ jobs:
             SCAN_DEVICE: iPhone 16 (18.5)
       - store_test_results:
           path: fastlane/test_output
-      - store_artifacts:
-          path: fastlane/test_output/xctest
-          destination: scan-test-output
 
   backend-integration-tests-SK1:
     environment:
@@ -1722,8 +1503,6 @@ jobs:
           no_output_timeout: 15m
       - store_test_results:
           path: fastlane/test_output
-      - store_artifacts:
-          path: fastlane/test_output
       # Send consolidated Slack notification
       - run:
           name: Send Slack notification
@@ -1806,8 +1585,6 @@ jobs:
           no_output_timeout: 15m
       - store_test_results:
           path: fastlane/test_output
-      - store_artifacts:
-          path: fastlane/test_output
 
   # Builds the SDKUpdateTester app against the latest released SDK and against the local SDK, then runs each SDK
   # update test case with them.
@@ -1840,20 +1617,11 @@ jobs:
           command: bundle exec fastlane run_sdk_update_test test_case:logged_in_user
           no_output_timeout: 15m
           when: always
-      # Not storing the apps as artifacts, since they contain the API key.
-      - store_artifacts:
-          path: build/sdk_update_tests/release/xcodebuild.log
-          destination: release/xcodebuild.log
-      - store_artifacts:
-          path: build/sdk_update_tests/local/xcodebuild.log
-          destination: local/xcodebuild.log
       # One path per test case, since their output also contains the reports of retried attempts.
       - store_test_results:
           path: fastlane/test_output/sdk_update_tests/anonymous_user/junit
       - store_test_results:
           path: fastlane/test_output/sdk_update_tests/logged_in_user/junit
-      - store_artifacts:
-          path: fastlane/test_output/sdk_update_tests
 
   release-checks:
     executor:
@@ -1882,9 +1650,6 @@ jobs:
           no_output_timeout: 30m
       - store_test_results:
           path: fastlane/test_output
-      - store_artifacts:
-          path: fastlane/test_output/report.html
-          destination: test_report.html
       - store_artifacts:
           path: RevenueCat.xcframework.zip
           destination: RevenueCat.xcframework.zip
@@ -2145,8 +1910,6 @@ jobs:
           command: ruby Tests/SwiftLintCustomRules/swiftlint_custom_rules_test.rb
       - store_test_results:
           path: fastlane/test_output
-      - store_artifacts:
-          path: fastlane/test_output
       - github-notify-pr-on-fail
 
   danger:
@@ -2199,9 +1962,6 @@ jobs:
       - run:
           name: LoadShedder integration tests in v<< parameters.major >>
           command: bundle exec fastlane loadshedder_integration_tests_in_old_major major:"<< parameters.major >>"
-      - compress_result_bundle:
-          directory: fastlane/test_output/xctest/ios
-          bundle_name: v<< parameters.major >>LoadShedderIntegration
 
   deploy-purchase-tester:
     executor:
@@ -2341,9 +2101,6 @@ jobs:
           # to the validation repo only when it receives a non-empty target_repository_path.
           command: bundle exec fastlane record_and_upload_v2_snapshots upload_to_emerge:<< parameters.upload_to_emerge >> target_repository_path:"${PAYWALL_VALIDATION_REPO_PATH:-}"
           no_output_timeout: 30m
-      - store_artifacts:
-          path: fastlane/test_output
-          destination: paywall-template-screenshots
 
   update-paywall-preview-resources-commit:
     docker:
@@ -2884,8 +2641,7 @@ workflows:
       - make-release:
           context: github-bot-public
           requires:
-            # TODO: restore after Nov 7, 2026, once CocoaPods trunk is writable again.
-            # - push-revenuecatui-pod
+            - push-revenuecatui-pod
             - deploy-to-spm
             - docs-deploy
           <<: *release-tags

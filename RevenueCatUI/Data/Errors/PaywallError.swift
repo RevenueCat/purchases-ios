@@ -37,8 +37,8 @@ enum PaywallError: Error {
     /// The screen identified by the workflow's initial step could not be found.
     case workflowInitialScreenNotFound(screenId: String, workflowId: String)
 
-    /// The PaywallView must be initialized with ``performPurchase`` and ``performRestore``
-    /// when ``purchasesAreCompletedBy`` is ``.myApp``
+    /// PaywallView requires `performPurchaseWithContext` (or legacy `performPurchase`) and `performRestore`
+    /// when `purchasesAreCompletedBy` is `.myApp`.
     case performPurchaseAndRestoreHandlersNotDefined(missingBlocks: String)
 
     /// The PaywallView need not be initizlied with performPurchase and performRestore
@@ -75,7 +75,8 @@ extension PaywallError: CustomNSError, CustomStringConvertible {
             return "Screen '\(screenId)' not found in workflow '\(workflowId)'"
         case .performPurchaseAndRestoreHandlersNotDefined:
             return "PaywallView has not been correctly initialized. purchasesAreCompletedBy is set to .myApp, and so " +
-            "the PaywallView must be initialized with a PerformPurchase and PerformRestore handler."
+            "the PaywallView must be initialized with a PerformPurchaseWithContext (or legacy PerformPurchase) " +
+            "handler and a PerformRestore handler."
         case .purchaseAndRestoreDefinedForRevenueCat:
             return "RevenueCat is configured with purchasesAreCompletedBy set to .revenueCat, but " +
             "the Paywall has purchase/restore blocks defined. These will NOT be executed. " +

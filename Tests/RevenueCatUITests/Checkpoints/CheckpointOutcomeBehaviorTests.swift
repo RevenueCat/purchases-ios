@@ -295,7 +295,8 @@ final class CheckpointOutcomeBehaviorTests: TestCase {
                 .matchedAd(ResolvedAdStep(
                     adIdentifier: "ad-unit",
                     mediator: MediatorName(rawValue: "admob"),
-                    adFormat: .interstitial
+                    adFormat: .interstitial,
+                    rewardVerificationEnabled: true
                 ))
             }
         )
@@ -319,7 +320,8 @@ final class CheckpointOutcomeBehaviorTests: TestCase {
                 .matchedAd(ResolvedAdStep(
                     adIdentifier: "ad-unit",
                     mediator: MediatorName(rawValue: "admob"),
-                    adFormat: .interstitial
+                    adFormat: .interstitial,
+                    rewardVerificationEnabled: true
                 ))
             }
         )

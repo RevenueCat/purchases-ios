@@ -32,6 +32,9 @@ class TextComponentViewModel {
     private let text: String
     private let presentedOverrides: PresentedOverrides<LocalizedTextPartial>?
     private let overridesDependOnOfferEligibility: Bool
+    let dependsOnPackageContext: Bool
+    let dependsOnComponentViewState: Bool
+    let dependsOnSelectedPackageId: Bool
 
     /// Whether this component renders anything a screen reader can announce. An empty base string
     /// still counts when overrides exist, since an override can supply text of its own.
@@ -65,8 +68,19 @@ class TextComponentViewModel {
             try LocalizedTextPartial.create(from: $0, using: localizationProvider.localizedStrings)
         }
         self.presentedOverrides = presentedOverrides
-        self.overridesDependOnOfferEligibility =
+        let overridesDependOnOfferEligibility =
             presentedOverrides?.contains(where: \.dependsOnOfferEligibility) ?? false
+        self.overridesDependOnOfferEligibility = overridesDependOnOfferEligibility
+        let possibleTexts = [self.text] + (presentedOverrides?.compactMap { $0.properties?.text } ?? [])
+        self.dependsOnPackageContext = overridesDependOnOfferEligibility || possibleTexts.contains {
+            !Whisker.variableNames(in: $0).isEmpty
+        }
+        let conditions = presentedOverrides?.flatMap(\.conditions) ?? []
+        self.dependsOnComponentViewState = conditions.contains(.selected)
+        self.dependsOnSelectedPackageId = conditions.contains {
+            if case .selectedPackage = $0 { return true }
+            return false
+        }
 
     }
 
@@ -77,7 +91,7 @@ class TextComponentViewModel {
         state: ComponentViewState,
         condition: ScreenCondition,
         selectedPackageId: String?,
-        packageContext: PackageContext,
+        packageContext: PackageContext?,
         isEligibleForIntroOffer: Bool,
         promoOffer: PromotionalOffer?,
         countdownTime: CountdownTime? = nil,
@@ -209,7 +223,7 @@ class TextComponentViewModel {
     }
 
     private struct TextProcessingConfig {
-        let packageContext: PackageContext
+        let packageContext: PackageContext?
         let variableConfig: UIConfig.VariableConfig
         let locale: Locale
         let localizations: [String: String]
@@ -250,18 +264,18 @@ class TextComponentViewModel {
         config: TextProcessingConfig,
         spoken: Bool = false
     ) -> String {
-        let pkg = config.packageContext.package
+        let pkg = config.packageContext?.package
 
         let discount = pkg?.storeProduct.pricePerMonthForDiscount?.discount(
-            relativeTo: config.packageContext.variableContext.mostExpensivePricePerMonth
+            relativeTo: config.packageContext?.variableContext.mostExpensivePricePerMonth
         )
 
         let handler = VariableHandlerV2(
             variableCompatibilityMap: config.variableConfig.variableCompatibilityMap,
             functionCompatibilityMap: config.variableConfig.functionCompatibilityMap,
             discountRelativeToMostExpensivePerMonth: discount,
-            mostExpensivePricePerMonth: config.packageContext.variableContext.exactMostExpensivePricePerMonth,
-            showZeroDecimalPlacePrices: config.packageContext.variableContext.showZeroDecimalPlacePrices,
+            mostExpensivePricePerMonth: config.packageContext?.variableContext.exactMostExpensivePricePerMonth,
+            showZeroDecimalPlacePrices: config.packageContext?.variableContext.showZeroDecimalPlacePrices ?? true,
             customVariables: config.customVariables,
             defaultCustomVariables: config.defaultCustomVariables
         )
@@ -280,10 +294,11 @@ class TextComponentViewModel {
 
     private static func processTextV1(
         _ text: String,
-        packageContext: PackageContext,
+        packageContext: PackageContext?,
         locale: Locale
     ) -> String {
-        guard let package = packageContext.package else {
+        guard let packageContext,
+              let package = packageContext.package else {
             return text
         }
 

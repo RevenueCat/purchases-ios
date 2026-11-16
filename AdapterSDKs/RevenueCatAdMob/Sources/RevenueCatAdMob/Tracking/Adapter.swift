@@ -135,6 +135,26 @@ internal extension Tracking {
             }
         }
 
+        @MainActor
+        func trackRewardEarnedWithoutVerification(for fullScreenAd: AnyObject) {
+            guard let trackingMetadata = self.fullScreenDelegateStore
+                .retrieve(for: fullScreenAd)?
+                .rewardTrackingMetadata() else { return }
+
+            self.trackIfConfigured {
+                let data = AdRewardEarnedUnverified(
+                    networkName: trackingMetadata.networkName,
+                    mediatorName: trackingMetadata.mediatorName,
+                    adFormat: trackingMetadata.adFormat,
+                    placement: trackingMetadata.placement,
+                    adUnitId: trackingMetadata.adUnitId,
+                    impressionId: trackingMetadata.impressionId,
+                    rewardVerificationEnabled: false
+                )
+                self.tracker.trackAdRewardEarnedUnverified(data)
+            }
+        }
+
         internal static func mapPrecision(_ precision: GoogleMobileAds.AdValuePrecision) -> AdRevenue.Precision {
             switch precision {
             case .precise: return .exact

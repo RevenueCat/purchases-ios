@@ -197,11 +197,7 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
         }
 
         // 4. Ensure transaction is eventually finished
-        try await self.verifySpecificTransactionIsEventuallyFinished(
-            transactionId: transaction.transactionIdentifier,
-            productId: transaction.productIdentifier,
-            count: nil
-        )
+        try await self.verifyTransactionWasFinished(transaction, count: nil)
 
         // 5. Restart app again
         try self.purchases.invalidateCustomerInfoCache()
@@ -414,7 +410,7 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
 
         // 2. Ensure the purchase transaction is finished before server goes down
         let transaction = try XCTUnwrap(result.transaction)
-        self.verifySpecificTransactionWasFinished(transaction)
+        try await self.verifyTransactionWasFinished(transaction)
 
         // 3. Server goes down
         self.serverDown()
@@ -531,7 +527,7 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
         try await self.verifyEntitlementWentThrough(info1)
 
         // 4. Ensure transaction is finished
-        self.verifySpecificTransactionWasFinished(transaction)
+        try await self.verifyTransactionWasFinished(transaction)
 
         // 5. Restart app
         try self.purchases.invalidateCustomerInfoCache()
@@ -580,13 +576,12 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
         expect(info.nonSubscriptions.onlyElement?.productIdentifier) == Self.consumable10Coins
 
         // 6. Ensure transactions are finished
-        try await self.verifyAnyTransactionIsEventuallyFinished(count: 2)
-
-        try await self.verifySpecificTransactionIsEventuallyFinished(
-            transactionId: transaction.transactionIdentifier,
-            productId: transaction.productIdentifier
-        )
-        self.verifyTransactionWasFinishedForProductIdentifier(Self.consumable10Coins)
+        if Self.storeKitVersion == .storeKit2 {
+            try await self.verifyAnyTransactionIsEventuallyFinished(count: 2)
+        }
+        try await self.verifyTransactionWasFinished(transaction)
+        let expectedCount = Self.storeKitVersion == .storeKit1 ? nil : 1
+        try await self.verifyTransactionWasFinishedForProductIdentifier(Self.consumable10Coins, count: expectedCount)
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
@@ -630,8 +625,7 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
                                            level: .verbose,
                                            expectedCount: 1)
 
-        self.verifySpecificTransactionWasFinished(transactionId: transactionId,
-                                                  productId: transaction.productIdentifier)
+        try await self.verifyTransactionWasFinished(transaction)
         self.logger.verifyMessageWasLogged(
             "API request completed: POST '/v1/receipts'",
             level: .debug

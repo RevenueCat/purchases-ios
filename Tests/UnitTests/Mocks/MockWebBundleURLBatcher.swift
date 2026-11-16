@@ -17,36 +17,19 @@ import Foundation
 final class MockWebBundleURLBatcher: WebBundleURLBatcherType, @unchecked Sendable {
 
     private let _invokedPublishCount: Atomic<Int> = .init(0)
-    private let _invokedPublishOfferings: Atomic<Offerings?> = nil
-    private let _invokedPublishWorkflowsByOfferingId: Atomic<[String: PublishedWorkflow]> = .init([:])
-    private let _invokedPublishPresentedWorkflowIDs: Atomic<[String]> = .init([])
+    private let _invokedPublishScreenURLBatches: Atomic<[[WebBundleScreenURLBatch]]> = .init([])
 
     var invokedPublishCount: Int {
         return self._invokedPublishCount.value
     }
-    var invokedPublishOfferings: Offerings? {
-        return self._invokedPublishOfferings.value
-    }
-    var invokedPublishWorkflowsByOfferingId: [String: PublishedWorkflow] {
-        return self._invokedPublishWorkflowsByOfferingId.value
-    }
-    var invokedPublishPresentedWorkflowIDs: [String] {
-        return self._invokedPublishPresentedWorkflowIDs.value
+    var invokedPublishScreenURLBatches: [[WebBundleScreenURLBatch]] {
+        return self._invokedPublishScreenURLBatches.value
     }
 
     @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
-    func publish(
-        offerings: Offerings,
-        workflowsByOfferingId: [String: PublishedWorkflow]
-    ) async {
+    func publish(_ batches: [WebBundleScreenURLBatch]) async {
         self._invokedPublishCount.modify { $0 += 1 }
-        self._invokedPublishOfferings.value = offerings
-        self._invokedPublishWorkflowsByOfferingId.value = workflowsByOfferingId
-    }
-
-    @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
-    func publishPresentedWorkflow(_ workflow: PublishedWorkflow) async {
-        self._invokedPublishPresentedWorkflowIDs.modify { $0.append(workflow.id) }
+        self._invokedPublishScreenURLBatches.modify { $0.append(batches) }
     }
 
 }

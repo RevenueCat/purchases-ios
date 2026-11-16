@@ -249,8 +249,7 @@ private struct PresentingCustomerCenterModifier: ViewModifier {
         self.onCustomAction = onCustomAction
         self.changePlansSelected = changePlansSelected
         self._purchaseHandler = .init(wrappedValue: purchaseHandler ??
-                                      PurchaseHandler.default(performPurchase: myAppPurchaseLogic?.performPurchase,
-                                                              performRestore: myAppPurchaseLogic?.performRestore))
+                                      PurchaseHandler.default(myAppPurchaseLogic: myAppPurchaseLogic))
     }
 
     @StateObject

@@ -2449,8 +2449,7 @@ SWIFT_PROTOCOL_NAMED("PurchasesType")
 ///   </li>
 /// </ul>
 @property (nonatomic, readonly, copy) NSString * _Nullable storeFrontCountryCode;
-/// The <code>appUserID</code> used by <code>Purchases</code>.
-/// If not passed on initialization this will be generated and cached by <code>Purchases</code>.
+/// Returns <code>true</code> if the current RevenueCat user is anonymous, <code>false</code> otherwise.
 @property (nonatomic, readonly) BOOL isAnonymous;
 /// Controls if purchases should be made and transactions finished automatically by RevenueCat.
 /// * <code>PurchasesAreCompletedBy/revenueCat</code> by default.
