@@ -29,7 +29,7 @@ import UIKit
 // swiftlint:disable:next type_body_length
 final class WorkflowPresenter: NSObject, WorkflowPresenterType {
 
-    typealias PresentationStarter = (WorkflowPresentationRequest) throws -> Bool
+    typealias PresentationStarter = (WorkflowPresentationRequest, CheckpointWorkflowGateController) throws -> Bool
     private typealias Continuation = CheckedContinuation<CheckpointPresentationOutcome, Error>
 
     enum PresentationUpdate {
@@ -37,7 +37,6 @@ final class WorkflowPresenter: NSObject, WorkflowPresenterType {
         case recoverableErrorHandled
         case workflowPresentationError(NSError)
         case dismissalReason(WorkflowDismissalReason)
-        case gateOutcome(CheckpointGateOutcome)
     }
 
     private enum WorkflowOutcomeState {
@@ -64,14 +63,13 @@ final class WorkflowPresenter: NSObject, WorkflowPresenterType {
     }
 
     private struct PresentationState {
-        let id = UUID()
         let checkpointIdentifier: String
         let customVariables: [String: CustomVariableValue]
         let errorPresentationHandler: ErrorPresentationHandler
         let initialActiveEntitlementIdentifiers: Set<String>
         var outcomeState: WorkflowOutcomeState = .none
         var dismissalReason: WorkflowDismissalReason = .close
-        var gateOutcome: CheckpointGateOutcome = .notApplicable
+        let gateController: CheckpointWorkflowGateController
 
         mutating func record(_ update: PresentationUpdate) -> Bool {
             switch update {
@@ -94,8 +92,6 @@ final class WorkflowPresenter: NSObject, WorkflowPresenterType {
                 self.outcomeState = .terminalError
             case let .dismissalReason(reason):
                 self.dismissalReason = reason
-            case let .gateOutcome(outcome):
-                self.gateOutcome = outcome
             }
             return true
         }
@@ -145,16 +141,19 @@ final class WorkflowPresenter: NSObject, WorkflowPresenterType {
         guard self.presentationState == nil else {
             throw CheckpointError.operationAlreadyInProgress
         }
+        let gateController = CheckpointWorkflowGateController()
+        if presentation.workflow.workflow.initialBranch != nil { gateController.markInitialBranchPending() }
         self.presentationState = PresentationState(
             checkpointIdentifier: presentation.checkpointIdentifier,
             customVariables: presentation.customVariables,
             errorPresentationHandler: presentation.errorPresentationHandler,
-            initialActiveEntitlementIdentifiers: presentation.initialActiveEntitlementIdentifiers
+            initialActiveEntitlementIdentifiers: presentation.initialActiveEntitlementIdentifiers,
+            gateController: gateController
         )
 
         do {
             if let presentationStarter = self.presentationStarter {
-                guard try presentationStarter(presentation) else {
+                guard try presentationStarter(presentation, gateController) else {
                     throw CheckpointError.presentationContextUnavailable
                 }
             } else {
@@ -218,7 +217,7 @@ final class WorkflowPresenter: NSObject, WorkflowPresenterType {
         guard let state = self.takePresentationState() else { return nil }
 
         let execution: CheckpointPresentationOutcome
-        switch state.gateOutcome {
+        switch state.gateController.outcome {
         case .notPassed:
             execution = .backedOut
         case .passed:
@@ -310,29 +309,12 @@ final class WorkflowPresenter: NSObject, WorkflowPresenterType {
                     self.presentError(error, kind: .flowActionFailed)
                 }
             },
-            checkpointGateContext: self.makeCheckpointGateContext()
+            checkpointGateController: self.presentationState?.gateController
         )
         self.presentedViewController = viewController
         viewController.disableExitOffers()
         viewController.customVariables = presentation.customVariables
         return viewController
-    }
-
-}
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-extension WorkflowPresenter {
-
-    /// Reports gate outcomes only to the presentation that is active when the context is made, so a context
-    /// left over from an abandoned presentation cannot change a later one.
-    func makeCheckpointGateContext() -> CheckpointGateContext {
-        let presentationID = self.presentationState?.id
-        return CheckpointGateContext(
-            onOutcomeChanged: { [weak self] outcome in
-                guard let self, self.presentationState?.id == presentationID else { return }
-                self.stage(.gateOutcome(outcome))
-            }
-        )
     }
 
 }

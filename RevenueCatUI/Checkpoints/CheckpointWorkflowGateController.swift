@@ -13,6 +13,13 @@
 import Foundation
 @_spi(Internal) import RevenueCat
 
+/// Whether the workflow's gate permits the pending checkpoint to pass.
+enum CheckpointGateOutcome: Equatable {
+    case notApplicable
+    case passed
+    case notPassed
+}
+
 enum WorkflowGateDecision: Equatable {
     case notGated
     case passed
@@ -28,38 +35,24 @@ final class CheckpointWorkflowGateController {
     var entryTask: Task<Void, Never>?
     var entryID: UUID?
 
-    private var context: CheckpointGateContext?
+    private(set) var outcome: CheckpointGateOutcome = .notApplicable
+
     private var activeEntitlementIdentifiers: Set<String> = []
     private var reachedGate: WorkflowStepGating?
-    private var outcome: CheckpointGateOutcome = .notApplicable
-
-    var hasContext: Bool {
-        return self.context != nil
-    }
 
     var hasUnresolvedGate: Bool {
         return self.outcome == .notPassed
     }
 
-    func reset(context: CheckpointGateContext?) {
-        self.context = context
-        self.activeEntitlementIdentifiers = []
-        self.reachedGate = nil
-        self.outcome = .notApplicable
-        context?.onOutcomeChanged(self.outcome)
-    }
-
     /// A branch can select an enforced gate, so passage stays blocked until its destination is known.
     func markInitialBranchPending() {
-        guard self.context != nil else { return }
-        self.reportOutcome(.notPassed)
+        self.outcome = .notPassed
     }
 
     /// Marks a gate unresolved before its customer read starts. Ungated destinations only clear a pending branch.
     func beginEntry(step: WorkflowStep) -> Bool {
-        guard self.context != nil else { return false }
         guard step.gating?.isEnforced == true else {
-            if self.reachedGate == nil { self.reportOutcome(.notApplicable) }
+            if self.reachedGate == nil { self.outcome = .notApplicable }
             return false
         }
         self.activeEntitlementIdentifiers = []
@@ -68,19 +61,18 @@ final class CheckpointWorkflowGateController {
     }
 
     func evaluate(step: WorkflowStep) -> WorkflowGateDecision {
-        guard self.context != nil, let gate = step.gating, gate.isEnforced else { return .notGated }
+        guard let gate = step.gating, gate.isEnforced else { return .notGated }
         return self.evaluate(gate: gate)
     }
 
     /// Re-evaluates the reached gate against customer info from a purchase or restore.
     func update(customerInfo: CustomerInfo) -> WorkflowGateDecision {
-        guard self.context != nil else { return .notGated }
         self.activeEntitlementIdentifiers = customerInfo.activeEntitlementIdentifiers
         return self.reachedGate.map(self.evaluate(gate:)) ?? .notGated
     }
 
     func blocksForwardNavigation(step: WorkflowStep) -> Bool {
-        guard self.context != nil, let gate = step.gating else { return false }
+        guard let gate = step.gating else { return false }
         return gate.isEnforced && !gate.isSatisfied(by: self.activeEntitlementIdentifiers)
     }
 
@@ -88,15 +80,8 @@ final class CheckpointWorkflowGateController {
     private func evaluate(gate: WorkflowStepGating) -> WorkflowGateDecision {
         let passed = gate.isSatisfied(by: self.activeEntitlementIdentifiers)
         self.reachedGate = gate
-        let newOutcome: CheckpointGateOutcome = passed ? .passed : .notPassed
-        self.reportOutcome(newOutcome)
+        self.outcome = passed ? .passed : .notPassed
         return passed ? .passed : .blocked
-    }
-
-    private func reportOutcome(_ outcome: CheckpointGateOutcome) {
-        guard outcome != self.outcome else { return }
-        self.outcome = outcome
-        self.context?.onOutcomeChanged(outcome)
     }
 
 }

@@ -29,7 +29,7 @@ import UIKit
 final class WorkflowPresenterTests: TestCase {
 
     func testPresenterStagesOutcomeUntilPresentationFinishesDismissing() throws {
-        let presenter = WorkflowPresenter { _ in true }
+        let presenter = WorkflowPresenter { _, _ in true }
         try presenter.startPresentation(Self.presentation())
         presenter.stage(.outcome(.failed))
 
@@ -75,7 +75,7 @@ final class WorkflowPresenterTests: TestCase {
             customVariables: ["source": "test"],
             errorPresentationHandler: { params, _ in receivedParams = params }
         )
-        let presenter = WorkflowPresenter { _ in true }
+        let presenter = WorkflowPresenter { _, _ in true }
         let error = NSError(domain: ErrorCode.errorDomain, code: ErrorCode.configurationError.rawValue)
 
         try presenter.startPresentation(presentation)
@@ -98,7 +98,7 @@ final class WorkflowPresenterTests: TestCase {
             customVariables: [:],
             errorPresentationHandler: { _, value in completion = value }
         )
-        let presenter = WorkflowPresenter { _ in true }
+        let presenter = WorkflowPresenter { _, _ in true }
         let error = NSError(domain: ErrorCode.errorDomain, code: ErrorCode.configurationError.rawValue)
 
         try presenter.startPresentation(presentation)
@@ -122,7 +122,7 @@ final class WorkflowPresenterTests: TestCase {
                 completion = value
             }
         )
-        let presenter = WorkflowPresenter { _ in true }
+        let presenter = WorkflowPresenter { _, _ in true }
         let error = NSError(domain: ErrorCode.errorDomain, code: ErrorCode.configurationError.rawValue)
 
         try presenter.startPresentation(presentation)
@@ -146,7 +146,7 @@ final class WorkflowPresenterTests: TestCase {
                 completions.append(completion)
             }
         )
-        let presenter = WorkflowPresenter { _ in true }
+        let presenter = WorkflowPresenter { _, _ in true }
         let workflowError = NSError(domain: ErrorCode.errorDomain, code: ErrorCode.configurationError.rawValue)
         let purchaseError = NSError(domain: ErrorCode.errorDomain, code: ErrorCode.purchaseInvalidError.rawValue)
 
@@ -169,7 +169,7 @@ final class WorkflowPresenterTests: TestCase {
             customVariables: ["source": "test"],
             errorPresentationHandler: { params, _ in receivedParams = params }
         )
-        let presenter = WorkflowPresenter { _ in true }
+        let presenter = WorkflowPresenter { _, _ in true }
         let error = NSError(domain: ErrorCode.errorDomain, code: ErrorCode.purchaseInvalidError.rawValue)
 
         try presenter.startPresentation(presentation)
@@ -194,7 +194,7 @@ final class WorkflowPresenterTests: TestCase {
         )
         let presenter = WorkflowPresenter(
             productEntitlementMappingProvider: { restoreProductEntitlementMapping },
-            presentationStarter: { _ in true }
+            presentationStarter: { _, _ in true }
         )
         let controller = PaywallViewController(offering: nil)
 
@@ -214,7 +214,7 @@ final class WorkflowPresenterTests: TestCase {
         let presentation = Self.presentation(
             errorPresentationHandler: { _, _ in presentationCount += 1 }
         )
-        let presenter = WorkflowPresenter { _ in true }
+        let presenter = WorkflowPresenter { _, _ in true }
 
         try presenter.startPresentation(presentation)
         presenter.paywallViewController(
@@ -233,7 +233,7 @@ final class WorkflowPresenterTests: TestCase {
 
     func testCompletionAfterPurchaseErrorKeepsWorkflowPresented() throws {
         var completion: ErrorPresentationCompletion?
-        let presenter = WorkflowPresenter { _ in true }
+        let presenter = WorkflowPresenter { _, _ in true }
         let controller = DismissRecordingPaywallViewController()
         let presentation = Self.presentation(
             errorPresentationHandler: { _, value in completion = value }
@@ -263,7 +263,7 @@ final class WorkflowPresenterTests: TestCase {
                 productEntitlementMappingProvider: {
                     ["monthly": scenario.offered, "annual": ["extra", "bonus"]]
                 },
-                presentationStarter: { _ in true }
+                presentationStarter: { _, _ in true }
             )
             let controller = DismissRecordingPaywallViewController(
                 offering: makeRestoreOfferingWithMultipleProducts()
@@ -300,7 +300,7 @@ final class WorkflowPresenterTests: TestCase {
                 completions.append(completion)
             }
         )
-        let presenter = WorkflowPresenter { _ in true }
+        let presenter = WorkflowPresenter { _, _ in true }
         let controller = try presenter.makePaywallViewController(for: presentation)
 
         try presenter.startPresentation(presentation)
@@ -346,7 +346,7 @@ final class WorkflowPresenterTests: TestCase {
 
     func testNewerWorkflowErrorPresentationSupersedesEarlierCompletion() throws {
         var completions: [ErrorPresentationCompletion] = []
-        let presenter = WorkflowPresenter { _ in true }
+        let presenter = WorkflowPresenter { _, _ in true }
         let controller = DismissRecordingPaywallViewController()
         let presentation = Self.presentation(
             errorPresentationHandler: { _, completion in completions.append(completion) }
@@ -368,7 +368,7 @@ final class WorkflowPresenterTests: TestCase {
 
     func testOnlyFirstErrorPresentationCompletionIsHandled() throws {
         var completion: ErrorPresentationCompletion?
-        let presenter = WorkflowPresenter { _ in true }
+        let presenter = WorkflowPresenter { _, _ in true }
         let controller = DismissRecordingPaywallViewController()
         let presentation = Self.presentation(
             errorPresentationHandler: { _, value in completion = value }
@@ -387,7 +387,7 @@ final class WorkflowPresenterTests: TestCase {
 
     func testErrorPresentationCompletionAfterWorkflowDismissalIsIgnored() throws {
         var completion: ErrorPresentationCompletion?
-        let presenter = WorkflowPresenter { _ in true }
+        let presenter = WorkflowPresenter { _, _ in true }
         let controller = DismissRecordingPaywallViewController()
         let presentation = Self.presentation(
             errorPresentationHandler: { _, value in completion = value }
@@ -406,7 +406,7 @@ final class WorkflowPresenterTests: TestCase {
 
     func testWorkflowPresentationErrorDoesNotReplaceEarlierPurchaseOutcome() throws {
         let presentation = try Self.renderablePresentation(customVariables: [:])
-        let presenter = WorkflowPresenter { _ in true }
+        let presenter = WorkflowPresenter { _, _ in true }
         let controller = try presenter.makePaywallViewController(for: presentation)
         let transaction = StoreTransaction(MockStoreTransaction())
         let error = NSError(domain: ErrorCode.errorDomain, code: ErrorCode.configurationError.rawValue)
@@ -430,7 +430,7 @@ final class WorkflowPresenterTests: TestCase {
         let presentation = try Self.renderablePresentation(customVariables: [:])
         let presenter = WorkflowPresenter(
             productEntitlementMappingProvider: { restoreProductEntitlementMapping },
-            presentationStarter: { _ in true }
+            presentationStarter: { _, _ in true }
         )
         let controller = try presenter.makePaywallViewController(for: presentation)
         let error = NSError(domain: ErrorCode.errorDomain, code: ErrorCode.configurationError.rawValue)
@@ -451,7 +451,7 @@ final class WorkflowPresenterTests: TestCase {
 
     func testWorkflowPresentationErrorDoesNotReplaceEarlierWebCheckoutOutcome() throws {
         let presentation = try Self.renderablePresentation(customVariables: [:])
-        let presenter = WorkflowPresenter { _ in true }
+        let presenter = WorkflowPresenter { _, _ in true }
         let controller = try presenter.makePaywallViewController(for: presentation)
         let error = NSError(domain: ErrorCode.errorDomain, code: ErrorCode.configurationError.rawValue)
 
@@ -466,7 +466,7 @@ final class WorkflowPresenterTests: TestCase {
     }
 
     func testBackingOutReportsDismissedOutcomeAndBackedOut() throws {
-        let presenter = WorkflowPresenter { _ in true }
+        let presenter = WorkflowPresenter { _, _ in true }
 
         try presenter.startPresentation(Self.presentation())
         let execution = presenter.presentationDidDismiss(reason: .navigatedBack)
@@ -477,7 +477,7 @@ final class WorkflowPresenterTests: TestCase {
     }
 
     func testBackingOutKeepsAStagedErrorOutcome() throws {
-        let presenter = WorkflowPresenter { _ in true }
+        let presenter = WorkflowPresenter { _, _ in true }
         try presenter.startPresentation(Self.presentation())
         presenter.stage(.outcome(.failed))
         let execution = presenter.presentationDidDismiss(reason: .navigatedBack)
@@ -488,12 +488,16 @@ final class WorkflowPresenterTests: TestCase {
     }
 
     func testNotPassedGateBacksOutDespiteARecordedPurchase() throws {
-        let presenter = WorkflowPresenter { _ in true }
+        var controllers: [CheckpointWorkflowGateController] = []
+        let presenter = WorkflowPresenter { _, controller in
+            controllers.append(controller)
+            return true
+        }
         let presentation = Self.presentation()
         try presenter.startPresentation(presentation)
 
         presenter.stage(.outcome(.completed(customerInfo: TestData.customerInfo)))
-        presenter.makeCheckpointGateContext().onOutcomeChanged(.notPassed)
+        try XCTUnwrap(controllers.last).markInitialBranchPending()
         let execution = presenter.presentationDidDismiss(reason: .navigatedBack)
 
         guard case .backedOut? = execution else {
@@ -502,7 +506,11 @@ final class WorkflowPresenterTests: TestCase {
     }
 
     func testNotPassedGateBacksOutOnCloseDespiteAGrantingRestore() throws {
-        let presenter = WorkflowPresenter { _ in true }
+        var controllers: [CheckpointWorkflowGateController] = []
+        let presenter = WorkflowPresenter { _, controller in
+            controllers.append(controller)
+            return true
+        }
         let presentation = Self.presentation()
         try presenter.startPresentation(presentation)
 
@@ -510,7 +518,7 @@ final class WorkflowPresenterTests: TestCase {
             PaywallViewController(offering: nil),
             didFinishRestoringWith: try Self.customerInfo(activeEntitlements: ["unrelated"])
         )
-        presenter.makeCheckpointGateContext().onOutcomeChanged(.notPassed)
+        try XCTUnwrap(controllers.last).markInitialBranchPending()
         let execution = presenter.presentationDidDismiss(reason: .close)
 
         guard case .backedOut? = execution else {
@@ -519,12 +527,16 @@ final class WorkflowPresenterTests: TestCase {
     }
 
     func testNotPassedGateBacksOutDespiteAStagedError() throws {
-        let presenter = WorkflowPresenter { _ in true }
+        var controllers: [CheckpointWorkflowGateController] = []
+        let presenter = WorkflowPresenter { _, controller in
+            controllers.append(controller)
+            return true
+        }
         let presentation = Self.presentation()
         try presenter.startPresentation(presentation)
 
         presenter.stage(.outcome(.failed))
-        presenter.makeCheckpointGateContext().onOutcomeChanged(.notPassed)
+        try XCTUnwrap(controllers.last).markInitialBranchPending()
         let execution = presenter.presentationDidDismiss()
 
         guard case .backedOut? = execution else {
@@ -533,13 +545,17 @@ final class WorkflowPresenterTests: TestCase {
     }
 
     func testPassedGateCompletesOnBackWithoutARecordedOutcome() throws {
-        let presenter = WorkflowPresenter { _ in true }
+        var controllers: [CheckpointWorkflowGateController] = []
+        let presenter = WorkflowPresenter { _, controller in
+            controllers.append(controller)
+            return true
+        }
         let presentation = Self.presentation()
         try presenter.startPresentation(presentation)
 
-        let context = presenter.makeCheckpointGateContext()
-        context.onOutcomeChanged(.notPassed)
-        context.onOutcomeChanged(.passed)
+        let controller = try XCTUnwrap(controllers.last)
+        _ = controller.beginEntry(step: Self.hardGateStep())
+        _ = controller.update(customerInfo: try Self.customerInfo(activeEntitlements: ["pro"]))
         let execution = presenter.presentationDidDismiss(reason: .navigatedBack)
 
         guard case .completed(nil)? = execution else {
@@ -548,13 +564,17 @@ final class WorkflowPresenterTests: TestCase {
     }
 
     func testNotApplicableGateKeepsPurchasePassageOnBack() throws {
-        let presenter = WorkflowPresenter { _ in true }
+        var controllers: [CheckpointWorkflowGateController] = []
+        let presenter = WorkflowPresenter { _, controller in
+            controllers.append(controller)
+            return true
+        }
         let presentation = Self.presentation()
         try presenter.startPresentation(presentation)
 
-        let context = presenter.makeCheckpointGateContext()
-        context.onOutcomeChanged(.notPassed)
-        context.onOutcomeChanged(.notApplicable)
+        let controller = try XCTUnwrap(controllers.last)
+        controller.markInitialBranchPending()
+        _ = controller.beginEntry(step: WorkflowStep(id: "soft", type: "screen", screenId: "screen"))
         presenter.stage(.outcome(.completed(customerInfo: TestData.customerInfo)))
         let execution = presenter.presentationDidDismiss(reason: .navigatedBack)
 
@@ -563,24 +583,28 @@ final class WorkflowPresenterTests: TestCase {
         }
     }
 
-    func testAbandonedGateContextCannotChangeTheReplacementPresentation() throws {
-        let presenter = WorkflowPresenter { _ in true }
+    func testAbandonedGateControllerCannotChangeTheReplacementPresentation() throws {
+        var controllers: [CheckpointWorkflowGateController] = []
+        let presenter = WorkflowPresenter { _, controller in
+            controllers.append(controller)
+            return true
+        }
         let presentation = Self.presentation()
         try presenter.startPresentation(presentation)
-        let abandonedContext = presenter.makeCheckpointGateContext()
+        let abandonedController = try XCTUnwrap(controllers.last)
         _ = presenter.presentationDidDismiss()
 
         try presenter.startPresentation(presentation)
-        abandonedContext.onOutcomeChanged(.notPassed)
+        abandonedController.markInitialBranchPending()
         let execution = presenter.presentationDidDismiss()
 
         guard case .completed(nil)? = execution else {
-            return XCTFail("Expected the abandoned context not to back out the replacement")
+            return XCTFail("Expected the abandoned controller not to back out the replacement")
         }
     }
 
     func testNavigatingBackAfterRestoreCompletesWithRestoredOutcome() throws {
-        let presenter = WorkflowPresenter { _ in true }
+        let presenter = WorkflowPresenter { _, _ in true }
 
         try presenter.startPresentation(Self.presentation())
         presenter.stage(.outcome(.completed(customerInfo: TestData.customerInfo)))
@@ -595,7 +619,7 @@ final class WorkflowPresenterTests: TestCase {
     func testRestoreWithoutAnOfferedEntitlementDoesNotDismissWorkflow() throws {
         let presenter = WorkflowPresenter(
             productEntitlementMappingProvider: { restoreProductEntitlementMapping },
-            presentationStarter: { _ in true }
+            presentationStarter: { _, _ in true }
         )
         let controller = DismissRecordingPaywallViewController()
         try presenter.startPresentation(Self.presentation())
@@ -615,7 +639,7 @@ final class WorkflowPresenterTests: TestCase {
         for scenario in restoreEntitlementSetScenarios {
             let presenter = WorkflowPresenter(
                 productEntitlementMappingProvider: { ["monthly": scenario.offered, "annual": ["extra", "bonus"]] },
-                presentationStarter: { _ in true }
+                presentationStarter: { _, _ in true }
             )
             let controller = DismissRecordingPaywallViewController(
                 offering: makeRestoreOfferingWithMultipleProducts()
@@ -640,7 +664,7 @@ final class WorkflowPresenterTests: TestCase {
     }
 
     func testRestoreWithoutMappingDoesNotDismissWorkflow() throws {
-        let presenter = WorkflowPresenter { _ in true }
+        let presenter = WorkflowPresenter { _, _ in true }
         let controller = DismissRecordingPaywallViewController()
         try presenter.startPresentation(Self.presentation())
 
@@ -659,7 +683,7 @@ final class WorkflowPresenterTests: TestCase {
         let second = makeRestoreOffering(identifier: "other", productIdentifier: "annual")
         let presenter = WorkflowPresenter(
             productEntitlementMappingProvider: { ["monthly": ["pro"], "annual": ["other"]] },
-            presentationStarter: { _ in true }
+            presentationStarter: { _, _ in true }
         )
         let controller = DismissRecordingPaywallViewController()
         let workflow = Self.workflow(
@@ -698,7 +722,7 @@ final class WorkflowPresenterTests: TestCase {
         let second = makeRestoreOffering(identifier: "other", productIdentifier: "annual")
         let presenter = WorkflowPresenter(
             productEntitlementMappingProvider: { ["monthly": ["pro"], "annual": ["other"]] },
-            presentationStarter: { _ in true }
+            presentationStarter: { _, _ in true }
         )
         let controller = DismissRecordingPaywallViewController()
         controller.offeringOnScreen = second
@@ -726,7 +750,7 @@ final class WorkflowPresenterTests: TestCase {
         let presentation = try Self.renderablePresentation(customVariables: [:])
         let presenter = WorkflowPresenter(
             productEntitlementMappingProvider: { restoreProductEntitlementMapping },
-            presentationStarter: { _ in true }
+            presentationStarter: { _, _ in true }
         )
         let controller = try presenter.makePaywallViewController(for: presentation)
         try presenter.startPresentation(presentation)
@@ -743,7 +767,7 @@ final class WorkflowPresenterTests: TestCase {
     func testWorkflowRestoreOnContentOnlyScreenDoesNotDismiss() throws {
         let presenter = WorkflowPresenter(
             productEntitlementMappingProvider: { restoreProductEntitlementMapping },
-            presentationStarter: { _ in true }
+            presentationStarter: { _, _ in true }
         )
         let controller = DismissRecordingPaywallViewController()
         controller.offeringOnScreen = nil
@@ -763,7 +787,7 @@ final class WorkflowPresenterTests: TestCase {
         var mapping: [String: [String]]?
         let presenter = WorkflowPresenter(
             productEntitlementMappingProvider: { mapping },
-            presentationStarter: { _ in true }
+            presentationStarter: { _, _ in true }
         )
         let controller = DismissRecordingPaywallViewController()
         let customerInfo = try Self.customerInfo(activeEntitlements: ["pro"])
@@ -784,7 +808,7 @@ final class WorkflowPresenterTests: TestCase {
     func testRestoreOfAnEntitlementFromAnUnreferencedOfferingDoesNotDismissWorkflow() throws {
         let presenter = WorkflowPresenter(productEntitlementMappingProvider: {
             ["monthly": ["pro"], "other-product": ["unrelated"]]
-        }, presentationStarter: { _ in true })
+        }, presentationStarter: { _, _ in true })
         let workflow = Self.workflow(offerings: [
             makeRestoreOffering(), makeRestoreOffering(identifier: "other", productIdentifier: "other-product")
         ])
@@ -833,7 +857,7 @@ final class WorkflowPresenterTests: TestCase {
         let offering = makeRestoreOffering(productIdentifier: "annual", installmentsInfo: restoreMonthlyInstallments)
         let presenter = WorkflowPresenter(
             productEntitlementMappingProvider: { ["annual:monthly": ["pro"], "annual": ["other"]] },
-            presentationStarter: { _ in true }
+            presentationStarter: { _, _ in true }
         )
         let controller = DismissRecordingPaywallViewController(offering: offering)
         try presenter.startPresentation(Self.presentation(workflow: Self.workflow(offerings: [offering])))
@@ -879,7 +903,7 @@ final class WorkflowPresenterTests: TestCase {
     func testNavigatingBackAfterRestoreWithoutNewEntitlementsBacksOut() throws {
         let presenter = WorkflowPresenter(
             productEntitlementMappingProvider: { restoreProductEntitlementMapping },
-            presentationStarter: { _ in true }
+            presentationStarter: { _, _ in true }
         )
         let controller = DismissRecordingPaywallViewController()
         let customerInfo = try Self.customerInfo(activeEntitlements: ["pro"])
@@ -900,7 +924,7 @@ final class WorkflowPresenterTests: TestCase {
     func testNavigatingBackAfterRestoreWithNewEntitlementCompletes() throws {
         let presenter = WorkflowPresenter(
             productEntitlementMappingProvider: { ["monthly": ["pro", "premium"]] },
-            presentationStarter: { _ in true }
+            presentationStarter: { _, _ in true }
         )
         let controller = DismissRecordingPaywallViewController()
         let customerInfo = try Self.customerInfo(activeEntitlements: ["premium", "pro"])
@@ -921,7 +945,7 @@ final class WorkflowPresenterTests: TestCase {
 
     func testInteractiveDismissalIsNotReportedAsBackingOut() throws {
         let presentation = Self.presentation()
-        let presenter = WorkflowPresenter { _ in true }
+        let presenter = WorkflowPresenter { _, _ in true }
         let controller = PaywallViewController(offering: presentation.workflow.offerings.all["offering-id"])
         let presentationController = UIPresentationController(
             presentedViewController: controller,
@@ -939,7 +963,7 @@ final class WorkflowPresenterTests: TestCase {
 
     func testPurchaseCallbackPreservesCustomerInfo() throws {
         let presentation = Self.presentation()
-        let presenter = WorkflowPresenter { _ in true }
+        let presenter = WorkflowPresenter { _, _ in true }
         let transaction = StoreTransaction(MockStoreTransaction())
 
         try presenter.startPresentation(presentation)
@@ -959,7 +983,7 @@ final class WorkflowPresenterTests: TestCase {
 
     func testWebCheckoutCallbackStagesOutcomeUntilPresentationFinishesDismissing() throws {
         let presentation = Self.presentation()
-        let presenter = WorkflowPresenter { _ in true }
+        let presenter = WorkflowPresenter { _, _ in true }
 
         try presenter.startPresentation(presentation)
         presenter.paywallViewControllerDidOpenWebCheckout(
@@ -976,7 +1000,7 @@ final class WorkflowPresenterTests: TestCase {
 
     func testPurchaseOutcomeReplacesEarlierWebCheckoutOutcome() throws {
         let presentation = Self.presentation()
-        let presenter = WorkflowPresenter { _ in true }
+        let presenter = WorkflowPresenter { _, _ in true }
         let controller = PaywallViewController(offering: presentation.workflow.offerings.all["offering-id"])
         let transaction = StoreTransaction(MockStoreTransaction())
 
@@ -999,7 +1023,7 @@ final class WorkflowPresenterTests: TestCase {
 
     func testUnavailablePresentationContextThrowsAndCleansStoredCall() {
         var shouldAcceptPresentation = false
-        let presenter = WorkflowPresenter { _ in shouldAcceptPresentation }
+        let presenter = WorkflowPresenter { _, _ in shouldAcceptPresentation }
 
         XCTAssertThrowsError(
             try presenter.startPresentation(Self.presentation())
@@ -1016,7 +1040,7 @@ final class WorkflowPresenterTests: TestCase {
     func testPresentationSetupErrorIsPropagatedAndCleansStoredCall() {
         let expectedError = NSError(domain: "test", code: 42)
         var presentationError: Error? = expectedError
-        let presenter = WorkflowPresenter { _ in
+        let presenter = WorkflowPresenter { _, _ in
             if let presentationError {
                 throw presentationError
             }
@@ -1042,7 +1066,7 @@ final class WorkflowPresenterTests: TestCase {
             "enabled": true
         ]
         var receivedPresentation: WorkflowPresentationRequest?
-        let presenter = WorkflowPresenter { presentation in
+        let presenter = WorkflowPresenter { presentation, _ in
             receivedPresentation = presentation
             return true
         }
@@ -1058,7 +1082,7 @@ final class WorkflowPresenterTests: TestCase {
             "attempt": 2,
             "enabled": true
         ]
-        let presenter = WorkflowPresenter { _ in true }
+        let presenter = WorkflowPresenter { _, _ in true }
 
         let viewController = try presenter.makePaywallViewController(
             for: Self.renderablePresentation(customVariables: expected)
@@ -1069,7 +1093,7 @@ final class WorkflowPresenterTests: TestCase {
 
     func testCheckpointTraceIdReachesTheWorkflowContext() throws {
         let presentation = try Self.renderablePresentation(customVariables: [:])
-        let presenter = WorkflowPresenter { _ in true }
+        let presenter = WorkflowPresenter { _, _ in true }
 
         let viewController = try presenter.makePaywallViewController(for: presentation)
 
@@ -1078,7 +1102,7 @@ final class WorkflowPresenterTests: TestCase {
 
     func testCheckpointWorkflowPaywallDoesNotAcceptExitOffers() throws {
         let presentation = try Self.renderablePresentation(customVariables: [:])
-        let presenter = WorkflowPresenter { _ in true }
+        let presenter = WorkflowPresenter { _, _ in true }
         let viewController = try presenter.makePaywallViewController(for: presentation)
         let exitOffering = try XCTUnwrap(presentation.workflow.offerings.all["offering-id"])
         viewController.remoteConfigEnabledForTesting = true
@@ -1130,7 +1154,7 @@ final class WorkflowPresenterTests: TestCase {
             let started = self.expectation(description: "Workflow presentation starts")
             let presenter = WorkflowPresenter(
                 productEntitlementMappingProvider: { restoreProductEntitlementMapping },
-                presentationStarter: { _ in started.fulfill(); return true }
+                presentationStarter: { _, _ in started.fulfill(); return true }
             )
             resultTask = Task {
                 let result = try await presenter.present(presentation)
@@ -1258,7 +1282,7 @@ final class WorkflowPresenterTests: TestCase {
         }
         let presenter = WorkflowPresenter(
             productEntitlementMappingProvider: { restoreProductEntitlementMapping },
-            presentationStarter: { _ in true }
+            presentationStarter: { _, _ in true }
         )
         try presenter.startPresentation(Self.presentation(
             workflow: workflow, initialActiveEntitlementIdentifiers: Set(initialActiveEntitlements)
@@ -1281,6 +1305,15 @@ final class WorkflowPresenterTests: TestCase {
             purchases: purchases,
             eventDispatcher: { work in tasks.modify { $0.append(Task { await work() }) } }
         ))
+    }
+
+    private static func hardGateStep() -> WorkflowStep {
+        var step = WorkflowStep(id: "hard", type: "screen", screenId: "screen")
+        step.paramValues["gating"] = .object([
+            "type": .string("hard"),
+            "entitlement_identifiers": .array([.string("pro")])
+        ])
+        return step
     }
 
     private static func presentation(
@@ -1391,7 +1424,7 @@ final class WorkflowPresenterTests: TestCase {
     }
 
     private static func customerInfo(activeEntitlements: [String]) throws -> CustomerInfo {
-        return try makeCustomerInfo(activeEntitlements: activeEntitlements)
+        return try CheckpointTestFixtures.customerInfo(activeEntitlements: activeEntitlements)
     }
 
 }
@@ -1971,7 +2004,7 @@ final class DefaultPaywallPresenterTests: TestCase {
     }
 
     private static func customerInfo(activeEntitlements: [String]) throws -> CustomerInfo {
-        return try makeCustomerInfo(activeEntitlements: activeEntitlements)
+        return try CheckpointTestFixtures.customerInfo(activeEntitlements: activeEntitlements)
     }
 
 }
@@ -2138,7 +2171,7 @@ private func makeRestoreOffering(
     )
 }
 
-func makeCustomerInfo(
+private func makeCustomerInfo(
     activeEntitlements: [String],
     activeSubscriptionProductIdentifiers: [String] = []
 ) throws -> CustomerInfo {

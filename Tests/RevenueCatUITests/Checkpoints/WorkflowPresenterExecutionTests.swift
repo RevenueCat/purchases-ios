@@ -194,7 +194,7 @@ private final class WorkflowPresenterHarness {
     private(set) var presentations: [Presentation] = []
 
     lazy var workflowPresenter = WorkflowPresenter(
-        presentationStarter: { [weak self] presentation in
+        presentationStarter: { [weak self] presentation, _ in
             return try self?.handlePresentation(presentation) ?? false
         }
     )

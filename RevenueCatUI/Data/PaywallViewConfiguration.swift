@@ -43,7 +43,7 @@ struct PaywallViewConfiguration {
     /// `PaywallView(workflowContext:)` initializer; tvOS has no workflow paywall UI.
     var injectedWorkflowContext: WorkflowContext?
     /// Set only for a checkpoint-launched workflow, which reports whether its gate lets the checkpoint pass.
-    var checkpointGateContext: CheckpointGateContext?
+    var checkpointGateController: CheckpointWorkflowGateController?
     #endif
 
     init(
