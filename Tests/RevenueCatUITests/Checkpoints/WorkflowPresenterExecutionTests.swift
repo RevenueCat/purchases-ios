@@ -45,7 +45,9 @@ final class WorkflowPresenterExecutionTests: TestCase {
     func testCheckpointIdentifierIsForwardedToWorkflowContext() throws {
         let presenter = WorkflowPresenterHarness()
 
-        let viewController = try presenter.workflowPresenter.makePaywallViewController(for: Self.presentation())
+        let viewController = try presenter.workflowPresenter.makePaywallViewController(
+            for: Self.presentation(), gateController: .init()
+        )
 
         XCTAssertEqual(viewController.workflowContextForTesting?.checkpointIdentifier, "test_checkpoint")
     }

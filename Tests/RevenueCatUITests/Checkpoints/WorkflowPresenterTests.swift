@@ -79,7 +79,7 @@ final class WorkflowPresenterTests: TestCase {
         let error = NSError(domain: ErrorCode.errorDomain, code: ErrorCode.configurationError.rawValue)
 
         try presenter.startPresentation(presentation)
-        let viewController = try presenter.makePaywallViewController(for: presentation)
+        let viewController = try presenter.makePaywallViewController(for: presentation, gateController: .init())
         viewController.simulateWorkflowPresentationError(error, behavior: .endFlow)
         let execution = presenter.presentationDidDismiss()
 
@@ -102,7 +102,7 @@ final class WorkflowPresenterTests: TestCase {
         let error = NSError(domain: ErrorCode.errorDomain, code: ErrorCode.configurationError.rawValue)
 
         try presenter.startPresentation(presentation)
-        let viewController = try presenter.makePaywallViewController(for: presentation)
+        let viewController = try presenter.makePaywallViewController(for: presentation, gateController: .init())
         viewController.simulateWorkflowPresentationError(error, behavior: .endFlow)
         completion?.complete()
 
@@ -126,7 +126,7 @@ final class WorkflowPresenterTests: TestCase {
         let error = NSError(domain: ErrorCode.errorDomain, code: ErrorCode.configurationError.rawValue)
 
         try presenter.startPresentation(presentation)
-        let viewController = try presenter.makePaywallViewController(for: presentation)
+        let viewController = try presenter.makePaywallViewController(for: presentation, gateController: .init())
         viewController.simulateWorkflowPresentationError(error, behavior: .keepCurrentScreen)
         completion?.complete()
 
@@ -151,7 +151,7 @@ final class WorkflowPresenterTests: TestCase {
         let purchaseError = NSError(domain: ErrorCode.errorDomain, code: ErrorCode.purchaseInvalidError.rawValue)
 
         try presenter.startPresentation(presentation)
-        let viewController = try presenter.makePaywallViewController(for: presentation)
+        let viewController = try presenter.makePaywallViewController(for: presentation, gateController: .init())
         viewController.simulateWorkflowPresentationError(workflowError, behavior: .endFlow)
         presenter.paywallViewController(viewController, didFailPurchasingWith: purchaseError)
         presenter.paywallViewController(viewController, didFailRestoringWith: purchaseError)
@@ -301,7 +301,7 @@ final class WorkflowPresenterTests: TestCase {
             }
         )
         let presenter = WorkflowPresenter { _, _ in true }
-        let controller = try presenter.makePaywallViewController(for: presentation)
+        let controller = try presenter.makePaywallViewController(for: presentation, gateController: .init())
 
         try presenter.startPresentation(presentation)
         presenter.paywallViewController(
@@ -407,7 +407,7 @@ final class WorkflowPresenterTests: TestCase {
     func testWorkflowPresentationErrorDoesNotReplaceEarlierPurchaseOutcome() throws {
         let presentation = try Self.renderablePresentation(customVariables: [:])
         let presenter = WorkflowPresenter { _, _ in true }
-        let controller = try presenter.makePaywallViewController(for: presentation)
+        let controller = try presenter.makePaywallViewController(for: presentation, gateController: .init())
         let transaction = StoreTransaction(MockStoreTransaction())
         let error = NSError(domain: ErrorCode.errorDomain, code: ErrorCode.configurationError.rawValue)
 
@@ -432,7 +432,7 @@ final class WorkflowPresenterTests: TestCase {
             productEntitlementMappingProvider: { restoreProductEntitlementMapping },
             presentationStarter: { _, _ in true }
         )
-        let controller = try presenter.makePaywallViewController(for: presentation)
+        let controller = try presenter.makePaywallViewController(for: presentation, gateController: .init())
         let error = NSError(domain: ErrorCode.errorDomain, code: ErrorCode.configurationError.rawValue)
         let restoredCustomerInfo = try Self.customerInfo(activeEntitlements: ["pro"])
 
@@ -452,7 +452,7 @@ final class WorkflowPresenterTests: TestCase {
     func testWorkflowPresentationErrorDoesNotReplaceEarlierWebCheckoutOutcome() throws {
         let presentation = try Self.renderablePresentation(customVariables: [:])
         let presenter = WorkflowPresenter { _, _ in true }
-        let controller = try presenter.makePaywallViewController(for: presentation)
+        let controller = try presenter.makePaywallViewController(for: presentation, gateController: .init())
         let error = NSError(domain: ErrorCode.errorDomain, code: ErrorCode.configurationError.rawValue)
 
         try presenter.startPresentation(presentation)
@@ -757,7 +757,7 @@ final class WorkflowPresenterTests: TestCase {
             productEntitlementMappingProvider: { restoreProductEntitlementMapping },
             presentationStarter: { _, _ in true }
         )
-        let controller = try presenter.makePaywallViewController(for: presentation)
+        let controller = try presenter.makePaywallViewController(for: presentation, gateController: .init())
         try presenter.startPresentation(presentation)
 
         presenter.paywallViewController(
@@ -1090,7 +1090,8 @@ final class WorkflowPresenterTests: TestCase {
         let presenter = WorkflowPresenter { _, _ in true }
 
         let viewController = try presenter.makePaywallViewController(
-            for: Self.renderablePresentation(customVariables: expected)
+            for: Self.renderablePresentation(customVariables: expected),
+            gateController: .init()
         )
 
         XCTAssertEqual(viewController.customVariables, expected)
@@ -1100,7 +1101,7 @@ final class WorkflowPresenterTests: TestCase {
         let presentation = try Self.renderablePresentation(customVariables: [:])
         let presenter = WorkflowPresenter { _, _ in true }
 
-        let viewController = try presenter.makePaywallViewController(for: presentation)
+        let viewController = try presenter.makePaywallViewController(for: presentation, gateController: .init())
 
         XCTAssertEqual(viewController.workflowContextForTesting?.traceId, presentation.workflow.traceId)
     }
@@ -1108,7 +1109,7 @@ final class WorkflowPresenterTests: TestCase {
     func testCheckpointWorkflowPaywallDoesNotAcceptExitOffers() throws {
         let presentation = try Self.renderablePresentation(customVariables: [:])
         let presenter = WorkflowPresenter { _, _ in true }
-        let viewController = try presenter.makePaywallViewController(for: presentation)
+        let viewController = try presenter.makePaywallViewController(for: presentation, gateController: .init())
         let exitOffering = try XCTUnwrap(presentation.workflow.offerings.all["offering-id"])
         viewController.remoteConfigEnabledForTesting = true
 

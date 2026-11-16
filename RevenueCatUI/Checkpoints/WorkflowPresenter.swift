@@ -156,7 +156,7 @@ final class WorkflowPresenter: NSObject, WorkflowPresenterType {
                     throw CheckpointError.presentationContextUnavailable
                 }
             } else {
-                try self.presentAutomatically(presentation)
+                try self.presentAutomatically(presentation, gateController: gateController)
             }
         } catch {
             self.presentationState = nil
@@ -264,11 +264,14 @@ final class WorkflowPresenter: NSObject, WorkflowPresenterType {
         self.stage(.dismissalReason(reason))
     }
 
-    private func presentAutomatically(_ presentation: WorkflowPresentationRequest) throws {
+    private func presentAutomatically(
+        _ presentation: WorkflowPresentationRequest,
+        gateController: CheckpointWorkflowGateController
+    ) throws {
         guard let presentationContext = UIApplication.extensionSafeApplication?.currentPresentationViewController else {
             throw CheckpointError.noPresentationContext
         }
-        let viewController = try self.makePaywallViewController(for: presentation)
+        let viewController = try self.makePaywallViewController(for: presentation, gateController: gateController)
         viewController.delegate = self
         viewController.modalPresentationStyle = presentation.presentationMode.modalPresentationStyle
         presentationContext.present(viewController, animated: true)
@@ -278,7 +281,8 @@ final class WorkflowPresenter: NSObject, WorkflowPresenterType {
     }
 
     func makePaywallViewController(
-        for presentation: WorkflowPresentationRequest
+        for presentation: WorkflowPresentationRequest,
+        gateController: CheckpointWorkflowGateController
     ) throws -> PaywallViewController {
         let workflowContext = try WorkflowPreview.makeContext(
             workflow: presentation.workflow.workflow,
@@ -308,7 +312,7 @@ final class WorkflowPresenter: NSObject, WorkflowPresenterType {
                     self.presentError(error, kind: .flowActionFailed)
                 }
             },
-            checkpointGateController: self.presentationState?.gateController
+            checkpointGateController: gateController
         )
         self.presentedViewController = viewController
         viewController.disableExitOffers()
