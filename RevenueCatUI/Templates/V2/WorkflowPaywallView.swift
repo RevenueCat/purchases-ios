@@ -290,6 +290,10 @@ struct WorkflowPaywallView: View {
             self?.view?.closeWorkflow()
         }
 
+        lazy var postPurchaseDismissal: () -> Void = { [weak self] in
+            self?.view?.handlePostPurchaseDismissal()
+        }
+
         lazy var triggerAction: (String) -> Bool = { [weak self] componentId in
             return self?.view?.handleTriggeredNavigation(componentId: componentId) ?? false
         }
@@ -786,11 +790,7 @@ struct WorkflowPaywallView: View {
         .environment(\.workflowPackageContext, page.effectiveWorkflowPackageContext)
         .environment(\.workflowTriggerAction, pageActions.triggerAction)
         .environment(\.workflowNavigateBackHandler, pageActions.navigateBack)
-        .environment(\.workflowPostPurchaseDismissal, {
-            guard self.permitsPostPurchaseDismissal,
-                  self.checkpointGateController?.hasUnresolvedGate != true else { return }
-            self.handleDismiss()
-        })
+        .environment(\.workflowPostPurchaseDismissal, pageActions.postPurchaseDismissal)
     }
 
     @ViewBuilder
@@ -834,6 +834,12 @@ struct WorkflowPaywallView: View {
         self.hasEndedPresentation = true
         self.cancelGateEntry()
         self.onDismiss()
+    }
+
+    private func handlePostPurchaseDismissal() {
+        guard self.permitsPostPurchaseDismissal,
+              self.checkpointGateController?.hasUnresolvedGate != true else { return }
+        self.handleDismiss()
     }
 
     private func handleDismiss(dismissalReason: WorkflowDismissalReason = .close) {
@@ -923,11 +929,13 @@ struct WorkflowPaywallView: View {
     }
 
     private func completeAndDismiss() {
+        guard !self.hasEndedPresentation,
+              self.checkpointGateController?.hasUnresolvedGate != true else { return }
         self.hasCompletedWorkflowInSession = true
         self.workflowCompletedInSessionBinding.wrappedValue = true
         // Enqueue terminal analytics before the host observes dismissal.
         self.trackCurrentWorkflowLeft()
-        self.onDismiss()
+        self.closeWorkflow()
     }
 
     /// Finishes the current step and, unless purchase or restore completed this presentation, records
@@ -1362,8 +1370,7 @@ struct WorkflowPaywallView: View {
         guard !self.hasEndedPresentation else { return }
         self.isAwaitingEntryGate = false
         self.skeletonPage = nil
-        self.markWorkflowCompletedInSession()
-        self.closeWorkflow()
+        self.completeAndDismiss()
     }
 
     @discardableResult

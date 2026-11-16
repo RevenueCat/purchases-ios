@@ -2613,6 +2613,34 @@ extension WorkflowPaywallViewTests {
     }
 
     @MainActor
+    func testPresentationCompletionWaitsForTheHardGateAndDismissesOnlyOnce() async throws {
+        let harness = try WorkflowGateHarness(activeEntitlements: [])
+        let bridge = PaywallPresentationBridge()
+        let view = WorkflowPaywallView(
+            context: try Self.makeGatedContext(firstGating: Self.hardGating("premium")),
+            purchaseHandler: harness.purchaseHandler,
+            introEligibilityChecker: .producing(eligibility: .eligible),
+            showZeroDecimalPlacePrices: false, displayCloseButton: false, promoOfferCache: nil,
+            onDismiss: { harness.dismissals.modify { $0 += 1 } },
+            presentationBridge: bridge, checkpointGateController: harness.gateController
+        )
+        let dispose = try view.addToHierarchy()
+        defer { dispose() }
+        await harness.waitUntilPresented()
+
+        let unrelatedRestore = try CheckpointTestFixtures.customerInfo(activeEntitlements: ["pro"])
+        expect(harness.gateController.update(customerInfo: unrelatedRestore)) == .blocked
+        expect(bridge.completeAndDismiss()) == true
+        expect(harness.dismissals.value) == 0
+
+        let qualifyingRestore = try CheckpointTestFixtures.customerInfo(activeEntitlements: ["premium"])
+        expect(harness.gateController.update(customerInfo: qualifyingRestore)) == .passed
+        expect(bridge.completeAndDismiss()) == true
+        expect(bridge.completeAndDismiss()) == true
+        expect(harness.dismissals.value) == 1
+    }
+
+    @MainActor
     func testQualifyingPurchaseAfterAnUnrelatedPurchaseDismisses() async throws {
         let harness = try WorkflowGateHarness(activeEntitlements: [], operationEntitlements: ["unrelated"])
         let completions = Atomic(0)
