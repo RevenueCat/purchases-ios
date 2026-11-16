@@ -73,7 +73,7 @@ class PurchaseErrorTests: BaseErrorTests {
         let error: Product.PurchaseError = .multiSeatPurchaseDisabled
 
         verifyPurchasesError(error,
-                             expectedCode: .purchaseNotAllowedError,
+                             expectedCode: .productNotAvailableForPurchaseError,
                              underlyingError: error)
         expect(error.trackingDescription) == "multi_seat_purchase_disabled"
     }
@@ -85,7 +85,7 @@ class PurchaseErrorTests: BaseErrorTests {
         let error: Product.PurchaseError = .seatReductionNotAllowed
 
         verifyPurchasesError(error,
-                             expectedCode: .purchaseNotAllowedError,
+                             expectedCode: .purchaseInvalidError,
                              underlyingError: error)
         expect(error.trackingDescription) == "seat_reduction_not_allowed"
     }

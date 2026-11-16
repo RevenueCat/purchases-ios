@@ -120,9 +120,11 @@ extension Product.PurchaseError: PurchasesErrorConvertible {
         #endif
 
         #if ENABLE_MULTISEAT_PURCHASES
-        case .multiSeatPurchaseDisabled,
-             .seatReductionNotAllowed:
-            return ErrorUtils.purchaseNotAllowedError(error: self)
+        case .multiSeatPurchaseDisabled:
+            return ErrorUtils.productNotAvailableForPurchaseError(error: self)
+
+        case .seatReductionNotAllowed:
+            return ErrorUtils.purchaseInvalidError(error: self)
         #endif
         @unknown default:
             return ErrorUtils.unknownError(error: self)
