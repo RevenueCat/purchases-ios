@@ -37,7 +37,7 @@ internal protocol MultiSeatSheetPresenterType: Sendable {
 }
 
 /// Default ``MultiSeatSheetPresenterType`` that forwards to `StoreKit.AppStore`.
-final internal struct StoreKitMultiSeatSheetPresenter: MultiSeatSheetPresenterType {
+internal struct StoreKitMultiSeatSheetPresenter: MultiSeatSheetPresenterType {
 
     #if (os(iOS) || targetEnvironment(macCatalyst)) && canImport(UIKit) && ENABLE_MULTISEAT_PURCHASES
     @available(iOS 27.3, *)
