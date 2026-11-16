@@ -133,6 +133,62 @@ class PurchaseParamsTests: TestCase {
         expect(paramsWithAllOptions.package).to(equal(package))
     }
 
+    #if ENABLE_MULTISEAT_PURCHASES
+    func testPurchaseParamsBuilderWithSeats() async throws {
+        if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, visionOS 1.0, *) {
+            let product = MockSK1Product(mockProductIdentifier: "com.product.id1")
+            let storeProduct = StoreProduct(sk1Product: product)
+
+            let paramsDefault = PurchaseParams.Builder(product: storeProduct).build()
+            expect(paramsDefault.seats).to(beNil())
+
+            let paramsWithSeats = PurchaseParams.Builder(product: storeProduct)
+                .with(seats: 5)
+                .build()
+            expect(paramsWithSeats.seats).to(equal(5))
+            expect(paramsWithSeats.product).to(equal(storeProduct))
+            expect(paramsWithSeats.package).to(beNil())
+
+            let package = Package(identifier: "package",
+                                  packageType: .monthly,
+                                  storeProduct: storeProduct,
+                                  offeringIdentifier: "offering",
+                                  webCheckoutUrl: nil)
+            let packageParams = PurchaseParams.Builder(package: package)
+                .with(seats: 3)
+                .build()
+            expect(packageParams.seats).to(equal(3))
+            expect(packageParams.package).to(equal(package))
+            expect(packageParams.product).to(beNil())
+        }
+    }
+
+    func testPurchaseParamsBuilderWithSeatsLastValueWins() async throws {
+        if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, visionOS 1.0, *) {
+            let package = buildMockPackage()
+
+            let params = PurchaseParams.Builder(package: package)
+                .with(seats: 2)
+                .with(seats: 7)
+                .build()
+            expect(params.seats).to(equal(7))
+        }
+    }
+
+    func testPurchaseParamsBuilderWithSeatsAndQuantity() async throws {
+        if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, visionOS 1.0, *) {
+            let package = buildMockPackage()
+
+            let params = PurchaseParams.Builder(package: package)
+                .with(quantity: 2)
+                .with(seats: 4)
+                .build()
+            expect(params.quantity).to(equal(2))
+            expect(params.seats).to(equal(4))
+        }
+    }
+    #endif
+
     #if ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
     func testPurchaseParamsBuilderWithIntoOfferJWS() async throws {
         if #available(iOS 15.0, macOS 15.4, tvOS 18.4, watchOS 11.4, visionOS 2.4, *) {

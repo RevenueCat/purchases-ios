@@ -56,6 +56,12 @@ import AppKit
 
     #endif
 
+    #if ENABLE_MULTISEAT_PURCHASES
+
+    let seats: Int?
+
+    #endif
+
     /// The platform UI context where purchase-related UI should be presented.
     let presentationContext: PresentationContext?
 
@@ -75,6 +81,10 @@ import AppKit
 
         #if ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
         self.promotionalOfferOptions = builder.promotionalOfferOptions
+        #endif
+
+        #if ENABLE_MULTISEAT_PURCHASES
+        self.seats = builder.seats
         #endif
 
         self.presentationContext = builder.presentationContext
@@ -98,6 +108,12 @@ import AppKit
         #if ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
 
         private(set) var promotionalOfferOptions: StoreKit2PromotionalOfferPurchaseOptions?
+
+        #endif
+
+        #if ENABLE_MULTISEAT_PURCHASES
+
+        private(set) var seats: Int?
 
         #endif
 
@@ -233,6 +249,26 @@ import AppKit
             self.introductoryOfferEligibilityJWS = introductoryOfferEligibilityJWS
             return self
         }
+
+        #if ENABLE_MULTISEAT_PURCHASES
+
+        /**
+         * Sets the number of seats to purchase for a multi-seat subscription.
+         *
+         * - Parameter seats: The number of seats the purchase should grant.
+         *   If not specified, the purchase is made without a seat count.
+         *
+         * Not supported for Test Store products.
+         *
+         * Availability: iOS 15.0+, macOS 12.0+, tvOS 15.0+, watchOS 8.0+, visionOS 1.0+
+         */
+        @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, visionOS 1.0, *)
+        @objc public func with(seats: Int) -> Self {
+            self.seats = seats
+            return self
+        }
+
+        #endif
 
         #if ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
 
