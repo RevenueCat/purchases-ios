@@ -1551,6 +1551,8 @@
 		73A640000000000000000003 /* WorkflowPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73A640000000000000000013 /* WorkflowPresenter.swift */; };
 		73A640000000000000000004 /* WorkflowPresentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73A640000000000000000014 /* WorkflowPresentation.swift */; };
 		73A640000000000000000020 /* FlowPresentationMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73A640000000000000000021 /* FlowPresentationMode.swift */; };
+		B3A1C0DE00000000000000A2 /* WorkflowGateEvaluator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3A1C0DE00000000000000B2 /* WorkflowGateEvaluator.swift */; };
+		B3A1C0DE00000000000000A3 /* CheckpointWorkflowGateController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3A1C0DE00000000000000B3 /* CheckpointWorkflowGateController.swift */; };
 		73A640000000000000000005 /* CheckpointsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73A640000000000000000015 /* CheckpointsManager.swift */; };
 		73A680000000000000000001 /* CheckpointPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73A680000000000000000011 /* CheckpointPresenter.swift */; };
 		73A680000000000000000003 /* PaywallPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73A680000000000000000013 /* PaywallPresenter.swift */; };
@@ -2261,6 +2263,11 @@
 		73A640000000000000000013 /* WorkflowPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkflowPresenter.swift; sourceTree = "<group>"; };
 		73A640000000000000000014 /* WorkflowPresentation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkflowPresentation.swift; sourceTree = "<group>"; };
 		73A640000000000000000021 /* FlowPresentationMode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlowPresentationMode.swift; sourceTree = "<group>"; };
+		B3A1C0DE00000000000000B2 /* WorkflowGateEvaluator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkflowGateEvaluator.swift; sourceTree = "<group>"; };
+		B3A1C0DE00000000000000D1 /* CheckpointWorkflowGateControllerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckpointWorkflowGateControllerTests.swift; sourceTree = "<group>"; };
+		B3A1C0DE00000000000000D2 /* WorkflowGateEvaluatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkflowGateEvaluatorTests.swift; sourceTree = "<group>"; };
+		B3A1C0DE00000000000000D3 /* CheckpointTestFixtures.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckpointTestFixtures.swift; sourceTree = "<group>"; };
+		B3A1C0DE00000000000000B3 /* CheckpointWorkflowGateController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckpointWorkflowGateController.swift; sourceTree = "<group>"; };
 		73A640000000000000000015 /* CheckpointsManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckpointsManager.swift; sourceTree = "<group>"; };
 		73A680000000000000000011 /* CheckpointPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckpointPresenter.swift; sourceTree = "<group>"; };
 		73A680000000000000000015 /* AdPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdPresenter.swift; sourceTree = "<group>"; };
@@ -4061,6 +4068,8 @@
 				73A640000000000000000014 /* WorkflowPresentation.swift */,
 				73A640000000000000000021 /* FlowPresentationMode.swift */,
 				73A640000000000000000013 /* WorkflowPresenter.swift */,
+				B3A1C0DE00000000000000B2 /* WorkflowGateEvaluator.swift */,
+				B3A1C0DE00000000000000B3 /* CheckpointWorkflowGateController.swift */,
 				73A640000000000000000015 /* CheckpointsManager.swift */,
 				73A680000000000000000013 /* PaywallPresenter.swift */,
 				73A690000000000000000011 /* ErrorPresenter.swift */,
@@ -4079,6 +4088,8 @@
 			children = (
 				73A650000000000000000014 /* CheckpointPresentationSlotTests.swift */,
 				73A680000000000000000014 /* WorkflowPresenterExecutionTests.swift */,
+				B3A1C0DE00000000000000D1 /* CheckpointWorkflowGateControllerTests.swift */,
+				B3A1C0DE00000000000000D2 /* WorkflowGateEvaluatorTests.swift */,
 				73A650000000000000000011 /* WorkflowPresenterTests.swift */,
 				73A650000000000000000012 /* CheckpointsManagerTests.swift */,
 				73A650000000000000000015 /* CheckpointOutcomeBehaviorTests.swift */,
@@ -6822,6 +6833,7 @@
 				1D76F25B2F921D3500863AF8 /* PaywallEventTrackerTestDispatcher.swift */,
 				887A612F2C1D168B00E1A461 /* AvailabilityChecks.swift */,
 				887A61302C1D168B00E1A461 /* CurrentTestCaseTracker.swift */,
+				B3A1C0DE00000000000000D3 /* CheckpointTestFixtures.swift */,
 				887A61312C1D168B00E1A461 /* DataExtensions.swift */,
 				887A61322C1D168B00E1A461 /* ImageSnapshot.swift */,
 				887A61332C1D168B00E1A461 /* OSVersionEquivalent.swift */,
@@ -9334,6 +9346,8 @@
 				73A640000000000000000004 /* WorkflowPresentation.swift in Sources */,
 				73A640000000000000000020 /* FlowPresentationMode.swift in Sources */,
 				73A640000000000000000003 /* WorkflowPresenter.swift in Sources */,
+				B3A1C0DE00000000000000A2 /* WorkflowGateEvaluator.swift in Sources */,
+				B3A1C0DE00000000000000A3 /* CheckpointWorkflowGateController.swift in Sources */,
 				73A640000000000000000005 /* CheckpointsManager.swift in Sources */,
 				73A680000000000000000003 /* PaywallPresenter.swift in Sources */,
 				73A690000000000000000001 /* ErrorPresenter.swift in Sources */,

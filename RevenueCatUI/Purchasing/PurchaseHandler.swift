@@ -36,6 +36,8 @@ final class PurchaseHandler: ObservableObject {
 
     }
 
+    var appUserID: String { self.purchases.appUserID }
+
     private var cancellables: Set<AnyCancellable> = Set()
 
     private let purchases: PaywallPurchasesType
@@ -522,20 +524,6 @@ extension PurchaseHandler {
     }
 
 #if !os(tvOS)
-    func cachedInitialPaywallViewData(
-        for content: PaywallViewConfiguration.Content,
-        injectedWorkflowContext: WorkflowContext?
-    ) -> ResolvedPaywallViewData? {
-        if let injectedWorkflowContext {
-            return .init(
-                offering: injectedWorkflowContext.initialOffering,
-                workflowContext: injectedWorkflowContext
-            )
-        }
-
-        return self.cachedInitialPaywallViewData(for: content)
-    }
-
     func cachedInitialPaywallViewData(
         for content: PaywallViewConfiguration.Content
     ) -> ResolvedPaywallViewData? {
@@ -1378,6 +1366,8 @@ private extension PurchaseHandler {
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private final class NotConfiguredPurchases: PaywallPurchasesType {
+
+    let appUserID = ""
 
     let purchasesAreCompletedBy: PurchasesAreCompletedBy
 

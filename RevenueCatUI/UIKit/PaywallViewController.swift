@@ -134,7 +134,7 @@ public class PaywallViewController: UIViewController {
 
     var exitOfferOfferingForTesting: Offering? { self.exitOfferOffering }
 
-    var workflowContextForTesting: WorkflowContext? { self.configuration.injectedWorkflowContext }
+    var workflowContextForTesting: WorkflowContext? { self.configuration.workflowContext }
 
     var presentationBridgeForTesting: PaywallPresentationBridge {
         return self.configuration.presentationBridge
@@ -247,7 +247,8 @@ public class PaywallViewController: UIViewController {
         performPurchase: PerformPurchase? = nil,
         performRestore: PerformRestore? = nil,
         purchaseHandler: PurchaseHandler? = nil,
-        workflowPresentationErrorHandler: WorkflowPresentationErrorHandler? = nil
+        workflowPresentationErrorHandler: WorkflowPresentationErrorHandler? = nil,
+        checkpointGateController: CheckpointWorkflowGateController? = nil
     ) {
         self.init(
             content: .offering(workflowContext.initialOffering),
@@ -262,9 +263,10 @@ public class PaywallViewController: UIViewController {
         var configuration = self.configuration
         configuration.introEligibility = introEligibility
         configuration.purchaseHandler = purchaseHandler ?? configuration.purchaseHandler
-        configuration.injectedWorkflowContext = workflowContext
+        configuration.workflowContext = workflowContext
         configuration.displaysPurchaseAndRestoreErrors = false
         configuration.workflowPresentationErrorHandler = workflowPresentationErrorHandler
+        configuration.checkpointGateController = checkpointGateController
         self.configuration = configuration
     }
     #endif

@@ -119,29 +119,6 @@ final class PaywallViewConfigurationTests: TestCase {
         expect(result?.workflowContext).to(beNil())
     }
 
-    func testCachedInitialPaywallViewDataUsesInjectedWorkflowContext() throws {
-        let initialOffering = Self.createOffering(identifier: "offering_a")
-        let workflowContext = WorkflowContext(
-            workflow: try Self.createWorkflow(offeringIdentifier: initialOffering.identifier),
-            uiConfig: PreviewUIConfig.make(),
-            offerings: WorkflowOfferings(offerings: Self.createOfferings([initialOffering]),
-                                         developerProvidedOffering: nil),
-            initialOffering: initialOffering,
-            presentedOfferingContext: initialOffering.presentedOfferingContext
-        )
-        let purchases = Self.createMockPurchases()
-        let handler = Self.createPurchaseHandler(purchases: purchases)
-
-        let result = handler.cachedInitialPaywallViewData(
-            for: .defaultOffering,
-            injectedWorkflowContext: workflowContext
-        )
-
-        expect(result?.offering.identifier) == initialOffering.identifier
-        expect(result?.workflowContext?.initialOffering.identifier) == workflowContext.initialOffering.identifier
-        expect(result?.workflowContext?.workflow.id) == workflowContext.workflow.id
-    }
-
     func testCachedInitialPaywallViewDataUsesProvidedOfferingWithPaywallComponents() throws {
         let (offering, _, handler) = try Self.createOfferingWithPaywallComponentsFixture()
 
