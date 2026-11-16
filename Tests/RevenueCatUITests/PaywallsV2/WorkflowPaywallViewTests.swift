@@ -2761,7 +2761,7 @@ extension WorkflowPaywallViewTests {
         controller.endAppearanceTransition()
         await expect(appearances.value).toEventually(equal(2))
         await expect(harness.dismissals.value).toEventually(equal(1))
-        expect(harness.gateController.outcome) == .passed
+        expect(harness.gateController.status) == .passed
         expect(harness.callbacks.value) == [isRestore ? "restore" : "purchase", "dismiss"]
     }
 
