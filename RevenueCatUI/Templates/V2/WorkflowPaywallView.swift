@@ -561,6 +561,9 @@ struct WorkflowPaywallView: View {
             case .active, .displayingError(_, .keepCurrentScreen):
                 break
             }
+            if self.resolvesInitialStep, self.transitionState.currentPage == nil {
+                self.checkpointGateController?.markInitialBranchPending()
+            }
             guard self.resolvesEntryGate() else { return }
             self.syncExitOfferBinding()
             self.stepEventCoordinator.trackInitialStep(

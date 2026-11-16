@@ -2759,7 +2759,6 @@ private final class WorkflowGateHarness: @unchecked Sendable {
 
     @MainActor
     func host(_ context: WorkflowContext) -> some View {
-        if context.workflow.initialBranch != nil { self.gateController.markInitialBranchPending() }
         return GatedWorkflowHost(
             purchaseHandler: self.purchaseHandler,
             context: context,
@@ -2770,7 +2769,6 @@ private final class WorkflowGateHarness: @unchecked Sendable {
 
     @MainActor
     func view(_ context: WorkflowContext) -> WorkflowPaywallView {
-        if context.workflow.initialBranch != nil { self.gateController.markInitialBranchPending() }
         return WorkflowPaywallView(
             context: context,
             purchaseHandler: self.purchaseHandler,
