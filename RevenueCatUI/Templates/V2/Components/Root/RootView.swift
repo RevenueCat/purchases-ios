@@ -220,6 +220,7 @@ struct RootPackageSelectionSheetModifier: ViewModifier {
                 isEligibleForPromoOffer: { self.paywallPromoOfferCache.isMostLikelyEligible(for: $0) }
             )
             self.sheetPackageContext = self.packageContext.activateSheet(
+                sheetID: sheet.sheet.id,
                 validator: validator,
                 selectionContext: selectionContext,
                 preserveCurrentSelection: !self.hasNonSheetPackages

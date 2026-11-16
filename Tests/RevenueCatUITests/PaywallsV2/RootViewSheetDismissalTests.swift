@@ -99,6 +99,7 @@ extension RootViewSheetDismissalTests {
             return nil
         }.first)
         let sheetContext = fixture.context.activateSheet(
+            sheetID: "plans",
             validator: sheetValidator,
             selectionContext: .provisional,
             preserveCurrentSelection: false

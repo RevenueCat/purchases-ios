@@ -14,14 +14,16 @@ final class SheetOnlyPackageSelectionTests: TestCase {
     func testReopeningSheetKeepsThePreviousChoiceWhenRootHasNoPackages() {
         let validator = PackageValidatorTests.canTrialValidator()
         let context = PackageContext(
-            package: TestData.annualPackage,
+            package: TestData.monthlyPackage,
             variableContext: .init(packages: validator.packages)
         )
         let sheet = context.activateSheet(
+            sheetID: "plans",
             validator: validator,
             selectionContext: .provisional,
             preserveCurrentSelection: true
         )
+        XCTAssertEqual(sheet.package?.identifier, TestData.annualPackage.identifier)
         sheet.update(package: TestData.monthlyPackage, variableContext: sheet.variableContext)
         context.update(
             package: RootView.restoredPackageAfterSheetDismissal(
@@ -36,6 +38,7 @@ final class SheetOnlyPackageSelectionTests: TestCase {
         context.presentedSheetContext = nil
 
         let reopened = context.activateSheet(
+            sheetID: "plans",
             validator: validator,
             selectionContext: .provisional,
             preserveCurrentSelection: true
@@ -51,8 +54,17 @@ final class SheetOnlyPackageSelectionTests: TestCase {
             package: TestData.monthlyPackage,
             variableContext: .init(packages: validator.packages)
         )
+        _ = context.activateSheet(
+            sheetID: "plans",
+            validator: validator,
+            selectionContext: .provisional,
+            preserveCurrentSelection: true
+        )
+        context.update(package: TestData.monthlyPackage, variableContext: context.variableContext)
+        context.presentedSheetContext = nil
 
         let sheet = context.activateSheet(
+            sheetID: "plans",
             validator: validator,
             selectionContext: PackageValidatorTests.context(customVariables: ["can_trial": .bool(true)]),
             preserveCurrentSelection: true
@@ -62,14 +74,23 @@ final class SheetOnlyPackageSelectionTests: TestCase {
         XCTAssertEqual(context.package?.identifier, TestData.annualPackage.identifier)
     }
 
-    func testSheetEntryUsesItsDefaultWhenThePreviousChoiceBelongsToAnotherSheet() {
+    func testNewSheetUsesItsOwnDefaultEvenWhenItOffersThePreviousSheetsChoice() {
         let validator = PackageValidatorTests.canTrialValidator()
         let context = PackageContext(
-            package: TestData.weeklyPackage,
-            variableContext: .init(packages: [TestData.weeklyPackage])
+            package: TestData.monthlyPackage,
+            variableContext: .init(packages: validator.packages)
         )
+        _ = context.activateSheet(
+            sheetID: "first",
+            validator: validator,
+            selectionContext: .provisional,
+            preserveCurrentSelection: true
+        )
+        context.update(package: TestData.monthlyPackage, variableContext: context.variableContext)
+        context.presentedSheetContext = nil
 
         let sheet = context.activateSheet(
+            sheetID: "second",
             validator: validator,
             selectionContext: .provisional,
             preserveCurrentSelection: true
@@ -78,14 +99,48 @@ final class SheetOnlyPackageSelectionTests: TestCase {
         XCTAssertEqual(sheet.package?.identifier, TestData.annualPackage.identifier)
     }
 
-    func testSheetEntryUsesItsDefaultWhenRootHasPackages() {
+    func testReopeningSheetUsesItsDefaultWhenItDoesNotOfferTheCurrentChoice() {
+        let validator = PackageValidatorTests.canTrialValidator()
+        let context = PackageContext(
+            package: TestData.weeklyPackage,
+            variableContext: .init(packages: [TestData.weeklyPackage])
+        )
+        _ = context.activateSheet(
+            sheetID: "plans",
+            validator: validator,
+            selectionContext: .provisional,
+            preserveCurrentSelection: true
+        )
+        context.update(package: TestData.weeklyPackage, variableContext: context.variableContext)
+        context.presentedSheetContext = nil
+
+        let sheet = context.activateSheet(
+            sheetID: "plans",
+            validator: validator,
+            selectionContext: .provisional,
+            preserveCurrentSelection: true
+        )
+
+        XCTAssertEqual(sheet.package?.identifier, TestData.annualPackage.identifier)
+    }
+
+    func testReopeningSheetUsesItsDefaultWhenRootHasPackages() {
         let validator = PackageValidatorTests.canTrialValidator()
         let context = PackageContext(
             package: TestData.monthlyPackage,
             variableContext: .init(packages: validator.packages)
         )
+        _ = context.activateSheet(
+            sheetID: "plans",
+            validator: validator,
+            selectionContext: .provisional,
+            preserveCurrentSelection: false
+        )
+        context.update(package: TestData.monthlyPackage, variableContext: context.variableContext)
+        context.presentedSheetContext = nil
 
         let sheet = context.activateSheet(
+            sheetID: "plans",
             validator: validator,
             selectionContext: .provisional,
             preserveCurrentSelection: false
