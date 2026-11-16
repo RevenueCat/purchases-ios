@@ -109,6 +109,30 @@ final class PackageSelectionUITests: XCTestCase {
         XCTAssertTrue(app.buttons["Weekly selected"].waitForExistence(timeout: 10))
     }
 
+    func testSheetSelectionSurvivesSwitchingPackageLessTabs() {
+        let app = XCUIApplication()
+        app.launchEnvironment["PAYWALL_FIXTURE"] = "tabs_and_shared_sheets"
+        app.launch()
+        XCTAssertTrue(app.staticTexts["Selected package: Monthly"].waitForExistence(timeout: 10))
+
+        app.buttons["Annual plans"].tap()
+        app.buttons["View annual plans"].tap()
+        XCTAssertTrue(app.buttons["Close sheet"].waitForExistence(timeout: 5))
+        app.buttons["Close sheet"].tap()
+        XCTAssertTrue(app.staticTexts["Selected package: Annual"].waitForExistence(timeout: 5))
+        let purchaseButton = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Purchase selected"))
+            .firstMatch
+        let annualPurchaseLabel = purchaseButton.label
+
+        app.buttons["Overview"].tap()
+        XCTAssertTrue(app.staticTexts["Selected package: Annual"].waitForExistence(timeout: 5))
+        XCTAssertEqual(purchaseButton.label, annualPurchaseLabel)
+
+        app.buttons["Annual plans"].tap()
+        XCTAssertTrue(app.staticTexts["Selected package: Annual"].waitForExistence(timeout: 5))
+        XCTAssertEqual(purchaseButton.label, annualPurchaseLabel)
+    }
+
     private func launchMixedTabs() -> XCUIApplication {
         let app = XCUIApplication()
         app.launchEnvironment["PAYWALL_FIXTURE"] = "mixed_tabs_page_default"

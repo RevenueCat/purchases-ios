@@ -22,6 +22,59 @@ import XCTest
 @MainActor
 final class BottomSheetSwitchTests: TestCase {
 
+    func testSheetDefaultIsSelectedWhenRootHasNoPackage() throws {
+        let sheet = PaywallComponent.ButtonComponent.Sheet(
+            id: "plans", name: "Plans",
+            stack: .init(components: [
+                .package(.init(
+                    packageID: TestData.annualPackage.identifier,
+                    isSelectedByDefault: true,
+                    applePromoOfferProductCode: nil,
+                    stack: .init(components: [])
+                ))
+            ]),
+            backgroundBlur: false, size: .init(width: .fill, height: .fit(nil))
+        )
+        let componentsConfig = PaywallComponentsData.PaywallComponentsConfig(
+            stack: .init(components: [
+                .button(.init(action: .navigateTo(destination: .sheet(sheet: sheet)),
+                              stack: .init(components: [])))
+            ]),
+            stickyFooter: nil,
+            background: .color(.init(light: .hex("#FFFFFF")))
+        )
+        let offering = Offering(
+            identifier: "test", serverDescription: "",
+            availablePackages: [TestData.annualPackage], webCheckoutUrl: nil
+        )
+        let state = try PaywallsV2View.createPaywallState(
+            componentsConfig: componentsConfig,
+            componentsLocalizations: [:],
+            preferredLocales: [Locale(identifier: "en_US")],
+            defaultLocale: "en_US",
+            uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
+            offering: offering,
+            introEligibilityChecker: BaseSnapshotTest.eligibleChecker,
+            showZeroDecimalPlacePrices: false,
+            colorScheme: .light
+        ).get()
+
+        let factory = state.viewModelFactory
+        XCTAssertNil(factory.packageValidator.defaultSelectedPackage(in: .provisional))
+        let selectedPackage = PaywallsV2View.defaultSelectedPackage(
+            in: factory,
+            context: .provisional,
+            workflowDefaultPackage: nil
+        )
+        let context = PaywallsV2View.makeSelectedPackageContext(
+            from: state,
+            defaultPackage: selectedPackage,
+            workflowPackages: nil,
+            showZeroDecimalPlacePrices: false
+        )
+        XCTAssertEqual(context.package?.identifier, TestData.annualPackage.identifier)
+    }
+
     func testRelativeSheetHeightIsClampedToMinMax() {
         let clamped = PaywallComponent.SizeConstraint.relative(0.5, .init(min: 300, max: 400))
 
@@ -328,7 +381,8 @@ private struct PackageResolutionSheetHost: View {
         }
             .modifier(RootPackageSelectionSheetModifier(
                 defaultPackage: self.fixture.state.viewModelFactory.packageValidator
-                    .defaultSelectedPackage(in: .provisional)
+                    .defaultSelectedPackage(in: .provisional),
+                hasNonSheetPackages: true
             ))
             .environment(\.sessionPurchaseResult, self.holder.purchaseResult)
             .environmentObject(self.fixture.context)
