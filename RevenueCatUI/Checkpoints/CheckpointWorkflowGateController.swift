@@ -66,36 +66,26 @@ final class CheckpointWorkflowGateController {
 
     /// Marks a gate unresolved before its customer read starts. Ungated destinations only clear a pending branch.
     func beginEntry(step: WorkflowStep) -> Bool {
-        guard step.gating?.isEnforced == true else {
+        guard let gate = step.gating,
+              gate.isEnforced else {
             if case .branchPending = self.gateState { self.gateState = .notReached }
             return false
         }
         self.activeEntitlementIdentifiers = []
-        _ = self.evaluate(step: step)
+        self.gateState = .reached(gate)
         return true
-    }
-
-    func evaluate(step: WorkflowStep) -> WorkflowGateDecision {
-        guard let gate = step.gating, gate.isEnforced else { return .notGated }
-        return self.evaluate(gate: gate)
     }
 
     /// Re-evaluates the reached gate against customer info from a purchase or restore.
     func update(customerInfo: CustomerInfo) -> WorkflowGateDecision {
         self.activeEntitlementIdentifiers = customerInfo.activeEntitlementIdentifiers
         guard case let .reached(gate) = self.gateState else { return .notGated }
-        return self.evaluate(gate: gate)
+        return gate.isSatisfied(by: self.activeEntitlementIdentifiers) ? .passed : .blocked
     }
 
     func blocksForwardNavigation(step: WorkflowStep) -> Bool {
         guard let gate = step.gating else { return false }
         return gate.isEnforced && !gate.isSatisfied(by: self.activeEntitlementIdentifiers)
-    }
-
-    @discardableResult
-    private func evaluate(gate: WorkflowStepGating) -> WorkflowGateDecision {
-        self.gateState = .reached(gate)
-        return gate.isSatisfied(by: self.activeEntitlementIdentifiers) ? .passed : .blocked
     }
 
 }

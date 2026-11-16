@@ -70,70 +70,71 @@ final class CheckpointWorkflowGateControllerTests: TestCase {
     }
 
     func testAnyMatchingCustomerInfoEntitlementPasses() throws {
-        _ = try self.update(activeEntitlements: ["premium"])
+        XCTAssertTrue(self.controller.beginEntry(step: self.hard))
 
-        XCTAssertEqual(self.controller.evaluate(step: self.hard), .passed)
-        _ = self.controller.evaluate(step: self.hard)
-
+        XCTAssertEqual(try self.update(activeEntitlements: ["premium"]), .passed)
         XCTAssertEqual(self.controller.status, .passed)
+        XCTAssertFalse(self.controller.blocksForwardNavigation(step: self.hard))
     }
 
     func testMissingCustomerInfoEntitlementBlocksForwardNavigation() throws {
-        _ = try self.update(activeEntitlements: ["unrelated"])
+        XCTAssertTrue(self.controller.beginEntry(step: self.hard))
 
-        XCTAssertEqual(self.controller.evaluate(step: self.hard), .blocked)
+        XCTAssertEqual(try self.update(activeEntitlements: ["unrelated"]), .blocked)
         XCTAssertTrue(self.controller.blocksForwardNavigation(step: self.hard))
         XCTAssertTrue(self.controller.hasUnresolvedGate)
         XCTAssertEqual(self.controller.status, .notPassed)
     }
 
     func testEnteringAGateDiscardsPreviouslyReadEntitlementsUntilCustomerInfoArrives() throws {
-        _ = try self.update(activeEntitlements: ["pro"])
+        XCTAssertEqual(try self.update(activeEntitlements: ["pro"]), .notGated)
+        XCTAssertEqual(self.controller.status, .notApplicable)
 
         XCTAssertTrue(self.controller.beginEntry(step: self.hard))
+        XCTAssertEqual(self.controller.status, .notPassed)
         XCTAssertTrue(self.controller.hasUnresolvedGate)
         XCTAssertTrue(self.controller.blocksForwardNavigation(step: self.hard))
         XCTAssertEqual(try self.update(activeEntitlements: ["premium"]), .passed)
+        XCTAssertEqual(self.controller.status, .passed)
         XCTAssertFalse(self.controller.hasUnresolvedGate)
     }
 
     func testSoftAndAbsentGatingDoNotBlock() {
 
-        XCTAssertEqual(self.controller.evaluate(step: Self.step(nil)), .notGated)
-        XCTAssertEqual(self.controller.evaluate(step: Self.step(.soft)), .notGated)
+        XCTAssertFalse(self.controller.beginEntry(step: Self.step(nil)))
+        XCTAssertFalse(self.controller.beginEntry(step: Self.step(.soft)))
         XCTAssertFalse(self.controller.blocksForwardNavigation(step: Self.step(nil)))
         XCTAssertFalse(self.controller.blocksForwardNavigation(step: Self.step(.soft)))
         XCTAssertEqual(self.controller.status, .notApplicable)
     }
 
     func testInvalidGatingFailsClosedEvenWithActiveEntitlements() throws {
-        _ = try self.update(activeEntitlements: ["pro"])
         let invalid = Self.step(.invalid)
 
-        XCTAssertEqual(self.controller.evaluate(step: invalid), .blocked)
-        XCTAssertTrue(self.controller.blocksForwardNavigation(step: invalid))
+        XCTAssertTrue(self.controller.beginEntry(step: invalid))
         XCTAssertEqual(
             try self.update(activeEntitlements: ["pro", "premium"]),
             .blocked
         )
+        XCTAssertTrue(self.controller.blocksForwardNavigation(step: invalid))
         XCTAssertTrue(self.controller.hasUnresolvedGate)
         XCTAssertEqual(self.controller.status, .notPassed)
     }
 
     func testBacktrackingKeepsUnresolvedStatusAndReentryStaysBlocked() {
-        _ = self.controller.evaluate(step: self.hard)
+        XCTAssertTrue(self.controller.beginEntry(step: self.hard))
         let earlier = Self.step(nil)
 
-        XCTAssertEqual(self.controller.evaluate(step: earlier), .notGated)
+        XCTAssertFalse(self.controller.beginEntry(step: earlier))
         XCTAssertTrue(self.controller.hasUnresolvedGate)
         XCTAssertFalse(self.controller.blocksForwardNavigation(step: earlier))
-        XCTAssertEqual(self.controller.evaluate(step: self.hard), .blocked)
+        XCTAssertTrue(self.controller.beginEntry(step: self.hard))
         XCTAssertEqual(self.controller.status, .notPassed)
     }
 
     func testCustomerInfoUpdateResolvesAReachedGateEvenWhileBacktracking() throws {
-        _ = self.controller.evaluate(step: self.hard)
-        _ = self.controller.evaluate(step: Self.step(nil))
+        XCTAssertTrue(self.controller.beginEntry(step: self.hard))
+        XCTAssertFalse(self.controller.beginEntry(step: Self.step(nil)))
 
         XCTAssertEqual(
             try self.update(activeEntitlements: ["unrelated"]),
@@ -148,23 +149,15 @@ final class CheckpointWorkflowGateControllerTests: TestCase {
         XCTAssertEqual(self.controller.status, .passed)
     }
 
-    func testCustomerInfoBeforeReachingAGateUpdatesTheEntryBaseline() throws {
-
-        XCTAssertEqual(
-            try self.update(activeEntitlements: ["pro"]),
-            .notGated
-        )
-        XCTAssertEqual(self.controller.evaluate(step: self.hard), .passed)
-    }
-
     func testControllersDoNotShareGateState() throws {
-        _ = self.controller.evaluate(step: self.hard)
+        XCTAssertTrue(self.controller.beginEntry(step: self.hard))
         _ = try self.update(activeEntitlements: ["pro"])
         let nextController = CheckpointWorkflowGateController()
 
         XCTAssertEqual(nextController.status, .notApplicable)
         XCTAssertFalse(nextController.hasUnresolvedGate)
-        XCTAssertEqual(nextController.evaluate(step: self.hard), .blocked)
+        XCTAssertTrue(nextController.beginEntry(step: self.hard))
+        XCTAssertEqual(nextController.status, .notPassed)
         XCTAssertEqual(self.controller.status, .passed)
     }
 
