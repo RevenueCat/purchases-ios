@@ -134,6 +134,119 @@ final class WorkflowStepEventCoordinatorTests: TestCase {
         expect(self.recorded).to(beEmpty())
     }
 
+    // MARK: - Navigation duration
+
+    func testTimedForwardTransitionHoldsStartedUntilNextFrame() throws {
+        let workflow = try Self.makeWorkflow()
+        let frames = ManualFrames()
+        let coordinator = self.makeTimedCoordinator(workflow: workflow, frames: frames)
+        let from = try XCTUnwrap(workflow.steps["step_1"])
+        let toStep = try XCTUnwrap(workflow.steps["step_2"])
+
+        frames.now = 10
+        let startedAt = coordinator.navigationStartTime()
+        frames.now = 10.4
+        coordinator.trackTransition(
+            from: from, to: toStep, renderedPageIsNil: false, entryReason: .forward, navigationStartedAt: startedAt
+        )
+
+        expect(self.recorded.map(Self.kind)) == ["completed"]
+
+        frames.now = 10.425
+        frames.fire()
+
+        expect(self.recorded.map(Self.kind)) == ["completed", "started"]
+        let started = try XCTUnwrap(Self.startedData(self.recorded[1]))
+        expect(started.stepId) == "step_2"
+        expect(started.fromStepId) == "step_1"
+        expect(started.entryReason) == "forward"
+        expect(started.navigationDurationMs) == 425
+    }
+
+    func testTimedBackTransitionReportsDuration() throws {
+        let workflow = try Self.makeWorkflow()
+        let frames = ManualFrames()
+        let coordinator = self.makeTimedCoordinator(workflow: workflow, frames: frames)
+        let from = try XCTUnwrap(workflow.steps["step_2"])
+        let toStep = try XCTUnwrap(workflow.steps["step_1"])
+
+        coordinator.trackTransition(
+            from: from, to: toStep, renderedPageIsNil: false, entryReason: .back, navigationStartedAt: 0
+        )
+        frames.now = 0.016
+        frames.fire()
+
+        let started = try XCTUnwrap(Self.startedData(self.recorded[1]))
+        expect(started.entryReason) == "back"
+        expect(started.navigationDurationMs) == 16
+    }
+
+    func testInitialStepHasNoNavigationDuration() throws {
+        let workflow = try Self.makeWorkflow()
+        let coordinator = self.makeTimedCoordinator(workflow: workflow, frames: ManualFrames())
+        let step = try XCTUnwrap(workflow.steps["step_1"])
+
+        coordinator.trackInitialStep(step, hasRenderedPage: true)
+
+        let started = try XCTUnwrap(Self.startedData(self.recorded[0]))
+        expect(started.navigationDurationMs).to(beNil())
+    }
+
+    func testHeldStartedIsSentWithoutDurationBeforeTerminalEvents() throws {
+        let workflow = try Self.makeWorkflow()
+        let frames = ManualFrames()
+        let coordinator = self.makeTimedCoordinator(workflow: workflow, frames: frames)
+        let from = try XCTUnwrap(workflow.steps["step_1"])
+        let toStep = try XCTUnwrap(workflow.steps["step_2"])
+
+        coordinator.trackTransition(
+            from: from, to: toStep, renderedPageIsNil: false, entryReason: .forward, navigationStartedAt: 0
+        )
+        coordinator.trackTerminalCompletion(currentStep: toStep, hasRenderedPage: true)
+        coordinator.trackAbandonment(currentStep: toStep, hasRenderedPage: true, hasCompletedInSession: false)
+        frames.fire()
+
+        expect(self.recorded.map(Self.kind)) == ["completed", "started", "completed", "close"]
+        expect(Self.startedData(self.recorded[1])?.navigationDurationMs).to(beNil())
+    }
+
+    func testHeldStartedIsSentWhenCoordinatorIsReleased() throws {
+        let workflow = try Self.makeWorkflow()
+        var coordinator: WorkflowStepEventCoordinator? = self.makeTimedCoordinator(
+            workflow: workflow,
+            frames: ManualFrames()
+        )
+        let from = try XCTUnwrap(workflow.steps["step_1"])
+        let toStep = try XCTUnwrap(workflow.steps["step_2"])
+
+        coordinator?.trackTransition(
+            from: from, to: toStep, renderedPageIsNil: false, entryReason: .forward, navigationStartedAt: 0
+        )
+        coordinator = nil
+
+        expect(self.recorded.map(Self.kind)) == ["completed", "started"]
+        expect(Self.startedData(self.recorded[1])?.navigationDurationMs).to(beNil())
+    }
+
+    func testTransitionWithoutFrameObserverIsNotHeld() throws {
+        let workflow = try Self.makeWorkflow()
+        let coordinator = WorkflowStepEventCoordinator(
+            workflow: workflow,
+            traceId: "trace-test",
+            nextFrameObserver: nil,
+            sink: { [weak self] event in self?.recorded.append(event) }
+        )
+        let from = try XCTUnwrap(workflow.steps["step_1"])
+        let toStep = try XCTUnwrap(workflow.steps["step_2"])
+
+        coordinator.trackTransition(
+            from: from, to: toStep, renderedPageIsNil: false, entryReason: .forward, navigationStartedAt: 0
+        )
+
+        expect(self.recorded.map(Self.kind)) == ["completed", "started"]
+        expect(Self.startedData(self.recorded[1])?.navigationDurationMs).to(beNil())
+    }
+
     // MARK: - Terminal completion (migrated from WorkflowPaywallView.shouldTrackTerminalCompletion)
 
     func testTerminalCompletionEmitsWhenPageRenderedAndNotYetTracked() throws {
@@ -346,6 +459,37 @@ private extension WorkflowStepEventCoordinatorTests {
             return WorkflowStepEventCoordinator(workflow: workflow, sink: sink)
         }
         return WorkflowStepEventCoordinator(workflow: workflow, traceId: traceId, sink: sink)
+    }
+
+    func makeTimedCoordinator(
+        workflow: PublishedWorkflow,
+        frames: ManualFrames
+    ) -> WorkflowStepEventCoordinator {
+        return WorkflowStepEventCoordinator(
+            workflow: workflow,
+            traceId: "trace-test",
+            nextFrameObserver: frames.observe,
+            uptime: { frames.now },
+            sink: { [weak self] event in self?.recorded.append(event) }
+        )
+    }
+
+    /// A clock and frame source the test advances by hand.
+    final class ManualFrames {
+
+        var now: TimeInterval = 0
+        private var callbacks: [() -> Void] = []
+
+        func observe(_ onFrame: @escaping () -> Void) {
+            self.callbacks.append(onFrame)
+        }
+
+        func fire() {
+            let callbacks = self.callbacks
+            self.callbacks = []
+            callbacks.forEach { $0() }
+        }
+
     }
 
     /// step_1 navigates to step_2 (a terminal step with no further `.step` action).

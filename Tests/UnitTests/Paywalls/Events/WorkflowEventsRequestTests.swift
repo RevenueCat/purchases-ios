@@ -199,6 +199,28 @@ class WorkflowEventsRequestTests: TestCase {
         expect(json).to(contain("\"fallback_original_step_id\":\"paywall_a\""))
     }
 
+    func testNavigationDurationInWireFormatForStepStarted() throws {
+        let event = WorkflowEvent.stepStarted(
+            .init(id: id, date: date),
+            .init(workflowId: "wfl_abc", stepId: "step-2", entryReason: "forward", navigationDurationMs: 412)
+        )
+        let stored = try XCTUnwrap(storedEvent(from: event))
+        let request = try XCTUnwrap(FeatureEventsRequest.WorkflowEvent(storedEvent: stored))
+        let json = try encodedJSON(from: event)
+
+        expect(request.properties.navigationDurationMs) == 412
+        expect(json).to(contain("\"navigation_duration_ms\":412"))
+    }
+
+    func testNavigationDurationOnlySentForStepStarted() throws {
+        let data = WorkflowEvent.Data(workflowId: "wfl_abc", stepId: "step-1", navigationDurationMs: 412)
+        let completed = try encodedJSON(from: .stepCompleted(.init(id: id, date: date), data))
+        let close = try encodedJSON(from: .close(.init(id: id, date: date), data))
+
+        expect(completed).toNot(contain("navigation_duration_ms"))
+        expect(close).toNot(contain("navigation_duration_ms"))
+    }
+
     func testCloseKeepsExperimentPropertiesInWireFormat() throws {
         let event = WorkflowEvent.close(
             .init(id: id, date: date),
@@ -277,6 +299,7 @@ class WorkflowEventsRequestTests: TestCase {
         expect(json).toNot(contain("experiment_variant"))
         expect(json).toNot(contain("blob_ref"))
         expect(json).toNot(contain("fallback_original_step_id"))
+        expect(json).toNot(contain("navigation_duration_ms"))
     }
 
     func testExperimentPropertiesInWireFormat() throws {
