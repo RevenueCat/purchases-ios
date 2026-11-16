@@ -157,6 +157,36 @@ final class PaywallEventTracker: @unchecked Sendable {
         return true
     }
 
+    /// Tracks that the paywall finished loading (no placeholders left on screen), once per session.
+    /// - Parameters:
+    ///   - loadingDurationMs: how long placeholders were visible after the impression; 0 if never
+    ///   - incompleteReason: `error`, `timeout` or `dismissed` when loading did not finish normally
+    /// - Returns: whether the event was tracked
+    @discardableResult
+    func trackPaywallLoaded(
+        loadingDurationMs: Int,
+        incompleteReason: String?,
+        sessionID: SessionID
+    ) -> Bool {
+        return self.stateLock.withLock {
+            guard var entry = self.sessions[sessionID], let data = entry.eventData else {
+                Logger.debug("Attempted to track paywall loaded without an impression for session \(sessionID)")
+                return false
+            }
+            // Loading can end through several paths (checks finished, dismissed); only the first one counts.
+            guard !entry.hasTrackedLoaded else { return false }
+
+            let loadedData = data.withLoadingInfo(
+                loadingDurationMs: loadingDurationMs,
+                incompleteReason: incompleteReason
+            )
+            self.track(.loaded(.init(), loadedData))
+            entry.hasTrackedLoaded = true
+            self.sessions[sessionID] = entry
+            return true
+        }
+    }
+
     /// Drops stored paywall state for `sessionID` (e.g. when the host resets purchase session state).
     func discardSession(sessionID: SessionID) {
         _ = self.stateLock.withLock {
@@ -233,6 +263,7 @@ final class PaywallEventTracker: @unchecked Sendable {
     private struct SessionState {
         var eventData: PaywallEvent.Data?
         var hasTrackedClose: Bool = false
+        var hasTrackedLoaded: Bool = false
     }
 
 }
@@ -265,5 +296,18 @@ extension EnvironmentValues {
     var componentInteractionLogger: ComponentInteractionLogger {
         get { self[ComponentInteractionLoggerKey.self] }
         set { self[ComponentInteractionLoggerKey.self] = newValue }
+    }
+}
+
+/// `EnvironmentKey` for when the enclosing `PaywallView` first appeared, so `paywall_loaded` can measure
+/// loading time from the moment the user saw the paywall surface, not from the first content render.
+struct PaywallPresentationDateKey: EnvironmentKey {
+    static let defaultValue: Date? = nil
+}
+
+extension EnvironmentValues {
+    var paywallPresentationDate: Date? {
+        get { self[PaywallPresentationDateKey.self] }
+        set { self[PaywallPresentationDateKey.self] = newValue }
     }
 }

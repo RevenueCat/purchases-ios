@@ -78,6 +78,12 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
 
     private static let purchases: Atomic<Purchases?> = nil
 
+    /// When the current ``Purchases`` instance was created, i.e. when the app configured the SDK
+    /// in this process. Used by RevenueCatUI to tell cold-start paywalls from later ones.
+    @_spi(Internal) public static var configurationDate: Date? { Self.purchases.value?.configurationDate }
+
+    private let configurationDate: Date = .init()
+
     /// Returns `true` if RevenueCat has already been initialized through ``Purchases/configure(withAPIKey:)``
     /// or one of is overloads.
     @objc public static var isConfigured: Bool { Self.purchases.value != nil }

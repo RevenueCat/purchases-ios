@@ -131,6 +131,16 @@ struct PaywallsV2View: View {
         #endif
     }()
 
+    /// When the enclosing `PaywallView` appeared, if any. Set by `PaywallView` so the time spent on its
+    /// redacted placeholder (while offerings load) counts as loading time.
+    @Environment(\.paywallPresentationDate)
+    private var paywallPresentationDate: Date?
+
+    /// Start of the loading window for the current paywall session: the `PaywallView` presentation for
+    /// the first session, the impression for later sessions (workflow re-entries).
+    @State
+    private var loadingStartDate: Date?
+
     @State
     private var paywallSessionID: PaywallEvent.SessionID = .init()
 
@@ -436,6 +446,7 @@ struct PaywallsV2View: View {
                     )
                 )
                 self.didFinishIntroEligibilityCheck = true
+                self.firePaywallLoadedIfFinished()
             }
             .task {
                 guard !self.didFinishPromoEligibilityCheck else {
@@ -452,6 +463,7 @@ struct PaywallsV2View: View {
                     for: self.promoEligibilityPackageInfos(for: paywallState)
                 )
                 self.didFinishPromoEligibilityCheck = true
+                self.firePaywallLoadedIfFinished()
             }
             // Note: preferences need to be applied after `.toolbar` call
             .preference(key: PurchaseInProgressPreferenceKey.self,
@@ -476,6 +488,7 @@ struct PaywallsV2View: View {
                 // current step at teardown (the step the user dismissed from); pages left earlier are
                 // not closed here, their navigation is reported by the workflow-events layer.
                 guard self.isActiveWorkflowPage != false else { return }
+                self.firePaywallLoaded(incompleteReason: "dismissed")
                 self.firePaywallClose()
             }
             .environment(
@@ -501,6 +514,7 @@ struct PaywallsV2View: View {
                 let freshSession: PaywallEvent.SessionID = .init()
                 self.paywallSessionID = freshSession
                 self.firePaywallImpression(sessionID: freshSession)
+                self.firePaywallLoadedIfFinished()
             }
 
     }
@@ -536,6 +550,12 @@ struct PaywallsV2View: View {
     /// post-receipt body, `traceId` for the post-receipt `paywall` object and the event's own
     /// `presented_offering_context`. Orthogonal to the `screen_type` gate; all are `nil`
     /// for standalone paywalls.
+    /// Milliseconds since the SDK was configured in this process, or `nil` if it is not configured.
+    static func msSinceConfigure(now: Date = Date()) -> Int? {
+        guard let configurationDate = Purchases.configurationDate else { return nil }
+        return max(Int(now.timeIntervalSince(configurationDate) * 1000), 0)
+    }
+
     static func applyingWorkflowAttribution(
         to data: PaywallEvent.Data,
         workflowId: String?,
@@ -577,8 +597,37 @@ struct PaywallsV2View: View {
                 forDefaultPaywall = true
             }
         }
+        self.loadingStartDate = self.loadingStartDate == nil
+            ? (self.paywallPresentationDate ?? Date())
+            : Date()
         self.purchaseHandler.trackPaywallImpression(
             self.createEventData(forDefaultPaywall: forDefaultPaywall, sessionID: sessionID)
+        )
+        if forDefaultPaywall {
+            // Nothing to load: the fallback paywall has no eligibility-dependent content.
+            self.firePaywallLoaded(incompleteReason: nil)
+        }
+    }
+
+    /// Fires `paywall_loaded` once both eligibility checks are done. Each check calls this when it
+    /// finishes, so the event goes out when the last placeholder clears.
+    private func firePaywallLoadedIfFinished() {
+        guard self.didFinishIntroEligibilityCheck, self.didFinishPromoEligibilityCheck else { return }
+
+        let eligibilityUnknown = self.introOfferEligibilityContext.all.values.contains { $0 == .unknown }
+        self.firePaywallLoaded(incompleteReason: eligibilityUnknown ? "error" : nil)
+    }
+
+    /// Fires `paywall_loaded` for the current session. The tracker ignores repeat calls for a session,
+    /// so this is safe to call from every path that can end loading (both checks done, dismissed).
+    private func firePaywallLoaded(incompleteReason: String?) {
+        guard self.tracksPaywallEvents, let loadingStartDate = self.loadingStartDate else { return }
+
+        let elapsedMs = Int(Date().timeIntervalSince(loadingStartDate) * 1000)
+        self.purchaseHandler.trackPaywallLoaded(
+            sessionID: self.paywallSessionID,
+            loadingDurationMs: max(elapsedMs, 0),
+            incompleteReason: incompleteReason
         )
     }
 
@@ -632,7 +681,7 @@ struct PaywallsV2View: View {
             locale: .current,
             darkMode: self.colorScheme == .dark,
             source: self.paywallSource
-        )
+        ).withMsSinceConfigure(Self.msSinceConfigure())
         return Self.applyingWorkflowAttribution(
             to: data,
             workflowId: self.workflowId,

@@ -1292,7 +1292,7 @@ extension WorkflowPaywallViewTests {
         expect(offeringProvider.displayedOffering).to(beNil())
         branchResolution.value?.resume(returning: "step_terminal")
 
-        await expect(events.value.compactMap { $0.data.paywallIdentifier })
+        await expect(Self.impressionData(in: events.value).compactMap(\.paywallIdentifier))
             .toEventually(equal(["screen_terminal"]), timeout: .seconds(3))
         expect(offeringProvider.displayedOffering?.identifier) == routedOffering.identifier
         expect(offeringProvider.displayedOffering?.internalPaywallComponents?.data.id) == "screen_terminal"

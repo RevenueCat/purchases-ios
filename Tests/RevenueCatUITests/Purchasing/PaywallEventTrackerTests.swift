@@ -154,6 +154,35 @@ class PaywallEventTrackerTests: TestCase {
         expect(orderedTypes) == ["impression", "exitOffer", "close"]
     }
 
+    func testTrackPaywallLoadedRequiresImpressionAndFiresOncePerSession() async throws {
+        let (tracker, trackedEvents) = Self.makeTracker()
+        let sessionID = Self.eventData.sessionIdentifier
+
+        expect(tracker.trackPaywallLoaded(loadingDurationMs: 10, incompleteReason: nil, sessionID: sessionID)) == false
+
+        tracker.trackPaywallImpression(Self.eventData)
+
+        expect(tracker.trackPaywallLoaded(loadingDurationMs: 850,
+                                          incompleteReason: "error",
+                                          sessionID: sessionID)) == true
+        expect(tracker.trackPaywallLoaded(loadingDurationMs: 900,
+                                          incompleteReason: nil,
+                                          sessionID: sessionID)) == false
+        expect(tracker.trackPaywallClose(sessionID: sessionID)) == true
+
+        await expect(trackedEvents.value).toEventually(haveCount(3), timeout: .seconds(2))
+
+        let loadedEvent = try XCTUnwrap(trackedEvents.value[1])
+        guard case .loaded = loadedEvent else {
+            fail("Expected loaded event, got \(loadedEvent)")
+            return
+        }
+        expect(loadedEvent.data.sessionIdentifier) == sessionID
+        expect(loadedEvent.data.loadingDurationMs) == 850
+        expect(loadedEvent.data.loadingIncompleteReason) == "error"
+        expect(loadedEvent.data.offeringIdentifier) == Self.eventData.offeringIdentifier
+    }
+
     func testTrackPaywallImpressionDoesNotAutoCloseAcrossDifferentSessions() async throws {
         let (tracker, trackedEvents) = Self.makeTracker()
         let firstEventData = Self.makeEventData()

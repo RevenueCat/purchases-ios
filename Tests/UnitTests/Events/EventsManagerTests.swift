@@ -215,6 +215,31 @@ class EventsManagerTests: TestCase {
         expect(map["session_id"] as? String) == data.sessionIdentifier.uuidString
     }
 
+    func testPaywallLoadedToMap() {
+        let creationData = PaywallEvent.CreationData.random()
+        let data = PaywallEvent.Data.random()
+            .withMsSinceConfigure(1234)
+            .withLoadingInfo(loadingDurationMs: 850, incompleteReason: "dismissed")
+        let event: PaywallEvent = .loaded(creationData, data)
+        let map = event.toMap()
+
+        expect(map["discriminator"] as? String) == "paywalls"
+        expect(map["type"] as? String) == "paywall_loaded"
+        expect(map["session_id"] as? String) == data.sessionIdentifier.uuidString
+        expect(map["ms_since_configure"] as? Int) == 1234
+        expect(map["loading_duration_ms"] as? Int) == 850
+        expect(map["loading_incomplete_reason"] as? String) == "dismissed"
+    }
+
+    func testPaywallImpressionToMapOmitsLoadingFieldsWhenUnset() {
+        let event: PaywallEvent = .impression(.random(), .random())
+        let map = event.toMap()
+
+        expect(map["ms_since_configure"]).to(beNil())
+        expect(map["loading_duration_ms"]).to(beNil())
+        expect(map["loading_incomplete_reason"]).to(beNil())
+    }
+
     func testPaywallPurchaseInitiatedToMap() {
         let creationData = PaywallEvent.CreationData.random()
         let data = PaywallEvent.Data.random()
