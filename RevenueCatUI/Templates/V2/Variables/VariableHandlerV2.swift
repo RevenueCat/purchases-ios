@@ -530,19 +530,19 @@ extension VariablesV2 {
             }
         case .productPeriodInDays:
             if let package {
-                return self.productPeriodInDays(package: package)
+                return self.productPeriodInDays(package: package, priceLocale: priceLocale)
             }
         case .productPeriodInWeeks:
             if let package {
-                return self.productPeriodInWeeks(package: package)
+                return self.productPeriodInWeeks(package: package, priceLocale: priceLocale)
             }
         case .productPeriodInMonths:
             if let package {
-                return self.productPeriodInMonths(package: package)
+                return self.productPeriodInMonths(package: package, priceLocale: priceLocale)
             }
         case .productPeriodInYears:
             if let package {
-                return self.productPeriodInYears(package: package)
+                return self.productPeriodInYears(package: package, priceLocale: priceLocale)
             }
         case .productPeriodWithUnit:
             if let package {
@@ -1059,36 +1059,36 @@ extension VariablesV2 {
         }
     }
 
-    func productPeriodInDays(package: Package) -> String {
+    func productPeriodInDays(package: Package, priceLocale: Locale) -> String {
         guard let period = package.storeProduct.subscriptionPeriod else {
             return ""
         }
 
-        return "\(period.periodInUnit(unit: .day))"
+        return String(format: "%d", locale: priceLocale, period.periodInUnit(unit: .day))
     }
 
-    func productPeriodInWeeks(package: Package) -> String {
+    func productPeriodInWeeks(package: Package, priceLocale: Locale) -> String {
         guard let period = package.storeProduct.subscriptionPeriod else {
             return ""
         }
 
-        return "\(period.periodInUnit(unit: .week))"
+        return String(format: "%d", locale: priceLocale, period.periodInUnit(unit: .week))
     }
 
-    func productPeriodInMonths(package: Package) -> String {
+    func productPeriodInMonths(package: Package, priceLocale: Locale) -> String {
         guard let period = package.storeProduct.subscriptionPeriod else {
             return ""
         }
 
-        return "\(period.periodInUnit(unit: .month))"
+        return String(format: "%d", locale: priceLocale, period.periodInUnit(unit: .month))
     }
 
-    func productPeriodInYears(package: Package) -> String {
+    func productPeriodInYears(package: Package, priceLocale: Locale) -> String {
         guard let period = package.storeProduct.subscriptionPeriod else {
             return ""
         }
 
-        return "\(period.periodInUnit(unit: .year))"
+        return String(format: "%d", locale: priceLocale, period.periodInUnit(unit: .year))
     }
 
     func productPeriodWithUnit(package: Package, localizations: [String: String], priceLocale: Locale) -> String {
@@ -1253,14 +1253,18 @@ extension VariablesV2 {
         offerContext: OfferContext
     ) -> String {
         guard let discount = resolvedDiscount(for: package, offerContext: offerContext) else {
-            return self.productPeriodInDays(package: package)
+            return self.productPeriodInDays(package: package, priceLocale: offerContext.priceLocale)
         }
 
         if !canDiscountDisplay(discount, unit: .day) {
             return ""
         }
 
-        return "\(discount.subscriptionPeriod.periodInUnit(unit: .day))"
+        return String(
+            format: "%d",
+            locale: offerContext.priceLocale,
+            discount.subscriptionPeriod.periodInUnit(unit: .day)
+        )
     }
 
     func productOfferPeriodInWeeks(
@@ -1268,14 +1272,18 @@ extension VariablesV2 {
         offerContext: OfferContext
     ) -> String {
         guard let discount = resolvedDiscount(for: package, offerContext: offerContext) else {
-            return self.productPeriodInWeeks(package: package)
+            return self.productPeriodInWeeks(package: package, priceLocale: offerContext.priceLocale)
         }
 
         if !canDiscountDisplay(discount, unit: .week) {
             return ""
         }
 
-        return "\(discount.subscriptionPeriod.periodInUnit(unit: .week))"
+        return String(
+            format: "%d",
+            locale: offerContext.priceLocale,
+            discount.subscriptionPeriod.periodInUnit(unit: .week)
+        )
     }
 
     func productOfferPeriodInMonths(
@@ -1283,14 +1291,18 @@ extension VariablesV2 {
         offerContext: OfferContext
     ) -> String {
         guard let discount = resolvedDiscount(for: package, offerContext: offerContext) else {
-            return self.productPeriodInMonths(package: package)
+            return self.productPeriodInMonths(package: package, priceLocale: offerContext.priceLocale)
         }
 
         if !canDiscountDisplay(discount, unit: .month) {
             return ""
         }
 
-        return "\(discount.subscriptionPeriod.periodInUnit(unit: .month))"
+        return String(
+            format: "%d",
+            locale: offerContext.priceLocale,
+            discount.subscriptionPeriod.periodInUnit(unit: .month)
+        )
     }
 
     func productOfferPeriodInYears(
@@ -1298,14 +1310,18 @@ extension VariablesV2 {
         offerContext: OfferContext
     ) -> String {
         guard let discount = resolvedDiscount(for: package, offerContext: offerContext) else {
-            return self.productPeriodInYears(package: package)
+            return self.productPeriodInYears(package: package, priceLocale: offerContext.priceLocale)
         }
 
         if !canDiscountDisplay(discount, unit: .year) {
             return ""
         }
 
-        return "\(discount.subscriptionPeriod.periodInUnit(unit: .year))"
+        return String(
+            format: "%d",
+            locale: offerContext.priceLocale,
+            discount.subscriptionPeriod.periodInUnit(unit: .year)
+        )
     }
 
     func productOfferPeriodWithUnit(

@@ -1156,6 +1156,48 @@ class VariableHandlerV2Test: TestCase {
         expect(result) == "٣mo|٣ months|٣ months"
     }
 
+    func testPeriodInUnitVariablesUsePriceLocale() {
+        let package = self.monthlyPackage(storeKitLocale: Locale(identifier: "en_US"), periodValue: 3)
+
+        let result = self.variable(
+            "{{ product.period_in_days }}|{{ product.period_in_weeks }}|"
+                + "{{ product.period_in_months }}|{{ product.period_in_years }}",
+            package,
+            priceLocale: Locale(identifier: "ar_SA")
+        )
+
+        let period = package.storeProduct.subscriptionPeriod
+        let expected = [SubscriptionPeriod.Unit.day, .week, .month, .year].map {
+            String(format: "%d", locale: Locale(identifier: "ar_SA"), period?.periodInUnit(unit: $0) ?? -1)
+        }
+        expect(result) == expected.joined(separator: "|")
+        expect(result).to(contain("٣"))
+        expect(result.unicodeScalars.contains { CharacterSet(charactersIn: "0123456789").contains($0) }) == false
+    }
+
+    func testOfferPeriodInUnitVariablesUsePriceLocale() {
+        let package = self.monthlyPackage(
+            storeKitLocale: Locale(identifier: "en_US"),
+            introDiscount: .init(
+                identifier: "intro",
+                price: 1.29,
+                localizedPriceString: "$1.29",
+                paymentMode: .payUpFront,
+                subscriptionPeriod: .init(value: 2, unit: .week),
+                numberOfPeriods: 1,
+                type: .introductory
+            )
+        )
+
+        let result = self.variable(
+            "{{ product.offer_period_in_days }}|{{ product.offer_period_in_weeks }}",
+            package,
+            priceLocale: Locale(identifier: "ar_SA")
+        )
+
+        expect(result) == "١٤|٢"
+    }
+
     private func monthlyPackage(
         storeKitLocale: Locale,
         localizedPriceString: String = "$2.58",
