@@ -1053,6 +1053,93 @@ class VariableHandlerV2Test: TestCase {
         expect(result).to(equal("30%"))
     }
 
+    func testProductRelativeDiscountUsesArabicDigitsWhenPriceLocaleIsArabic() {
+        let package = self.monthlyPackage(priceLocale: Locale(identifier: "ar_SA"))
+
+        expect(self.relativeDiscount(package)).to(equal("٣٠%"))
+        expect(self.discountVariable("product.price_per_month", package)).to(contain("٢٫٥٨"))
+    }
+
+    func testProductRelativeDiscountUsesWesternDigitsWhenPriceLocaleIsEnglish() {
+        let package = self.monthlyPackage(priceLocale: Locale(identifier: "en_US"))
+
+        expect(self.relativeDiscount(package)).to(equal("30%"))
+        expect(self.discountVariable("product.price_per_month", package)).to(contain("2.58"))
+    }
+
+    func testProductRelativeDiscountUsesWesternDigitsWhenPriceLocaleIsArabicWithLatinNumbers() {
+        let package = self.monthlyPackage(priceLocale: Locale(identifier: "ar_SA@numbers=latn"))
+
+        expect(self.relativeDiscount(package)).to(equal("30%"))
+        expect(self.discountVariable("product.price_per_month", package)).to(contain("2.58"))
+    }
+
+    func testOfferRelativeDiscountUsesPriceLocale() {
+        let package = self.monthlyPackage(
+            priceLocale: Locale(identifier: "ar_SA"),
+            introDiscount: .init(
+                identifier: "intro",
+                price: 1.29,
+                localizedPriceString: "$1.29",
+                paymentMode: .payUpFront,
+                subscriptionPeriod: .init(value: 1, unit: .month),
+                numberOfPeriods: 1,
+                type: .introductory
+            )
+        )
+
+        expect(self.discountVariable("product.offer_relative_discount", package)).to(equal("٥٠%"))
+    }
+
+    func testPeriodVariablesUsePriceLocale() {
+        let package = self.monthlyPackage(priceLocale: Locale(identifier: "ar_SA"), periodValue: 3)
+
+        expect(self.discountVariable("product.period_abbreviated", package)).to(equal("٣mo"))
+        expect(self.discountVariable("product.period_with_unit", package)).to(equal("٣ months"))
+        expect(self.discountVariable("product.offer_period_with_unit", package)).to(equal("٣ months"))
+    }
+
+    private func monthlyPackage(
+        priceLocale: Locale,
+        periodValue: Int = 1,
+        introDiscount: TestStoreProductDiscount? = nil
+    ) -> Package {
+        return Package(
+            identifier: PackageType.monthly.identifier,
+            packageType: .monthly,
+            storeProduct: TestStoreProduct(
+                localizedTitle: "Monthly",
+                price: 2.58,
+                currencyCode: "USD",
+                localizedPriceString: "$2.58",
+                productIdentifier: "com.revenuecat.product.price_locale",
+                productType: .autoRenewableSubscription,
+                localizedDescription: "PRO monthly",
+                subscriptionGroupIdentifier: "group",
+                subscriptionPeriod: .init(value: periodValue, unit: .month),
+                introductoryDiscount: introDiscount,
+                locale: priceLocale
+            ).toStoreProduct(),
+            offeringIdentifier: "offering",
+            webCheckoutUrl: nil
+        )
+    }
+
+    private func relativeDiscount(_ package: Package) -> String {
+        return VariableHandlerV2(
+            variableCompatibilityMap: Self.variableMapping,
+            functionCompatibilityMap: Self.functionMapping,
+            discountRelativeToMostExpensivePerMonth: 0.3,
+            showZeroDecimalPlacePrices: false
+        ).processVariables(
+            in: "{{ product.relative_discount }}",
+            with: package,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
+        )
+    }
+
     // MARK: - Discount variables
 
     func testOfferDiscountsProrateAFreeTrialOverTheFirstYear() {

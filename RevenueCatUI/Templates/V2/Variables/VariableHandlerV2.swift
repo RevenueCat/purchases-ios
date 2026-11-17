@@ -710,6 +710,7 @@ extension VariablesV2 {
         case .productRelativeDiscount:
             return self.productRelativeDiscount(
                 discountRelativeToMostExpensivePerMonth: discountRelativeToMostExpensivePerMonth,
+                package: package,
                 localizations: localizations
             )
         case .productAbsoluteDiscount:
@@ -727,6 +728,7 @@ extension VariablesV2 {
             if let package {
                 return self.percent(
                     self.offerSavings(package: package, offerContext: offerContext)?.relative,
+                    package: package,
                     localizations: localizations
                 )
             }
@@ -746,6 +748,7 @@ extension VariablesV2 {
                         offerContext: offerContext,
                         mostExpensivePricePerMonth: context.mostExpensivePricePerMonth
                     )?.relative,
+                    package: package,
                     localizations: localizations
                 )
             }
@@ -769,6 +772,7 @@ extension VariablesV2 {
                         offerContext: offerContext,
                         mostExpensivePricePerMonth: context.mostExpensivePricePerMonth
                     )?.relative,
+                    package: package,
                     localizations: localizations
                 )
             }
@@ -970,7 +974,7 @@ extension VariablesV2 {
             guard let localizedFormat = localizations[localizedFormatKey] else {
                 return ""
             }
-            return String(format: localizedFormat, period.value)
+            return String(format: localizedFormat, locale: self.priceLocale(package: package), period.value)
 
         } else {
             guard let abbreviation = localizations[period.periodAbbreviatedLocalizationKey] else {
@@ -1026,7 +1030,7 @@ extension VariablesV2 {
             return ""
         }
 
-        return String(format: localizedFormat, period.value)
+        return String(format: localizedFormat, locale: self.priceLocale(package: package), period.value)
     }
 
     private func offerPrice(
@@ -1219,7 +1223,7 @@ extension VariablesV2 {
             return ""
         }
 
-        return String(format: localizedFormat, period.value)
+        return String(format: localizedFormat, locale: self.priceLocale(package: package), period.value)
     }
 
     func productOfferEndDate(
@@ -1262,6 +1266,7 @@ extension VariablesV2 {
 
     func productRelativeDiscount(
         discountRelativeToMostExpensivePerMonth: Decimal?,
+        package: Package?,
         localizations: [String: String]
     ) -> String {
         guard let discountRelativeToMostExpensivePerMonth,
@@ -1270,10 +1275,10 @@ extension VariablesV2 {
         }
 
         let percent = Localization.discountPercentage(discountRelativeToMostExpensivePerMonth)
-        return String(format: localizedFormat, percent)
+        return String(format: localizedFormat, locale: self.priceLocale(package: package), percent)
     }
 
-    private func percent(_ fraction: Double?, localizations: [String: String]) -> String {
+    private func percent(_ fraction: Double?, package: Package, localizations: [String: String]) -> String {
         guard let fraction else {
             return ""
         }
@@ -1283,7 +1288,13 @@ extension VariablesV2 {
         }
 
         let percent = Int((fraction * 100).rounded(.toNearestOrAwayFromZero))
-        return String(format: localizedFormat, percent)
+        return String(format: localizedFormat, locale: self.priceLocale(package: package), percent)
+    }
+
+    /// Uses the price formatter's locale so these numbers have the same digits as the prices.
+    /// Without a formatter, `nil` keeps the previous unlocalized formatting.
+    private func priceLocale(package: Package?) -> Locale? {
+        return package?.storeProduct.priceFormatter?.locale
     }
 
     private func standardSavings(package: Package, mostExpensivePricePerMonth: Decimal?) -> DiscountSavings? {
