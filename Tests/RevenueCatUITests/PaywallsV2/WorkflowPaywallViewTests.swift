@@ -2587,6 +2587,188 @@ extension WorkflowPaywallViewTests {
     }
 
     @MainActor
+    func testInitialBranchRoutedToSatisfiedHardGateDismissesWithoutRenderingIt() async throws {
+        let harness = try WorkflowGateHarness(activeEntitlements: ["pro"], routesToStep: "step_b")
+        let context = try Self.makeGatedContext(
+            secondGating: Self.hardGating("pro"),
+            routesInitialStepToSecondStep: true
+        )
+        let dispose = try harness.host(context).addToHierarchy()
+        defer { dispose() }
+
+        await expect(harness.dismissals.value).toEventually(equal(1), timeout: .seconds(3))
+        expect(harness.gateController.status) == .passed
+        await expect(harness.paywallEvents.value.compactMap { $0.data.paywallIdentifier }).toNever(
+            contain("screen_b"),
+            until: .milliseconds(500)
+        )
+    }
+
+    @MainActor
+    func testInitialHardGateUsesCurrentEntitlementsInsteadOfTheCheckpointBaseline() async throws {
+        let harness = try WorkflowGateHarness(activeEntitlements: ["pro"], gateEntitlements: [])
+        let dispose = try harness.host(Self.makeGatedContext(firstGating: Self.hardGating("pro")))
+            .addToHierarchy()
+        defer { dispose() }
+
+        await expect(harness.gateController.status).toEventually(equal(.notPassed))
+        expect(harness.dismissals.value) == 0
+    }
+
+    @MainActor
+    func testLaterHardGateReadsEntitlementsGainedSinceTheCheckpointStarted() async throws {
+        let harness = try WorkflowGateHarness(activeEntitlements: [], gateEntitlements: ["pro"])
+        let view = harness.view(try Self.makeGatedContext(secondGating: Self.hardGating("pro")))
+
+        expect(view.handleTriggeredNavigation(componentId: "continue_button")) == true
+
+        await expect(harness.dismissals.value).toEventually(equal(1))
+        expect(harness.gateController.status) == .passed
+    }
+
+    @MainActor
+    func testRepeatedForwardTriggerWhileAGateReadIsPendingIsConsumed() async throws {
+        let read = AsyncStream<CustomerInfo>.makeStream()
+        let harness = try WorkflowGateHarness(activeEntitlements: [], gateRead: {
+            for await info in read.stream { return info }
+            throw CancellationError()
+        })
+        defer { read.continuation.finish() }
+        let view = harness.view(try Self.makeGatedContext(secondGating: Self.hardGating("pro")))
+
+        expect(view.handleTriggeredNavigation(componentId: "continue_button")) == true
+        expect(view.handleTriggeredNavigation(componentId: "continue_button")) == true
+        expect(harness.gateController.status) == .notPassed
+        expect(harness.dismissals.value) == 0
+    }
+
+    @MainActor
+    func testInitialBranchBlocksPassageBeforeItsDestinationIsKnown() async throws {
+        let branch = AsyncStream<String>.makeStream()
+        let harness = try WorkflowGateHarness(activeEntitlements: [], resolveBranch: { _ in
+            for await step in branch.stream { return step }
+            return "step_a"
+        })
+        let context = try Self.makeGatedContext(
+            secondGating: Self.hardGating("pro"),
+            routesInitialStepToSecondStep: true
+        )
+        let dispose = try harness.host(context).addToHierarchy()
+        defer { branch.continuation.finish(); dispose() }
+
+        await expect(harness.gateController.status).toEventually(equal(.notPassed))
+        expect(harness.dismissals.value) == 0
+        branch.continuation.yield("step_a")
+        await expect(harness.gateController.status).toEventually(equal(.notApplicable))
+    }
+
+    @MainActor
+    func testStalePurchaseOnAnEarlierSoftStepDoesNotDismissBeforeTheHardGate() async throws {
+        let harness = try WorkflowGateHarness(activeEntitlements: [], operationEntitlements: ["pro"])
+        harness.duringOperation.value = { harness.appUserID.value = "customer-b" }
+        let dispose = try harness.host(Self.makeGatedContext(
+            firstGating: #"{"type":"soft"}"#,
+            secondGating: Self.hardGating("pro")
+        )).addToHierarchy()
+        defer { dispose() }
+
+        await harness.waitUntilPresented()
+        try await harness.purchaseHandler.purchase(package: TestData.annualPackage)
+
+        await expect(harness.dismissals.value).toNever(beGreaterThan(0), until: .milliseconds(500))
+        expect(harness.gateController.status) != .passed
+    }
+
+    @MainActor
+    func testHardGateReadsEntitlementsForTheNewUserAfterLogin() async throws {
+        let harness = try WorkflowGateHarness(activeEntitlements: [], gateEntitlements: ["pro"])
+        harness.appUserID.value = "customer-b"
+        let dispose = try harness.host(Self.makeGatedContext(firstGating: Self.hardGating("pro")))
+            .addToHierarchy()
+        defer { dispose() }
+
+        await expect(harness.dismissals.value).toEventually(equal(1))
+        expect(harness.gateController.status) == .passed
+    }
+
+    @MainActor
+    func testGateCustomerReadFailureDoesNotTrustTheInitialEntitlements() async throws {
+        let harness = try WorkflowGateHarness(activeEntitlements: ["pro"], gateRead: {
+            throw CancellationError()
+        })
+        let dispose = try harness.host(Self.makeGatedContext(firstGating: Self.hardGating("pro")))
+            .addToHierarchy()
+        defer { dispose() }
+
+        await expect(harness.gateController.status).toEventually(equal(.notPassed))
+        expect(harness.dismissals.value) == 0
+    }
+
+    @MainActor
+    func testGateReadForThePreviousUserCannotPassTheGate() async throws {
+        let read = AsyncStream<CustomerInfo>.makeStream()
+        let started = Atomic(false)
+        let harness = try WorkflowGateHarness(activeEntitlements: [], gateRead: {
+            started.value = true
+            for await info in read.stream { return info }
+            throw CancellationError()
+        })
+        let dispose = try harness.host(Self.makeGatedContext(firstGating: Self.hardGating("pro")))
+            .addToHierarchy()
+        defer { read.continuation.finish(); dispose() }
+
+        await expect(started.value).toEventually(beTrue())
+        expect(harness.gateController.status) == .notPassed
+        harness.appUserID.value = "customer-b"
+        read.continuation.yield(try CheckpointTestFixtures.customerInfo(activeEntitlements: ["pro"]))
+
+        await expect(harness.dismissals.value).toNever(beGreaterThan(0), until: .milliseconds(500))
+        expect(harness.gateController.status) == .notPassed
+    }
+
+    @MainActor
+    func testDisappearingCancelsAPendingGateRead() async throws {
+        let read = AsyncStream<CustomerInfo>.makeStream()
+        let started = Atomic(false)
+        let harness = try WorkflowGateHarness(activeEntitlements: [], gateRead: {
+            started.value = true
+            for await info in read.stream { return info }
+            throw CancellationError()
+        })
+        let dispose = try harness.host(Self.makeGatedContext(firstGating: Self.hardGating("pro")))
+            .addToHierarchy()
+        defer { read.continuation.finish(); dispose() }
+        await expect(started.value).toEventually(beTrue())
+
+        harness.visibility.isVisible = false
+        await expect(harness.disappearances.value).toEventually(equal(1))
+        read.continuation.yield(try CheckpointTestFixtures.customerInfo(activeEntitlements: ["pro"]))
+
+        await expect(harness.dismissals.value).toNever(beGreaterThan(0), until: .milliseconds(500))
+        expect(harness.gateController.status) == .notPassed
+    }
+
+    @MainActor
+    func testPurchaseCompletionCallbackIdentityChangeDoesNotRevokeAPassedGate() async throws {
+        let harness = try WorkflowGateHarness(activeEntitlements: [], operationEntitlements: ["pro"])
+        let completions = Atomic(0)
+        let dispose = try harness.host(Self.makeGatedContext(firstGating: Self.hardGating("pro")))
+            .onPurchaseCompleted { _ in
+                completions.modify { $0 += 1 }
+                harness.appUserID.value = "customer-b"
+            }
+            .addToHierarchy()
+        defer { dispose() }
+        await harness.waitUntilPresented()
+
+        try await harness.purchaseHandler.purchase(package: TestData.annualPackage)
+
+        await expect(completions.value).toEventually(equal(1))
+        await expect(harness.dismissals.value).toEventually(equal(1))
+        expect(harness.gateController.status) == .passed
+    }
+
+    @MainActor
     func testCancelledEntryReadCannotPassTheGateWhenTheRequestIgnoresCancellation() async throws {
         let pendingRead = Atomic<CheckedContinuation<CustomerInfo, Never>?>(nil)
         let customerInfo = try CheckpointTestFixtures.customerInfo(activeEntitlements: ["pro"])
@@ -2939,6 +3121,68 @@ extension WorkflowPaywallViewTests {
     }
 
     @MainActor
+    func testPurchaseCompletingAfterAnIdentityChangeCannotPassTheHardGate() async throws {
+        let harness = try WorkflowGateHarness(activeEntitlements: [], operationEntitlements: ["pro"])
+        harness.duringOperation.value = { harness.appUserID.value = "customer-b" }
+        let dispose = try harness.host(Self.makeGatedContext(firstGating: Self.hardGating("pro", "premium")))
+            .addToHierarchy()
+        defer { dispose() }
+
+        await harness.waitUntilPresented()
+        try await harness.purchaseHandler.purchase(package: TestData.annualPackage)
+
+        await expect(harness.dismissals.value).toNever(beGreaterThan(0), until: .milliseconds(500))
+        expect(harness.gateController.status) != .passed
+        expect(harness.gateController.status) == .notPassed
+    }
+
+    @MainActor
+    func testRestoreCompletingAfterAnIdentityChangeCannotPassTheHardGate() async throws {
+        let harness = try WorkflowGateHarness(activeEntitlements: [], operationEntitlements: ["pro"])
+        harness.duringOperation.value = { harness.appUserID.value = "customer-b" }
+        let dispose = try harness.host(Self.makeGatedContext(firstGating: Self.hardGating("pro", "premium")))
+            .addToHierarchy()
+        defer { dispose() }
+
+        await harness.waitUntilPresented()
+        try await harness.restore()
+
+        await expect(harness.dismissals.value).toNever(beGreaterThan(0), until: .milliseconds(500))
+        expect(harness.gateController.status) != .passed
+        expect(harness.gateController.status) == .notPassed
+    }
+
+    @MainActor
+    func testPurchaseStillDismissesAWorkflowWithoutEnforcedGates() async throws {
+        let harness = try WorkflowGateHarness(activeEntitlements: [], operationEntitlements: ["unrelated"])
+        let dispose = try harness.host(Self.makeGatedContext(firstGating: #"{"type":"soft"}"#))
+            .addToHierarchy()
+        defer { dispose() }
+
+        await harness.waitUntilPresented()
+        try await harness.purchaseHandler.purchase(package: TestData.annualPackage)
+
+        await expect(harness.dismissals.value).toEventually(equal(1), timeout: .seconds(3))
+        expect(harness.gateController.status) == .notApplicable
+    }
+
+    @MainActor
+    func testPurchaseStillDismissesAHardGatedWorkflowOutsideACheckpoint() async throws {
+        let harness = try WorkflowGateHarness(activeEntitlements: [], operationEntitlements: ["unrelated"])
+        let dispose = try harness.host(
+            Self.makeGatedContext(firstGating: Self.hardGating("pro", "premium")),
+            isCheckpoint: false
+        ).addToHierarchy()
+        defer { dispose() }
+
+        await harness.waitUntilPresented()
+        try await harness.purchaseHandler.purchase(package: TestData.annualPackage)
+
+        await expect(harness.dismissals.value).toEventually(equal(1), timeout: .seconds(3))
+        expect(harness.gateController.status) == .notApplicable
+    }
+
+    @MainActor
     func testForwardTriggerOnABlockedHardStepIsConsumedWithoutNavigating() throws {
         let harness = try WorkflowGateHarness(activeEntitlements: ["pro"])
         let view = harness.view(try Self.makeGatedContext(
@@ -2949,6 +3193,28 @@ extension WorkflowPaywallViewTests {
         expect(view.handleTriggeredNavigation(componentId: "continue_button")) == true
 
         expect(harness.dismissals.value) == 0
+    }
+
+    @MainActor
+    func testForwardTriggerToASatisfiedHardGateDismissesInsteadOfNavigating() async throws {
+        let harness = try WorkflowGateHarness(activeEntitlements: ["pro"])
+        let view = harness.view(try Self.makeGatedContext(secondGating: Self.hardGating("pro")))
+
+        expect(view.handleTriggeredNavigation(componentId: "continue_button")) == true
+
+        await expect(harness.dismissals.value).toEventually(equal(1))
+        expect(harness.gateController.status) == .passed
+    }
+
+    @MainActor
+    func testForwardTriggerToAnUnsatisfiedHardGateNavigatesAndReportsNotPassed() throws {
+        let harness = try WorkflowGateHarness(activeEntitlements: ["unrelated"])
+        let view = harness.view(try Self.makeGatedContext(secondGating: Self.hardGating("pro")))
+
+        expect(view.handleTriggeredNavigation(componentId: "continue_button")) == true
+
+        expect(harness.dismissals.value) == 0
+        expect(harness.gateController.status) == .notPassed
     }
 
 }
@@ -2965,12 +3231,21 @@ private extension WorkflowPaywallViewTests {
     static func makeGatedContext(
         firstGating: String? = nil,
         secondGating: String? = nil,
+        routesInitialStepToSecondStep: Bool = false,
         includeNativeNavigationButtons: Bool = false,
         initialBranch: Bool = false
     ) throws -> WorkflowContext {
         func paramValues(_ gating: String?) -> String {
             return gating.map { #""param_values": {"gating": \#($0)},"# } ?? ""
         }
+        let initialDestination = routesInitialStepToSecondStep ? "step_b" : "step_a"
+        let initialTrigger = routesInitialStepToSecondStep || initialBranch
+            ? """
+            "initial_trigger": { "type": "branch",
+              "routes": [{"audience_id": "aud_a", "step_id": "\(initialDestination)"}],
+              "fallback_step_id": "step_a" },
+            """
+            : ""
         var screenJSON = makeScreenJSON(packages: [], offeringId: "offering_test")
         if includeNativeNavigationButtons {
             let actions = [("continue_button", "navigate_back"), ("close_button", "close_workflow")]
@@ -2985,18 +3260,12 @@ private extension WorkflowPaywallViewTests {
                 of: "\"components\": []", with: "\"components\": [\(buttons)]"
             )
         }
-        let initialTrigger = initialBranch
-            ? """
-            "initial_trigger": {"type":"branch", "routes":[{"audience_id":"aud_a", "step_id":"step_a"}],
-                                "fallback_step_id":"step_a"},
-            """
-            : ""
         return try makeContext(workflowJSON: """
         {
-          \(initialTrigger)
           "id": "wf_gate_test",
           "display_name": "Gate Test",
           "initial_step_id": "step_a",
+          \(initialTrigger)
           "single_step_fallback_id": "step_a",
           "steps": {
             "step_a": {
@@ -3040,10 +3309,15 @@ private extension WorkflowPaywallViewTests {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private final class WorkflowGateHarness: @unchecked Sendable {
 
+    let appUserID: Atomic<String> = .init("customer-a")
+
     @MainActor lazy var gateController = CheckpointWorkflowGateController()
     let dismissals: Atomic<Int> = .init(0)
+    let disappearances: Atomic<Int> = .init(0)
+    let visibility = WorkflowGateVisibility()
     let paywallEvents: Atomic<[PaywallEvent]> = .init([])
     let workflowEvents: Atomic<[WorkflowEvent]> = .init([])
+    let duringOperation: Atomic<(@Sendable () -> Void)?> = .init(nil)
 
     let purchaseHandler: PurchaseHandler
     let operationCustomerInfo: Atomic<CustomerInfo>
@@ -3052,45 +3326,56 @@ private final class WorkflowGateHarness: @unchecked Sendable {
     init(
         activeEntitlements: Set<String>,
         operationEntitlements: [String] = [],
-        gateRead: (@Sendable () async throws -> CustomerInfo)? = nil
+        routesToStep: String? = nil,
+        gateEntitlements: [String]? = nil,
+        gateRead: (@Sendable () async throws -> CustomerInfo)? = nil,
+        resolveBranch: (@Sendable (WorkflowBranch) async -> WorkflowStepID)? = nil
     ) throws {
-        let gateCustomerInfo = try CheckpointTestFixtures.customerInfo(activeEntitlements: Array(activeEntitlements))
+        let gateCustomerInfo = try CheckpointTestFixtures.customerInfo(
+            activeEntitlements: gateEntitlements ?? Array(activeEntitlements)
+        )
         let operationCustomerInfo = Atomic(try CheckpointTestFixtures.customerInfo(
             activeEntitlements: operationEntitlements
         ))
         self.operationCustomerInfo = operationCustomerInfo
         let paywallEvents = self.paywallEvents
         let workflowEvents = self.workflowEvents
+        let duringOperation = self.duringOperation
         let purchases = MockPurchases { _, _, _ in
+            duringOperation.value?()
             return (transaction: StoreTransaction(MockStoreTransaction()),
                     customerInfo: operationCustomerInfo.value, userCancelled: false)
         } restorePurchases: {
+            duringOperation.value?()
             return operationCustomerInfo.value
         } trackEvent: { event in
             paywallEvents.modify { $0.append(event) }
         } customerInfo: {
             return try await gateRead?() ?? gateCustomerInfo
         }
+        purchases.appUserIDProvider = { [appUserID] in appUserID.value }
         purchases.trackWorkflowEventBlock = { event in
             workflowEvents.modify { $0.append(event) }
         }
         self.purchaseHandler = PurchaseHandler(
             purchases: purchases,
-            resolveBranch: { $0.fallbackStepId },
+            resolveBranch: resolveBranch ?? { branch in routesToStep ?? branch.fallbackStepId },
             eventTracker: .init(purchases: purchases, eventDispatcher: PaywallEventTrackerTestDispatcher.value)
         )
     }
 
     @MainActor
-    func host(_ context: WorkflowContext) -> some View {
+    func host(_ context: WorkflowContext, isCheckpoint: Bool = true) -> some View {
         return GatedWorkflowHost(
             purchaseHandler: self.purchaseHandler,
             context: context,
-            gateController: self.gateController,
+            gateController: isCheckpoint ? self.gateController : nil,
+            visibility: self.visibility,
             onDismiss: { [dismissals, callbacks] in
                 callbacks.modify { $0.append("dismiss") }
                 dismissals.modify { $0 += 1 }
-            }
+            },
+            onDisappear: { [disappearances] in disappearances.modify { $0 += 1 } }
         )
     }
 
@@ -3127,6 +3412,12 @@ private final class WorkflowGateHarness: @unchecked Sendable {
 
 }
 
+private final class WorkflowGateVisibility: ObservableObject {
+
+    @Published var isVisible = true
+
+}
+
 /// Mirrors the observing parent `PaywallView` provides in production.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private struct GatedWorkflowHost: View {
@@ -3134,9 +3425,18 @@ private struct GatedWorkflowHost: View {
     @ObservedObject var purchaseHandler: PurchaseHandler
     let context: WorkflowContext
     let gateController: CheckpointWorkflowGateController?
+    @ObservedObject var visibility: WorkflowGateVisibility
     let onDismiss: () -> Void
+    let onDisappear: () -> Void
 
     var body: some View {
+        if self.visibility.isVisible {
+            self.workflowView
+                .onDisappear(perform: self.onDisappear)
+        }
+    }
+
+    private var workflowView: some View {
         WorkflowPaywallView(
             context: self.context,
             purchaseHandler: self.purchaseHandler,
