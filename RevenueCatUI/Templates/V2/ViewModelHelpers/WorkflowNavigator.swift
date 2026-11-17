@@ -107,7 +107,7 @@ final class WorkflowNavigator: ObservableObject {
         return self.navigateForward(to: nextStep.step.id)
     }
 
-    /// Commits the destination selected before an asynchronous gate read, without resolving its branch again.
+    /// Navigates to the destination whose gate was checked.
     @discardableResult
     func navigateForward(to stepId: WorkflowStepID) -> WorkflowStep? {
         guard let step = self.workflow.steps[stepId] else { return nil }
