@@ -69,6 +69,9 @@ extension WorkflowEvent {
         public var workflowBlobRef: String?
         public var fallbackOriginalStepId: String?
         public var experiment: ExperimentData?
+        /// Set for `stepStarted` events entered by user navigation (forward or back): milliseconds from the
+        /// navigation being triggered until the first frame showing the step.
+        public var navigationDurationMs: Int?
 
         public init(
             workflowId: String,
@@ -85,7 +88,8 @@ extension WorkflowEvent {
             isLastStep: Bool? = nil,
             workflowBlobRef: String? = nil,
             fallbackOriginalStepId: String? = nil,
-            experiment: ExperimentData? = nil
+            experiment: ExperimentData? = nil,
+            navigationDurationMs: Int? = nil
         ) {
             self.workflowId = workflowId
             self.stepId = stepId
@@ -102,6 +106,7 @@ extension WorkflowEvent {
             self.workflowBlobRef = workflowBlobRef
             self.fallbackOriginalStepId = fallbackOriginalStepId
             self.experiment = experiment
+            self.navigationDurationMs = navigationDurationMs
         }
 
     }

@@ -46,6 +46,7 @@ extension FeatureEventsRequest {
             let experimentVariant: String?
             let workflowBlobRef: String?
             let fallbackOriginalStepId: String?
+            let navigationDurationMs: Int?
         }
         // swiftlint:enable nesting
 
@@ -88,7 +89,8 @@ extension FeatureEventsRequest.WorkflowEvent {
                     experimentId: event.data.experiment?.experimentId,
                     experimentVariant: event.data.experiment?.experimentVariant,
                     workflowBlobRef: event.data.workflowBlobRef,
-                    fallbackOriginalStepId: event.data.fallbackOriginalStepId
+                    fallbackOriginalStepId: event.data.fallbackOriginalStepId,
+                    navigationDurationMs: wire.navigationDurationMs
                 )
             )
         } catch {
@@ -107,17 +109,25 @@ extension FeatureEventsRequest.WorkflowEvent {
                 eventName: stepStartedEventName,
                 fromStepId: event.data.fromStepId,
                 toStepId: nil,
-                entryReason: event.data.entryReason
+                entryReason: event.data.entryReason,
+                navigationDurationMs: event.data.navigationDurationMs
             )
         case .stepCompleted:
             return .init(
                 eventName: stepCompletedEventName,
                 fromStepId: nil,
                 toStepId: event.data.toStepId,
-                entryReason: nil
+                entryReason: nil,
+                navigationDurationMs: nil
             )
         case .close:
-            return .init(eventName: closeEventName, fromStepId: nil, toStepId: nil, entryReason: nil)
+            return .init(
+                eventName: closeEventName,
+                fromStepId: nil,
+                toStepId: nil,
+                entryReason: nil,
+                navigationDurationMs: nil
+            )
         }
     }
 
@@ -126,6 +136,7 @@ extension FeatureEventsRequest.WorkflowEvent {
         let fromStepId: String?
         let toStepId: String?
         let entryReason: String?
+        let navigationDurationMs: Int?
     }
 
     private static let schemaVersion = 1
@@ -184,6 +195,7 @@ extension FeatureEventsRequest.WorkflowEvent.Properties: Encodable {
         try container.encodeIfPresent(experimentVariant, forKey: .experimentVariant)
         try container.encodeIfPresent(workflowBlobRef, forKey: .workflowBlobRef)
         try container.encodeIfPresent(fallbackOriginalStepId, forKey: .fallbackOriginalStepId)
+        try container.encodeIfPresent(navigationDurationMs, forKey: .navigationDurationMs)
     }
 
     private enum CodingKeys: String, CodingKey {
@@ -200,6 +212,7 @@ extension FeatureEventsRequest.WorkflowEvent.Properties: Encodable {
         case experimentVariant = "experiment_variant"
         case workflowBlobRef = "blob_ref"
         case fallbackOriginalStepId = "fallback_original_step_id"
+        case navigationDurationMs = "navigation_duration_ms"
 
     }
 

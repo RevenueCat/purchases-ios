@@ -761,6 +761,7 @@ struct WorkflowPaywallView: View {
         guard !self.transitionState.isTransitioning else {
             return
         }
+        let navigationStartedAt = self.stepEventCoordinator.navigationStartTime()
 
         switch Self.dismissalAction(
             canNavigateBack: self.navigator.canNavigateBack,
@@ -792,7 +793,8 @@ struct WorkflowPaywallView: View {
                 from: fromStep,
                 to: destination.step,
                 renderedPageIsNil: false,
-                entryReason: .back
+                entryReason: .back,
+                navigationStartedAt: navigationStartedAt
             )
             self.startTransition(
                 to: page,
@@ -913,6 +915,7 @@ struct WorkflowPaywallView: View {
         guard !self.transitionState.isTransitioning else {
             return false
         }
+        let navigationStartedAt = self.stepEventCoordinator.navigationStartTime()
 
         // Resolve and validate the destination before mutating the navigator. A malformed reached
         // step is a configuration error, not a transition to an empty workflow page.
@@ -943,7 +946,8 @@ struct WorkflowPaywallView: View {
             from: fromStep,
             to: nextStep,
             renderedPageIsNil: false,
-            entryReason: .forward
+            entryReason: .forward,
+            navigationStartedAt: navigationStartedAt
         )
         self.startTransition(to: page, direction: .forward)
 

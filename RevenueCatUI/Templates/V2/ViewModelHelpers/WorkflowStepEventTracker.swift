@@ -80,11 +80,26 @@ final class WorkflowStepEventTracker {
         )
     }
 
-    private func trackStepStarted(_ step: WorkflowStep, fromStepId: String?, entryReason: WorkflowEvent.EntryReason) {
+    /// Emits `stepStarted`. `navigationDurationMs` is only known for user navigation whose first frame
+    /// was observed; see ``WorkflowStepEventCoordinator``. A held event passes the `creationData` from when
+    /// the navigation happened.
+    func trackStepStarted(
+        _ step: WorkflowStep,
+        fromStepId: String?,
+        entryReason: WorkflowEvent.EntryReason,
+        navigationDurationMs: Int? = nil,
+        creationData: WorkflowEvent.CreationData = .init()
+    ) {
         self.sink(
             .stepStarted(
-                .init(),
-                self.data(for: step, fromStepId: fromStepId, toStepId: nil, entryReason: entryReason.rawValue)
+                creationData,
+                self.data(
+                    for: step,
+                    fromStepId: fromStepId,
+                    toStepId: nil,
+                    entryReason: entryReason.rawValue,
+                    navigationDurationMs: navigationDurationMs
+                )
             )
         )
     }
@@ -93,7 +108,8 @@ final class WorkflowStepEventTracker {
         for step: WorkflowStep,
         fromStepId: String?,
         toStepId: String?,
-        entryReason: String?
+        entryReason: String?,
+        navigationDurationMs: Int? = nil
     ) -> WorkflowEvent.Data {
         // No locale is set here: Android's #3487 wiring does not populate it (its `context.locale`
         // defaults to null). iOS's `WorkflowEvent.Data` defaults `localeIdentifier` to the device
@@ -109,7 +125,8 @@ final class WorkflowStepEventTracker {
             isLastStep: Self.isTerminalStep(step),
             workflowBlobRef: self.workflowBlobRef,
             fallbackOriginalStepId: step.fallbackOriginalStepId,
-            experiment: step.experimentData(workflowBlobRef: self.workflowBlobRef)
+            experiment: step.experimentData(workflowBlobRef: self.workflowBlobRef),
+            navigationDurationMs: navigationDurationMs
         )
     }
 
