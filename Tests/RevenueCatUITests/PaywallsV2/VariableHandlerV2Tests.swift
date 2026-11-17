@@ -1053,30 +1053,73 @@ class VariableHandlerV2Test: TestCase {
         expect(result).to(equal("30%"))
     }
 
-    func testProductRelativeDiscountUsesArabicDigitsWhenPriceLocaleIsArabic() {
-        let package = self.monthlyPackage(priceLocale: Locale(identifier: "ar_SA"))
+    func testArabicPaywallUsesArabicDigitsForPricesAndDiscounts() {
+        let package = self.monthlyPackage(storeKitLocale: Locale(identifier: "en_US"))
 
-        expect(self.relativeDiscount(package)).to(equal("٣٠%"))
-        expect(self.discountVariable("product.price_per_month", package)).to(contain("٢٫٥٨"))
+        let result = self.pricesAndDiscount(package, priceLocale: Locale(identifier: "ar_SA"))
+
+        expect(result) == [
+            Self.formatted(2.58, "USD", "ar_SA"),
+            Self.formatted(2.58, "USD", "ar_SA"),
+            "٣٠%"
+        ]
+        expect(result[0]).to(contain("٢٫٥٨"))
     }
 
-    func testProductRelativeDiscountUsesWesternDigitsWhenPriceLocaleIsEnglish() {
-        let package = self.monthlyPackage(priceLocale: Locale(identifier: "en_US"))
+    func testNumberingSystemOverrideUsesWesternDigitsOnArabicPaywall() {
+        let package = self.monthlyPackage(storeKitLocale: Locale(identifier: "en_US"))
 
-        expect(self.relativeDiscount(package)).to(equal("30%"))
-        expect(self.discountVariable("product.price_per_month", package)).to(contain("2.58"))
+        let result = self.pricesAndDiscount(package, priceLocale: Locale(identifier: "ar_SA@numbers=latn"))
+
+        expect(result) == [
+            Self.formatted(2.58, "USD", "ar_SA@numbers=latn"),
+            Self.formatted(2.58, "USD", "ar_SA@numbers=latn"),
+            "30%"
+        ]
+        expect(result[0]).to(contain("2.58"))
     }
 
-    func testProductRelativeDiscountUsesWesternDigitsWhenPriceLocaleIsArabicWithLatinNumbers() {
-        let package = self.monthlyPackage(priceLocale: Locale(identifier: "ar_SA@numbers=latn"))
-
-        expect(self.relativeDiscount(package)).to(equal("30%"))
-        expect(self.discountVariable("product.price_per_month", package)).to(contain("2.58"))
-    }
-
-    func testOfferRelativeDiscountUsesPriceLocale() {
+    func testEnglishPaywallUsesWesternDigitsWhenStoreKitFormatsInArabic() {
         let package = self.monthlyPackage(
-            priceLocale: Locale(identifier: "ar_SA"),
+            storeKitLocale: Locale(identifier: "ar_SA"),
+            localizedPriceString: Self.formatted(2.58, "USD", "ar_SA")
+        )
+
+        let result = self.pricesAndDiscount(package, priceLocale: Locale(identifier: "en_US"))
+
+        expect(result) == ["$2.58", "$2.58", "30%"]
+    }
+
+    func testPriceLocaleDefaultsToPaywallLocale() {
+        let package = self.monthlyPackage(
+            storeKitLocale: Locale(identifier: "ar_SA"),
+            localizedPriceString: Self.formatted(2.58, "USD", "ar_SA")
+        )
+
+        let result = self.pricesAndDiscount(package, priceLocale: nil)
+
+        expect(result) == ["$2.58", "$2.58", "30%"]
+    }
+
+    func testPricePerPeriodUsesSameFormatterAsFullPrice() {
+        let package = self.monthlyPackage(storeKitLocale: Locale(identifier: "en_US"), periodValue: 12)
+
+        let result = self.variable(
+            "{{ product.price }}|{{ product.price_per_month }}|{{ product.price_per_period_abbreviated }}",
+            package,
+            priceLocale: Locale(identifier: "ar_SA")
+        )
+
+        expect(result) == [
+            Self.formatted(2.58, "USD", "ar_SA"),
+            Self.formatted(0.21, "USD", "ar_SA"),
+            "\(Self.formatted(2.58, "USD", "ar_SA"))/١٢mo"
+        ].joined(separator: "|")
+    }
+
+    func testOfferVariablesUsePriceLocale() {
+        let package = self.monthlyPackage(
+            storeKitLocale: Locale(identifier: "en_US"),
             introDiscount: .init(
                 identifier: "intro",
                 price: 1.29,
@@ -1088,19 +1131,34 @@ class VariableHandlerV2Test: TestCase {
             )
         )
 
-        expect(self.discountVariable("product.offer_relative_discount", package)).to(equal("٥٠%"))
+        let result = self.variable(
+            "{{ product.offer_price }}|{{ product.offer_relative_discount }}|{{ product.offer_absolute_discount }}",
+            package,
+            priceLocale: Locale(identifier: "ar_SA")
+        )
+
+        expect(result) == [
+            Self.formatted(1.29, "USD", "ar_SA"),
+            "٥٠%",
+            Self.formatted(1.29, "USD", "ar_SA")
+        ].joined(separator: "|")
     }
 
     func testPeriodVariablesUsePriceLocale() {
-        let package = self.monthlyPackage(priceLocale: Locale(identifier: "ar_SA"), periodValue: 3)
+        let package = self.monthlyPackage(storeKitLocale: Locale(identifier: "en_US"), periodValue: 3)
 
-        expect(self.discountVariable("product.period_abbreviated", package)).to(equal("٣mo"))
-        expect(self.discountVariable("product.period_with_unit", package)).to(equal("٣ months"))
-        expect(self.discountVariable("product.offer_period_with_unit", package)).to(equal("٣ months"))
+        let result = self.variable(
+            "{{ product.period_abbreviated }}|{{ product.period_with_unit }}|{{ product.offer_period_with_unit }}",
+            package,
+            priceLocale: Locale(identifier: "ar_SA")
+        )
+
+        expect(result) == "٣mo|٣ months|٣ months"
     }
 
     private func monthlyPackage(
-        priceLocale: Locale,
+        storeKitLocale: Locale,
+        localizedPriceString: String = "$2.58",
         periodValue: Int = 1,
         introDiscount: TestStoreProductDiscount? = nil
     ) -> Package {
@@ -1111,33 +1169,56 @@ class VariableHandlerV2Test: TestCase {
                 localizedTitle: "Monthly",
                 price: 2.58,
                 currencyCode: "USD",
-                localizedPriceString: "$2.58",
+                localizedPriceString: localizedPriceString,
                 productIdentifier: "com.revenuecat.product.price_locale",
                 productType: .autoRenewableSubscription,
                 localizedDescription: "PRO monthly",
                 subscriptionGroupIdentifier: "group",
                 subscriptionPeriod: .init(value: periodValue, unit: .month),
                 introductoryDiscount: introDiscount,
-                locale: priceLocale
+                locale: storeKitLocale
             ).toStoreProduct(),
             offeringIdentifier: "offering",
             webCheckoutUrl: nil
         )
     }
 
-    private func relativeDiscount(_ package: Package) -> String {
+    private func pricesAndDiscount(_ package: Package, priceLocale: Locale?) -> [String] {
+        return self.variable(
+            "{{ product.price }}|{{ product.price_per_month }}|{{ product.relative_discount }}",
+            package,
+            priceLocale: priceLocale,
+            discountRelativeToMostExpensivePerMonth: 0.3
+        ).components(separatedBy: "|")
+    }
+
+    private func variable(
+        _ text: String,
+        _ package: Package,
+        priceLocale: Locale?,
+        discountRelativeToMostExpensivePerMonth: Decimal? = nil
+    ) -> String {
         return VariableHandlerV2(
             variableCompatibilityMap: Self.variableMapping,
             functionCompatibilityMap: Self.functionMapping,
-            discountRelativeToMostExpensivePerMonth: 0.3,
+            discountRelativeToMostExpensivePerMonth: discountRelativeToMostExpensivePerMonth,
             showZeroDecimalPlacePrices: false
         ).processVariables(
-            in: "{{ product.relative_discount }}",
+            in: text,
             with: package,
             locale: locale,
+            priceLocale: priceLocale,
             localizations: localizations["en_US"]!,
             isEligibleForIntroOffer: true
         )
+    }
+
+    private static func formatted(_ price: Decimal, _ currencyCode: String, _ localeIdentifier: String) -> String {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .currency
+        formatter.locale = Locale(identifier: localeIdentifier)
+        formatter.currencyCode = currencyCode
+        return formatter.string(from: price as NSDecimalNumber) ?? ""
     }
 
     // MARK: - Discount variables
@@ -2079,10 +2160,9 @@ class V2ZeroDecimalPlacePricesTest: TestCase {
         expect(resultWithoutZeroDecimal).to(equal("$2.00"))
     }
 
-    func testOfferPriceKeepsDisplayedPriceWhenFormatterLocaleDoesNotMatch() {
-        // The ro_RO/USD formatter can't parse "$2.00", so the decimals stay in place instead of
-        // being re-rendered as "2 USD". `product.price` behaves the same way, so the paywall
-        // stays internally consistent.
+    func testOfferPriceMatchesProductPriceWhenStoreKitFormatterLocaleDoesNotMatch() {
+        // Prices are formatted from their value with the paywall's price locale, not parsed from
+        // StoreKit's ro_RO/USD string, so zero decimal places apply and both prices stay consistent.
         let package = mismatchedFormatterLocalePackage(price: 2.00, localizedPriceString: "$2.00")
 
         let offerPrice = variableHandlerWithZeroDecimal.processVariables(
@@ -2100,7 +2180,7 @@ class V2ZeroDecimalPlacePricesTest: TestCase {
             isEligibleForIntroOffer: true
         )
 
-        expect(offerPrice).to(equal("$2.00"))
+        expect(offerPrice).to(equal("$2"))
         expect(offerPrice).to(equal(productPrice))
     }
 

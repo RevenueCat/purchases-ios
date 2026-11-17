@@ -209,6 +209,8 @@ struct PaywallsV2View: View {
             componentsVideoLocalizations: paywallComponents.data.componentsVideoLocalizations,
             preferredLocales: purchaseHandler.preferredLocales,
             defaultLocale: paywallComponents.data.defaultLocale,
+            storefrontCountryCode: purchaseHandler.configuredStoreEnvironment.storeFrontCountryCode,
+            preferredLocaleOverride: purchaseHandler.preferredLocaleOverrideIdentifier,
             uiConfigProvider: uiConfigProvider,
             offering: offering,
             introEligibilityChecker: introEligibilityChecker,
@@ -882,6 +884,8 @@ extension PaywallsV2View {
         componentsVideoLocalizations: [PaywallComponent.LocaleID: PaywallComponent.VideoLocalizationDictionary] = [:],
         preferredLocales: [Locale],
         defaultLocale: String,
+        storefrontCountryCode: String? = nil,
+        preferredLocaleOverride: String? = nil,
         uiConfigProvider: UIConfigProvider,
         offering: Offering,
         introEligibilityChecker: TrialOrIntroEligibilityChecker,
@@ -893,7 +897,9 @@ extension PaywallsV2View {
             componentsLocalizations: componentsLocalizations,
             componentsVideoLocalizations: componentsVideoLocalizations,
             preferredLocales: preferredLocales,
-            defaultLocale: defaultLocale
+            defaultLocale: defaultLocale,
+            storefrontCountryCode: storefrontCountryCode,
+            preferredLocaleOverride: preferredLocaleOverride
         )
 
         do {
@@ -1024,7 +1030,9 @@ extension PaywallsV2View {
         componentsLocalizations: [PaywallComponent.LocaleID: PaywallComponent.LocalizationDictionary],
         componentsVideoLocalizations: [PaywallComponent.LocaleID: PaywallComponent.VideoLocalizationDictionary] = [:],
         preferredLocales: [Locale],
-        defaultLocale: String
+        defaultLocale: String,
+        storefrontCountryCode: String? = nil,
+        preferredLocaleOverride: String? = nil
     ) -> LocalizationProvider {
         let provider = Self.chooseStringLocalization(
             componentsLocalizations: componentsLocalizations,
@@ -1034,7 +1042,12 @@ extension PaywallsV2View {
         return .init(
             locale: provider.locale,
             localizedStrings: provider.localizedStrings,
-            localizedVideos: componentsVideoLocalizations.findLocale(provider.locale) ?? [:]
+            localizedVideos: componentsVideoLocalizations.findLocale(provider.locale) ?? [:],
+            priceLocale: .paywallPriceLocale(
+                paywallLocale: provider.locale,
+                storefrontCountryCode: storefrontCountryCode,
+                preferredLocaleOverride: preferredLocaleOverride
+            )
         )
     }
 

@@ -123,6 +123,7 @@ class TextComponentViewModel {
             packageContext: packageContext,
             variableConfig: uiConfigProvider.variableConfig,
             locale: self.localizationProvider.locale,
+            priceLocale: self.localizationProvider.priceLocale ?? self.localizationProvider.locale,
             localizations: self.uiConfigProvider.getLocalizations(for: self.localizationProvider.locale),
             isEligibleForIntroOffer: isEligibleForIntroOffer,
             promoOffer: promoOffer,
@@ -226,6 +227,7 @@ class TextComponentViewModel {
         let packageContext: PackageContext?
         let variableConfig: UIConfig.VariableConfig
         let locale: Locale
+        let priceLocale: Locale
         let localizations: [String: String]
         let isEligibleForIntroOffer: Bool
         let promoOffer: PromotionalOffer?
@@ -284,6 +286,7 @@ class TextComponentViewModel {
             in: text,
             with: pkg,
             locale: config.locale,
+            priceLocale: config.priceLocale,
             localizations: config.localizations,
             isEligibleForIntroOffer: config.isEligibleForIntroOffer,
             promoOffer: config.promoOffer,

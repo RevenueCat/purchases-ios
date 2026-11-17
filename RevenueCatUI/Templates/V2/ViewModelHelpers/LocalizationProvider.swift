@@ -21,6 +21,8 @@ struct LocalizationProvider {
     let locale: Locale
     let localizedStrings: PaywallComponent.LocalizationDictionary
     var localizedVideos: PaywallComponent.VideoLocalizationDictionary = [:]
+    /// The locale for prices and other numbers. `nil` uses `locale`.
+    var priceLocale: Locale?
 
 }
 

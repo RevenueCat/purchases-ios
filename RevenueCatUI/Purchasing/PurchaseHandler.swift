@@ -99,6 +99,11 @@ final class PurchaseHandler: ObservableObject {
         return purchases.preferredLocaleOverride.map(Locale.init)
     }
 
+    /// The override as set, since `Locale(identifier:)` can drop BCP 47 extensions such as `-u-nu-arab`.
+    var preferredLocaleOverrideIdentifier: String? {
+        return purchases.preferredLocaleOverride
+    }
+
     /// Whether remote config (and, with it, paywall workflows) is enabled. The single gate for both:
     /// they ship together, so there's no separate workflows switch.
     var remoteConfigEnabled: Bool {
