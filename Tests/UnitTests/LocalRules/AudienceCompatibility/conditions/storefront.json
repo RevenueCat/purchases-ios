@@ -294,7 +294,7 @@
       "field": "storefront",
       "operator": "isNotAnyOf",
       "profile": "new",
-      "predicate": "{\"or\": [{\"==\": [{\"var\": \"storefront\"}, null]}, {\"!\": [{\"in\": [{\"var\": \"storefront\"}, [\"US\", \"USA\"]]}]}]}",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"storefront\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"storefront\"}, [\"US\", \"USA\"]]}]}]}",
       "expected": true
     },
     {
@@ -302,7 +302,7 @@
       "field": "storefront",
       "operator": "isNotAnyOf",
       "profile": "renewed",
-      "predicate": "{\"or\": [{\"==\": [{\"var\": \"storefront\"}, null]}, {\"!\": [{\"in\": [{\"var\": \"storefront\"}, [\"US\", \"USA\"]]}]}]}",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"storefront\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"storefront\"}, [\"US\", \"USA\"]]}]}]}",
       "expected": false
     },
     {
@@ -310,7 +310,7 @@
       "field": "storefront",
       "operator": "isNotAnyOf",
       "profile": "first_purchase",
-      "predicate": "{\"or\": [{\"==\": [{\"var\": \"storefront\"}, null]}, {\"!\": [{\"in\": [{\"var\": \"storefront\"}, [\"US\", \"USA\"]]}]}]}",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"storefront\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"storefront\"}, [\"US\", \"USA\"]]}]}]}",
       "expected": false
     },
     {
@@ -318,7 +318,7 @@
       "field": "storefront",
       "operator": "isNotAnyOf",
       "profile": "unavailable",
-      "predicate": "{\"or\": [{\"==\": [{\"var\": \"storefront\"}, null]}, {\"!\": [{\"in\": [{\"var\": \"storefront\"}, [\"US\", \"USA\"]]}]}]}",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"storefront\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"storefront\"}, [\"US\", \"USA\"]]}]}]}",
       "expected": true
     },
     {
@@ -326,7 +326,7 @@
       "field": "storefront",
       "operator": "isNotAnyOf",
       "profile": "new",
-      "predicate": "{\"or\": [{\"==\": [{\"var\": \"storefront\"}, null]}, {\"!\": [{\"in\": [{\"var\": \"storefront\"}, [\"CA\", \"CAN\"]]}]}]}",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"storefront\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"storefront\"}, [\"CA\", \"CAN\"]]}]}]}",
       "expected": false
     },
     {
@@ -334,7 +334,7 @@
       "field": "storefront",
       "operator": "isNotAnyOf",
       "profile": "renewed",
-      "predicate": "{\"or\": [{\"==\": [{\"var\": \"storefront\"}, null]}, {\"!\": [{\"in\": [{\"var\": \"storefront\"}, [\"CA\", \"CAN\"]]}]}]}",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"storefront\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"storefront\"}, [\"CA\", \"CAN\"]]}]}]}",
       "expected": true
     },
     {
@@ -342,7 +342,7 @@
       "field": "storefront",
       "operator": "isNotAnyOf",
       "profile": "first_purchase",
-      "predicate": "{\"or\": [{\"==\": [{\"var\": \"storefront\"}, null]}, {\"!\": [{\"in\": [{\"var\": \"storefront\"}, [\"CA\", \"CAN\"]]}]}]}",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"storefront\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"storefront\"}, [\"CA\", \"CAN\"]]}]}]}",
       "expected": true
     },
     {
@@ -350,7 +350,7 @@
       "field": "storefront",
       "operator": "isNotAnyOf",
       "profile": "unavailable",
-      "predicate": "{\"or\": [{\"==\": [{\"var\": \"storefront\"}, null]}, {\"!\": [{\"in\": [{\"var\": \"storefront\"}, [\"CA\", \"CAN\"]]}]}]}",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"storefront\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"storefront\"}, [\"CA\", \"CAN\"]]}]}]}",
       "expected": true
     },
     {
@@ -358,7 +358,7 @@
       "field": "storefront",
       "operator": "isNotAnyOf",
       "profile": "new",
-      "predicate": "{\"or\": [{\"==\": [{\"var\": \"storefront\"}, null]}, {\"!\": [{\"in\": [{\"var\": \"storefront\"}, [\"GB\", \"GBR\"]]}]}]}",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"storefront\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"storefront\"}, [\"GB\", \"GBR\"]]}]}]}",
       "expected": true
     },
     {
@@ -366,7 +366,7 @@
       "field": "storefront",
       "operator": "isNotAnyOf",
       "profile": "renewed",
-      "predicate": "{\"or\": [{\"==\": [{\"var\": \"storefront\"}, null]}, {\"!\": [{\"in\": [{\"var\": \"storefront\"}, [\"GB\", \"GBR\"]]}]}]}",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"storefront\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"storefront\"}, [\"GB\", \"GBR\"]]}]}]}",
       "expected": true
     },
     {
@@ -374,7 +374,7 @@
       "field": "storefront",
       "operator": "isNotAnyOf",
       "profile": "first_purchase",
-      "predicate": "{\"or\": [{\"==\": [{\"var\": \"storefront\"}, null]}, {\"!\": [{\"in\": [{\"var\": \"storefront\"}, [\"GB\", \"GBR\"]]}]}]}",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"storefront\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"storefront\"}, [\"GB\", \"GBR\"]]}]}]}",
       "expected": true
     },
     {
@@ -382,7 +382,7 @@
       "field": "storefront",
       "operator": "isNotAnyOf",
       "profile": "unavailable",
-      "predicate": "{\"or\": [{\"==\": [{\"var\": \"storefront\"}, null]}, {\"!\": [{\"in\": [{\"var\": \"storefront\"}, [\"GB\", \"GBR\"]]}]}]}",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"storefront\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"storefront\"}, [\"GB\", \"GBR\"]]}]}]}",
       "expected": true
     },
     {
@@ -390,7 +390,7 @@
       "field": "storefront",
       "operator": "isEmpty",
       "profile": "new",
-      "predicate": "{\"==\": [{\"var\": \"storefront\"}, null]}",
+      "predicate": "{\"==\": [{\"var\": [\"storefront\", null]}, null]}",
       "expected": false
     },
     {
@@ -398,7 +398,7 @@
       "field": "storefront",
       "operator": "isEmpty",
       "profile": "renewed",
-      "predicate": "{\"==\": [{\"var\": \"storefront\"}, null]}",
+      "predicate": "{\"==\": [{\"var\": [\"storefront\", null]}, null]}",
       "expected": false
     },
     {
@@ -406,7 +406,7 @@
       "field": "storefront",
       "operator": "isEmpty",
       "profile": "first_purchase",
-      "predicate": "{\"==\": [{\"var\": \"storefront\"}, null]}",
+      "predicate": "{\"==\": [{\"var\": [\"storefront\", null]}, null]}",
       "expected": false
     },
     {
@@ -414,7 +414,7 @@
       "field": "storefront",
       "operator": "isEmpty",
       "profile": "unavailable",
-      "predicate": "{\"==\": [{\"var\": \"storefront\"}, null]}",
+      "predicate": "{\"==\": [{\"var\": [\"storefront\", null]}, null]}",
       "expected": true
     },
     {
@@ -422,7 +422,7 @@
       "field": "storefront",
       "operator": "isNotEmpty",
       "profile": "new",
-      "predicate": "{\"!=\": [{\"var\": \"storefront\"}, null]}",
+      "predicate": "{\"!=\": [{\"var\": [\"storefront\", null]}, null]}",
       "expected": true
     },
     {
@@ -430,7 +430,7 @@
       "field": "storefront",
       "operator": "isNotEmpty",
       "profile": "renewed",
-      "predicate": "{\"!=\": [{\"var\": \"storefront\"}, null]}",
+      "predicate": "{\"!=\": [{\"var\": [\"storefront\", null]}, null]}",
       "expected": true
     },
     {
@@ -438,7 +438,7 @@
       "field": "storefront",
       "operator": "isNotEmpty",
       "profile": "first_purchase",
-      "predicate": "{\"!=\": [{\"var\": \"storefront\"}, null]}",
+      "predicate": "{\"!=\": [{\"var\": [\"storefront\", null]}, null]}",
       "expected": true
     },
     {
@@ -446,7 +446,7 @@
       "field": "storefront",
       "operator": "isNotEmpty",
       "profile": "unavailable",
-      "predicate": "{\"!=\": [{\"var\": \"storefront\"}, null]}",
+      "predicate": "{\"!=\": [{\"var\": [\"storefront\", null]}, null]}",
       "expected": false
     }
   ]

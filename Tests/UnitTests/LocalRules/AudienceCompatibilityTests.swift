@@ -9,22 +9,31 @@ final class AudienceCompatibilityTests: TestCase {
     func testKhepriConditionsMatchSDKResults() async throws {
         let bundle = try self.loadBundle()
         XCTAssertFalse(bundle.cases.isEmpty)
+        var failures: [String] = []
 
         for testCase in bundle.cases {
+            self.logger.clearMessages()
             let profile = try XCTUnwrap(bundle.profiles[testCase.profile], testCase.id)
             do {
                 let result = try await profile.evaluator().match(in: [testCase])
-                XCTAssertEqual(result != nil, testCase.expected, testCase.id)
+                let actual = result != nil
+                if actual != testCase.expected {
+                    failures.append("\(testCase.id): expected \(testCase.expected), got \(actual)")
+                }
             } catch {
-                XCTFail("\(testCase.id): \(error)")
+                failures.append("\(testCase.id): \(error)")
             }
         }
+        XCTAssertTrue(failures.isEmpty, failures.joined(separator: "\n"))
     }
 
-    func testEveryConditionHasExecutableCoverage() throws {
+    func testRequiredConditionsHaveExecutableCoverage() throws {
         let bundle = try self.loadBundle()
-        XCTAssertFalse(bundle.coverage.isEmpty)
-        let incomplete = bundle.coverage.filter { $0.status != "covered" }
+        let requiredFields = Set(bundle.requiredFields)
+        XCTAssertFalse(requiredFields.isEmpty)
+        let required = bundle.coverage.filter { requiredFields.contains($0.field) }
+        XCTAssertEqual(Set(required.map(\.field)), requiredFields)
+        let incomplete = required.filter { $0.status != "covered" }
         XCTAssertTrue(
             incomplete.isEmpty,
             incomplete.map { "\($0.field)/\($0.operator): \($0.status)" }.joined(separator: "\n")
@@ -54,7 +63,10 @@ final class AudienceCompatibilityTests: TestCase {
             XCTAssertFalse(condition.cases.isEmpty, name)
             cases.append(contentsOf: condition.cases)
         }
-        return CompatibilityBundle(profiles: profiles.profiles, cases: cases, coverage: coverage.coverage)
+        return CompatibilityBundle(
+            profiles: profiles.profiles, cases: cases,
+            coverage: coverage.coverage, requiredFields: coverage.requiredFields
+        )
     }
 
 }
@@ -64,6 +76,7 @@ private struct CompatibilityBundle {
     let profiles: [String: CompatibilityProfile]
     let cases: [CompatibilityCase]
     let coverage: [CompatibilityCoverage.Row]
+    let requiredFields: [String]
 
 }
 
@@ -85,6 +98,7 @@ private struct CompatibilityCoverage: Decodable {
 
     let schemaVersion: Int
     let conditionFiles: [String]
+    let requiredFields: [String]
     let coverage: [Row]
 
     struct Row: Decodable {

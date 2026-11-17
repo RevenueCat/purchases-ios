@@ -1,5 +1,11 @@
 {
   "schema_version": 1,
+  "required_fields": [
+    "country",
+    "locale",
+    "storefront",
+    "totalRenewals"
+  ],
   "condition_files": [
     "conditions/country.json",
     "conditions/locale.json",

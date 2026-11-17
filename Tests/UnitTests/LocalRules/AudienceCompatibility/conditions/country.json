@@ -294,7 +294,7 @@
       "field": "country",
       "operator": "isNotAnyOf",
       "profile": "new",
-      "predicate": "{\"or\": [{\"==\": [{\"var\": \"country\"}, null]}, {\"!\": [{\"in\": [{\"var\": \"country\"}, [\"US\"]]}]}]}",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"country\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"country\"}, [\"US\"]]}]}]}",
       "expected": true
     },
     {
@@ -302,7 +302,7 @@
       "field": "country",
       "operator": "isNotAnyOf",
       "profile": "renewed",
-      "predicate": "{\"or\": [{\"==\": [{\"var\": \"country\"}, null]}, {\"!\": [{\"in\": [{\"var\": \"country\"}, [\"US\"]]}]}]}",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"country\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"country\"}, [\"US\"]]}]}]}",
       "expected": false
     },
     {
@@ -310,7 +310,7 @@
       "field": "country",
       "operator": "isNotAnyOf",
       "profile": "first_purchase",
-      "predicate": "{\"or\": [{\"==\": [{\"var\": \"country\"}, null]}, {\"!\": [{\"in\": [{\"var\": \"country\"}, [\"US\"]]}]}]}",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"country\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"country\"}, [\"US\"]]}]}]}",
       "expected": false
     },
     {
@@ -318,7 +318,7 @@
       "field": "country",
       "operator": "isNotAnyOf",
       "profile": "unavailable",
-      "predicate": "{\"or\": [{\"==\": [{\"var\": \"country\"}, null]}, {\"!\": [{\"in\": [{\"var\": \"country\"}, [\"US\"]]}]}]}",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"country\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"country\"}, [\"US\"]]}]}]}",
       "expected": true
     },
     {
@@ -326,7 +326,7 @@
       "field": "country",
       "operator": "isNotAnyOf",
       "profile": "new",
-      "predicate": "{\"or\": [{\"==\": [{\"var\": \"country\"}, null]}, {\"!\": [{\"in\": [{\"var\": \"country\"}, [\"CA\"]]}]}]}",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"country\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"country\"}, [\"CA\"]]}]}]}",
       "expected": false
     },
     {
@@ -334,7 +334,7 @@
       "field": "country",
       "operator": "isNotAnyOf",
       "profile": "renewed",
-      "predicate": "{\"or\": [{\"==\": [{\"var\": \"country\"}, null]}, {\"!\": [{\"in\": [{\"var\": \"country\"}, [\"CA\"]]}]}]}",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"country\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"country\"}, [\"CA\"]]}]}]}",
       "expected": true
     },
     {
@@ -342,7 +342,7 @@
       "field": "country",
       "operator": "isNotAnyOf",
       "profile": "first_purchase",
-      "predicate": "{\"or\": [{\"==\": [{\"var\": \"country\"}, null]}, {\"!\": [{\"in\": [{\"var\": \"country\"}, [\"CA\"]]}]}]}",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"country\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"country\"}, [\"CA\"]]}]}]}",
       "expected": true
     },
     {
@@ -350,7 +350,7 @@
       "field": "country",
       "operator": "isNotAnyOf",
       "profile": "unavailable",
-      "predicate": "{\"or\": [{\"==\": [{\"var\": \"country\"}, null]}, {\"!\": [{\"in\": [{\"var\": \"country\"}, [\"CA\"]]}]}]}",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"country\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"country\"}, [\"CA\"]]}]}]}",
       "expected": true
     },
     {
@@ -358,7 +358,7 @@
       "field": "country",
       "operator": "isNotAnyOf",
       "profile": "new",
-      "predicate": "{\"or\": [{\"==\": [{\"var\": \"country\"}, null]}, {\"!\": [{\"in\": [{\"var\": \"country\"}, [\"ZZ\"]]}]}]}",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"country\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"country\"}, [\"ZZ\"]]}]}]}",
       "expected": true
     },
     {
@@ -366,7 +366,7 @@
       "field": "country",
       "operator": "isNotAnyOf",
       "profile": "renewed",
-      "predicate": "{\"or\": [{\"==\": [{\"var\": \"country\"}, null]}, {\"!\": [{\"in\": [{\"var\": \"country\"}, [\"ZZ\"]]}]}]}",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"country\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"country\"}, [\"ZZ\"]]}]}]}",
       "expected": true
     },
     {
@@ -374,7 +374,7 @@
       "field": "country",
       "operator": "isNotAnyOf",
       "profile": "first_purchase",
-      "predicate": "{\"or\": [{\"==\": [{\"var\": \"country\"}, null]}, {\"!\": [{\"in\": [{\"var\": \"country\"}, [\"ZZ\"]]}]}]}",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"country\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"country\"}, [\"ZZ\"]]}]}]}",
       "expected": true
     },
     {
@@ -382,7 +382,7 @@
       "field": "country",
       "operator": "isNotAnyOf",
       "profile": "unavailable",
-      "predicate": "{\"or\": [{\"==\": [{\"var\": \"country\"}, null]}, {\"!\": [{\"in\": [{\"var\": \"country\"}, [\"ZZ\"]]}]}]}",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"country\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"country\"}, [\"ZZ\"]]}]}]}",
       "expected": true
     },
     {
@@ -390,7 +390,7 @@
       "field": "country",
       "operator": "isEmpty",
       "profile": "new",
-      "predicate": "{\"==\": [{\"var\": \"country\"}, null]}",
+      "predicate": "{\"==\": [{\"var\": [\"country\", null]}, null]}",
       "expected": false
     },
     {
@@ -398,7 +398,7 @@
       "field": "country",
       "operator": "isEmpty",
       "profile": "renewed",
-      "predicate": "{\"==\": [{\"var\": \"country\"}, null]}",
+      "predicate": "{\"==\": [{\"var\": [\"country\", null]}, null]}",
       "expected": false
     },
     {
@@ -406,7 +406,7 @@
       "field": "country",
       "operator": "isEmpty",
       "profile": "first_purchase",
-      "predicate": "{\"==\": [{\"var\": \"country\"}, null]}",
+      "predicate": "{\"==\": [{\"var\": [\"country\", null]}, null]}",
       "expected": false
     },
     {
@@ -414,7 +414,7 @@
       "field": "country",
       "operator": "isEmpty",
       "profile": "unavailable",
-      "predicate": "{\"==\": [{\"var\": \"country\"}, null]}",
+      "predicate": "{\"==\": [{\"var\": [\"country\", null]}, null]}",
       "expected": true
     },
     {
@@ -422,7 +422,7 @@
       "field": "country",
       "operator": "isNotEmpty",
       "profile": "new",
-      "predicate": "{\"!=\": [{\"var\": \"country\"}, null]}",
+      "predicate": "{\"!=\": [{\"var\": [\"country\", null]}, null]}",
       "expected": true
     },
     {
@@ -430,7 +430,7 @@
       "field": "country",
       "operator": "isNotEmpty",
       "profile": "renewed",
-      "predicate": "{\"!=\": [{\"var\": \"country\"}, null]}",
+      "predicate": "{\"!=\": [{\"var\": [\"country\", null]}, null]}",
       "expected": true
     },
     {
@@ -438,7 +438,7 @@
       "field": "country",
       "operator": "isNotEmpty",
       "profile": "first_purchase",
-      "predicate": "{\"!=\": [{\"var\": \"country\"}, null]}",
+      "predicate": "{\"!=\": [{\"var\": [\"country\", null]}, null]}",
       "expected": true
     },
     {
@@ -446,7 +446,7 @@
       "field": "country",
       "operator": "isNotEmpty",
       "profile": "unavailable",
-      "predicate": "{\"!=\": [{\"var\": \"country\"}, null]}",
+      "predicate": "{\"!=\": [{\"var\": [\"country\", null]}, null]}",
       "expected": false
     }
   ]
