@@ -290,8 +290,8 @@ struct WorkflowPaywallView: View {
             self?.view?.closeWorkflow()
         }
 
-        lazy var postPurchaseDismissal: () -> Void = { [weak self] in
-            self?.view?.handlePostPurchaseDismissal()
+        lazy var purchaseDismissal: () -> Void = { [weak self] in
+            self?.view?.handlePurchaseDismissal()
         }
 
         lazy var triggerAction: (String) -> Bool = { [weak self] componentId in
@@ -329,13 +329,6 @@ struct WorkflowPaywallView: View {
         mutating func hide() {
             if self == .active { self = .hidden }
         }
-
-    }
-
-    private struct CheckpointOperationResult {
-
-        let customerInfo: CustomerInfo
-        let appUserID: String?
 
     }
 
@@ -387,11 +380,6 @@ struct WorkflowPaywallView: View {
     @State private var skeletonPage: RenderedPage?
     /// Whether a checkpoint's enforced initial gate has not been checked yet, so its page stays unrendered.
     @State private var isAwaitingEntryGate: Bool
-    /// The customer a purchase or restore started for, so its result cannot count for a later customer.
-    @State private var checkpointOperationAppUserID: String?
-    /// A result received while hidden waits until the workflow reappears.
-    @State private var deferredCheckpointOperation: CheckpointOperationResult?
-    @State private var permitsPostPurchaseDismissal = true
     @State private var presentationLifecycle: PresentationLifecycle = .active
 
     init(
@@ -592,7 +580,7 @@ struct WorkflowPaywallView: View {
         .onDisappear {
             pageActions.view = nil
             self.presentationLifecycle.hide()
-            self.cancelGateEntry()
+            self.checkpointGateController?.cancelEntry()
             self.nativeButtonCoordinator?.activatePage(nil)
             self.presentationBridge.workflowDidDisappear()
             self.trackCurrentWorkflowLeft()
@@ -770,7 +758,7 @@ struct WorkflowPaywallView: View {
         .environment(\.workflowPackageContext, page.effectiveWorkflowPackageContext)
         .environment(\.workflowTriggerAction, pageActions.triggerAction)
         .environment(\.workflowNavigateBackHandler, pageActions.navigateBack)
-        .environment(\.workflowPostPurchaseDismissal, pageActions.postPurchaseDismissal)
+        .environment(\.workflowPurchaseDismissal, pageActions.purchaseDismissal)
     }
 
     @ViewBuilder
@@ -812,13 +800,12 @@ struct WorkflowPaywallView: View {
     private func closeWorkflow() {
         guard self.presentationLifecycle != .ended else { return }
         self.presentationLifecycle = .ended
-        self.deferredCheckpointOperation = nil
-        self.cancelGateEntry()
+        self.checkpointGateController?.cancelPendingWork()
         self.onDismiss()
     }
 
-    private func handlePostPurchaseDismissal() {
-        guard self.permitsPostPurchaseDismissal,
+    private func handlePurchaseDismissal() {
+        guard self.checkpointGateController?.permitsPurchaseDismissal != false,
               self.checkpointGateController?.hasUnresolvedGate != true else { return }
         self.handleDismiss()
     }
@@ -828,7 +815,7 @@ struct WorkflowPaywallView: View {
             return
         }
 
-        self.cancelGateEntry()
+        self.checkpointGateController?.cancelEntry()
         let hasUnresolvedGate = self.checkpointGateController?.hasUnresolvedGate ?? false
         switch Self.dismissalAction(
             canNavigateBack: self.navigator.canNavigateBack,
@@ -905,11 +892,7 @@ struct WorkflowPaywallView: View {
         case .active, .displayingError(_, .keepCurrentScreen):
             break
         }
-        if let operation = self.deferredCheckpointOperation {
-            self.deferredCheckpointOperation = nil
-            let decision = self.checkpointGateController?.update(customerInfo: operation.customerInfo) ?? .notGated
-            self.permitsPostPurchaseDismissal = decision != .blocked
-        }
+        self.checkpointGateController?.applyDeferredOperation()
         if self.checkpointGateController?.status == .passed {
             self.completeCheckpointGateAfterOperationCallbacks()
             return
@@ -927,20 +910,17 @@ struct WorkflowPaywallView: View {
 
     private func handlePurchaseActionChange(_ action: PurchaseHandler.ActionType?) {
         guard action != nil else { return }
-        self.checkpointOperationAppUserID = self.checkpointGateController == nil
-            ? nil : self.purchaseHandler.appUserID
-        self.permitsPostPurchaseDismissal = self.checkpointGateController == nil
+        self.checkpointGateController?.beginOperation(appUserID: self.purchaseHandler.appUserID)
     }
 
     private func handleSessionPurchaseResult(_ result: PaywallPurchaseResult?) {
         guard case let .purchased(_, customerInfo)? = result else { return }
-        let decision = self.applyCheckpointOperation(customerInfo: customerInfo)
-        self.permitsPostPurchaseDismissal = decision != .blocked
+        self.completeCheckpointOperation(customerInfo: customerInfo, isPurchase: true)
     }
 
     private func handleRestoredCustomerInfo(_ restoreResult: PurchaseHandler.RestoreResult?) {
         guard let restoreResult else { return }
-        self.applyCheckpointOperation(customerInfo: restoreResult.customerInfo)
+        self.completeCheckpointOperation(customerInfo: restoreResult.customerInfo, isPurchase: false)
     }
 
     private func syncExitOfferBinding() {
@@ -1349,7 +1329,7 @@ struct WorkflowPaywallView: View {
 
     /// Marks passage blocked synchronously, then reads entitlements for this visit and this identity.
     private func enterThroughGate(step: WorkflowStep, enter: @escaping @MainActor () -> Void) {
-        self.cancelGateEntry()
+        self.checkpointGateController?.cancelEntry()
         guard let controller = self.checkpointGateController, controller.beginEntry(step: step) else {
             enter()
             return
@@ -1387,12 +1367,6 @@ struct WorkflowPaywallView: View {
         return !Task.isCancelled && self.presentationLifecycle == .active
     }
 
-    private func cancelGateEntry() {
-        self.checkpointGateController?.entryTask?.cancel()
-        self.checkpointGateController?.entryTask = nil
-        self.checkpointGateController?.resumePendingEntry = nil
-    }
-
     private func completeCheckpointGateAfterOperationCallbacks() {
         // Schedule from the view update, after purchase/restore preferences can reach host callbacks.
         // Unlike hasPurchasedInSession, each new operation result can request completion.
@@ -1409,27 +1383,14 @@ struct WorkflowPaywallView: View {
         self.completeAndDismiss()
     }
 
-    @discardableResult
-    private func applyCheckpointOperation(customerInfo: CustomerInfo) -> WorkflowGateDecision {
-        guard self.presentationLifecycle != .ended else { return .blocked }
-        let operation = CheckpointOperationResult(
+    private func completeCheckpointOperation(customerInfo: CustomerInfo, isPurchase: Bool) {
+        guard self.presentationLifecycle != .ended else { return }
+        self.checkpointGateController?.completeOperation(
             customerInfo: customerInfo,
-            appUserID: self.checkpointOperationAppUserID
+            appUserID: self.purchaseHandler.appUserID,
+            isPresentationHidden: self.presentationLifecycle == .hidden,
+            isPurchase: isPurchase
         )
-        self.checkpointOperationAppUserID = nil
-        let resumePendingEntry = self.checkpointGateController?.resumePendingEntry
-        self.cancelGateEntry()
-        if let appUserID = operation.appUserID, self.purchaseHandler.appUserID != appUserID {
-            resumePendingEntry?()
-            return .blocked
-        }
-        if self.presentationLifecycle == .hidden {
-            if self.checkpointGateController != nil { self.deferredCheckpointOperation = operation }
-            return .blocked
-        }
-        let decision = self.checkpointGateController?.update(customerInfo: operation.customerInfo) ?? .notGated
-        if decision == .blocked { resumePendingEntry?() }
-        return decision
     }
 
     private func failWorkflowPresentation(for stepId: String) {

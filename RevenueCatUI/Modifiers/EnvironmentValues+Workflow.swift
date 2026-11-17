@@ -176,7 +176,7 @@ extension EnvironmentValues {
 
     /// Dismisses the workflow once a purchase completes, letting an unresolved checkpoint gate keep it open.
     /// Pages fall back to their regular dismissal when no workflow provides this.
-    var workflowPostPurchaseDismissal: (() -> Void)? {
+    var workflowPurchaseDismissal: (() -> Void)? {
         get { self[WorkflowPurchaseDismissalKey.self] }
         set { self[WorkflowPurchaseDismissalKey.self] = newValue }
     }

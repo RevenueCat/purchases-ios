@@ -25,7 +25,7 @@ enum WorkflowGateDecision: Equatable {
     case blocked
 }
 
-/// Call-scoped gate and entry task state; the presenter owns navigation, rendering, and completion.
+/// Call-scoped gate and operation state; the presenter owns navigation, rendering, and completion.
 @MainActor
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 final class CheckpointWorkflowGateController {
@@ -34,6 +34,8 @@ final class CheckpointWorkflowGateController {
     var entryTask: Task<Void, Never>?
     /// Renders the destination when an operation result supersedes its pending read but keeps the gate blocked.
     var resumePendingEntry: (@MainActor () -> Void)?
+
+    private(set) var permitsPurchaseDismissal = true
 
     var status: CheckpointGateStatus {
         switch self.gateState {
@@ -48,6 +50,15 @@ final class CheckpointWorkflowGateController {
 
     private var activeEntitlementIdentifiers: Set<String> = []
     private var gateState: GateState = .notReached
+    private var operationAppUserID: String?
+    private var deferredOperation: OperationResult?
+
+    private struct OperationResult {
+
+        let customerInfo: CustomerInfo
+        let appUserID: String?
+
+    }
 
     private enum GateState {
 
@@ -88,6 +99,67 @@ final class CheckpointWorkflowGateController {
     func blocksForwardNavigation(step: WorkflowStep) -> Bool {
         guard let gate = step.gating else { return false }
         return gate.isEnforced && !gate.isSatisfied(by: self.activeEntitlementIdentifiers)
+    }
+
+    func beginOperation(appUserID: String) {
+        self.operationAppUserID = appUserID
+        self.permitsPurchaseDismissal = false
+    }
+
+    func completeOperation(
+        customerInfo: CustomerInfo,
+        appUserID: String,
+        isPresentationHidden: Bool,
+        isPurchase: Bool
+    ) {
+        let operation = OperationResult(customerInfo: customerInfo, appUserID: self.operationAppUserID)
+        self.operationAppUserID = nil
+        let decision = self.applyOperation(operation, appUserID: appUserID, isPresentationHidden: isPresentationHidden)
+        if isPurchase { self.permitsPurchaseDismissal = decision != .blocked }
+    }
+
+    func applyDeferredOperation() {
+        guard let operation = self.deferredOperation else { return }
+        self.deferredOperation = nil
+        let decision = self.update(customerInfo: operation.customerInfo)
+        self.permitsPurchaseDismissal = decision != .blocked
+    }
+
+    func cancelEntry() {
+        self.entryTask?.cancel()
+        self.entryTask = nil
+        self.resumePendingEntry = nil
+    }
+
+    func cancelPendingWork() {
+        self.deferredOperation = nil
+        self.operationAppUserID = nil
+        self.cancelEntry()
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private extension CheckpointWorkflowGateController {
+
+    private func applyOperation(
+        _ operation: OperationResult,
+        appUserID: String,
+        isPresentationHidden: Bool
+    ) -> WorkflowGateDecision {
+        let resumePendingEntry = self.resumePendingEntry
+        self.cancelEntry()
+        if let operationAppUserID = operation.appUserID, appUserID != operationAppUserID {
+            resumePendingEntry?()
+            return .blocked
+        }
+        if isPresentationHidden {
+            self.deferredOperation = operation
+            return .blocked
+        }
+        let decision = self.update(customerInfo: operation.customerInfo)
+        if decision == .blocked { resumePendingEntry?() }
+        return decision
     }
 
 }

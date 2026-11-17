@@ -161,6 +161,128 @@ final class CheckpointWorkflowGateControllerTests: TestCase {
         XCTAssertEqual(self.controller.status, .passed)
     }
 
+    func testPurchaseDismissalRequiresAQualifyingOperation() throws {
+        XCTAssertTrue(self.controller.beginEntry(step: self.hard))
+        self.controller.beginOperation(appUserID: "customer")
+        XCTAssertFalse(self.controller.permitsPurchaseDismissal)
+
+        self.controller.completeOperation(
+            customerInfo: try CheckpointTestFixtures.customerInfo(activeEntitlements: ["unrelated"]),
+            appUserID: "customer", isPresentationHidden: false, isPurchase: true
+        )
+        XCTAssertEqual(self.controller.status, .notPassed)
+        XCTAssertFalse(self.controller.permitsPurchaseDismissal)
+
+        self.controller.beginOperation(appUserID: "customer")
+        self.controller.completeOperation(
+            customerInfo: try CheckpointTestFixtures.customerInfo(activeEntitlements: ["pro"]),
+            appUserID: "customer", isPresentationHidden: false, isPurchase: true
+        )
+        XCTAssertEqual(self.controller.status, .passed)
+        XCTAssertTrue(self.controller.permitsPurchaseDismissal)
+    }
+
+    func testRestoreUpdatesGateWithoutEnablingPurchaseDismissal() throws {
+        XCTAssertTrue(self.controller.beginEntry(step: self.hard))
+        self.controller.beginOperation(appUserID: "customer")
+
+        self.controller.completeOperation(
+            customerInfo: try CheckpointTestFixtures.customerInfo(activeEntitlements: ["pro"]),
+            appUserID: "customer", isPresentationHidden: false, isPurchase: false
+        )
+
+        XCTAssertEqual(self.controller.status, .passed)
+        XCTAssertFalse(self.controller.permitsPurchaseDismissal)
+    }
+
+    func testOperationFromDifferentCustomerCannotPassGateAndResumesPendingEntry() throws {
+        for isPurchase in [true, false] {
+            XCTAssertTrue(self.controller.beginEntry(step: self.hard))
+            self.controller.beginOperation(appUserID: "customer-a")
+            var resumedEntry = false
+            self.controller.resumePendingEntry = { resumedEntry = true }
+
+            self.controller.completeOperation(
+                customerInfo: try CheckpointTestFixtures.customerInfo(activeEntitlements: ["pro"]),
+                appUserID: "customer-b", isPresentationHidden: false, isPurchase: isPurchase
+            )
+
+            XCTAssertEqual(self.controller.status, .notPassed)
+            XCTAssertFalse(self.controller.permitsPurchaseDismissal)
+            XCTAssertTrue(resumedEntry)
+            XCTAssertNil(self.controller.resumePendingEntry)
+        }
+    }
+
+    func testBlockedOperationCancelsEntryReadAndResumesItsDestination() throws {
+        XCTAssertTrue(self.controller.beginEntry(step: self.hard))
+        self.controller.beginOperation(appUserID: "customer")
+        let entryTask = Task<Void, Never> { }
+        self.controller.entryTask = entryTask
+        var resumedEntry = false
+        self.controller.resumePendingEntry = { resumedEntry = true }
+
+        self.controller.completeOperation(
+            customerInfo: try CheckpointTestFixtures.customerInfo(activeEntitlements: []),
+            appUserID: "customer", isPresentationHidden: false, isPurchase: true
+        )
+
+        XCTAssertTrue(entryTask.isCancelled)
+        XCTAssertNil(self.controller.entryTask)
+        XCTAssertNil(self.controller.resumePendingEntry)
+        XCTAssertTrue(resumedEntry)
+        XCTAssertEqual(self.controller.status, .notPassed)
+    }
+
+    func testHiddenOperationsWaitUntilDeferredResultIsApplied() throws {
+        for isPurchase in [true, false] {
+            XCTAssertTrue(self.controller.beginEntry(step: self.hard))
+            self.controller.beginOperation(appUserID: "customer")
+            var resumedEntry = false
+            self.controller.resumePendingEntry = { resumedEntry = true }
+
+            self.controller.completeOperation(
+                customerInfo: try CheckpointTestFixtures.customerInfo(activeEntitlements: ["pro"]),
+                appUserID: "customer", isPresentationHidden: true, isPurchase: isPurchase
+            )
+
+            XCTAssertEqual(self.controller.status, .notPassed)
+            XCTAssertFalse(self.controller.permitsPurchaseDismissal)
+            XCTAssertFalse(resumedEntry)
+
+            self.controller.applyDeferredOperation()
+
+            XCTAssertEqual(self.controller.status, .passed)
+            XCTAssertTrue(self.controller.permitsPurchaseDismissal)
+            XCTAssertTrue(self.controller.beginEntry(step: self.hard))
+            self.controller.applyDeferredOperation()
+            XCTAssertEqual(self.controller.status, .notPassed)
+        }
+    }
+
+    func testCancellingPendingWorkDiscardsDeferredResultAndEntryRead() throws {
+        XCTAssertTrue(self.controller.beginEntry(step: self.hard))
+        self.controller.beginOperation(appUserID: "customer")
+        self.controller.completeOperation(
+            customerInfo: try CheckpointTestFixtures.customerInfo(activeEntitlements: ["pro"]),
+            appUserID: "customer", isPresentationHidden: true, isPurchase: true
+        )
+        let entryTask = Task<Void, Never> { }
+        self.controller.entryTask = entryTask
+        var resumedEntry = false
+        self.controller.resumePendingEntry = { resumedEntry = true }
+
+        self.controller.cancelPendingWork()
+        self.controller.applyDeferredOperation()
+
+        XCTAssertEqual(self.controller.status, .notPassed)
+        XCTAssertFalse(self.controller.permitsPurchaseDismissal)
+        XCTAssertTrue(entryTask.isCancelled)
+        XCTAssertNil(self.controller.entryTask)
+        XCTAssertNil(self.controller.resumePendingEntry)
+        XCTAssertFalse(resumedEntry)
+    }
+
     private func update(activeEntitlements: [String]) throws -> WorkflowGateDecision {
         return self.controller.update(
             customerInfo: try CheckpointTestFixtures.customerInfo(activeEntitlements: activeEntitlements)
