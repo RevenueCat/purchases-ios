@@ -24,6 +24,7 @@ enum RemoteConfigStrings {
     case failedToDownloadBlob(String, URL, Error)
     case duplicateSourceURL(String)
     case failedToParseResponse(Error)
+    case failedSignatureVerification
     case malformedBlobRef(String)
     case mergeItemsBlobDataEmpty(topic: RemoteConfigTopic)
     case mergeItemsBlobDataUnavailableItems(topic: RemoteConfigTopic, itemKeys: [String])
@@ -82,6 +83,8 @@ extension RemoteConfigStrings: LogMessage {
         case let .failedToParseResponse(error):
             return "Failed to parse remote config response. Keeping cached configuration. Error: " +
             "\(error.localizedDescription)"
+        case .failedSignatureVerification:
+            return "Remote config response failed signature verification. Keeping cached configuration."
         case let .malformedBlobRef(ref):
             return "Refusing remote config blob operation with malformed ref '\(ref)'."
         case let .mergeItemsBlobDataEmpty(topic):
