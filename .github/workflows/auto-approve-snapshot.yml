@@ -10,6 +10,7 @@ jobs:
     # required review. Auto-merge is armed by the bot at creation, and
     # RCGitBot can't approve its own PR.
     if: |
+      github.repository_visibility != 'public' &&
       startsWith(github.event.pull_request.head.ref, 'bump/') &&
       github.event.pull_request.user.login == 'RCGitBot'
     runs-on: ubuntu-latest

@@ -1,6 +1,6 @@
 orbs:
   macos: circleci/macos@2.5.1
-  revenuecat: revenuecat/sdks-common-config@4.8.0
+  revenuecat: revenuecat/sdks-common-config@4.9.0
   # Disabled until compatible with M1: codecov: codecov/codecov@3.3.0
   # codecov: codecov/codecov@3.3.0
 
@@ -1778,6 +1778,8 @@ jobs:
     executor:
       name: macos-executor
       xcode_version: "27.0.0"
+    # checkout-with-minimal-permissions clones into a folder named after the repository.
+    working_directory: ~/purchases-ios_internal
     steps:
       # === Common setup ===
       - checkout-with-minimal-permissions
@@ -1886,6 +1888,7 @@ jobs:
     executor:
       name: macos-executor-large
       xcode_version: << parameters.xcode_version >>
+    working_directory: ~/purchases-ios_internal
     steps:
       - checkout-with-minimal-permissions
       - configure-xcode27-validation
@@ -2206,7 +2209,7 @@ jobs:
           name: Deploy RevenueCatAdMob to purchases-ios-admob
           command: ci_scripts/deploy-admob-spm.sh "${CIRCLE_TAG}"
 
-  make-admob-release:
+  generate-admob-changelog:
     docker:
       - image: cimg/ruby:3.3.0
     resource_class: small
@@ -2217,8 +2220,30 @@ jobs:
       - revenuecat/trust-github-key
       - install-rubydocker-dependencies
       - run:
+          name: Generate purchases-ios-admob release notes
+          command: |
+            mkdir -p /tmp/admob-changelog
+            bundle exec fastlane admob_changelog version:"${CIRCLE_TAG}" changelog_path:/tmp/admob-changelog/CHANGELOG.admob.latest.md
+      - persist_to_workspace:
+          root: /tmp/admob-changelog
+          paths:
+            - CHANGELOG.admob.latest.md
+
+  make-admob-release:
+    docker:
+      - image: cimg/ruby:3.3.0
+    resource_class: small
+    working_directory: ~/purchases-ios
+    shell: /bin/bash --login -o pipefail
+    steps:
+      - checkout
+      - revenuecat/trust-github-key
+      - install-rubydocker-dependencies
+      - attach_workspace:
+          at: /tmp/admob-changelog
+      - run:
           name: Create GitHub release for purchases-ios-admob
-          command: bundle exec fastlane admob_github_release version:"${CIRCLE_TAG}"
+          command: bundle exec fastlane admob_github_release version:"${CIRCLE_TAG}" changelog_path:/tmp/admob-changelog/CHANGELOG.admob.latest.md
 
   bump-sdk-in-rc-mobile-app:
     docker:
@@ -2293,7 +2318,7 @@ workflows:
       - generate-swiftinterface:
           context:
             - slack-secrets-ios
-            - github-bot-public
+            - github-bot-internal
 
   generate-snapshot:
     when: << pipeline.parameters.generate_snapshots >>
@@ -2301,35 +2326,35 @@ workflows:
       - run-test-ios-27:
           context:
             - danger-bot
-            - github-bot-public
+            - github-bot-internal
       - run-test-ios-26:
           context:
             - danger-bot
-            - github-bot-public
+            - github-bot-internal
       - run-test-ios-18-and-17:
-          context: github-bot-public
+          context: github-bot-internal
       - run-test-ios-16-and-15:
-          context: github-bot-public
+          context: github-bot-internal
       - run-test-tvos-and-macos:
-          context: github-bot-public
+          context: github-bot-internal
       - run-test-watchos:
-          context: github-bot-public
+          context: github-bot-internal
       - backend-integration-tests-SK2: # Snapshots from this job are shared with all BackendIntegrationTests
-          context: github-bot-public
+          context: github-bot-internal
 
   generate_revenuecatui_snapshots:
     when: << pipeline.parameters.generate_revenuecatui_snapshots >>
     jobs:
       - spm-revenuecat-ui-ios-16-and-15:
-          context: github-bot-public
+          context: github-bot-internal
       - run-revenuecat-ui-ios-18-and-17:
-          context: github-bot-public
+          context: github-bot-internal
       - run-revenuecat-ui-ios-27:
-          context: github-bot-public
+          context: github-bot-internal
       - run-revenuecat-ui-ios-26:
-          context: github-bot-public
+          context: github-bot-internal
       - spm-revenuecat-ui-watchos:
-          context: github-bot-public
+          context: github-bot-internal
 
   # Runs on every PR branch push. The reduced test suite runs automatically;
   # approve the "approve-full-tests" hold job to run the full suite.
@@ -2413,7 +2438,7 @@ workflows:
           context:
             - slack-secrets
       - post-gate-status:
-          context: github-bot-public
+          context: github-bot-internal
           name: full-suite-not-requested
           state: success
           unless_full_suite_approved: true
@@ -2440,7 +2465,7 @@ workflows:
       - approve-full-tests:
           type: approval
       - post-gate-status:
-          context: github-bot-public
+          context: github-bot-internal
           name: full-suite-started
           state: pending
           requires:
@@ -2608,7 +2633,7 @@ workflows:
       # Summary gate: blocks merge until all jobs pass
       # =============================================================
       - post-gate-status:
-          context: github-bot-public
+          context: github-bot-internal
           name: all-tasks-passed
           state: success
           requires:
@@ -2646,27 +2671,41 @@ workflows:
       not:
         equal: [scheduled_pipeline, << pipeline.trigger_source >>]
     jobs:
+      - revenuecat/mirror-to-public:
+          public_repo_name: purchases-ios
+          context: sdk-public-mirror
+          <<: *release-tags
       - push-revenuecat-pod:
+          requires:
+            - revenuecat/mirror-to-public
           <<: *release-tags
       - push-revenuecatui-pod:
           requires:
             - push-revenuecat-pod
           <<: *release-tags
       - deploy-to-spm:
+          requires:
+            - revenuecat/mirror-to-public
           <<: *release-tags
       - deploy-to-purchases-ios-admob:
           requires:
             - deploy-to-spm
           <<: *release-tags
+      - generate-admob-changelog:
+          context: github-bot-internal
+          <<: *release-tags
       - make-admob-release:
-          context: github-bot-public
+          context: github-bot-public-release
           requires:
             - deploy-to-purchases-ios-admob
+            - generate-admob-changelog
           <<: *release-tags
       - docs-deploy:
+          requires:
+            - revenuecat/mirror-to-public
           <<: *release-tags
       - make-release:
-          context: github-bot-public
+          context: github-bot-public-release
           requires:
             - push-revenuecatui-pod
             - deploy-to-spm
@@ -2687,8 +2726,8 @@ workflows:
             - make-release
           <<: *release-tags
       - revenuecat/merge-release-pr:
-          context: github-bot-public
-          repo_name: purchases-ios
+          context: github-bot-internal
+          repo_name: purchases-ios_internal
           requires:
             - make-release
             - deploy-purchase-tester
@@ -2696,6 +2735,18 @@ workflows:
             - bump-sdk-in-rc-mobile-app
             - make-admob-release
           <<: *release-tags
+
+  mirror:
+    when:
+      and:
+        - not:
+            equal: [scheduled_pipeline, << pipeline.trigger_source >>]
+        - equal: [main, << pipeline.git.branch >>]
+        - equal: [default, << pipeline.parameters.action >>]
+    jobs:
+      - revenuecat/mirror-to-public:
+          public_repo_name: purchases-ios
+          context: sdk-public-mirror
 
   snapshot-bump:
     when:
@@ -2709,7 +2760,7 @@ workflows:
         - equal: [true, << pipeline.parameters.version_file_changed >>]
     jobs:
       - prepare-next-version:
-          context: github-bot-public
+          context: github-bot-internal
           <<: *only-main-branch
 
   danger:
@@ -2736,7 +2787,7 @@ workflows:
         - equal: ["release-train", << pipeline.schedule.name >>]
     jobs:
       - release-train:
-          context: github-bot-public
+          context: github-bot-internal
 
   remote-config-blob-monitor:
     when:
@@ -2798,7 +2849,7 @@ workflows:
       equal: [bump, << pipeline.parameters.action >>]
     jobs:
       - release-train:
-          context: github-bot-public
+          context: github-bot-internal
 
   record-and-upload-paywalls-v2-snapshots:
     when:
@@ -2823,14 +2874,14 @@ workflows:
       equal: [update_paywall_templates, << pipeline.parameters.action >>]
     jobs:
       - update-paywall-preview-resources-commit:
-          context: github-bot-public
+          context: github-bot-internal
 
   update-error-codes:
     when:
       equal: [update_error_codes, << pipeline.parameters.action >>]
     jobs:
       - revenuecat/update-error-codes:
-          context: github-bot-public
+          context: github-bot-internal
           platform: ios
           outputs: "ErrorCode.swift:Sources/Generated/ErrorCode.swift"
           commit_paths: "Sources/Generated/ErrorCode.swift,api"
@@ -3000,7 +3051,7 @@ workflows:
       # All tests gate for release branches
       # =============================================================
       - post-gate-status:
-          context: github-bot-public
+          context: github-bot-internal
           name: all-tests-succeeded
           state: success
           requires:
@@ -3053,7 +3104,7 @@ workflows:
           type: approval
           <<: *release-branches
       - revenuecat/tag-current-branch:
-          context: github-bot-public
+          context: github-bot-internal
           requires:
             - wait-for-pr-approval
             - release-checks
@@ -3061,7 +3112,7 @@ workflows:
           <<: *release-branches
 
       - post-gate-status:
-          context: github-bot-public
+          context: github-bot-internal
           name: all-tasks-passed
           state: success
           requires:

@@ -13,7 +13,7 @@ jobs:
     if: |
       github.event.issue.pull_request &&
       github.event.comment.body == '@RCGitBot please test' &&
-      github.repository == 'RevenueCat/purchases-ios' &&
+      github.repository == 'RevenueCat/purchases-ios_internal' &&
       github.event.comment.author_association == 'MEMBER'
     permissions:
       pull-requests: write
@@ -39,7 +39,7 @@ jobs:
           CCI_TOKEN: ${{ secrets.CIRCLECI_TOKEN }}
           BRANCH: ${{ steps.get-branch.outputs.branch }}
         run: |
-          PROJECT_SLUG="gh/RevenueCat/purchases-ios"
+          PROJECT_SLUG="gh/RevenueCat/purchases-ios_internal"
           WORKFLOW_NAME="run-all-tests"
           APPROVAL_JOB_NAME="approve-full-tests"
 
@@ -166,7 +166,7 @@ jobs:
     if: |
       github.event.issue.pull_request &&
       startsWith(github.event.comment.body, '@RCGitBot please test ') &&
-      github.repository == 'RevenueCat/purchases-ios' &&
+      github.repository == 'RevenueCat/purchases-ios_internal' &&
       github.event.comment.author_association == 'MEMBER'
     permissions:
       pull-requests: write
@@ -216,7 +216,7 @@ jobs:
           BRANCH: ${{ steps.get-branch.outputs.branch }}
           JOB_NAMES: ${{ steps.parse.outputs.job_names }}
         run: |
-          PROJECT_SLUG="gh/RevenueCat/purchases-ios"
+          PROJECT_SLUG="gh/RevenueCat/purchases-ios_internal"
 
           # Build the payload with jq rather than string interpolation: branch names come
           # from the PR head ref and may contain characters that need JSON escaping.
@@ -253,7 +253,7 @@ jobs:
           ISSUE_NUMBER: ${{ github.event.issue.number }}
         run: |
           gh api "repos/$REPO/issues/$ISSUE_NUMBER/comments" \
-            -f body="🚀 Triggered **$JOB_NAMES** → [Pipeline #$PIPELINE_NUMBER](https://app.circleci.com/pipelines/gh/RevenueCat/purchases-ios/$PIPELINE_NUMBER)"
+            -f body="🚀 Triggered **$JOB_NAMES** → [Pipeline #$PIPELINE_NUMBER](https://app.circleci.com/pipelines/gh/RevenueCat/purchases-ios_internal/$PIPELINE_NUMBER)"
 
       - name: React to comment
         if: always()
