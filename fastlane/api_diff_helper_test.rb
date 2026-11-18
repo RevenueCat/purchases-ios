@@ -455,6 +455,26 @@ class ApiDiffHelperTest < Minitest::Test
     assert_match(/before HEAD/, error.message)
   end
 
+  def test_generated_interface_keeps_the_same_package_name_whatever_the_checkout_folder
+    Dir.mktmpdir do |dir|
+      source = File.join(dir, "RevenueCat.swiftinterface")
+      destination = File.join(dir, "copy.swiftinterface")
+      File.write(source, <<~INTERFACE)
+        // swift-interface-format-version: 1.0
+        // swift-module-flags: -target arm64-apple-ios13.0 -module-name RevenueCat -package-name purchases_ios_internal
+        public func keepsBody(packageName: Swift.String = "-package-name untouched")
+      INTERFACE
+
+      ApiDiffHelper.copy_swiftinterface(source, destination)
+
+      assert_equal <<~INTERFACE, File.read(destination)
+        // swift-interface-format-version: 1.0
+        // swift-module-flags: -target arm64-apple-ios13.0 -module-name RevenueCat -package-name purchases_ios
+        public func keepsBody(packageName: Swift.String = "-package-name untouched")
+      INTERFACE
+    end
+  end
+
   def test_extract_baselines_writes_one_file_per_platform
     Dir.mktmpdir do |dir|
       runner = ->(*command) { "public func fromMergeBase()\n// #{command.last}\n" }

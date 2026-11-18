@@ -179,7 +179,7 @@ module ApiDiffHelper
       if found.nil?
         missing << module_name
       else
-        FileUtils.cp(found, "#{output_dir}/#{module_name}#{platform_config[:suffix]}.swiftinterface")
+        copy_swiftinterface(found, "#{output_dir}/#{module_name}#{platform_config[:suffix]}.swiftinterface")
       end
     end
 
@@ -195,6 +195,13 @@ module ApiDiffHelper
     )
 
     { success: true }
+  end
+
+  # Swift derives `-package-name` from the folder the package is checked out in, so the same sources
+  # produce a different interface header in a clone that is not named `purchases-ios`.
+  def copy_swiftinterface(source, destination)
+    contents = File.read(source).sub(/^(\/\/ swift-module-flags: .*-package-name )\S+/, '\1purchases_ios')
+    File.write(destination, contents)
   end
 
   def copy_generated_swiftinterface_files(destination_dir, schemes = MODULES)
