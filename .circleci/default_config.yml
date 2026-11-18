@@ -1531,11 +1531,13 @@ jobs:
             if grep -q "1" /tmp/test_exit_codes/*; then
               FAILED_TESTS=$(grep -l "1" /tmp/test_exit_codes/* | xargs -I {} basename {} | tr '\n' ', ' | sed 's/,$//')
               bundle exec fastlane run slack_backend_integration_test_results \
+                platform:iOS \
                 environment:"maestro_e2e (failed: $FAILED_TESTS)" \
                 success:false \
                 message_binary_solo_on_failure:false
             else
               bundle exec fastlane run slack_backend_integration_test_results \
+                platform:iOS \
                 environment:"maestro_e2e (all environments)" \
                 success:true \
                 message_binary_solo_on_failure:false \
@@ -2623,6 +2625,7 @@ workflows:
           context:
             - e2e-tests
             - slack-secrets
+            - circleci-read
       - docs-build:
           requires:
             - approve-full-tests
@@ -2812,14 +2815,17 @@ workflows:
           major: "3"
           context:
             - slack-secrets
+            - circleci-read
       - loadshedder-integration-tests-old-major:
           name: loadshedder-integration-tests-v4
           major: "4"
           context:
             - slack-secrets
+            - circleci-read
       - integration-tests-all:
           context:
             - slack-secrets
+            - circleci-read
 
   daily-maestro-e2e-tests:
     when:
@@ -2831,6 +2837,7 @@ workflows:
           context:
             - e2e-tests
             - slack-secrets
+            - circleci-read
       - run-workflow-maestro-tests:
           context:
             - e2e-tests
@@ -2937,6 +2944,7 @@ workflows:
           context:
             - e2e-tests
             - slack-secrets
+            - circleci-read
       - run-workflow-maestro-tests:
           context:
             - e2e-tests
