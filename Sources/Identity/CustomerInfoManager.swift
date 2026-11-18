@@ -198,9 +198,11 @@ class CustomerInfoManager {
             }
 
             self.systemInfo.isApplicationBackgrounded { [self] isAppBackgrounded in
-                self.fetchAndCacheCustomerInfoDataIfStale(appUserID: appUserID,
-                                                          isAppBackgrounded: isAppBackgrounded,
-                                                          completion: completionIfNotCalledAlready)
+                self.operationDispatcher.dispatchOnWorkerThread {
+                    self.fetchAndCacheCustomerInfoDataIfStale(appUserID: appUserID,
+                                                              isAppBackgrounded: isAppBackgrounded,
+                                                              completion: completionIfNotCalledAlready)
+                }
             }
 
         case .notStaleCachedOrFetched:

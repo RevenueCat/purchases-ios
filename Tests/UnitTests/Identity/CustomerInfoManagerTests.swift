@@ -925,6 +925,66 @@ class CustomerInfoManagerGetCustomerInfoTests: BaseCustomerInfoManagerTests {
         await expect(self.mockBackend.invokedGetSubscriberDataCount).toEventually(equal(1))
     }
 
+    func testCustomerInfoCachedOrFetchedDoesNotReadFreshCacheAgainOnMainActor() async throws {
+        let systemInfo = MainActorSystemInfo(finishTransactions: true)
+        let deviceCache = MainThreadRecordingDeviceCache(systemInfo: systemInfo)
+        self.mockOperationDispatcher.forwardToOriginalDispatchOnWorkerThread = true
+        let customerInfoManager = CustomerInfoManager(
+            offlineEntitlementsManager: self.mockOfflineEntitlementsManager,
+            operationDispatcher: self.mockOperationDispatcher,
+            deviceCache: deviceCache,
+            backend: self.mockBackend,
+            transactionFetcher: self.mockTransationFetcher,
+            transactionPoster: self.mockTransactionPoster,
+            systemInfo: systemInfo
+        )
+        customerInfoManager.cache(customerInfo: self.mockCustomerInfo, appUserID: Self.appUserID)
+
+        await withCheckedContinuation { continuation in
+            DispatchQueue.global().async {
+                customerInfoManager.customerInfo(appUserID: Self.appUserID,
+                                                 fetchPolicy: .cachedOrFetched,
+                                                 trackDiagnostics: false) { _ in
+                    continuation.resume()
+                }
+            }
+        }
+
+        await expect(deviceCache.cachedCustomerInfoReadsWereOnMainThread)
+            .toEventually(equal([false, false]))
+    }
+
+    func testCustomerInfoCachedOrFetchedDoesNotReadStaleCacheAgainOnMainActor() async throws {
+        let systemInfo = MainActorSystemInfo(finishTransactions: true)
+        let deviceCache = MainThreadRecordingDeviceCache(systemInfo: systemInfo)
+        deviceCache.stubbedIsCustomerInfoCacheStale = true
+        self.mockBackend.stubbedGetCustomerInfoResult = .success(self.mockRefreshedCustomerInfo)
+        self.mockOperationDispatcher.forwardToOriginalDispatchOnWorkerThread = true
+        let customerInfoManager = CustomerInfoManager(
+            offlineEntitlementsManager: self.mockOfflineEntitlementsManager,
+            operationDispatcher: self.mockOperationDispatcher,
+            deviceCache: deviceCache,
+            backend: self.mockBackend,
+            transactionFetcher: self.mockTransationFetcher,
+            transactionPoster: self.mockTransactionPoster,
+            systemInfo: systemInfo
+        )
+        customerInfoManager.cache(customerInfo: self.mockCustomerInfo, appUserID: Self.appUserID)
+
+        await withCheckedContinuation { continuation in
+            DispatchQueue.global().async {
+                customerInfoManager.customerInfo(appUserID: Self.appUserID,
+                                                 fetchPolicy: .cachedOrFetched,
+                                                 trackDiagnostics: false) { _ in
+                    continuation.resume()
+                }
+            }
+        }
+
+        await expect(self.mockBackend.invokedGetSubscriberDataCount).toEventually(equal(1))
+        expect(deviceCache.cachedCustomerInfoReadsWereOnMainThread) == [false]
+    }
+
     func testCustomerInfoCachedOrFetchedFetchesIfNoCache() async throws {
         self.mockBackend.stubbedGetCustomerInfoResult = .success(self.mockRefreshedCustomerInfo)
 
@@ -1084,6 +1144,35 @@ class CustomerInfoManagerGetCustomerInfoTests: BaseCustomerInfoManagerTests {
     }
 
 }
+
+private final class MainActorSystemInfo: MockSystemInfo {
+
+    override func isApplicationBackgrounded(completion: @escaping (Bool) -> Void) {
+        OperationDispatcher.default.dispatchOnMainActor {
+            completion(false)
+        }
+    }
+
+}
+
+extension MainActorSystemInfo: @unchecked Sendable {}
+
+private final class MainThreadRecordingDeviceCache: MockDeviceCache {
+
+    private let readsWereOnMainThread: Atomic<[Bool]> = .init([])
+
+    var cachedCustomerInfoReadsWereOnMainThread: [Bool] {
+        return self.readsWereOnMainThread.value
+    }
+
+    override func cachedCustomerInfoData(appUserID: String) -> Data? {
+        self.readsWereOnMainThread.modify { $0.append(Thread.isMainThread) }
+        return super.cachedCustomerInfoData(appUserID: appUserID)
+    }
+
+}
+
+extension MainThreadRecordingDeviceCache: @unchecked Sendable {}
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
 class CustomerInfoVerificationTrackingTests: BaseCustomerInfoManagerTests {
