@@ -71,6 +71,7 @@ struct VideoPlayerLayerView: UIViewRepresentable {
         // No controls: let carousel swipes pass through (parity with the controls-hidden path).
         view.isUserInteractionEnabled = false
         view.playerLayer.player = context.coordinator.player
+        view.addSubview(context.coordinator.windowObserver)
 
         switch contentMode {
         case .fit:
@@ -83,7 +84,7 @@ struct VideoPlayerLayerView: UIViewRepresentable {
     }
 
     func updateUIView(_ uiView: PlayerLayerBackedView, context: Context) {
-        context.coordinator.autoplayHandler.setPlaybackEnabled(isPaywallPageActive)
+        context.coordinator.windowObserver.isPaywallPageActive = isPaywallPageActive
     }
 
     static func dismantleUIView(_ uiView: PlayerLayerBackedView, coordinator: Coordinator) {
@@ -100,6 +101,7 @@ struct VideoPlayerLayerView: UIViewRepresentable {
         // Retained for the lifetime of the player so looping keeps working.
         private let looper: AVPlayerLooper?
         let autoplayHandler: VideoAutoplayHandler
+        let windowObserver: VideoPlaybackWindowObserver
 
         private let audioSessionHandler: VideoAudioSessionHandler
 
@@ -136,7 +138,11 @@ struct VideoPlayerLayerView: UIViewRepresentable {
             self.autoplayHandler = VideoAutoplayHandler(
                 playbackController: avPlayer,
                 lifecycleObserver: SystemAppLifecycleObserver(),
-                isPlaybackEnabled: isPlaybackEnabled
+                isPlaybackEnabled: false
+            )
+            self.windowObserver = VideoPlaybackWindowObserver(
+                autoplayHandler: self.autoplayHandler,
+                isPaywallPageActive: isPlaybackEnabled
             )
 
             if shouldAutoPlay {
@@ -148,6 +154,7 @@ struct VideoPlayerLayerView: UIViewRepresentable {
         func tearDown() {
             // Stop lifecycle resume before pausing, so a later didBecomeActive can't restart a
             // player that's being dismantled.
+            windowObserver.invalidate()
             autoplayHandler.invalidate()
             player.pause()
             audioSessionHandler.release()
