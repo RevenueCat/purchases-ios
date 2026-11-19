@@ -10,7 +10,7 @@ import Testing
 @Suite("Audience compatibility", .serialized)
 struct AudienceCompatibilityTests {
 
-    @Test(arguments: try Self.loadBundle().cases)
+    @Test(arguments: try AudienceCompatibilityTests.loadBundle().cases)
     private func khepriConditionMatchesSDKResult(_ testCase: CompatibilityCase) async throws {
         let bundle = try Self.loadBundle()
         let profile = try #require(bundle.profiles[testCase.profile], "Profile for \(testCase.id)")
