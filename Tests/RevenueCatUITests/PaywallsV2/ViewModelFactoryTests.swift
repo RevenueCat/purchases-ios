@@ -403,7 +403,7 @@ class ViewModelFactoryTests: TestCase {
     }
 
     @MainActor
-    func testHeaderHeroUsesHeaderSafeAreaIgnoreInfoWithoutAffectingRootHeroInfo() throws {
+    func testHeaderHeroIgnoresSafeAreaAndKeepsBodyTextBelowHeader() throws {
         let headerStack = PaywallComponent.StackComponent(
             components: [
                 .image(
@@ -423,7 +423,7 @@ class ViewModelFactoryTests: TestCase {
             dimension: .zlayer(.top)
         )
         let componentsConfig = PaywallComponentsData.PaywallComponentsConfig(
-            stack: .init(components: []),
+            stack: .init(components: [.text(.init(text: "badge_text_lid", color: Self.black))]),
             header: .init(stack: headerStack),
             stickyFooter: nil,
             background: .color(.init(light: .hex("#FFFFFF")))
@@ -433,14 +433,14 @@ class ViewModelFactoryTests: TestCase {
         let root = try factory.toRootViewModel(
             componentsConfig: componentsConfig,
             offering: Self.mockOffering,
-            localizationProvider: .init(locale: .current, localizedStrings: [:]),
+            localizationProvider: .init(locale: .current, localizedStrings: ["badge_text_lid": .string("Text")]),
             uiConfigProvider: try Self.createUIConfigProvider(),
             colorScheme: .light
         )
 
         expect(root.firstItemIsFullWidthMedia).to(beFalse())
         expect(root.headerViewModel?.firstItemIgnoresSafeArea).to(beTrue())
-        expect(root.shouldOverlayHeader).to(beTrue())
+        expect(root.shouldOverlayHeader).to(beFalse())
     }
 
     @MainActor

@@ -63,11 +63,7 @@ class RootViewModel {
     }
 
     var shouldOverlayHeader: Bool {
-        guard let headerViewModel else {
-            return false
-        }
-
-        return headerViewModel.firstItemIgnoresSafeArea || self.firstItemIsFullWidthMedia
+        self.headerViewModel != nil && self.firstItemIsFullWidthMedia
     }
 
 }
