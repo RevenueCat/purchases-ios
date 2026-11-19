@@ -41,6 +41,7 @@
 		95BEC1F7322543DA41EDC978 /* SoftPaywallView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34133BD82F766B4010C03198 /* SoftPaywallView.swift */; };
 		ADF86F30356AB196A4C684D8 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53B458E2BC96136BB0C4B0AC /* OnboardingView.swift */; };
 		D8B0BDEED53E8BC9524BA23A /* EntitlementGateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BC147907D0387B2FED9FABC /* EntitlementGateView.swift */; };
+		A1C3E5F7B9D2468A0C1E3F5A /* AdCheckpointView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2D4F6A8C0E1357B9D2F4A6C /* AdCheckpointView.swift */; };
 		AF43F4608852F0B851A81BAF /* CheckpointIdentifiers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0FC18792F8113A82EA342CC5 /* CheckpointIdentifiers.swift */; };
 /* End PBXBuildFile section */
 
@@ -76,6 +77,7 @@
 		34133BD82F766B4010C03198 /* SoftPaywallView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoftPaywallView.swift; sourceTree = "<group>"; };
 		53B458E2BC96136BB0C4B0AC /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
 		4BC147907D0387B2FED9FABC /* EntitlementGateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EntitlementGateView.swift; sourceTree = "<group>"; };
+		B2D4F6A8C0E1357B9D2F4A6C /* AdCheckpointView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdCheckpointView.swift; sourceTree = "<group>"; };
 		0FC18792F8113A82EA342CC5 /* CheckpointIdentifiers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckpointIdentifiers.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -240,6 +242,7 @@
 				34133BD82F766B4010C03198 /* SoftPaywallView.swift */,
 				53B458E2BC96136BB0C4B0AC /* OnboardingView.swift */,
 				4BC147907D0387B2FED9FABC /* EntitlementGateView.swift */,
+				B2D4F6A8C0E1357B9D2F4A6C /* AdCheckpointView.swift */,
 			);
 			path = Checkpoints;
 			sourceTree = "<group>";
@@ -347,6 +350,7 @@
 				95BEC1F7322543DA41EDC978 /* SoftPaywallView.swift in Sources */,
 				ADF86F30356AB196A4C684D8 /* OnboardingView.swift in Sources */,
 				D8B0BDEED53E8BC9524BA23A /* EntitlementGateView.swift in Sources */,
+				A1C3E5F7B9D2468A0C1E3F5A /* AdCheckpointView.swift in Sources */,
 				5364A7522DF198E3007436B0 /* Constants.swift in Sources */,
 				5364A7532DF198E3007436B0 /* HealthViewModel.swift in Sources */,
 				5364A7542DF198E3007436B0 /* SampleCatApp.swift in Sources */,

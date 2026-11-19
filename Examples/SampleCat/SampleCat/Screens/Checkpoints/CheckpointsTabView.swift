@@ -43,6 +43,12 @@ struct CheckpointsTabView: View {
                         SampleCell(title: "Entitlement gate",
                                    subtitle: "Checks CustomerInfo first and skips the checkpoint for subscribers.")
                     }
+                    NavigationLink {
+                        AdCheckpointView()
+                    } label: {
+                        SampleCell(title: "Ad checkpoint",
+                                   subtitle: "Shows an interstitial or rewarded ad through the ad presenter.")
+                    }
                 }
                 .buttonStyle(.plain)
                 .padding()

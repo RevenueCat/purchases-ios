@@ -9,4 +9,6 @@ enum CheckpointIdentifiers {
     static let softPaywall = "soft_paywall"
     static let onboardingComplete = "onboarding_complete"
     static let entitlementGate = "entitlement_gate"
+    static let interstitialAd = "interstitial_ad"
+    static let rewardedAd = "rewarded_ad"
 }
