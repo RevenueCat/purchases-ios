@@ -2,6 +2,7 @@
 //  Copyright RevenueCat Inc. All Rights Reserved.
 //
 
+@_spi(Internal) import RevenueCat
 @testable import RevenueCatUI
 import XCTest
 // swiftlint:disable force_try
@@ -541,6 +542,199 @@ final class WebViewSessionTests: TestCase {
         withExtendedLifetime(delegate) {}
     }
 
+    // MARK: - open_url
+
+    func testOpenURLOpensAndRespondsOpened() throws {
+        let harness = Harness()
+        var opened: [(URL, PaywallComponent.ButtonComponent.URLMethod)] = []
+        harness.session.onOpenURL = { url, method in
+            opened.append((url, method))
+            return true
+        }
+        harness.connect()
+
+        harness.requestOpenURL(["url": .string("https://example.org/terms"), "method": .string("in_app_browser")])
+
+        XCTAssertEqual(opened.map(\.0), [URL(string: "https://example.org/terms")!])
+        XCTAssertEqual(opened.map(\.1), [.inAppBrowser])
+        let response = try XCTUnwrap(harness.outboundEnvelopes().first)
+        XCTAssertEqual(response.kind, .response)
+        XCTAssertEqual(response.type, WebViewEnvelope.messageTypeOpenURL)
+        XCTAssertEqual(response.id, "open-1")
+        XCTAssertEqual(response.componentID, "web")
+        XCTAssertEqual(response.payload?["opened"]?.boolValue, true)
+    }
+
+    func testOpenURLDefaultsToExternalBrowser() {
+        let harness = Harness()
+        var methods: [PaywallComponent.ButtonComponent.URLMethod] = []
+        harness.session.onOpenURL = { _, method in
+            methods.append(method)
+            return true
+        }
+        harness.connect()
+
+        harness.requestOpenURL(["url": .string("https://example.org")])
+
+        XCTAssertEqual(methods, [.externalBrowser])
+    }
+
+    func testOpenURLRespondsNotOpenedForInvalidRequest() throws {
+        let harness = Harness()
+        var openCount = 0
+        harness.session.onOpenURL = { _, _ in
+            openCount += 1
+            return true
+        }
+        harness.connect()
+
+        harness.requestOpenURL(["url": .string("javascript:alert(1)"), "method": .string("deep_link")])
+
+        XCTAssertEqual(openCount, 0)
+        let response = try XCTUnwrap(harness.outboundEnvelopes().first)
+        XCTAssertEqual(response.kind, .response)
+        XCTAssertEqual(response.payload?["opened"]?.boolValue, false)
+    }
+
+    func testOpenURLRespondsNotOpenedWithoutOpener() throws {
+        let harness = Harness()
+        harness.connect()
+
+        harness.requestOpenURL(["url": .string("https://example.org")])
+
+        let response = try XCTUnwrap(harness.outboundEnvelopes().first)
+        XCTAssertEqual(response.payload?["opened"]?.boolValue, false)
+    }
+
+    func testOpenURLThrottlesWithinOneSecond() throws {
+        let harness = Harness()
+        var openCount = 0
+        harness.session.onOpenURL = { _, _ in
+            openCount += 1
+            return true
+        }
+        harness.connect()
+
+        harness.requestOpenURL(["url": .string("https://example.org/a")], id: "1")
+        harness.clock.now += 0.5
+        harness.requestOpenURL(["url": .string("https://example.org/b")], id: "2")
+        harness.clock.now += 0.5
+        harness.requestOpenURL(["url": .string("https://example.org/c")], id: "3")
+
+        XCTAssertEqual(openCount, 2)
+        let opened = try harness.outboundEnvelopes().map { $0.payload?["opened"]?.boolValue }
+        XCTAssertEqual(opened, [true, false, true])
+    }
+
+    func testOpenURLAsMessageOrWithoutIDIsDropped() {
+        let harness = Harness()
+        var openCount = 0
+        harness.session.onOpenURL = { _, _ in
+            openCount += 1
+            return true
+        }
+        harness.connect()
+
+        for (kind, id): (WebViewEnvelope.Kind, String?) in [(.message, nil), (.message, "1"), (.request, nil)] {
+            harness.handle(.init(
+                kind: kind,
+                componentID: "web",
+                type: WebViewEnvelope.messageTypeOpenURL,
+                id: id,
+                payload: ["url": .string("https://example.org")]
+            ))
+        }
+
+        XCTAssertEqual(openCount, 0)
+        XCTAssertTrue(harness.capturedScripts.isEmpty)
+    }
+
+    func testOpenURLBeforeConnectIsDropped() {
+        let harness = Harness()
+        var openCount = 0
+        harness.session.onOpenURL = { _, _ in
+            openCount += 1
+            return true
+        }
+
+        harness.requestOpenURL(["url": .string("https://example.org")])
+
+        XCTAssertEqual(openCount, 0)
+        XCTAssertTrue(harness.capturedScripts.isEmpty)
+    }
+
+    // MARK: - WebViewOpenURLRequest
+
+    func testOpenURLRequestAcceptsHTTPSForBrowsers() {
+        for method in ["external_browser", "in_app_browser"] {
+            let request = WebViewOpenURLRequest(payload: [
+                "url": .string("https://example.org/terms?x=1"),
+                "method": .string(method)
+            ])
+            XCTAssertEqual(request?.url, URL(string: "https://example.org/terms?x=1"), method)
+            XCTAssertEqual(request?.method.rawValue, method)
+        }
+    }
+
+    func testOpenURLRequestRefusesNonHTTPSForBrowsers() {
+        for method in ["external_browser", "in_app_browser"] {
+            for url in ["http://example.org", "myapp://settings", "mailto:a@example.org"] {
+                XCTAssertNil(
+                    WebViewOpenURLRequest(payload: ["url": .string(url), "method": .string(method)]),
+                    "\(method) \(url)"
+                )
+            }
+        }
+    }
+
+    func testOpenURLRequestAcceptsAppSchemesAndHTTPSForDeepLink() {
+        for url in ["myapp://settings?tab=1", "https://example.org/app", "mailto:a@example.org"] {
+            let request = WebViewOpenURLRequest(payload: ["url": .string(url), "method": .string("deep_link")])
+            XCTAssertEqual(request?.url, URL(string: url), url)
+            XCTAssertEqual(request?.method, .deepLink)
+        }
+    }
+
+    func testOpenURLRequestRefusesBlockedDeepLinkSchemes() {
+        let urls = [
+            "http://example.org",
+            "javascript:alert(1)",
+            "JavaScript:alert(1)",
+            "vbscript:msgbox(1)",
+            "data:text/html,hi",
+            "file:///etc/passwd",
+            "blob:https://example.org/uuid",
+            "about:blank",
+            "content://com.example/data",
+            "intent://scan#Intent;scheme=zxing;end"
+        ]
+        for url in urls {
+            XCTAssertNil(
+                WebViewOpenURLRequest(payload: ["url": .string(url), "method": .string("deep_link")]),
+                url
+            )
+        }
+    }
+
+    func testOpenURLRequestRefusesMalformedPayloads() {
+        let tooLong = "https://example.org/" + String(repeating: "a", count: WebViewEnvelope.maxOpenURLLength)
+        let payloads: [[String: PaywallWebViewValue]?] = [
+            nil,
+            [:],
+            ["url": .string("")],
+            ["url": .number(1)],
+            ["url": .string("not a url")],
+            ["url": .string(tooLong)],
+            ["url": .string("https://user:pass@example.org")],
+            ["url": .string("https://example.org"), "method": .string("popup")],
+            ["url": .string("https://example.org"), "method": .string("unknown")],
+            ["url": .string("https://example.org"), "method": .number(1)]
+        ]
+        for payload in payloads {
+            XCTAssertNil(WebViewOpenURLRequest(payload: payload), "\(String(describing: payload))")
+        }
+    }
+
     // MARK: - receiveScript
 
     func testReceiveScriptEscapesLineSeparatorsAndRoundTrips() throws {
@@ -621,6 +815,7 @@ private final class Harness {
     nonisolated static let expectedOrigin = WebViewOrigin(string: Harness.expectedOriginString)!
 
     let session: WebViewSession
+    let clock: TestClock
     var capturedScripts: [String] = []
     var currentURL: URL? = URL(string: "https://example.com/path")!
     /// Simulates a delivery miss (e.g. a released web view): when `false`, outbound frames are not
@@ -631,13 +826,15 @@ private final class Harness {
         size: (width: Bool, height: Bool) = (false, false),
         expectedOrigin: WebViewOrigin = Harness.expectedOrigin
     ) {
+        let clock = TestClock(now: Date(timeIntervalSince1970: 1_787_000_000))
+        self.clock = clock
         self.session = WebViewSession(
             componentID: "web",
             expectedOrigin: expectedOrigin,
             fitAxes: size,
             evaluateJavaScript: { _ in false },
             currentURL: { nil },
-            dateProvider: { Date(timeIntervalSince1970: 1_787_000_000) }
+            dateProvider: { clock.now }
         )
         self.session.evaluateJavaScript = { [weak self] script in
             guard let self, self.deliverOutbound else {
@@ -673,6 +870,26 @@ private final class Harness {
         try self.capturedScripts.map {
             try WebViewSessionTests.decodeEnvelope(fromScript: $0)
         }
+    }
+
+    func requestOpenURL(_ payload: [String: PaywallWebViewValue], id: String = "open-1") {
+        self.handle(.init(
+            kind: .request,
+            componentID: "web",
+            type: WebViewEnvelope.messageTypeOpenURL,
+            id: id,
+            payload: payload
+        ))
+    }
+
+}
+
+private final class TestClock {
+
+    var now: Date
+
+    init(now: Date) {
+        self.now = now
     }
 
 }
