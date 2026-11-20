@@ -6,9 +6,9 @@ GIT
 
 GIT
   remote: https://github.com/RevenueCat/fastlane-plugin-revenuecat_internal
-  revision: a86206839353fde522858349b8eb7c1966ebae1d
+  revision: 37768463cc78744ee71218b93ecec964fd4c8c83
   specs:
-    fastlane-plugin-revenuecat_internal (0.1.0)
+    fastlane-plugin-revenuecat_internal (0.3.0)
       nokogiri
       rest-client
 
@@ -150,7 +150,7 @@ GEM
     declarative (0.0.20)
     digest-crc (0.7.0)
       rake (>= 12.0.0, < 14.0.0)
-    domain_name (0.7.20261031)
+    domain_name (0.7.20261117)
     dotenv (2.8.1)
     drb (2.2.3)
     dry-cli (1.2.0)
