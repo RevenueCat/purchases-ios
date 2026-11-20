@@ -74,42 +74,34 @@ final class FileImageLoader: ObservableObject {
         self.loadFromCache(url: url)
     }
 
+    @MainActor
     func load() async {
-        let pendingURL = await MainActor.run { self.result == nil ? self.url : nil }
-        guard let url = pendingURL else {
-            return
-        }
-
-        if let alternative = self.cachedAlternativeURL,
-           let cached = self.cachedImage(for: alternative) ?? DecodedImageCache.shared.cachedImageAndSize(for: url) {
-            await MainActor.run {
-                guard !Task.isCancelled, self.url == url else { return }
-                self.result = cached
-                self.wasLoadedFromCache = true
-            }
-            return
-        }
+        guard self.result == nil, let url = self.url else { return }
 
         do {
-            let imageInfo = try await self.fileRepository.generateOrGetCachedFileURL(
-                for: url, withChecksum: nil
-            ).asImageAndSize
+            let loaded = try await self.loadImage(for: url)
+            guard !Task.isCancelled, self.url == url else { return }
 
-            guard !Task.isCancelled else {
-                return
-            }
-
-            if let imageInfo {
-                DecodedImageCache.shared.cacheImageAndSize(imageInfo, for: url)
-            }
-
-            await MainActor.run {
-                guard !Task.isCancelled, self.url == url else { return }
-                self.result = imageInfo
-            }
+            self.wasLoadedFromCache = loaded.wasLoadedFromCache
+            self.result = loaded.image
         } catch {
             Logger.warning(Strings.image_failed_to_load(url, error))
         }
+    }
+
+    private func loadImage(for url: URL) async throws -> (image: Value?, wasLoadedFromCache: Bool) {
+        if let alternative = self.cachedAlternativeURL,
+           let cached = self.cachedImage(for: alternative) ?? DecodedImageCache.shared.cachedImageAndSize(for: url) {
+            return (cached, true)
+        }
+
+        let file = try await self.fileRepository.generateOrGetCachedFileURL(for: url, withChecksum: nil)
+        guard !Task.isCancelled else { return (nil, false) }
+        let image = file.asImageAndSize
+        if let image {
+            DecodedImageCache.shared.cacheImageAndSize(image, for: url)
+        }
+        return (image, false)
     }
 
 }
