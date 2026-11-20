@@ -119,6 +119,22 @@ platform :ios do
     bump(options)
   end
 
+  desc "Open a hotfix release PR that patches an older release with a PR merged into main. Usage: fastlane ios hotfix pr:1234 version:9.16.0"
+  lane :hotfix do |options|
+    create_hotfix(
+      pr_number: options[:pr],
+      version: options[:version],
+      changelog_latest_path: CHANGELOG_LATEST_PATH,
+      changelog_path: CHANGELOG_PATH,
+      files_to_update: files_with_version_number,
+      files_to_update_without_prerelease_modifiers: files_with_version_number_without_prerelease_modifiers,
+      files_to_update_on_latest_stable_releases: files_to_update_on_latest_stable_releases,
+      repo_name: INTERNAL_REPO_NAME,
+      omit_pr_references_in_changelog_files: true,
+      dry_run: options[:dry_run]
+    )
+  end
+
   desc "Make github release"
   lane :github_release do |options|
     create_github_release(

@@ -10,12 +10,11 @@
 5. The release branch PR can be merged after the release is completed.
 
 ##### Hotfixes:
-Sometimes you might need to release a patch on a version that's not the latest. Or sometimes there might have been commits on `main` that shouldn't be released, but the latest version has a big bug. For example, let's say the last version is 4.0.0, but there's a bug on 3.9.0 that needs to be released as a 3.9.1:
-1. Open a PR with the fix, merge it to `main`.
-2. Jump to 3.9.0 and create a new branch `release/3.9.0`. Push this branch since it will be used as base for the PR you will open in the next steps.
-3. Cherry pick the changes with your fix that you just merged to `main` using `git cherry-pick <sha_of_the_squashed_commit_in_main>`. Fix any conflicts if there are any. Push the cherry picked commit to the remote branch `release/3.9.0`.
-4. Run `bundle exec fastlane ios bump` as you would do with any release. This will create a new PR `release/3.9.1`. Make sure the base branch of the PR is pointing to `release/3.9.0` and that the PR is labeled with **DO NOT MERGE** (add it to the title too so it's not merged by mistake)
-5. When the PR is approved, **DO NOT MERGE IT**. The `wait-for-pr-approval` job is approved automatically once the PR is approved, and CircleCI tags the release when the tests pass. If there is no such job because the release is older than when we introduced it, manually tag the last commit in `release/3.9.1` with `3.9.1`.
-6. CircleCI will start the deployment process
-7. Close the PR after the release has been completed and delete both `release/3.9.0` and `release/3.9.1` branches.
-8. Remember to edit the CHANGELOG.md in `main` to include the version that has been just released
+To release a fix merged into `main` without releasing the rest of `main`, for example 3.9.1 when the latest is 4.0.0, or 4.0.1 while `main` is not ready to release:
+1. Comment `@RCGitBot hotfix 3` on the merged fix PR. The bot cherry-picks the fix onto the latest 3.x tag, bumps the version, opens a `release/3.9.1` PR into a new `hotfix/3.9.0` branch and comments the release PR link on the fix PR.
+1. Approve the release PR, but **don't merge it**. Once tests pass, CircleCI tags 3.9.1, deploys it and merges the PR into `hotfix/3.9.0`. If that does not happen, approve the `wait-for-pr-approval` job in CircleCI by hand, or tag the last commit of `release/3.9.1` with `3.9.1` and push the tag.
+1. Delete the `hotfix/3.9.0` branch and add the release to CHANGELOG.md on `main`.
+
+If the cherry-pick conflicts, the bot comments a local command instead: run it from `main`, resolve the conflicts, run `git cherry-pick --continue`, then run it again to open the PR.
+
+To patch an older minor (3.8.x while 3.9.0 exists), run `bundle exec fastlane ios hotfix pr:<number> version:3.8.2` locally (releases 3.8.3). Both local commands need `fastlane/.env`, like `bump`.
