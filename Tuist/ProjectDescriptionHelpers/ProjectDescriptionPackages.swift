@@ -21,4 +21,13 @@ extension Array<ProjectDescription.Package> {
             return []
         }
     }
+
+    public static var adsPackage: [ProjectDescription.Package] {
+        switch Environment.dependencyMode {
+        case .localSwiftPackage:
+            return [.package(path: .relativeToRoot("AdapterSDKs/RevenueCatAds"))]
+        case .remoteSwiftPackage, .localXcodeProject, .remoteXcodeProject:
+            return []
+        }
+    }
 }

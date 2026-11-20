@@ -52,6 +52,18 @@ extension TargetDependency {
         }
     }
 
+    /// Returns the RevenueCatAds dependency based on the dependency mode.
+    /// Only supports local modes.
+    /// - Returns: A TargetDependency for RevenueCatAds
+    public static var revenueCatAds: TargetDependency {
+        switch Environment.dependencyMode {
+        case .localSwiftPackage, .remoteSwiftPackage:
+            return .revenueCatAdsSwiftPackageDependency
+        case .localXcodeProject, .remoteXcodeProject:
+            return .revenueCatAdsXcodeProjectDependency
+        }
+    }
+
     /// Returns the ReceiptParser dependency based on the dependency mode
     /// - Returns: A TargetDependency for ReceiptParser
     public static var receiptParser: TargetDependency {
@@ -136,6 +148,20 @@ extension TargetDependency {
             path: .relativeToRoot("Projects/RevenueCatAdMob"))
     }
 
+    // MARK: - RevenueCatAds
+
+    /// RevenueCatAds as a native Xcode SPM package dependency
+    static var revenueCatAdsSwiftPackageDependency: TargetDependency {
+        .package(product: "RevenueCatAds", type: .runtime)
+    }
+
+    /// RevenueCatAds as a local Tuist project target dependency
+    static var revenueCatAdsXcodeProjectDependency: TargetDependency {
+        .project(
+            target: "RevenueCatAds",
+            path: .relativeToRoot("Projects/RevenueCatAds"))
+    }
+
     // MARK: - GoogleMobileAds
 
     /// Returns the GoogleMobileAds dependency based on the dependency mode
@@ -146,6 +172,17 @@ extension TargetDependency {
             return .package(product: "GoogleMobileAds", type: .runtime)
         case .localXcodeProject, .remoteXcodeProject:
             return .external(name: "GoogleMobileAds")
+        }
+    }
+
+    /// Returns the PrebidMobile dependency based on the dependency mode
+    /// - Returns: A TargetDependency for PrebidMobile
+    public static var prebidMobile: TargetDependency {
+        switch Environment.dependencyMode {
+        case .localSwiftPackage, .remoteSwiftPackage:
+            return .package(product: "PrebidMobile", type: .runtime)
+        case .localXcodeProject, .remoteXcodeProject:
+            return .external(name: "PrebidMobile")
         }
     }
 
