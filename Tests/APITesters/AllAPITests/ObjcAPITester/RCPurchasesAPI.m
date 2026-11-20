@@ -267,6 +267,20 @@ NSURL *url;
     }
 #endif
 
+#if ENABLE_MULTISEAT_PURCHASES
+#if (TARGET_OS_IPHONE || TARGET_OS_MACCATALYST) && !TARGET_OS_TV && !TARGET_OS_WATCH && !TARGET_OS_VISION
+    if (@available(iOS 27.3, *)) {
+        UIViewController *viewController = nil;
+        [p presentMultiSeatInvitationSheetForStoreProduct:storeProduct
+                                       fromViewController:viewController
+                                               completion:^(NSError * _Nullable error) { }];
+        [p presentMultiSeatInvitationSheetForPackage:pack
+                                  fromViewController:viewController
+                                          completion:^(NSError * _Nullable error) { }];
+    }
+#endif
+#endif
+
     [p getStorefrontWithCompletion:^(RCStorefront * _Nullable s) { }];
 }
 

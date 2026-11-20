@@ -131,6 +131,7 @@ class BasePurchasesTests: TestCase {
                                                                          currentUserProvider: self.identityManager)
         self.mockTransactionsManager = MockTransactionsManager(receiptParser: self.mockReceiptParser)
         self.mockStoreMessagesHelper = .init()
+        self.mockMultiSeatSheetsHelper = MockMultiSeatSheetsHelper(systemInfo: self.systemInfo)
         self.mockWinBackOfferEligibilityCalculator = MockWinBackOfferEligibilityCalculator()
         self.mockVirtualCurrencyManager = MockVirtualCurrencyManager()
         self.storeKit2ProductPurchaser = StoreKit2ProductPurchaser(systemInfo: self.systemInfo)
@@ -203,6 +204,7 @@ class BasePurchasesTests: TestCase {
     var mockManageSubsHelper: MockManageSubscriptionsHelper!
     var mockBeginRefundRequestHelper: MockBeginRefundRequestHelper!
     var mockStoreMessagesHelper: MockStoreMessagesHelper!
+    var mockMultiSeatSheetsHelper: MockMultiSeatSheetsHelper!
     var mockWinBackOfferEligibilityCalculator: MockWinBackOfferEligibilityCalculator!
     var storeKit2ProductPurchaser: StoreKit2ProductPurchaser!
     var webPurchaseRedemptionHelper: WebPurchaseRedemptionHelper!
@@ -390,7 +392,8 @@ class BasePurchasesTests: TestCase {
                                    healthManager: healthManager,
                                    transactionMetadataSyncHelper: transactionMetadataSyncHelper,
                                    currentConfiguration: currentConfiguration,
-                                   webBundleEventBus: webBundleEventBus)
+                                   webBundleEventBus: webBundleEventBus,
+                                   multiSeatSheetsHelper: self.mockMultiSeatSheetsHelper)
 
         self.purchasesOrchestrator.delegate = self.purchases
 
@@ -964,6 +967,7 @@ private extension BasePurchasesTests {
         self.mockTransactionFetcher = nil
         self.mockManageSubsHelper = nil
         self.mockBeginRefundRequestHelper = nil
+        self.mockMultiSeatSheetsHelper = nil
         self.purchasesOrchestrator = nil
         self.deviceCache = nil
         self.paywallCache = nil
