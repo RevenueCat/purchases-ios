@@ -20,10 +20,12 @@ import SwiftUI
 final class FileImageLoader: ObservableObject {
 
     let fileRepository: FileRepository
-    private(set) var url: URL?
+    @MainActor private(set) var url: URL?
+    private let cachedAlternativeURL: URL?
 
     @MainActor
-    init(fileRepository: FileRepository, url: URL?) {
+    init(fileRepository: FileRepository, url: URL?, cachedAlternativeURL: URL? = nil) {
+        self.cachedAlternativeURL = cachedAlternativeURL
         self.fileRepository = fileRepository
         self.url = url
         self.loadFromCache(url: url)
@@ -33,27 +35,24 @@ final class FileImageLoader: ObservableObject {
 
     @MainActor
     private func loadFromCache(url: URL?) {
-        guard let url = url else {
+        guard self.cachedAlternativeURL == nil, let url = url else {
             return
         }
 
+        let result = self.cachedImage(for: url)
+        self.wasLoadedFromCache = result != nil
+        self.result = result
+    }
+
+    private func cachedImage(for url: URL) -> Value? {
         if let result = DecodedImageCache.shared.cachedImageAndSize(for: url) {
-            self.wasLoadedFromCache = true
-            self.result = result
-            return
+            return result
         }
-
-        let result = self.fileRepository.getCachedFileURL(
-            for: url,
-            withChecksum: nil
-        )?.asImageAndSize
-
+        let result = self.fileRepository.getCachedFileURL(for: url, withChecksum: nil)?.asImageAndSize
         if let result {
             DecodedImageCache.shared.cacheImageAndSize(result, for: url)
         }
-
-        self.wasLoadedFromCache = result != nil
-        self.result = result
+        return result
     }
 
     @Published @MainActor
@@ -76,11 +75,18 @@ final class FileImageLoader: ObservableObject {
     }
 
     func load() async {
-        if await self.result != nil {
+        let pendingURL = await MainActor.run { self.result == nil ? self.url : nil }
+        guard let url = pendingURL else {
             return
         }
 
-        guard let url = self.url else {
+        if let alternative = self.cachedAlternativeURL,
+           let cached = self.cachedImage(for: alternative) ?? DecodedImageCache.shared.cachedImageAndSize(for: url) {
+            await MainActor.run {
+                guard !Task.isCancelled, self.url == url else { return }
+                self.result = cached
+                self.wasLoadedFromCache = true
+            }
             return
         }
 
@@ -98,6 +104,7 @@ final class FileImageLoader: ObservableObject {
             }
 
             await MainActor.run {
+                guard !Task.isCancelled, self.url == url else { return }
                 self.result = imageInfo
             }
         } catch {

@@ -45,6 +45,15 @@ protocol PaywallCacheWarmingType: Sendable {
 
 }
 
+protocol PaywallAssetRepository: FileRepositoryType {
+
+    func getCachedFileURL(for url: URL, withChecksum checksum: Checksum?) -> URL?
+
+}
+
+@available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
+extension FileRepository: PaywallAssetRepository {}
+
 protocol PaywallFontManagerType: Sendable {
 
     func fontIsAlreadyInstalled(fontName: String, fontFamily: String?) -> Bool
@@ -59,7 +68,7 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
 
     private let introEligibiltyChecker: TrialOrIntroPriceEligibilityCheckerType
     private let fontsManager: PaywallFontManagerType
-    private let fileRepository: FileRepositoryType
+    private let fileRepository: PaywallAssetRepository
     private let preferredLocalesProvider: @Sendable () -> [String]
 
     private var warmedEligibilityProductIdentifiers: Set<String> = []
@@ -74,7 +83,7 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
     init(
         introEligibiltyChecker: TrialOrIntroPriceEligibilityCheckerType,
         fontsManager: PaywallFontManagerType = DefaultPaywallFontsManager(session: PaywallCacheWarming.downloadSession),
-        fileRepository: FileRepositoryType = FileRepository.shared,
+        fileRepository: PaywallAssetRepository = FileRepository.shared,
         preferredLocalesProvider: @escaping @Sendable () -> [String] = { Locale.preferredLanguages }
     ) {
         self.introEligibiltyChecker = introEligibiltyChecker
@@ -212,7 +221,12 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
 
         let preferredLocales = preferredLocaleIdentifiers.map(Locale.init(identifier:))
         let screenAssets = screens.map { $0.localizedCacheAssets(preferredLocales: preferredLocales) }
-        let imageURLs = Set(screenAssets.flatMap(\.imageSourcesToDownload))
+        let images = Set(screenAssets.flatMap(\.images))
+        let alternatives = Set(images.compactMap(\.cachedAlternativeURL))
+        let cachedAlternatives = alternatives.filter {
+            self.fileRepository.getCachedFileURL(for: $0, withChecksum: nil) != nil
+        }
+        let imageURLs = Set(images.flatMap { $0.imageSourcesToDownload(isCached: cachedAlternatives.contains) })
         let videoURLs = Set(screenAssets.flatMap(\.videoSourcesToDownload))
         #if !os(tvOS)
         let fonts = uiConfig.app.allDownloadableFonts.filter {
@@ -315,7 +329,16 @@ struct CacheAssetCollection {
     struct Media: Hashable {
         let highResURL: URLWithValidation
         let lowResURL: URLWithValidation?
+        let cachedAlternativeURL: URL?
         let rendersSynchronously: Bool
+
+        func imageSourcesToDownload(isCached: (URL) -> Bool) -> [URLWithValidation] {
+            guard let lowResURL else { return [self.highResURL] }
+            let needsPlaceholder = self.cachedAlternativeURL.map(isCached) != true
+            var sources = needsPlaceholder ? [lowResURL] : []
+            if self.rendersSynchronously { sources.append(self.highResURL) }
+            return sources
+        }
     }
 }
 
@@ -323,13 +346,7 @@ struct CacheAssetCollection {
 extension CacheAssetCollection {
 
     var imageSourcesToDownload: [URLWithValidation] {
-        return self.images.flatMap { media in
-            var sources = [media.lowResURL ?? media.highResURL]
-            if media.rendersSynchronously, media.lowResURL != nil {
-                sources.append(media.highResURL)
-            }
-            return sources
-        }
+        return self.images.flatMap { $0.imageSourcesToDownload { _ in false } }
     }
 
     var videoSourcesToDownload: [URLWithValidation] {

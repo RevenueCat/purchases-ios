@@ -39,8 +39,7 @@ import Foundation
         public static func validatedHTTPSURL(from urlString: String) -> URL? {
             guard !urlString.contains("{{"),
                   let url = URL(string: urlString),
-                  url.scheme?.lowercased() == "https",
-                  url.host?.isEmpty == false else {
+                  url.isHTTPSWithHost else {
                 return nil
             }
 

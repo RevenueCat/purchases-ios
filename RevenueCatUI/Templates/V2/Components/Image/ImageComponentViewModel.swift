@@ -181,10 +181,7 @@ struct ImageComponentStyle {
     let heightLight: Int
     let widthDark: Int?
     let heightDark: Int?
-    let url: URL
-    let lowResUrl: URL?
-    let darkUrl: URL?
-    let darkLowResUrl: URL?
+    let source: PaywallComponent.ThemeImageUrls
     let size: PaywallComponent.Size
     let shape: ShapeModifier.Shape?
     let colorOverlay: DisplayableColorScheme?
@@ -213,10 +210,7 @@ struct ImageComponentStyle {
         self.heightLight = source.light.height
         self.widthDark = source.dark?.width
         self.heightDark = source.dark?.height
-        self.url = source.light.heic
-        self.lowResUrl = source.light.heicLowRes
-        self.darkUrl = source.dark?.heic
-        self.darkLowResUrl = source.dark?.heicLowRes
+        self.source = source
         self.size = size
         self.shape = maskShape?.shape
         self.colorOverlay = colorOverlay?.asDisplayable(uiConfigProvider: uiConfigProvider)

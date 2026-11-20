@@ -260,7 +260,8 @@ private extension PaywallComponent.ThemeImageUrls {
             .map { imageURLs in
                 .init(
                     highResURL: .init(url: imageURLs.heic, checksum: nil),
-                    lowResURL: .init(url: imageURLs.heicLowRes, checksum: nil),
+                    lowResURL: .init(url: imageURLs.placeholderURL, checksum: nil),
+                    cachedAlternativeURL: imageURLs.cachedAlternativeURL,
                     rendersSynchronously: rendersSynchronously
                 )
             }
@@ -280,6 +281,7 @@ private extension PaywallComponent.ThemeVideoUrls {
                     lowResURL: videoURLs.urlLowRes.map {
                         .init(url: $0, checksum: videoURLs.checksumLowRes)
                     },
+                    cachedAlternativeURL: nil,
                     rendersSynchronously: rendersSynchronously
                 )
             }
@@ -300,6 +302,7 @@ private extension PaywallComponent.IconComponent {
             .init(
                 highResURL: .init(url: baseURL.appendingPathComponent($0.heic), checksum: nil),
                 lowResURL: nil,
+                cachedAlternativeURL: nil,
                 rendersSynchronously: rendersSynchronously
             )
         }

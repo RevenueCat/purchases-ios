@@ -22,6 +22,46 @@ import XCTest
 @MainActor
 final class FileImageLoaderTests: TestCase {
 
+    func testCachedLegacyPlaceholderDecodesWithoutNetworkOrDiskLookupDuringInitialization() async throws {
+        let network = ImageDownloadStub()
+        let fileManager = ImageLoaderFileManager()
+        let repository = FileRepository(
+            networkService: network,
+            fileManager: fileManager,
+            basePath: "FileImageLoaderTests-\(UUID().uuidString)"
+        )
+        let webp = Self.makeLocalURL(filename: "candidate.webp")
+        let heic = Self.makeLocalURL(filename: "legacy.heic")
+        let cached = try XCTUnwrap(repository.generateLocalFilesystemURL(forRemoteURL: heic, withChecksum: nil))
+        try Self.writeImageData(Self.heicData(), to: cached)
+        let loader = FileImageLoader(fileRepository: repository, url: webp, cachedAlternativeURL: heic)
+        XCTAssertEqual(fileManager.attributeReadCount.value, 0)
+        await loader.load()
+        XCTAssertNotNil(loader.result)
+        XCTAssertTrue(loader.wasLoadedFromCache)
+        XCTAssertEqual(fileManager.attributeReadCount.value, 1)
+        let requests = await network.requests
+        XCTAssertTrue(requests.isEmpty)
+    }
+
+    func testMalformedWebPStillLoadsFullHEICWithoutRequestingLegacyPlaceholder() async throws {
+        let full = Self.makeLocalURL(filename: "full.heic")
+        let webp = Self.makeLocalURL(filename: "candidate.webp")
+        let heic = Self.makeLocalURL(filename: "legacy.heic")
+        let network = ImageDownloadStub(responses: [full: try Self.heicData(), webp: Data("invalid".utf8)])
+        let repository = FileRepository(networkService: network, basePath: "FileImageLoaderTests-\(UUID().uuidString)")
+        let high = FileImageLoader(fileRepository: repository, url: full)
+        let low = FileImageLoader(fileRepository: repository, url: webp, cachedAlternativeURL: heic)
+        async let highLoad: Void = high.load()
+        async let lowLoad: Void = low.load()
+        _ = await (highLoad, lowLoad)
+        XCTAssertNotNil(high.result)
+        XCTAssertNil(low.result)
+        let requests = await network.requests
+        XCTAssertEqual(requests.count, 2)
+        XCTAssertEqual(Set(requests), [full, webp])
+    }
+
     func testRepeatedCachedLoadSkipsDiskAccessAfterFileIsRemoved() throws {
         let fileManager = ImageLoaderFileManager()
         let fileRepository = self.makeFileRepository(fileManager: fileManager)
@@ -297,6 +337,12 @@ final class FileImageLoaderTests: TestCase {
         try data.write(to: url, options: .atomic)
     }
 
+    private static func heicData() throws -> Data {
+        let resources = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent()
+            .appendingPathComponent("Resources")
+        return try Data(contentsOf: resources.appendingPathComponent("header.heic"))
+    }
+
     private static func makeLocalURL(filename: String) -> URL {
         return FileManager.default.temporaryDirectory
             .appendingPathComponent(UUID().uuidString)
@@ -309,6 +355,25 @@ final class FileImageLoaderTests: TestCase {
     private static func makeImageData(variant: TestImageVariant) throws -> Data {
         let base64 = variant.base64PNG
         return try XCTUnwrap(Data(base64Encoded: base64))
+    }
+
+}
+
+private actor ImageDownloadStub: SimpleNetworkServiceType {
+
+    private let responses: [URL: Data]
+    private(set) var requests: [URL] = []
+
+    init(responses: [URL: Data] = [:]) {
+        self.responses = responses
+    }
+
+    func downloadFile(from url: URL) async throws -> URL {
+        self.requests.append(url)
+        guard let data = self.responses[url] else { throw URLError(.resourceUnavailable) }
+        let file = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        try data.write(to: file)
+        return file
     }
 
 }

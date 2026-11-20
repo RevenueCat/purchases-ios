@@ -17,6 +17,54 @@ import XCTest
 
 class ImageComponentTests: TestCase {
 
+    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+    func testPlaceholderSelection() throws {
+        let webp = "https://example.com/low.webp"
+        let urls = try self.imageURLs(candidate: webp)
+        #if os(iOS)
+        XCTAssertEqual(urls.placeholderURL.absoluteString, webp)
+        XCTAssertEqual(urls.resized(width: 2, height: 3).placeholderURL.absoluteString, webp)
+        #else
+        XCTAssertEqual(urls.placeholderURL, urls.heicLowRes)
+        #endif
+
+        let config = PaywallComponentsData.PaywallComponentsConfig(
+            stack: .init(components: [.image(.init(source: .init(light: urls)))]),
+            stickyFooter: nil,
+            background: .color(.init(light: .hex("#ffffff")))
+        )
+        XCTAssertEqual(config.allImageURLs, [urls.placeholderURL])
+
+        #if os(iOS)
+        let media = try XCTUnwrap(config.allCacheAssets.images.first)
+        XCTAssertEqual(media.cachedAlternativeURL, urls.heicLowRes)
+        XCTAssertTrue(media.imageSourcesToDownload { $0 == urls.heicLowRes }.isEmpty)
+        #endif
+        XCTAssertEqual(urls.heic.absoluteString, "https://example.com/full.heic")
+        XCTAssertEqual(try urls.encodeAndDecode(), urls)
+    }
+
+    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+    func testInvalidOrMissingWebPUsesLegacyHEIC() throws {
+        for candidate: Any? in [nil, NSNull(), 1, "", "relative.webp", "http://example.com/low.webp"] {
+            let urls = try self.imageURLs(candidate: candidate)
+            XCTAssertEqual(urls.placeholderURL, urls.heicLowRes)
+            XCTAssertNil(urls.cachedAlternativeURL)
+        }
+    }
+
+    private func imageURLs(candidate: Any?) throws -> PaywallComponent.ImageUrls {
+        var json: [String: Any] = [
+            "width": 10, "height": 20, "original": "https://example.com/full.png",
+            "heic": "https://example.com/full.heic", "heic_low_res": "https://example.com/legacy.heic"
+        ]
+        json["webp_low_res"] = candidate
+        return try JSONDecoder.default.decode(
+            PaywallComponent.ImageUrls.self,
+            from: JSONSerialization.data(withJSONObject: json)
+        )
+    }
+
     func testCodable() throws {
         let jsonData = try JsonLoader.data(for: "ImageComponent")
 

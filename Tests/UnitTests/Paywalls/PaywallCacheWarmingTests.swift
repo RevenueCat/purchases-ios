@@ -641,6 +641,29 @@ final class PaywallCacheWarmingTests: TestCase {
         )
     }
 
+    #if os(iOS)
+    func testPrewarmingChecksRepeatedLegacyPlaceholderOnceBeforeDownloadingWebP() async throws {
+        let source = try PaywallComponent.ImageUrls.decode("""
+            {"width":2,"height":2,"original":"https://example.com/image.png","heic":"https://example.com/full.heic",
+             "heic_low_res":"https://example.com/low.heic","webp_low_res":"https://example.com/low.webp"}
+            """)
+        let screen = Self.workflowScreen(components: [.image(.init(source: .init(light: source, dark: source)))])
+        let workflow = PublishedWorkflow(
+            id: "workflow", displayName: "Test", initialStepId: "step", singleStepFallbackId: nil,
+            steps: [:], screens: ["first": screen, "second": screen]
+        )
+
+        for cached in [true, false] {
+            let repository = MockCacheWarmingFileRepository(cachedURLs: cached ? [source.heicLowRes] : [])
+            let cache = PaywallCacheWarming(introEligibiltyChecker: self.eligibilityChecker, fileRepository: repository)
+            await cache.prewarmWorkflowAssets(workflow: workflow, uiConfig: Self.emptyUIConfig)
+            XCTAssertEqual(repository.cacheLookups.value, [source.heicLowRes])
+            let requests = await repository.requests
+            XCTAssertEqual(requests.map(\.url), cached ? [] : [source.placeholderURL])
+        }
+    }
+    #endif
+
     func testWorkflowAssetPrewarmingDownloadsPreferredImagesAndLowResVideos() async {
         let fileRepository = MockCacheWarmingFileRepository()
         let cache = PaywallCacheWarming(
@@ -1230,6 +1253,7 @@ private extension PaywallCacheWarmingTests {
             .init(
                 highResURL: .init(url: Self.assetURL("\($0)-high.heic"), checksum: nil),
                 lowResURL: .init(url: Self.assetURL("\($0)-low.heic"), checksum: nil),
+                cachedAlternativeURL: nil,
                 rendersSynchronously: rendersSynchronously
             )
         }
@@ -1252,6 +1276,7 @@ private extension PaywallCacheWarmingTests {
                     url: Self.assetURL("\(mediaName)-low.mp4"),
                     checksum: .init(algorithm: .sha256, value: "\(mediaName)-low")
                 ) : nil,
+                cachedAlternativeURL: nil,
                 rendersSynchronously: rendersSynchronously
             )
         }
@@ -1262,6 +1287,7 @@ private extension PaywallCacheWarmingTests {
             .init(
                 highResURL: .init(url: Self.assetURL("\($0).heic"), checksum: nil),
                 lowResURL: nil,
+                cachedAlternativeURL: nil,
                 rendersSynchronously: false
             )
         }
@@ -1590,9 +1616,21 @@ private extension PaywallCacheWarmingTests {
 }
 
 @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
-private actor MockCacheWarmingFileRepository: FileRepositoryType {
+private actor MockCacheWarmingFileRepository: PaywallAssetRepository {
 
     private(set) var requests: [URLWithValidation] = []
+
+    let cacheLookups = Atomic<[URL]>([])
+    private let cachedURLs: Set<URL>
+
+    init(cachedURLs: Set<URL> = []) {
+        self.cachedURLs = cachedURLs
+    }
+
+    nonisolated func getCachedFileURL(for url: InputURL, withChecksum checksum: Checksum?) -> OutputURL? {
+        self.cacheLookups.modify { $0.append(url) }
+        return self.cachedURLs.contains(url) ? url : nil
+    }
 
     nonisolated func prefetch(urls: [InputURL]) {}
 

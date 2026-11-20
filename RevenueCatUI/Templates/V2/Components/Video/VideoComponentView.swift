@@ -233,21 +233,10 @@ struct VideoComponentView: View {
         _ source: PaywallComponent.ThemeImageUrls,
         sizedLike style: VideoComponentStyle
     ) -> PaywallComponent.ThemeImageUrls {
-        func resized(_ urls: PaywallComponent.ImageUrls, width: Int, height: Int) -> PaywallComponent.ImageUrls {
-            return .init(
-                width: width,
-                height: height,
-                original: urls.original,
-                heic: urls.heic,
-                heicLowRes: urls.heicLowRes
-            )
-        }
-
         return .init(
-            light: resized(source.light, width: style.widthLight, height: style.heightLight),
+            light: source.light.resized(width: style.widthLight, height: style.heightLight),
             // Always set so the thumbnail follows the video's dark dimensions, even without a dark thumbnail.
-            dark: resized(
-                source.dark ?? source.light,
+            dark: (source.dark ?? source.light).resized(
                 width: style.widthDark ?? style.widthLight,
                 height: style.heightDark ?? style.heightLight
             )

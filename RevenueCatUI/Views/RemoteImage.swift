@@ -29,6 +29,24 @@ struct RemoteImage<Content: View>: View {
     let expectedSize: CGSize?
     let content: (Image, CGSize) -> Content
 
+    private var source: PaywallComponent.ThemeImageUrls?
+
+    init(
+        source: PaywallComponent.ThemeImageUrls,
+        expectedSize: CGSize? = nil,
+        @ViewBuilder content: @escaping (Image, CGSize) -> Content
+    ) {
+        self.init(
+            url: source.light.heic,
+            lowResUrl: source.light.placeholderURL,
+            darkUrl: source.dark?.heic,
+            darkLowResUrl: source.dark?.placeholderURL,
+            expectedSize: expectedSize,
+            content: content
+        )
+        self.source = source
+    }
+
     init(
         url: URL,
         lowResUrl: URL? = nil,
@@ -81,6 +99,8 @@ struct RemoteImage<Content: View>: View {
     }
 
     var body: some View {
+        let activeSource = self.colorScheme == .dark ? self.source?.dark ?? self.source?.light : self.source?.light
+        let cachedAlternativeURL = activeSource?.cachedAlternativeURL
         ColorSchemeRemoteImage(
             url: self.url,
             lowResUrl: self.lowResUrl,
@@ -89,12 +109,13 @@ struct RemoteImage<Content: View>: View {
             expectedSize: self.expectedSize,
             aspectRatio: self.aspectRatio,
             maxWidth: self.maxWidth,
+            cachedAlternativeURL: cachedAlternativeURL,
             colorScheme: self.colorScheme
         ) { image, size in
             content(image, size)
         }
         // New loaders per URL set, so a reused view (e.g. same position in another tab) never shows the old image.
-        .id([self.url, self.lowResUrl, self.darkUrl, self.darkLowResUrl])
+        .id([self.url, self.lowResUrl, self.darkUrl, self.darkLowResUrl, cachedAlternativeURL])
     }
 
 }
@@ -168,6 +189,7 @@ private struct ColorSchemeRemoteImage<Content: View>: View {
         expectedSize: CGSize? = nil,
         aspectRatio: CGFloat? = nil,
         maxWidth: CGFloat? = nil,
+        cachedAlternativeURL: URL?,
         colorScheme: ColorScheme,
         @ViewBuilder content: @escaping (Image, CGSize) -> Content
     ) {
@@ -194,7 +216,11 @@ private struct ColorSchemeRemoteImage<Content: View>: View {
         )
 
         _highResFileLoader = StateObject(wrappedValue: FileImageLoader(fileRepository: .shared, url: highResURL))
-        _lowResFileLoader = StateObject(wrappedValue: FileImageLoader(fileRepository: .shared, url: lowResURL))
+        _lowResFileLoader = StateObject(wrappedValue: FileImageLoader(
+            fileRepository: .shared,
+            url: lowResURL,
+            cachedAlternativeURL: cachedAlternativeURL
+        ))
     }
 
     private static func selectURL(
@@ -295,7 +321,7 @@ private struct ColorSchemeRemoteImage<Content: View>: View {
     }
 
     private func loadImages(url: URL, lowResUrl: URL?) async {
-        if fetchLowRes, let lowResLoc = lowResUrl {
+        if fetchLowRes, self.lowResFileLoader.result == nil, let lowResLoc = lowResUrl {
             async let lowResLoad: Void = lowResLoader.load(url: lowResLoc)
             async let highResLoad: Void = highResLoader.load(url: url)
             _ = await (lowResLoad, highResLoad)

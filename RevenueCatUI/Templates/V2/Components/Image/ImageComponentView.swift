@@ -173,10 +173,7 @@ struct ImageComponentView: View {
                             case .image:
                                 self.decorate(
                                     RemoteImage(
-                                        url: style.url,
-                                        lowResUrl: style.lowResUrl,
-                                        darkUrl: style.darkUrl,
-                                        darkLowResUrl: style.darkLowResUrl,
+                                        source: style.source,
                                         // The expectedSize is important
                                         // It renders a clear image if actual image is being fetched
                                         expectedSize: expectedSize

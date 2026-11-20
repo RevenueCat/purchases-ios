@@ -38,11 +38,42 @@ import Foundation
             self.heicLowRes = heicLowRes
         }
 
-        public let width: Int
-        public let height: Int
+        public private(set) var width: Int
+        public private(set) var height: Int
         public let original: URL
         public let heic: URL
         public let heicLowRes: URL
+
+        @IgnoreDecodeErrors<URL?> private var webpLowRes: URL?
+
+        /// The preferred low-resolution image to request on a cache miss.
+        @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
+        public var placeholderURL: URL {
+            #if os(iOS)
+            guard let candidate = self.webpLowRes,
+                  candidate.isHTTPSWithHost else {
+                return self.heicLowRes
+            }
+
+            return candidate
+            #else
+            return self.heicLowRes
+            #endif
+        }
+
+        /// The previous placeholder to reuse only when it is already cached.
+        @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
+        public var cachedAlternativeURL: URL? {
+            self.placeholderURL == self.heicLowRes ? nil : self.heicLowRes
+        }
+
+        /// Uses the video's display dimensions while preserving all source URLs.
+        public func resized(width: Int, height: Int) -> Self {
+            var result = self
+            result.width = width
+            result.height = height
+            return result
+        }
     }
 
     struct ThemeVideoUrls: Codable, Sendable, Hashable, Equatable {

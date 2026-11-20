@@ -68,12 +68,7 @@ fileprivate extension View {
         case let .image(imageInfo, fitMode, colorOverlay):
             self.background(alignment: alignment) {
                 ZStack(alignment: .top) {
-                    RemoteImage(
-                        url: imageInfo.light.heic,
-                        lowResUrl: imageInfo.light.heicLowRes,
-                        darkUrl: imageInfo.dark?.heic,
-                        darkLowResUrl: imageInfo.dark?.heicLowRes
-                    ) { (image, _) in
+                    RemoteImage(source: imageInfo) { (image, _) in
                         image
                             .resizable()
                             .aspectRatio(contentMode: fitMode.contentMode)
