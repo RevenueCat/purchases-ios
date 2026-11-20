@@ -2,6 +2,7 @@
   "schema_version": 1,
   "required_fields": [
     "country",
+    "latestOwnershipType",
     "latestStore",
     "locale",
     "storefront",
@@ -9,6 +10,7 @@
   ],
   "condition_files": [
     "conditions/country.json",
+    "conditions/latest_ownership_type.json",
     "conditions/latest_store.json",
     "conditions/locale.json",
     "conditions/storefront.json",
@@ -2472,37 +2474,37 @@
     {
       "field": "latestOwnershipType",
       "operator": "is",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "latestOwnershipType",
       "operator": "isNot",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "latestOwnershipType",
       "operator": "isAnyOf",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "latestOwnershipType",
       "operator": "isNotAnyOf",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "latestOwnershipType",
       "operator": "isEmpty",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "latestOwnershipType",
       "operator": "isNotEmpty",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {

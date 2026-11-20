@@ -1,0 +1,2021 @@
+{
+  "schema_version": 1,
+  "cases": [
+    {
+      "id": "latestOwnershipType/is/PURCHASED/new",
+      "field": "latestOwnershipType",
+      "operator": "is",
+      "profile": "new",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED\"}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestOwnershipType/is/PURCHASED/renewed",
+      "field": "latestOwnershipType",
+      "operator": "is",
+      "profile": "renewed",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED\"}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestOwnershipType/is/PURCHASED/first_purchase",
+      "field": "latestOwnershipType",
+      "operator": "is",
+      "profile": "first_purchase",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED\"}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestOwnershipType/is/PURCHASED/unavailable",
+      "field": "latestOwnershipType",
+      "operator": "is",
+      "profile": "unavailable",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED\"}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestOwnershipType/is/PURCHASED/ownership_purchased",
+      "field": "latestOwnershipType",
+      "operator": "is",
+      "profile": "ownership_purchased",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED\"}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestOwnershipType/is/PURCHASED/ownership_family_shared",
+      "field": "latestOwnershipType",
+      "operator": "is",
+      "profile": "ownership_family_shared",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED\"}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestOwnershipType/is/PURCHASED/ownership_uppercase",
+      "field": "latestOwnershipType",
+      "operator": "is",
+      "profile": "ownership_uppercase",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED\"}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestOwnershipType/is/PURCHASED/ownership_missing",
+      "field": "latestOwnershipType",
+      "operator": "is",
+      "profile": "ownership_missing",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED\"}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestOwnershipType/is/PURCHASED/ownership_null",
+      "field": "latestOwnershipType",
+      "operator": "is",
+      "profile": "ownership_null",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED\"}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestOwnershipType/is/PURCHASED/ownership_empty",
+      "field": "latestOwnershipType",
+      "operator": "is",
+      "profile": "ownership_empty",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED\"}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestOwnershipType/is/PURCHASED/ownership_sandbox_only",
+      "field": "latestOwnershipType",
+      "operator": "is",
+      "profile": "ownership_sandbox_only",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED\"}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestOwnershipType/is/PURCHASED/ownership_production_before_sandbox",
+      "field": "latestOwnershipType",
+      "operator": "is",
+      "profile": "ownership_production_before_sandbox",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED\"}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestOwnershipType/is/PURCHASED/ownership_expiration_before_purchase",
+      "field": "latestOwnershipType",
+      "operator": "is",
+      "profile": "ownership_expiration_before_purchase",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED\"}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestOwnershipType/is/PURCHASED/ownership_latest_renewal",
+      "field": "latestOwnershipType",
+      "operator": "is",
+      "profile": "ownership_latest_renewal",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED\"}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestOwnershipType/is/PURCHASED/ownership_latest_update",
+      "field": "latestOwnershipType",
+      "operator": "is",
+      "profile": "ownership_latest_update",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED\"}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestOwnershipType/is/PURCHASED/ownership_one_time_purchase",
+      "field": "latestOwnershipType",
+      "operator": "is",
+      "profile": "ownership_one_time_purchase",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED\"}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestOwnershipType/is/PURCHASED/ownership_active_one_time_purchase",
+      "field": "latestOwnershipType",
+      "operator": "is",
+      "profile": "ownership_active_one_time_purchase",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED\"}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestOwnershipType/is/PURCHASED/ownership_latest_one_time_purchase",
+      "field": "latestOwnershipType",
+      "operator": "is",
+      "profile": "ownership_latest_one_time_purchase",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED\"}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestOwnershipType/is/FAMILY_SHARED/new",
+      "field": "latestOwnershipType",
+      "operator": "is",
+      "profile": "new",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"FAMILY_SHARED\"}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestOwnershipType/is/FAMILY_SHARED/renewed",
+      "field": "latestOwnershipType",
+      "operator": "is",
+      "profile": "renewed",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"FAMILY_SHARED\"}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestOwnershipType/is/FAMILY_SHARED/first_purchase",
+      "field": "latestOwnershipType",
+      "operator": "is",
+      "profile": "first_purchase",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"FAMILY_SHARED\"}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestOwnershipType/is/FAMILY_SHARED/unavailable",
+      "field": "latestOwnershipType",
+      "operator": "is",
+      "profile": "unavailable",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"FAMILY_SHARED\"}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestOwnershipType/is/FAMILY_SHARED/ownership_purchased",
+      "field": "latestOwnershipType",
+      "operator": "is",
+      "profile": "ownership_purchased",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"FAMILY_SHARED\"}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestOwnershipType/is/FAMILY_SHARED/ownership_family_shared",
+      "field": "latestOwnershipType",
+      "operator": "is",
+      "profile": "ownership_family_shared",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"FAMILY_SHARED\"}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestOwnershipType/is/FAMILY_SHARED/ownership_uppercase",
+      "field": "latestOwnershipType",
+      "operator": "is",
+      "profile": "ownership_uppercase",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"FAMILY_SHARED\"}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestOwnershipType/is/FAMILY_SHARED/ownership_missing",
+      "field": "latestOwnershipType",
+      "operator": "is",
+      "profile": "ownership_missing",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"FAMILY_SHARED\"}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestOwnershipType/is/FAMILY_SHARED/ownership_null",
+      "field": "latestOwnershipType",
+      "operator": "is",
+      "profile": "ownership_null",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"FAMILY_SHARED\"}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestOwnershipType/is/FAMILY_SHARED/ownership_empty",
+      "field": "latestOwnershipType",
+      "operator": "is",
+      "profile": "ownership_empty",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"FAMILY_SHARED\"}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestOwnershipType/is/FAMILY_SHARED/ownership_sandbox_only",
+      "field": "latestOwnershipType",
+      "operator": "is",
+      "profile": "ownership_sandbox_only",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"FAMILY_SHARED\"}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestOwnershipType/is/FAMILY_SHARED/ownership_production_before_sandbox",
+      "field": "latestOwnershipType",
+      "operator": "is",
+      "profile": "ownership_production_before_sandbox",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"FAMILY_SHARED\"}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestOwnershipType/is/FAMILY_SHARED/ownership_expiration_before_purchase",
+      "field": "latestOwnershipType",
+      "operator": "is",
+      "profile": "ownership_expiration_before_purchase",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"FAMILY_SHARED\"}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestOwnershipType/is/FAMILY_SHARED/ownership_latest_renewal",
+      "field": "latestOwnershipType",
+      "operator": "is",
+      "profile": "ownership_latest_renewal",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"FAMILY_SHARED\"}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestOwnershipType/is/FAMILY_SHARED/ownership_latest_update",
+      "field": "latestOwnershipType",
+      "operator": "is",
+      "profile": "ownership_latest_update",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"FAMILY_SHARED\"}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestOwnershipType/is/FAMILY_SHARED/ownership_one_time_purchase",
+      "field": "latestOwnershipType",
+      "operator": "is",
+      "profile": "ownership_one_time_purchase",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"FAMILY_SHARED\"}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestOwnershipType/is/FAMILY_SHARED/ownership_active_one_time_purchase",
+      "field": "latestOwnershipType",
+      "operator": "is",
+      "profile": "ownership_active_one_time_purchase",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"FAMILY_SHARED\"}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestOwnershipType/is/FAMILY_SHARED/ownership_latest_one_time_purchase",
+      "field": "latestOwnershipType",
+      "operator": "is",
+      "profile": "ownership_latest_one_time_purchase",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"FAMILY_SHARED\"}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestOwnershipType/is/PURCHASED,FAMILY_SHARED/new",
+      "field": "latestOwnershipType",
+      "operator": "is",
+      "profile": "new",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED,FAMILY_SHARED\"}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestOwnershipType/is/PURCHASED,FAMILY_SHARED/renewed",
+      "field": "latestOwnershipType",
+      "operator": "is",
+      "profile": "renewed",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED,FAMILY_SHARED\"}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestOwnershipType/is/PURCHASED,FAMILY_SHARED/first_purchase",
+      "field": "latestOwnershipType",
+      "operator": "is",
+      "profile": "first_purchase",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED,FAMILY_SHARED\"}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestOwnershipType/is/PURCHASED,FAMILY_SHARED/unavailable",
+      "field": "latestOwnershipType",
+      "operator": "is",
+      "profile": "unavailable",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED,FAMILY_SHARED\"}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestOwnershipType/is/PURCHASED,FAMILY_SHARED/ownership_purchased",
+      "field": "latestOwnershipType",
+      "operator": "is",
+      "profile": "ownership_purchased",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED,FAMILY_SHARED\"}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestOwnershipType/is/PURCHASED,FAMILY_SHARED/ownership_family_shared",
+      "field": "latestOwnershipType",
+      "operator": "is",
+      "profile": "ownership_family_shared",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED,FAMILY_SHARED\"}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestOwnershipType/is/PURCHASED,FAMILY_SHARED/ownership_uppercase",
+      "field": "latestOwnershipType",
+      "operator": "is",
+      "profile": "ownership_uppercase",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED,FAMILY_SHARED\"}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestOwnershipType/is/PURCHASED,FAMILY_SHARED/ownership_missing",
+      "field": "latestOwnershipType",
+      "operator": "is",
+      "profile": "ownership_missing",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED,FAMILY_SHARED\"}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestOwnershipType/is/PURCHASED,FAMILY_SHARED/ownership_null",
+      "field": "latestOwnershipType",
+      "operator": "is",
+      "profile": "ownership_null",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED,FAMILY_SHARED\"}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestOwnershipType/is/PURCHASED,FAMILY_SHARED/ownership_empty",
+      "field": "latestOwnershipType",
+      "operator": "is",
+      "profile": "ownership_empty",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED,FAMILY_SHARED\"}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestOwnershipType/is/PURCHASED,FAMILY_SHARED/ownership_sandbox_only",
+      "field": "latestOwnershipType",
+      "operator": "is",
+      "profile": "ownership_sandbox_only",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED,FAMILY_SHARED\"}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestOwnershipType/is/PURCHASED,FAMILY_SHARED/ownership_production_before_sandbox",
+      "field": "latestOwnershipType",
+      "operator": "is",
+      "profile": "ownership_production_before_sandbox",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED,FAMILY_SHARED\"}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestOwnershipType/is/PURCHASED,FAMILY_SHARED/ownership_expiration_before_purchase",
+      "field": "latestOwnershipType",
+      "operator": "is",
+      "profile": "ownership_expiration_before_purchase",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED,FAMILY_SHARED\"}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestOwnershipType/is/PURCHASED,FAMILY_SHARED/ownership_latest_renewal",
+      "field": "latestOwnershipType",
+      "operator": "is",
+      "profile": "ownership_latest_renewal",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED,FAMILY_SHARED\"}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestOwnershipType/is/PURCHASED,FAMILY_SHARED/ownership_latest_update",
+      "field": "latestOwnershipType",
+      "operator": "is",
+      "profile": "ownership_latest_update",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED,FAMILY_SHARED\"}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestOwnershipType/is/PURCHASED,FAMILY_SHARED/ownership_one_time_purchase",
+      "field": "latestOwnershipType",
+      "operator": "is",
+      "profile": "ownership_one_time_purchase",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED,FAMILY_SHARED\"}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestOwnershipType/is/PURCHASED,FAMILY_SHARED/ownership_active_one_time_purchase",
+      "field": "latestOwnershipType",
+      "operator": "is",
+      "profile": "ownership_active_one_time_purchase",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED,FAMILY_SHARED\"}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestOwnershipType/is/PURCHASED,FAMILY_SHARED/ownership_latest_one_time_purchase",
+      "field": "latestOwnershipType",
+      "operator": "is",
+      "profile": "ownership_latest_one_time_purchase",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED,FAMILY_SHARED\"}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestOwnershipType/isNot/PURCHASED/new",
+      "field": "latestOwnershipType",
+      "operator": "isNot",
+      "profile": "new",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"!\": [{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED\"}]}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestOwnershipType/isNot/PURCHASED/renewed",
+      "field": "latestOwnershipType",
+      "operator": "isNot",
+      "profile": "renewed",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"!\": [{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED\"}]}]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestOwnershipType/isNot/PURCHASED/first_purchase",
+      "field": "latestOwnershipType",
+      "operator": "isNot",
+      "profile": "first_purchase",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"!\": [{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED\"}]}]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestOwnershipType/isNot/PURCHASED/unavailable",
+      "field": "latestOwnershipType",
+      "operator": "isNot",
+      "profile": "unavailable",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"!\": [{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED\"}]}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestOwnershipType/isNot/PURCHASED/ownership_purchased",
+      "field": "latestOwnershipType",
+      "operator": "isNot",
+      "profile": "ownership_purchased",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"!\": [{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED\"}]}]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestOwnershipType/isNot/PURCHASED/ownership_family_shared",
+      "field": "latestOwnershipType",
+      "operator": "isNot",
+      "profile": "ownership_family_shared",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"!\": [{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED\"}]}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestOwnershipType/isNot/PURCHASED/ownership_uppercase",
+      "field": "latestOwnershipType",
+      "operator": "isNot",
+      "profile": "ownership_uppercase",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"!\": [{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED\"}]}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestOwnershipType/isNot/PURCHASED/ownership_missing",
+      "field": "latestOwnershipType",
+      "operator": "isNot",
+      "profile": "ownership_missing",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"!\": [{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED\"}]}]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestOwnershipType/isNot/PURCHASED/ownership_null",
+      "field": "latestOwnershipType",
+      "operator": "isNot",
+      "profile": "ownership_null",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"!\": [{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED\"}]}]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestOwnershipType/isNot/PURCHASED/ownership_empty",
+      "field": "latestOwnershipType",
+      "operator": "isNot",
+      "profile": "ownership_empty",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"!\": [{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED\"}]}]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestOwnershipType/isNot/PURCHASED/ownership_sandbox_only",
+      "field": "latestOwnershipType",
+      "operator": "isNot",
+      "profile": "ownership_sandbox_only",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"!\": [{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED\"}]}]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestOwnershipType/isNot/PURCHASED/ownership_production_before_sandbox",
+      "field": "latestOwnershipType",
+      "operator": "isNot",
+      "profile": "ownership_production_before_sandbox",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"!\": [{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED\"}]}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestOwnershipType/isNot/PURCHASED/ownership_expiration_before_purchase",
+      "field": "latestOwnershipType",
+      "operator": "isNot",
+      "profile": "ownership_expiration_before_purchase",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"!\": [{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED\"}]}]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestOwnershipType/isNot/PURCHASED/ownership_latest_renewal",
+      "field": "latestOwnershipType",
+      "operator": "isNot",
+      "profile": "ownership_latest_renewal",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"!\": [{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED\"}]}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestOwnershipType/isNot/PURCHASED/ownership_latest_update",
+      "field": "latestOwnershipType",
+      "operator": "isNot",
+      "profile": "ownership_latest_update",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"!\": [{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED\"}]}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestOwnershipType/isNot/PURCHASED/ownership_one_time_purchase",
+      "field": "latestOwnershipType",
+      "operator": "isNot",
+      "profile": "ownership_one_time_purchase",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"!\": [{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED\"}]}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestOwnershipType/isNot/PURCHASED/ownership_active_one_time_purchase",
+      "field": "latestOwnershipType",
+      "operator": "isNot",
+      "profile": "ownership_active_one_time_purchase",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"!\": [{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED\"}]}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestOwnershipType/isNot/PURCHASED/ownership_latest_one_time_purchase",
+      "field": "latestOwnershipType",
+      "operator": "isNot",
+      "profile": "ownership_latest_one_time_purchase",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"!\": [{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED\"}]}]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestOwnershipType/isNot/FAMILY_SHARED/new",
+      "field": "latestOwnershipType",
+      "operator": "isNot",
+      "profile": "new",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"!\": [{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"FAMILY_SHARED\"}]}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestOwnershipType/isNot/FAMILY_SHARED/renewed",
+      "field": "latestOwnershipType",
+      "operator": "isNot",
+      "profile": "renewed",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"!\": [{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"FAMILY_SHARED\"}]}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestOwnershipType/isNot/FAMILY_SHARED/first_purchase",
+      "field": "latestOwnershipType",
+      "operator": "isNot",
+      "profile": "first_purchase",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"!\": [{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"FAMILY_SHARED\"}]}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestOwnershipType/isNot/FAMILY_SHARED/unavailable",
+      "field": "latestOwnershipType",
+      "operator": "isNot",
+      "profile": "unavailable",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"!\": [{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"FAMILY_SHARED\"}]}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestOwnershipType/isNot/FAMILY_SHARED/ownership_purchased",
+      "field": "latestOwnershipType",
+      "operator": "isNot",
+      "profile": "ownership_purchased",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"!\": [{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"FAMILY_SHARED\"}]}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestOwnershipType/isNot/FAMILY_SHARED/ownership_family_shared",
+      "field": "latestOwnershipType",
+      "operator": "isNot",
+      "profile": "ownership_family_shared",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"!\": [{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"FAMILY_SHARED\"}]}]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestOwnershipType/isNot/FAMILY_SHARED/ownership_uppercase",
+      "field": "latestOwnershipType",
+      "operator": "isNot",
+      "profile": "ownership_uppercase",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"!\": [{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"FAMILY_SHARED\"}]}]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestOwnershipType/isNot/FAMILY_SHARED/ownership_missing",
+      "field": "latestOwnershipType",
+      "operator": "isNot",
+      "profile": "ownership_missing",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"!\": [{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"FAMILY_SHARED\"}]}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestOwnershipType/isNot/FAMILY_SHARED/ownership_null",
+      "field": "latestOwnershipType",
+      "operator": "isNot",
+      "profile": "ownership_null",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"!\": [{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"FAMILY_SHARED\"}]}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestOwnershipType/isNot/FAMILY_SHARED/ownership_empty",
+      "field": "latestOwnershipType",
+      "operator": "isNot",
+      "profile": "ownership_empty",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"!\": [{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"FAMILY_SHARED\"}]}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestOwnershipType/isNot/FAMILY_SHARED/ownership_sandbox_only",
+      "field": "latestOwnershipType",
+      "operator": "isNot",
+      "profile": "ownership_sandbox_only",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"!\": [{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"FAMILY_SHARED\"}]}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestOwnershipType/isNot/FAMILY_SHARED/ownership_production_before_sandbox",
+      "field": "latestOwnershipType",
+      "operator": "isNot",
+      "profile": "ownership_production_before_sandbox",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"!\": [{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"FAMILY_SHARED\"}]}]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestOwnershipType/isNot/FAMILY_SHARED/ownership_expiration_before_purchase",
+      "field": "latestOwnershipType",
+      "operator": "isNot",
+      "profile": "ownership_expiration_before_purchase",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"!\": [{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"FAMILY_SHARED\"}]}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestOwnershipType/isNot/FAMILY_SHARED/ownership_latest_renewal",
+      "field": "latestOwnershipType",
+      "operator": "isNot",
+      "profile": "ownership_latest_renewal",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"!\": [{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"FAMILY_SHARED\"}]}]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestOwnershipType/isNot/FAMILY_SHARED/ownership_latest_update",
+      "field": "latestOwnershipType",
+      "operator": "isNot",
+      "profile": "ownership_latest_update",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"!\": [{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"FAMILY_SHARED\"}]}]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestOwnershipType/isNot/FAMILY_SHARED/ownership_one_time_purchase",
+      "field": "latestOwnershipType",
+      "operator": "isNot",
+      "profile": "ownership_one_time_purchase",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"!\": [{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"FAMILY_SHARED\"}]}]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestOwnershipType/isNot/FAMILY_SHARED/ownership_active_one_time_purchase",
+      "field": "latestOwnershipType",
+      "operator": "isNot",
+      "profile": "ownership_active_one_time_purchase",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"!\": [{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"FAMILY_SHARED\"}]}]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestOwnershipType/isNot/FAMILY_SHARED/ownership_latest_one_time_purchase",
+      "field": "latestOwnershipType",
+      "operator": "isNot",
+      "profile": "ownership_latest_one_time_purchase",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"!\": [{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"FAMILY_SHARED\"}]}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestOwnershipType/isNot/PURCHASED,FAMILY_SHARED/new",
+      "field": "latestOwnershipType",
+      "operator": "isNot",
+      "profile": "new",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"!\": [{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED,FAMILY_SHARED\"}]}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestOwnershipType/isNot/PURCHASED,FAMILY_SHARED/renewed",
+      "field": "latestOwnershipType",
+      "operator": "isNot",
+      "profile": "renewed",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"!\": [{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED,FAMILY_SHARED\"}]}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestOwnershipType/isNot/PURCHASED,FAMILY_SHARED/first_purchase",
+      "field": "latestOwnershipType",
+      "operator": "isNot",
+      "profile": "first_purchase",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"!\": [{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED,FAMILY_SHARED\"}]}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestOwnershipType/isNot/PURCHASED,FAMILY_SHARED/unavailable",
+      "field": "latestOwnershipType",
+      "operator": "isNot",
+      "profile": "unavailable",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"!\": [{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED,FAMILY_SHARED\"}]}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestOwnershipType/isNot/PURCHASED,FAMILY_SHARED/ownership_purchased",
+      "field": "latestOwnershipType",
+      "operator": "isNot",
+      "profile": "ownership_purchased",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"!\": [{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED,FAMILY_SHARED\"}]}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestOwnershipType/isNot/PURCHASED,FAMILY_SHARED/ownership_family_shared",
+      "field": "latestOwnershipType",
+      "operator": "isNot",
+      "profile": "ownership_family_shared",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"!\": [{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED,FAMILY_SHARED\"}]}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestOwnershipType/isNot/PURCHASED,FAMILY_SHARED/ownership_uppercase",
+      "field": "latestOwnershipType",
+      "operator": "isNot",
+      "profile": "ownership_uppercase",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"!\": [{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED,FAMILY_SHARED\"}]}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestOwnershipType/isNot/PURCHASED,FAMILY_SHARED/ownership_missing",
+      "field": "latestOwnershipType",
+      "operator": "isNot",
+      "profile": "ownership_missing",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"!\": [{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED,FAMILY_SHARED\"}]}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestOwnershipType/isNot/PURCHASED,FAMILY_SHARED/ownership_null",
+      "field": "latestOwnershipType",
+      "operator": "isNot",
+      "profile": "ownership_null",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"!\": [{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED,FAMILY_SHARED\"}]}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestOwnershipType/isNot/PURCHASED,FAMILY_SHARED/ownership_empty",
+      "field": "latestOwnershipType",
+      "operator": "isNot",
+      "profile": "ownership_empty",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"!\": [{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED,FAMILY_SHARED\"}]}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestOwnershipType/isNot/PURCHASED,FAMILY_SHARED/ownership_sandbox_only",
+      "field": "latestOwnershipType",
+      "operator": "isNot",
+      "profile": "ownership_sandbox_only",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"!\": [{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED,FAMILY_SHARED\"}]}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestOwnershipType/isNot/PURCHASED,FAMILY_SHARED/ownership_production_before_sandbox",
+      "field": "latestOwnershipType",
+      "operator": "isNot",
+      "profile": "ownership_production_before_sandbox",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"!\": [{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED,FAMILY_SHARED\"}]}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestOwnershipType/isNot/PURCHASED,FAMILY_SHARED/ownership_expiration_before_purchase",
+      "field": "latestOwnershipType",
+      "operator": "isNot",
+      "profile": "ownership_expiration_before_purchase",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"!\": [{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED,FAMILY_SHARED\"}]}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestOwnershipType/isNot/PURCHASED,FAMILY_SHARED/ownership_latest_renewal",
+      "field": "latestOwnershipType",
+      "operator": "isNot",
+      "profile": "ownership_latest_renewal",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"!\": [{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED,FAMILY_SHARED\"}]}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestOwnershipType/isNot/PURCHASED,FAMILY_SHARED/ownership_latest_update",
+      "field": "latestOwnershipType",
+      "operator": "isNot",
+      "profile": "ownership_latest_update",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"!\": [{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED,FAMILY_SHARED\"}]}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestOwnershipType/isNot/PURCHASED,FAMILY_SHARED/ownership_one_time_purchase",
+      "field": "latestOwnershipType",
+      "operator": "isNot",
+      "profile": "ownership_one_time_purchase",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"!\": [{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED,FAMILY_SHARED\"}]}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestOwnershipType/isNot/PURCHASED,FAMILY_SHARED/ownership_active_one_time_purchase",
+      "field": "latestOwnershipType",
+      "operator": "isNot",
+      "profile": "ownership_active_one_time_purchase",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"!\": [{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED,FAMILY_SHARED\"}]}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestOwnershipType/isNot/PURCHASED,FAMILY_SHARED/ownership_latest_one_time_purchase",
+      "field": "latestOwnershipType",
+      "operator": "isNot",
+      "profile": "ownership_latest_one_time_purchase",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"!\": [{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED,FAMILY_SHARED\"}]}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestOwnershipType/isAnyOf/PURCHASED/new",
+      "field": "latestOwnershipType",
+      "operator": "isAnyOf",
+      "profile": "new",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED\"}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestOwnershipType/isAnyOf/PURCHASED/renewed",
+      "field": "latestOwnershipType",
+      "operator": "isAnyOf",
+      "profile": "renewed",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED\"}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestOwnershipType/isAnyOf/PURCHASED/first_purchase",
+      "field": "latestOwnershipType",
+      "operator": "isAnyOf",
+      "profile": "first_purchase",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED\"}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestOwnershipType/isAnyOf/PURCHASED/unavailable",
+      "field": "latestOwnershipType",
+      "operator": "isAnyOf",
+      "profile": "unavailable",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED\"}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestOwnershipType/isAnyOf/PURCHASED/ownership_purchased",
+      "field": "latestOwnershipType",
+      "operator": "isAnyOf",
+      "profile": "ownership_purchased",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED\"}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestOwnershipType/isAnyOf/PURCHASED/ownership_family_shared",
+      "field": "latestOwnershipType",
+      "operator": "isAnyOf",
+      "profile": "ownership_family_shared",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED\"}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestOwnershipType/isAnyOf/PURCHASED/ownership_uppercase",
+      "field": "latestOwnershipType",
+      "operator": "isAnyOf",
+      "profile": "ownership_uppercase",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED\"}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestOwnershipType/isAnyOf/PURCHASED/ownership_missing",
+      "field": "latestOwnershipType",
+      "operator": "isAnyOf",
+      "profile": "ownership_missing",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED\"}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestOwnershipType/isAnyOf/PURCHASED/ownership_null",
+      "field": "latestOwnershipType",
+      "operator": "isAnyOf",
+      "profile": "ownership_null",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED\"}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestOwnershipType/isAnyOf/PURCHASED/ownership_empty",
+      "field": "latestOwnershipType",
+      "operator": "isAnyOf",
+      "profile": "ownership_empty",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED\"}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestOwnershipType/isAnyOf/PURCHASED/ownership_sandbox_only",
+      "field": "latestOwnershipType",
+      "operator": "isAnyOf",
+      "profile": "ownership_sandbox_only",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED\"}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestOwnershipType/isAnyOf/PURCHASED/ownership_production_before_sandbox",
+      "field": "latestOwnershipType",
+      "operator": "isAnyOf",
+      "profile": "ownership_production_before_sandbox",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED\"}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestOwnershipType/isAnyOf/PURCHASED/ownership_expiration_before_purchase",
+      "field": "latestOwnershipType",
+      "operator": "isAnyOf",
+      "profile": "ownership_expiration_before_purchase",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED\"}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestOwnershipType/isAnyOf/PURCHASED/ownership_latest_renewal",
+      "field": "latestOwnershipType",
+      "operator": "isAnyOf",
+      "profile": "ownership_latest_renewal",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED\"}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestOwnershipType/isAnyOf/PURCHASED/ownership_latest_update",
+      "field": "latestOwnershipType",
+      "operator": "isAnyOf",
+      "profile": "ownership_latest_update",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED\"}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestOwnershipType/isAnyOf/PURCHASED/ownership_one_time_purchase",
+      "field": "latestOwnershipType",
+      "operator": "isAnyOf",
+      "profile": "ownership_one_time_purchase",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED\"}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestOwnershipType/isAnyOf/PURCHASED/ownership_active_one_time_purchase",
+      "field": "latestOwnershipType",
+      "operator": "isAnyOf",
+      "profile": "ownership_active_one_time_purchase",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED\"}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestOwnershipType/isAnyOf/PURCHASED/ownership_latest_one_time_purchase",
+      "field": "latestOwnershipType",
+      "operator": "isAnyOf",
+      "profile": "ownership_latest_one_time_purchase",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED\"}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestOwnershipType/isAnyOf/FAMILY_SHARED/new",
+      "field": "latestOwnershipType",
+      "operator": "isAnyOf",
+      "profile": "new",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"FAMILY_SHARED\"}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestOwnershipType/isAnyOf/FAMILY_SHARED/renewed",
+      "field": "latestOwnershipType",
+      "operator": "isAnyOf",
+      "profile": "renewed",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"FAMILY_SHARED\"}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestOwnershipType/isAnyOf/FAMILY_SHARED/first_purchase",
+      "field": "latestOwnershipType",
+      "operator": "isAnyOf",
+      "profile": "first_purchase",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"FAMILY_SHARED\"}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestOwnershipType/isAnyOf/FAMILY_SHARED/unavailable",
+      "field": "latestOwnershipType",
+      "operator": "isAnyOf",
+      "profile": "unavailable",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"FAMILY_SHARED\"}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestOwnershipType/isAnyOf/FAMILY_SHARED/ownership_purchased",
+      "field": "latestOwnershipType",
+      "operator": "isAnyOf",
+      "profile": "ownership_purchased",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"FAMILY_SHARED\"}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestOwnershipType/isAnyOf/FAMILY_SHARED/ownership_family_shared",
+      "field": "latestOwnershipType",
+      "operator": "isAnyOf",
+      "profile": "ownership_family_shared",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"FAMILY_SHARED\"}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestOwnershipType/isAnyOf/FAMILY_SHARED/ownership_uppercase",
+      "field": "latestOwnershipType",
+      "operator": "isAnyOf",
+      "profile": "ownership_uppercase",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"FAMILY_SHARED\"}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestOwnershipType/isAnyOf/FAMILY_SHARED/ownership_missing",
+      "field": "latestOwnershipType",
+      "operator": "isAnyOf",
+      "profile": "ownership_missing",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"FAMILY_SHARED\"}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestOwnershipType/isAnyOf/FAMILY_SHARED/ownership_null",
+      "field": "latestOwnershipType",
+      "operator": "isAnyOf",
+      "profile": "ownership_null",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"FAMILY_SHARED\"}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestOwnershipType/isAnyOf/FAMILY_SHARED/ownership_empty",
+      "field": "latestOwnershipType",
+      "operator": "isAnyOf",
+      "profile": "ownership_empty",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"FAMILY_SHARED\"}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestOwnershipType/isAnyOf/FAMILY_SHARED/ownership_sandbox_only",
+      "field": "latestOwnershipType",
+      "operator": "isAnyOf",
+      "profile": "ownership_sandbox_only",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"FAMILY_SHARED\"}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestOwnershipType/isAnyOf/FAMILY_SHARED/ownership_production_before_sandbox",
+      "field": "latestOwnershipType",
+      "operator": "isAnyOf",
+      "profile": "ownership_production_before_sandbox",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"FAMILY_SHARED\"}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestOwnershipType/isAnyOf/FAMILY_SHARED/ownership_expiration_before_purchase",
+      "field": "latestOwnershipType",
+      "operator": "isAnyOf",
+      "profile": "ownership_expiration_before_purchase",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"FAMILY_SHARED\"}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestOwnershipType/isAnyOf/FAMILY_SHARED/ownership_latest_renewal",
+      "field": "latestOwnershipType",
+      "operator": "isAnyOf",
+      "profile": "ownership_latest_renewal",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"FAMILY_SHARED\"}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestOwnershipType/isAnyOf/FAMILY_SHARED/ownership_latest_update",
+      "field": "latestOwnershipType",
+      "operator": "isAnyOf",
+      "profile": "ownership_latest_update",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"FAMILY_SHARED\"}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestOwnershipType/isAnyOf/FAMILY_SHARED/ownership_one_time_purchase",
+      "field": "latestOwnershipType",
+      "operator": "isAnyOf",
+      "profile": "ownership_one_time_purchase",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"FAMILY_SHARED\"}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestOwnershipType/isAnyOf/FAMILY_SHARED/ownership_active_one_time_purchase",
+      "field": "latestOwnershipType",
+      "operator": "isAnyOf",
+      "profile": "ownership_active_one_time_purchase",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"FAMILY_SHARED\"}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestOwnershipType/isAnyOf/FAMILY_SHARED/ownership_latest_one_time_purchase",
+      "field": "latestOwnershipType",
+      "operator": "isAnyOf",
+      "profile": "ownership_latest_one_time_purchase",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"FAMILY_SHARED\"}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestOwnershipType/isAnyOf/PURCHASED,FAMILY_SHARED/new",
+      "field": "latestOwnershipType",
+      "operator": "isAnyOf",
+      "profile": "new",
+      "predicate": "{\"or\": [{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED\"}]}]}, {\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"FAMILY_SHARED\"}]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestOwnershipType/isAnyOf/PURCHASED,FAMILY_SHARED/renewed",
+      "field": "latestOwnershipType",
+      "operator": "isAnyOf",
+      "profile": "renewed",
+      "predicate": "{\"or\": [{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED\"}]}]}, {\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"FAMILY_SHARED\"}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestOwnershipType/isAnyOf/PURCHASED,FAMILY_SHARED/first_purchase",
+      "field": "latestOwnershipType",
+      "operator": "isAnyOf",
+      "profile": "first_purchase",
+      "predicate": "{\"or\": [{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED\"}]}]}, {\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"FAMILY_SHARED\"}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestOwnershipType/isAnyOf/PURCHASED,FAMILY_SHARED/unavailable",
+      "field": "latestOwnershipType",
+      "operator": "isAnyOf",
+      "profile": "unavailable",
+      "predicate": "{\"or\": [{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED\"}]}]}, {\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"FAMILY_SHARED\"}]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestOwnershipType/isAnyOf/PURCHASED,FAMILY_SHARED/ownership_purchased",
+      "field": "latestOwnershipType",
+      "operator": "isAnyOf",
+      "profile": "ownership_purchased",
+      "predicate": "{\"or\": [{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED\"}]}]}, {\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"FAMILY_SHARED\"}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestOwnershipType/isAnyOf/PURCHASED,FAMILY_SHARED/ownership_family_shared",
+      "field": "latestOwnershipType",
+      "operator": "isAnyOf",
+      "profile": "ownership_family_shared",
+      "predicate": "{\"or\": [{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED\"}]}]}, {\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"FAMILY_SHARED\"}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestOwnershipType/isAnyOf/PURCHASED,FAMILY_SHARED/ownership_uppercase",
+      "field": "latestOwnershipType",
+      "operator": "isAnyOf",
+      "profile": "ownership_uppercase",
+      "predicate": "{\"or\": [{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED\"}]}]}, {\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"FAMILY_SHARED\"}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestOwnershipType/isAnyOf/PURCHASED,FAMILY_SHARED/ownership_missing",
+      "field": "latestOwnershipType",
+      "operator": "isAnyOf",
+      "profile": "ownership_missing",
+      "predicate": "{\"or\": [{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED\"}]}]}, {\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"FAMILY_SHARED\"}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestOwnershipType/isAnyOf/PURCHASED,FAMILY_SHARED/ownership_null",
+      "field": "latestOwnershipType",
+      "operator": "isAnyOf",
+      "profile": "ownership_null",
+      "predicate": "{\"or\": [{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED\"}]}]}, {\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"FAMILY_SHARED\"}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestOwnershipType/isAnyOf/PURCHASED,FAMILY_SHARED/ownership_empty",
+      "field": "latestOwnershipType",
+      "operator": "isAnyOf",
+      "profile": "ownership_empty",
+      "predicate": "{\"or\": [{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED\"}]}]}, {\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"FAMILY_SHARED\"}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestOwnershipType/isAnyOf/PURCHASED,FAMILY_SHARED/ownership_sandbox_only",
+      "field": "latestOwnershipType",
+      "operator": "isAnyOf",
+      "profile": "ownership_sandbox_only",
+      "predicate": "{\"or\": [{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED\"}]}]}, {\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"FAMILY_SHARED\"}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestOwnershipType/isAnyOf/PURCHASED,FAMILY_SHARED/ownership_production_before_sandbox",
+      "field": "latestOwnershipType",
+      "operator": "isAnyOf",
+      "profile": "ownership_production_before_sandbox",
+      "predicate": "{\"or\": [{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED\"}]}]}, {\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"FAMILY_SHARED\"}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestOwnershipType/isAnyOf/PURCHASED,FAMILY_SHARED/ownership_expiration_before_purchase",
+      "field": "latestOwnershipType",
+      "operator": "isAnyOf",
+      "profile": "ownership_expiration_before_purchase",
+      "predicate": "{\"or\": [{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED\"}]}]}, {\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"FAMILY_SHARED\"}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestOwnershipType/isAnyOf/PURCHASED,FAMILY_SHARED/ownership_latest_renewal",
+      "field": "latestOwnershipType",
+      "operator": "isAnyOf",
+      "profile": "ownership_latest_renewal",
+      "predicate": "{\"or\": [{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED\"}]}]}, {\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"FAMILY_SHARED\"}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestOwnershipType/isAnyOf/PURCHASED,FAMILY_SHARED/ownership_latest_update",
+      "field": "latestOwnershipType",
+      "operator": "isAnyOf",
+      "profile": "ownership_latest_update",
+      "predicate": "{\"or\": [{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED\"}]}]}, {\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"FAMILY_SHARED\"}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestOwnershipType/isAnyOf/PURCHASED,FAMILY_SHARED/ownership_one_time_purchase",
+      "field": "latestOwnershipType",
+      "operator": "isAnyOf",
+      "profile": "ownership_one_time_purchase",
+      "predicate": "{\"or\": [{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED\"}]}]}, {\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"FAMILY_SHARED\"}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestOwnershipType/isAnyOf/PURCHASED,FAMILY_SHARED/ownership_active_one_time_purchase",
+      "field": "latestOwnershipType",
+      "operator": "isAnyOf",
+      "profile": "ownership_active_one_time_purchase",
+      "predicate": "{\"or\": [{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED\"}]}]}, {\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"FAMILY_SHARED\"}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestOwnershipType/isAnyOf/PURCHASED,FAMILY_SHARED/ownership_latest_one_time_purchase",
+      "field": "latestOwnershipType",
+      "operator": "isAnyOf",
+      "profile": "ownership_latest_one_time_purchase",
+      "predicate": "{\"or\": [{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED\"}]}]}, {\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"FAMILY_SHARED\"}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestOwnershipType/isNotAnyOf/PURCHASED/new",
+      "field": "latestOwnershipType",
+      "operator": "isNotAnyOf",
+      "profile": "new",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"!\": [{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED\"}]}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestOwnershipType/isNotAnyOf/PURCHASED/renewed",
+      "field": "latestOwnershipType",
+      "operator": "isNotAnyOf",
+      "profile": "renewed",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"!\": [{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED\"}]}]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestOwnershipType/isNotAnyOf/PURCHASED/first_purchase",
+      "field": "latestOwnershipType",
+      "operator": "isNotAnyOf",
+      "profile": "first_purchase",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"!\": [{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED\"}]}]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestOwnershipType/isNotAnyOf/PURCHASED/unavailable",
+      "field": "latestOwnershipType",
+      "operator": "isNotAnyOf",
+      "profile": "unavailable",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"!\": [{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED\"}]}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestOwnershipType/isNotAnyOf/PURCHASED/ownership_purchased",
+      "field": "latestOwnershipType",
+      "operator": "isNotAnyOf",
+      "profile": "ownership_purchased",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"!\": [{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED\"}]}]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestOwnershipType/isNotAnyOf/PURCHASED/ownership_family_shared",
+      "field": "latestOwnershipType",
+      "operator": "isNotAnyOf",
+      "profile": "ownership_family_shared",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"!\": [{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED\"}]}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestOwnershipType/isNotAnyOf/PURCHASED/ownership_uppercase",
+      "field": "latestOwnershipType",
+      "operator": "isNotAnyOf",
+      "profile": "ownership_uppercase",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"!\": [{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED\"}]}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestOwnershipType/isNotAnyOf/PURCHASED/ownership_missing",
+      "field": "latestOwnershipType",
+      "operator": "isNotAnyOf",
+      "profile": "ownership_missing",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"!\": [{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED\"}]}]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestOwnershipType/isNotAnyOf/PURCHASED/ownership_null",
+      "field": "latestOwnershipType",
+      "operator": "isNotAnyOf",
+      "profile": "ownership_null",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"!\": [{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED\"}]}]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestOwnershipType/isNotAnyOf/PURCHASED/ownership_empty",
+      "field": "latestOwnershipType",
+      "operator": "isNotAnyOf",
+      "profile": "ownership_empty",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"!\": [{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED\"}]}]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestOwnershipType/isNotAnyOf/PURCHASED/ownership_sandbox_only",
+      "field": "latestOwnershipType",
+      "operator": "isNotAnyOf",
+      "profile": "ownership_sandbox_only",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"!\": [{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED\"}]}]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestOwnershipType/isNotAnyOf/PURCHASED/ownership_production_before_sandbox",
+      "field": "latestOwnershipType",
+      "operator": "isNotAnyOf",
+      "profile": "ownership_production_before_sandbox",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"!\": [{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED\"}]}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestOwnershipType/isNotAnyOf/PURCHASED/ownership_expiration_before_purchase",
+      "field": "latestOwnershipType",
+      "operator": "isNotAnyOf",
+      "profile": "ownership_expiration_before_purchase",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"!\": [{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED\"}]}]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestOwnershipType/isNotAnyOf/PURCHASED/ownership_latest_renewal",
+      "field": "latestOwnershipType",
+      "operator": "isNotAnyOf",
+      "profile": "ownership_latest_renewal",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"!\": [{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED\"}]}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestOwnershipType/isNotAnyOf/PURCHASED/ownership_latest_update",
+      "field": "latestOwnershipType",
+      "operator": "isNotAnyOf",
+      "profile": "ownership_latest_update",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"!\": [{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED\"}]}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestOwnershipType/isNotAnyOf/PURCHASED/ownership_one_time_purchase",
+      "field": "latestOwnershipType",
+      "operator": "isNotAnyOf",
+      "profile": "ownership_one_time_purchase",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"!\": [{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED\"}]}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestOwnershipType/isNotAnyOf/PURCHASED/ownership_active_one_time_purchase",
+      "field": "latestOwnershipType",
+      "operator": "isNotAnyOf",
+      "profile": "ownership_active_one_time_purchase",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"!\": [{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED\"}]}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestOwnershipType/isNotAnyOf/PURCHASED/ownership_latest_one_time_purchase",
+      "field": "latestOwnershipType",
+      "operator": "isNotAnyOf",
+      "profile": "ownership_latest_one_time_purchase",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"!\": [{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED\"}]}]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestOwnershipType/isNotAnyOf/FAMILY_SHARED/new",
+      "field": "latestOwnershipType",
+      "operator": "isNotAnyOf",
+      "profile": "new",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"!\": [{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"FAMILY_SHARED\"}]}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestOwnershipType/isNotAnyOf/FAMILY_SHARED/renewed",
+      "field": "latestOwnershipType",
+      "operator": "isNotAnyOf",
+      "profile": "renewed",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"!\": [{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"FAMILY_SHARED\"}]}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestOwnershipType/isNotAnyOf/FAMILY_SHARED/first_purchase",
+      "field": "latestOwnershipType",
+      "operator": "isNotAnyOf",
+      "profile": "first_purchase",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"!\": [{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"FAMILY_SHARED\"}]}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestOwnershipType/isNotAnyOf/FAMILY_SHARED/unavailable",
+      "field": "latestOwnershipType",
+      "operator": "isNotAnyOf",
+      "profile": "unavailable",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"!\": [{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"FAMILY_SHARED\"}]}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestOwnershipType/isNotAnyOf/FAMILY_SHARED/ownership_purchased",
+      "field": "latestOwnershipType",
+      "operator": "isNotAnyOf",
+      "profile": "ownership_purchased",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"!\": [{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"FAMILY_SHARED\"}]}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestOwnershipType/isNotAnyOf/FAMILY_SHARED/ownership_family_shared",
+      "field": "latestOwnershipType",
+      "operator": "isNotAnyOf",
+      "profile": "ownership_family_shared",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"!\": [{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"FAMILY_SHARED\"}]}]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestOwnershipType/isNotAnyOf/FAMILY_SHARED/ownership_uppercase",
+      "field": "latestOwnershipType",
+      "operator": "isNotAnyOf",
+      "profile": "ownership_uppercase",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"!\": [{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"FAMILY_SHARED\"}]}]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestOwnershipType/isNotAnyOf/FAMILY_SHARED/ownership_missing",
+      "field": "latestOwnershipType",
+      "operator": "isNotAnyOf",
+      "profile": "ownership_missing",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"!\": [{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"FAMILY_SHARED\"}]}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestOwnershipType/isNotAnyOf/FAMILY_SHARED/ownership_null",
+      "field": "latestOwnershipType",
+      "operator": "isNotAnyOf",
+      "profile": "ownership_null",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"!\": [{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"FAMILY_SHARED\"}]}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestOwnershipType/isNotAnyOf/FAMILY_SHARED/ownership_empty",
+      "field": "latestOwnershipType",
+      "operator": "isNotAnyOf",
+      "profile": "ownership_empty",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"!\": [{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"FAMILY_SHARED\"}]}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestOwnershipType/isNotAnyOf/FAMILY_SHARED/ownership_sandbox_only",
+      "field": "latestOwnershipType",
+      "operator": "isNotAnyOf",
+      "profile": "ownership_sandbox_only",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"!\": [{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"FAMILY_SHARED\"}]}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestOwnershipType/isNotAnyOf/FAMILY_SHARED/ownership_production_before_sandbox",
+      "field": "latestOwnershipType",
+      "operator": "isNotAnyOf",
+      "profile": "ownership_production_before_sandbox",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"!\": [{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"FAMILY_SHARED\"}]}]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestOwnershipType/isNotAnyOf/FAMILY_SHARED/ownership_expiration_before_purchase",
+      "field": "latestOwnershipType",
+      "operator": "isNotAnyOf",
+      "profile": "ownership_expiration_before_purchase",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"!\": [{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"FAMILY_SHARED\"}]}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestOwnershipType/isNotAnyOf/FAMILY_SHARED/ownership_latest_renewal",
+      "field": "latestOwnershipType",
+      "operator": "isNotAnyOf",
+      "profile": "ownership_latest_renewal",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"!\": [{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"FAMILY_SHARED\"}]}]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestOwnershipType/isNotAnyOf/FAMILY_SHARED/ownership_latest_update",
+      "field": "latestOwnershipType",
+      "operator": "isNotAnyOf",
+      "profile": "ownership_latest_update",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"!\": [{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"FAMILY_SHARED\"}]}]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestOwnershipType/isNotAnyOf/FAMILY_SHARED/ownership_one_time_purchase",
+      "field": "latestOwnershipType",
+      "operator": "isNotAnyOf",
+      "profile": "ownership_one_time_purchase",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"!\": [{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"FAMILY_SHARED\"}]}]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestOwnershipType/isNotAnyOf/FAMILY_SHARED/ownership_active_one_time_purchase",
+      "field": "latestOwnershipType",
+      "operator": "isNotAnyOf",
+      "profile": "ownership_active_one_time_purchase",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"!\": [{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"FAMILY_SHARED\"}]}]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestOwnershipType/isNotAnyOf/FAMILY_SHARED/ownership_latest_one_time_purchase",
+      "field": "latestOwnershipType",
+      "operator": "isNotAnyOf",
+      "profile": "ownership_latest_one_time_purchase",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"!\": [{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"FAMILY_SHARED\"}]}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestOwnershipType/isNotAnyOf/PURCHASED,FAMILY_SHARED/new",
+      "field": "latestOwnershipType",
+      "operator": "isNotAnyOf",
+      "profile": "new",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"!\": [{\"or\": [{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED\"}]}]}, {\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"FAMILY_SHARED\"}]}]}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestOwnershipType/isNotAnyOf/PURCHASED,FAMILY_SHARED/renewed",
+      "field": "latestOwnershipType",
+      "operator": "isNotAnyOf",
+      "profile": "renewed",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"!\": [{\"or\": [{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED\"}]}]}, {\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"FAMILY_SHARED\"}]}]}]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestOwnershipType/isNotAnyOf/PURCHASED,FAMILY_SHARED/first_purchase",
+      "field": "latestOwnershipType",
+      "operator": "isNotAnyOf",
+      "profile": "first_purchase",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"!\": [{\"or\": [{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED\"}]}]}, {\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"FAMILY_SHARED\"}]}]}]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestOwnershipType/isNotAnyOf/PURCHASED,FAMILY_SHARED/unavailable",
+      "field": "latestOwnershipType",
+      "operator": "isNotAnyOf",
+      "profile": "unavailable",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"!\": [{\"or\": [{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED\"}]}]}, {\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"FAMILY_SHARED\"}]}]}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestOwnershipType/isNotAnyOf/PURCHASED,FAMILY_SHARED/ownership_purchased",
+      "field": "latestOwnershipType",
+      "operator": "isNotAnyOf",
+      "profile": "ownership_purchased",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"!\": [{\"or\": [{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED\"}]}]}, {\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"FAMILY_SHARED\"}]}]}]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestOwnershipType/isNotAnyOf/PURCHASED,FAMILY_SHARED/ownership_family_shared",
+      "field": "latestOwnershipType",
+      "operator": "isNotAnyOf",
+      "profile": "ownership_family_shared",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"!\": [{\"or\": [{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED\"}]}]}, {\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"FAMILY_SHARED\"}]}]}]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestOwnershipType/isNotAnyOf/PURCHASED,FAMILY_SHARED/ownership_uppercase",
+      "field": "latestOwnershipType",
+      "operator": "isNotAnyOf",
+      "profile": "ownership_uppercase",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"!\": [{\"or\": [{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED\"}]}]}, {\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"FAMILY_SHARED\"}]}]}]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestOwnershipType/isNotAnyOf/PURCHASED,FAMILY_SHARED/ownership_missing",
+      "field": "latestOwnershipType",
+      "operator": "isNotAnyOf",
+      "profile": "ownership_missing",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"!\": [{\"or\": [{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED\"}]}]}, {\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"FAMILY_SHARED\"}]}]}]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestOwnershipType/isNotAnyOf/PURCHASED,FAMILY_SHARED/ownership_null",
+      "field": "latestOwnershipType",
+      "operator": "isNotAnyOf",
+      "profile": "ownership_null",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"!\": [{\"or\": [{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED\"}]}]}, {\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"FAMILY_SHARED\"}]}]}]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestOwnershipType/isNotAnyOf/PURCHASED,FAMILY_SHARED/ownership_empty",
+      "field": "latestOwnershipType",
+      "operator": "isNotAnyOf",
+      "profile": "ownership_empty",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"!\": [{\"or\": [{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED\"}]}]}, {\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"FAMILY_SHARED\"}]}]}]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestOwnershipType/isNotAnyOf/PURCHASED,FAMILY_SHARED/ownership_sandbox_only",
+      "field": "latestOwnershipType",
+      "operator": "isNotAnyOf",
+      "profile": "ownership_sandbox_only",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"!\": [{\"or\": [{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED\"}]}]}, {\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"FAMILY_SHARED\"}]}]}]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestOwnershipType/isNotAnyOf/PURCHASED,FAMILY_SHARED/ownership_production_before_sandbox",
+      "field": "latestOwnershipType",
+      "operator": "isNotAnyOf",
+      "profile": "ownership_production_before_sandbox",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"!\": [{\"or\": [{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED\"}]}]}, {\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"FAMILY_SHARED\"}]}]}]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestOwnershipType/isNotAnyOf/PURCHASED,FAMILY_SHARED/ownership_expiration_before_purchase",
+      "field": "latestOwnershipType",
+      "operator": "isNotAnyOf",
+      "profile": "ownership_expiration_before_purchase",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"!\": [{\"or\": [{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED\"}]}]}, {\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"FAMILY_SHARED\"}]}]}]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestOwnershipType/isNotAnyOf/PURCHASED,FAMILY_SHARED/ownership_latest_renewal",
+      "field": "latestOwnershipType",
+      "operator": "isNotAnyOf",
+      "profile": "ownership_latest_renewal",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"!\": [{\"or\": [{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED\"}]}]}, {\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"FAMILY_SHARED\"}]}]}]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestOwnershipType/isNotAnyOf/PURCHASED,FAMILY_SHARED/ownership_latest_update",
+      "field": "latestOwnershipType",
+      "operator": "isNotAnyOf",
+      "profile": "ownership_latest_update",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"!\": [{\"or\": [{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED\"}]}]}, {\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"FAMILY_SHARED\"}]}]}]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestOwnershipType/isNotAnyOf/PURCHASED,FAMILY_SHARED/ownership_one_time_purchase",
+      "field": "latestOwnershipType",
+      "operator": "isNotAnyOf",
+      "profile": "ownership_one_time_purchase",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"!\": [{\"or\": [{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED\"}]}]}, {\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"FAMILY_SHARED\"}]}]}]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestOwnershipType/isNotAnyOf/PURCHASED,FAMILY_SHARED/ownership_active_one_time_purchase",
+      "field": "latestOwnershipType",
+      "operator": "isNotAnyOf",
+      "profile": "ownership_active_one_time_purchase",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"!\": [{\"or\": [{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED\"}]}]}, {\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"FAMILY_SHARED\"}]}]}]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestOwnershipType/isNotAnyOf/PURCHASED,FAMILY_SHARED/ownership_latest_one_time_purchase",
+      "field": "latestOwnershipType",
+      "operator": "isNotAnyOf",
+      "profile": "ownership_latest_one_time_purchase",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"!\": [{\"or\": [{\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"PURCHASED\"}]}]}, {\"and\": [{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}, {\"==\": [{\"rc.lower\": {\"var\": \"latest_ownership_type\"}}, {\"rc.lower\": \"FAMILY_SHARED\"}]}]}]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestOwnershipType/isEmpty//new",
+      "field": "latestOwnershipType",
+      "operator": "isEmpty",
+      "profile": "new",
+      "predicate": "{\"==\": [{\"var\": [\"latest_ownership_type\", null]}, null]}",
+      "expected": true
+    },
+    {
+      "id": "latestOwnershipType/isEmpty//renewed",
+      "field": "latestOwnershipType",
+      "operator": "isEmpty",
+      "profile": "renewed",
+      "predicate": "{\"==\": [{\"var\": [\"latest_ownership_type\", null]}, null]}",
+      "expected": false
+    },
+    {
+      "id": "latestOwnershipType/isEmpty//first_purchase",
+      "field": "latestOwnershipType",
+      "operator": "isEmpty",
+      "profile": "first_purchase",
+      "predicate": "{\"==\": [{\"var\": [\"latest_ownership_type\", null]}, null]}",
+      "expected": false
+    },
+    {
+      "id": "latestOwnershipType/isEmpty//unavailable",
+      "field": "latestOwnershipType",
+      "operator": "isEmpty",
+      "profile": "unavailable",
+      "predicate": "{\"==\": [{\"var\": [\"latest_ownership_type\", null]}, null]}",
+      "expected": true
+    },
+    {
+      "id": "latestOwnershipType/isEmpty//ownership_purchased",
+      "field": "latestOwnershipType",
+      "operator": "isEmpty",
+      "profile": "ownership_purchased",
+      "predicate": "{\"==\": [{\"var\": [\"latest_ownership_type\", null]}, null]}",
+      "expected": false
+    },
+    {
+      "id": "latestOwnershipType/isEmpty//ownership_family_shared",
+      "field": "latestOwnershipType",
+      "operator": "isEmpty",
+      "profile": "ownership_family_shared",
+      "predicate": "{\"==\": [{\"var\": [\"latest_ownership_type\", null]}, null]}",
+      "expected": false
+    },
+    {
+      "id": "latestOwnershipType/isEmpty//ownership_uppercase",
+      "field": "latestOwnershipType",
+      "operator": "isEmpty",
+      "profile": "ownership_uppercase",
+      "predicate": "{\"==\": [{\"var\": [\"latest_ownership_type\", null]}, null]}",
+      "expected": false
+    },
+    {
+      "id": "latestOwnershipType/isEmpty//ownership_missing",
+      "field": "latestOwnershipType",
+      "operator": "isEmpty",
+      "profile": "ownership_missing",
+      "predicate": "{\"==\": [{\"var\": [\"latest_ownership_type\", null]}, null]}",
+      "expected": false
+    },
+    {
+      "id": "latestOwnershipType/isEmpty//ownership_null",
+      "field": "latestOwnershipType",
+      "operator": "isEmpty",
+      "profile": "ownership_null",
+      "predicate": "{\"==\": [{\"var\": [\"latest_ownership_type\", null]}, null]}",
+      "expected": false
+    },
+    {
+      "id": "latestOwnershipType/isEmpty//ownership_empty",
+      "field": "latestOwnershipType",
+      "operator": "isEmpty",
+      "profile": "ownership_empty",
+      "predicate": "{\"==\": [{\"var\": [\"latest_ownership_type\", null]}, null]}",
+      "expected": false
+    },
+    {
+      "id": "latestOwnershipType/isEmpty//ownership_sandbox_only",
+      "field": "latestOwnershipType",
+      "operator": "isEmpty",
+      "profile": "ownership_sandbox_only",
+      "predicate": "{\"==\": [{\"var\": [\"latest_ownership_type\", null]}, null]}",
+      "expected": false
+    },
+    {
+      "id": "latestOwnershipType/isEmpty//ownership_production_before_sandbox",
+      "field": "latestOwnershipType",
+      "operator": "isEmpty",
+      "profile": "ownership_production_before_sandbox",
+      "predicate": "{\"==\": [{\"var\": [\"latest_ownership_type\", null]}, null]}",
+      "expected": false
+    },
+    {
+      "id": "latestOwnershipType/isEmpty//ownership_expiration_before_purchase",
+      "field": "latestOwnershipType",
+      "operator": "isEmpty",
+      "profile": "ownership_expiration_before_purchase",
+      "predicate": "{\"==\": [{\"var\": [\"latest_ownership_type\", null]}, null]}",
+      "expected": false
+    },
+    {
+      "id": "latestOwnershipType/isEmpty//ownership_latest_renewal",
+      "field": "latestOwnershipType",
+      "operator": "isEmpty",
+      "profile": "ownership_latest_renewal",
+      "predicate": "{\"==\": [{\"var\": [\"latest_ownership_type\", null]}, null]}",
+      "expected": false
+    },
+    {
+      "id": "latestOwnershipType/isEmpty//ownership_latest_update",
+      "field": "latestOwnershipType",
+      "operator": "isEmpty",
+      "profile": "ownership_latest_update",
+      "predicate": "{\"==\": [{\"var\": [\"latest_ownership_type\", null]}, null]}",
+      "expected": false
+    },
+    {
+      "id": "latestOwnershipType/isEmpty//ownership_one_time_purchase",
+      "field": "latestOwnershipType",
+      "operator": "isEmpty",
+      "profile": "ownership_one_time_purchase",
+      "predicate": "{\"==\": [{\"var\": [\"latest_ownership_type\", null]}, null]}",
+      "expected": false
+    },
+    {
+      "id": "latestOwnershipType/isEmpty//ownership_active_one_time_purchase",
+      "field": "latestOwnershipType",
+      "operator": "isEmpty",
+      "profile": "ownership_active_one_time_purchase",
+      "predicate": "{\"==\": [{\"var\": [\"latest_ownership_type\", null]}, null]}",
+      "expected": false
+    },
+    {
+      "id": "latestOwnershipType/isEmpty//ownership_latest_one_time_purchase",
+      "field": "latestOwnershipType",
+      "operator": "isEmpty",
+      "profile": "ownership_latest_one_time_purchase",
+      "predicate": "{\"==\": [{\"var\": [\"latest_ownership_type\", null]}, null]}",
+      "expected": false
+    },
+    {
+      "id": "latestOwnershipType/isNotEmpty//new",
+      "field": "latestOwnershipType",
+      "operator": "isNotEmpty",
+      "profile": "new",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}",
+      "expected": false
+    },
+    {
+      "id": "latestOwnershipType/isNotEmpty//renewed",
+      "field": "latestOwnershipType",
+      "operator": "isNotEmpty",
+      "profile": "renewed",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}",
+      "expected": true
+    },
+    {
+      "id": "latestOwnershipType/isNotEmpty//first_purchase",
+      "field": "latestOwnershipType",
+      "operator": "isNotEmpty",
+      "profile": "first_purchase",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}",
+      "expected": true
+    },
+    {
+      "id": "latestOwnershipType/isNotEmpty//unavailable",
+      "field": "latestOwnershipType",
+      "operator": "isNotEmpty",
+      "profile": "unavailable",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}",
+      "expected": false
+    },
+    {
+      "id": "latestOwnershipType/isNotEmpty//ownership_purchased",
+      "field": "latestOwnershipType",
+      "operator": "isNotEmpty",
+      "profile": "ownership_purchased",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}",
+      "expected": true
+    },
+    {
+      "id": "latestOwnershipType/isNotEmpty//ownership_family_shared",
+      "field": "latestOwnershipType",
+      "operator": "isNotEmpty",
+      "profile": "ownership_family_shared",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}",
+      "expected": true
+    },
+    {
+      "id": "latestOwnershipType/isNotEmpty//ownership_uppercase",
+      "field": "latestOwnershipType",
+      "operator": "isNotEmpty",
+      "profile": "ownership_uppercase",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}",
+      "expected": true
+    },
+    {
+      "id": "latestOwnershipType/isNotEmpty//ownership_missing",
+      "field": "latestOwnershipType",
+      "operator": "isNotEmpty",
+      "profile": "ownership_missing",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}",
+      "expected": true
+    },
+    {
+      "id": "latestOwnershipType/isNotEmpty//ownership_null",
+      "field": "latestOwnershipType",
+      "operator": "isNotEmpty",
+      "profile": "ownership_null",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}",
+      "expected": true
+    },
+    {
+      "id": "latestOwnershipType/isNotEmpty//ownership_empty",
+      "field": "latestOwnershipType",
+      "operator": "isNotEmpty",
+      "profile": "ownership_empty",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}",
+      "expected": true
+    },
+    {
+      "id": "latestOwnershipType/isNotEmpty//ownership_sandbox_only",
+      "field": "latestOwnershipType",
+      "operator": "isNotEmpty",
+      "profile": "ownership_sandbox_only",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}",
+      "expected": true
+    },
+    {
+      "id": "latestOwnershipType/isNotEmpty//ownership_production_before_sandbox",
+      "field": "latestOwnershipType",
+      "operator": "isNotEmpty",
+      "profile": "ownership_production_before_sandbox",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}",
+      "expected": true
+    },
+    {
+      "id": "latestOwnershipType/isNotEmpty//ownership_expiration_before_purchase",
+      "field": "latestOwnershipType",
+      "operator": "isNotEmpty",
+      "profile": "ownership_expiration_before_purchase",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}",
+      "expected": true
+    },
+    {
+      "id": "latestOwnershipType/isNotEmpty//ownership_latest_renewal",
+      "field": "latestOwnershipType",
+      "operator": "isNotEmpty",
+      "profile": "ownership_latest_renewal",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}",
+      "expected": true
+    },
+    {
+      "id": "latestOwnershipType/isNotEmpty//ownership_latest_update",
+      "field": "latestOwnershipType",
+      "operator": "isNotEmpty",
+      "profile": "ownership_latest_update",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}",
+      "expected": true
+    },
+    {
+      "id": "latestOwnershipType/isNotEmpty//ownership_one_time_purchase",
+      "field": "latestOwnershipType",
+      "operator": "isNotEmpty",
+      "profile": "ownership_one_time_purchase",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}",
+      "expected": true
+    },
+    {
+      "id": "latestOwnershipType/isNotEmpty//ownership_active_one_time_purchase",
+      "field": "latestOwnershipType",
+      "operator": "isNotEmpty",
+      "profile": "ownership_active_one_time_purchase",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}",
+      "expected": true
+    },
+    {
+      "id": "latestOwnershipType/isNotEmpty//ownership_latest_one_time_purchase",
+      "field": "latestOwnershipType",
+      "operator": "isNotEmpty",
+      "profile": "ownership_latest_one_time_purchase",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_ownership_type\", null]}, null]}",
+      "expected": true
+    }
+  ]
+}
