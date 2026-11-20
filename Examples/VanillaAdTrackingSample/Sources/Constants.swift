@@ -1,71 +1,46 @@
 import Foundation
 
-/// Constants for the Vanilla Ad Tracking Sample app.
-///
-/// IMPORTANT: These are test ad unit IDs provided by Google AdMob for development and testing.
-/// Replace these with your actual production ad unit IDs before publishing your app.
+/// Constants for the LevelPlay manual integration sample app.
 enum Constants {
-    /// RevenueCat API Key
-    /// Get your API key from https://app.revenuecat.com/
+
+    static let revenueCatAPIKey = requiredConfigurationValue(for: "REVENUECAT_API_KEY")
+
+    /// Unity's public LevelPlay demo configuration.
     ///
-    /// NOTE: For this sample app, you can use any valid RevenueCat API key.
-    /// The sample demonstrates ad event tracking, not subscription functionality.
-    #error("Modify this property to reflect your app's API key, then comment this line out.")
-    static let revenueCatAPIKey = "YOUR_REVENUECAT_API_KEY"
-
-    /// AdMob Test Ad Unit IDs
-    /// These are official test IDs provided by Google that always serve test ads.
-    /// Source: https://developers.google.com/admob/ios/test-ads
-    enum AdMob {
-        /// Banner Ad Test Unit ID
-        /// Always successfully loads and displays a test banner ad.
-        static let bannerAdUnitID = "ca-app-pub-3940256099942544/2435281174"
-
-        /// Interstitial Ad Test Unit ID
-        /// Always successfully loads and displays a test interstitial ad.
-        static let interstitialAdUnitID = "ca-app-pub-3940256099942544/4411468910"
-
-        /// Rewarded Ad Test Unit ID
-        /// Always successfully loads and displays a test rewarded ad.
-        static let rewardedAdUnitID = "ca-app-pub-3940256099942544/1712485313"
-
-        /// Rewarded Interstitial Ad Test Unit ID
-        /// Always successfully loads and displays a test rewarded interstitial ad.
-        static let rewardedInterstitialAdUnitID = "ca-app-pub-3940256099942544/6978759866"
-
-        /// App Open Ad Test Unit ID
-        /// Always successfully loads and displays a test app open ad.
-        /// App open ads are full-screen ads shown when users open or switch back to your app.
-        static let appOpenAdUnitID = "ca-app-pub-3940256099942544/5575463023"
-
-        /// Native Ad Test Unit ID
-        /// Test ID for native ads (text + images).
-        /// Official Google test ID for Native Advanced ads.
-        ///
-        /// ⚠️ IMPORTANT: This test ID does not work reliably for native ads.
-        /// Google's test IDs for native ads often fail to load or behave inconsistently.
-        /// For reliable testing:
-        /// 1. Use a production ad unit ID from your AdMob account
-        /// 2. Configure your device as a test device
-        static let nativeAdUnitID = "ca-app-pub-3940256099942544/2247696110"
-
-        /// Native Video Ad Test Unit ID
-        /// Test ID for native ads with video content.
-        /// Official Google test ID for Native Advanced Video ads.
-        ///
-        /// ⚠️ IMPORTANT: This test ID does not work reliably for native video ads.
-        /// Google's test IDs for native ads often fail to load or behave inconsistently.
-        /// For reliable testing:
-        /// 1. Use a production ad unit ID from your AdMob account
-        /// 2. Configure your device as a test device
-        static let nativeVideoAdUnitID = "ca-app-pub-3940256099942544/1044960115"
-
-        /// Invalid Ad Unit ID - Used for Error Handling
-        /// This intentionally invalid ID triggers load failures to demonstrate
-        /// how to handle and track ad load errors with RevenueCat.
-        ///
-        /// NOTE: AdMob does not provide an official "error test ID", so we use
-        /// an invalid ID to simulate load failures for testing purposes.
+    /// Override these values in `Local.xcconfig` with your own app key and ad unit IDs to get
+    /// deterministic test-device fill. The public demo configuration can return no fill.
+    /// Source: https://github.com/ironsource-mobile/Mediation-Demo-Apps
+    enum LevelPlay {
+        static let appKey = configurationValue(for: "LEVELPLAY_APP_KEY", default: "8545d445")
+        static let bannerAdUnitID = configurationValue(
+            for: "LEVELPLAY_BANNER_AD_UNIT_ID",
+            default: "iep3rxsyp9na3rw8"
+        )
+        static let interstitialAdUnitID = configurationValue(
+            for: "LEVELPLAY_INTERSTITIAL_AD_UNIT_ID",
+            default: "wmgt0712uuux8ju4"
+        )
+        static let rewardedAdUnitID = configurationValue(
+            for: "LEVELPLAY_REWARDED_AD_UNIT_ID",
+            default: "qwouvdrkuwivay5q"
+        )
         static let invalidAdUnitID = "invalid-ad-unit-id"
     }
+
+    private static func configurationValue(for key: String, default defaultValue: String) -> String {
+        guard let value = Bundle.main.object(forInfoDictionaryKey: key) as? String,
+              !value.isEmpty,
+              !value.hasPrefix("$(") else {
+            return defaultValue
+        }
+
+        return value
+    }
+
+    private static func requiredConfigurationValue(for key: String) -> String {
+        let value = configurationValue(for: key, default: "")
+        precondition(!value.isEmpty, "Add \(key) to Local.xcconfig before running the sample.")
+        return value
+    }
+
 }

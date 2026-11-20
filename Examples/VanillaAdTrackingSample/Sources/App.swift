@@ -1,4 +1,3 @@
-import GoogleMobileAds
 import RevenueCat
 import SwiftUI
 
@@ -6,11 +5,9 @@ import SwiftUI
 struct VanillaAdTrackingSampleApp: App {
 
     init() {
-        // Initialize SDKs (AdMob v13 Swift API)
-        MobileAds.shared.start(completionHandler: nil)
         Purchases.logLevel = .debug
         Purchases.configure(withAPIKey: Constants.revenueCatAPIKey)
-        print("✅ SDKs initialized")
+        print("✅ RevenueCat SDK initialized")
     }
 
     var body: some Scene {
