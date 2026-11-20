@@ -1,0 +1,3509 @@
+{
+  "schema_version": 1,
+  "cases": [
+    {
+      "id": "latestStore/is/app_store/new",
+      "field": "latestStore",
+      "operator": "is",
+      "profile": "new",
+      "predicate": "{\"==\": [{\"var\": \"latest_store\"}, \"app_store\"]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/is/app_store/renewed",
+      "field": "latestStore",
+      "operator": "is",
+      "profile": "renewed",
+      "predicate": "{\"==\": [{\"var\": \"latest_store\"}, \"app_store\"]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/is/app_store/first_purchase",
+      "field": "latestStore",
+      "operator": "is",
+      "profile": "first_purchase",
+      "predicate": "{\"==\": [{\"var\": \"latest_store\"}, \"app_store\"]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/is/app_store/unavailable",
+      "field": "latestStore",
+      "operator": "is",
+      "profile": "unavailable",
+      "predicate": "{\"==\": [{\"var\": \"latest_store\"}, \"app_store\"]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/is/app_store/store_app_store",
+      "field": "latestStore",
+      "operator": "is",
+      "profile": "store_app_store",
+      "predicate": "{\"==\": [{\"var\": \"latest_store\"}, \"app_store\"]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/is/app_store/store_play_store",
+      "field": "latestStore",
+      "operator": "is",
+      "profile": "store_play_store",
+      "predicate": "{\"==\": [{\"var\": \"latest_store\"}, \"app_store\"]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/is/app_store/store_promotional",
+      "field": "latestStore",
+      "operator": "is",
+      "profile": "store_promotional",
+      "predicate": "{\"==\": [{\"var\": \"latest_store\"}, \"app_store\"]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/is/app_store/store_mac_app_store",
+      "field": "latestStore",
+      "operator": "is",
+      "profile": "store_mac_app_store",
+      "predicate": "{\"==\": [{\"var\": \"latest_store\"}, \"app_store\"]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/is/app_store/store_stripe",
+      "field": "latestStore",
+      "operator": "is",
+      "profile": "store_stripe",
+      "predicate": "{\"==\": [{\"var\": \"latest_store\"}, \"app_store\"]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/is/app_store/store_amazon",
+      "field": "latestStore",
+      "operator": "is",
+      "profile": "store_amazon",
+      "predicate": "{\"==\": [{\"var\": \"latest_store\"}, \"app_store\"]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/is/app_store/store_external",
+      "field": "latestStore",
+      "operator": "is",
+      "profile": "store_external",
+      "predicate": "{\"==\": [{\"var\": \"latest_store\"}, \"app_store\"]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/is/app_store/store_rc_billing",
+      "field": "latestStore",
+      "operator": "is",
+      "profile": "store_rc_billing",
+      "predicate": "{\"==\": [{\"var\": \"latest_store\"}, \"app_store\"]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/is/app_store/store_roku",
+      "field": "latestStore",
+      "operator": "is",
+      "profile": "store_roku",
+      "predicate": "{\"==\": [{\"var\": \"latest_store\"}, \"app_store\"]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/is/app_store/store_paddle",
+      "field": "latestStore",
+      "operator": "is",
+      "profile": "store_paddle",
+      "predicate": "{\"==\": [{\"var\": \"latest_store\"}, \"app_store\"]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/is/app_store/store_test_store",
+      "field": "latestStore",
+      "operator": "is",
+      "profile": "store_test_store",
+      "predicate": "{\"==\": [{\"var\": \"latest_store\"}, \"app_store\"]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/is/app_store/store_paypal",
+      "field": "latestStore",
+      "operator": "is",
+      "profile": "store_paypal",
+      "predicate": "{\"==\": [{\"var\": \"latest_store\"}, \"app_store\"]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/is/app_store/store_galaxy",
+      "field": "latestStore",
+      "operator": "is",
+      "profile": "store_galaxy",
+      "predicate": "{\"==\": [{\"var\": \"latest_store\"}, \"app_store\"]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/is/app_store/store_missing",
+      "field": "latestStore",
+      "operator": "is",
+      "profile": "store_missing",
+      "predicate": "{\"==\": [{\"var\": \"latest_store\"}, \"app_store\"]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/is/app_store/store_null",
+      "field": "latestStore",
+      "operator": "is",
+      "profile": "store_null",
+      "predicate": "{\"==\": [{\"var\": \"latest_store\"}, \"app_store\"]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/is/app_store/store_sandbox_only",
+      "field": "latestStore",
+      "operator": "is",
+      "profile": "store_sandbox_only",
+      "predicate": "{\"==\": [{\"var\": \"latest_store\"}, \"app_store\"]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/is/app_store/store_production_before_sandbox",
+      "field": "latestStore",
+      "operator": "is",
+      "profile": "store_production_before_sandbox",
+      "predicate": "{\"==\": [{\"var\": \"latest_store\"}, \"app_store\"]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/is/app_store/store_expiration_before_purchase",
+      "field": "latestStore",
+      "operator": "is",
+      "profile": "store_expiration_before_purchase",
+      "predicate": "{\"==\": [{\"var\": \"latest_store\"}, \"app_store\"]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/is/app_store/store_latest_renewal",
+      "field": "latestStore",
+      "operator": "is",
+      "profile": "store_latest_renewal",
+      "predicate": "{\"==\": [{\"var\": \"latest_store\"}, \"app_store\"]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/is/app_store/store_latest_update",
+      "field": "latestStore",
+      "operator": "is",
+      "profile": "store_latest_update",
+      "predicate": "{\"==\": [{\"var\": \"latest_store\"}, \"app_store\"]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/is/app_store/store_one_time_purchase",
+      "field": "latestStore",
+      "operator": "is",
+      "profile": "store_one_time_purchase",
+      "predicate": "{\"==\": [{\"var\": \"latest_store\"}, \"app_store\"]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/is/app_store/store_active_one_time_purchase",
+      "field": "latestStore",
+      "operator": "is",
+      "profile": "store_active_one_time_purchase",
+      "predicate": "{\"==\": [{\"var\": \"latest_store\"}, \"app_store\"]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/is/app_store/store_latest_one_time_purchase",
+      "field": "latestStore",
+      "operator": "is",
+      "profile": "store_latest_one_time_purchase",
+      "predicate": "{\"==\": [{\"var\": \"latest_store\"}, \"app_store\"]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/is/play_store/new",
+      "field": "latestStore",
+      "operator": "is",
+      "profile": "new",
+      "predicate": "{\"==\": [{\"var\": \"latest_store\"}, \"play_store\"]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/is/play_store/renewed",
+      "field": "latestStore",
+      "operator": "is",
+      "profile": "renewed",
+      "predicate": "{\"==\": [{\"var\": \"latest_store\"}, \"play_store\"]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/is/play_store/first_purchase",
+      "field": "latestStore",
+      "operator": "is",
+      "profile": "first_purchase",
+      "predicate": "{\"==\": [{\"var\": \"latest_store\"}, \"play_store\"]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/is/play_store/unavailable",
+      "field": "latestStore",
+      "operator": "is",
+      "profile": "unavailable",
+      "predicate": "{\"==\": [{\"var\": \"latest_store\"}, \"play_store\"]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/is/play_store/store_app_store",
+      "field": "latestStore",
+      "operator": "is",
+      "profile": "store_app_store",
+      "predicate": "{\"==\": [{\"var\": \"latest_store\"}, \"play_store\"]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/is/play_store/store_play_store",
+      "field": "latestStore",
+      "operator": "is",
+      "profile": "store_play_store",
+      "predicate": "{\"==\": [{\"var\": \"latest_store\"}, \"play_store\"]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/is/play_store/store_promotional",
+      "field": "latestStore",
+      "operator": "is",
+      "profile": "store_promotional",
+      "predicate": "{\"==\": [{\"var\": \"latest_store\"}, \"play_store\"]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/is/play_store/store_mac_app_store",
+      "field": "latestStore",
+      "operator": "is",
+      "profile": "store_mac_app_store",
+      "predicate": "{\"==\": [{\"var\": \"latest_store\"}, \"play_store\"]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/is/play_store/store_stripe",
+      "field": "latestStore",
+      "operator": "is",
+      "profile": "store_stripe",
+      "predicate": "{\"==\": [{\"var\": \"latest_store\"}, \"play_store\"]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/is/play_store/store_amazon",
+      "field": "latestStore",
+      "operator": "is",
+      "profile": "store_amazon",
+      "predicate": "{\"==\": [{\"var\": \"latest_store\"}, \"play_store\"]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/is/play_store/store_external",
+      "field": "latestStore",
+      "operator": "is",
+      "profile": "store_external",
+      "predicate": "{\"==\": [{\"var\": \"latest_store\"}, \"play_store\"]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/is/play_store/store_rc_billing",
+      "field": "latestStore",
+      "operator": "is",
+      "profile": "store_rc_billing",
+      "predicate": "{\"==\": [{\"var\": \"latest_store\"}, \"play_store\"]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/is/play_store/store_roku",
+      "field": "latestStore",
+      "operator": "is",
+      "profile": "store_roku",
+      "predicate": "{\"==\": [{\"var\": \"latest_store\"}, \"play_store\"]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/is/play_store/store_paddle",
+      "field": "latestStore",
+      "operator": "is",
+      "profile": "store_paddle",
+      "predicate": "{\"==\": [{\"var\": \"latest_store\"}, \"play_store\"]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/is/play_store/store_test_store",
+      "field": "latestStore",
+      "operator": "is",
+      "profile": "store_test_store",
+      "predicate": "{\"==\": [{\"var\": \"latest_store\"}, \"play_store\"]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/is/play_store/store_paypal",
+      "field": "latestStore",
+      "operator": "is",
+      "profile": "store_paypal",
+      "predicate": "{\"==\": [{\"var\": \"latest_store\"}, \"play_store\"]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/is/play_store/store_galaxy",
+      "field": "latestStore",
+      "operator": "is",
+      "profile": "store_galaxy",
+      "predicate": "{\"==\": [{\"var\": \"latest_store\"}, \"play_store\"]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/is/play_store/store_missing",
+      "field": "latestStore",
+      "operator": "is",
+      "profile": "store_missing",
+      "predicate": "{\"==\": [{\"var\": \"latest_store\"}, \"play_store\"]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/is/play_store/store_null",
+      "field": "latestStore",
+      "operator": "is",
+      "profile": "store_null",
+      "predicate": "{\"==\": [{\"var\": \"latest_store\"}, \"play_store\"]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/is/play_store/store_sandbox_only",
+      "field": "latestStore",
+      "operator": "is",
+      "profile": "store_sandbox_only",
+      "predicate": "{\"==\": [{\"var\": \"latest_store\"}, \"play_store\"]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/is/play_store/store_production_before_sandbox",
+      "field": "latestStore",
+      "operator": "is",
+      "profile": "store_production_before_sandbox",
+      "predicate": "{\"==\": [{\"var\": \"latest_store\"}, \"play_store\"]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/is/play_store/store_expiration_before_purchase",
+      "field": "latestStore",
+      "operator": "is",
+      "profile": "store_expiration_before_purchase",
+      "predicate": "{\"==\": [{\"var\": \"latest_store\"}, \"play_store\"]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/is/play_store/store_latest_renewal",
+      "field": "latestStore",
+      "operator": "is",
+      "profile": "store_latest_renewal",
+      "predicate": "{\"==\": [{\"var\": \"latest_store\"}, \"play_store\"]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/is/play_store/store_latest_update",
+      "field": "latestStore",
+      "operator": "is",
+      "profile": "store_latest_update",
+      "predicate": "{\"==\": [{\"var\": \"latest_store\"}, \"play_store\"]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/is/play_store/store_one_time_purchase",
+      "field": "latestStore",
+      "operator": "is",
+      "profile": "store_one_time_purchase",
+      "predicate": "{\"==\": [{\"var\": \"latest_store\"}, \"play_store\"]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/is/play_store/store_active_one_time_purchase",
+      "field": "latestStore",
+      "operator": "is",
+      "profile": "store_active_one_time_purchase",
+      "predicate": "{\"==\": [{\"var\": \"latest_store\"}, \"play_store\"]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/is/play_store/store_latest_one_time_purchase",
+      "field": "latestStore",
+      "operator": "is",
+      "profile": "store_latest_one_time_purchase",
+      "predicate": "{\"==\": [{\"var\": \"latest_store\"}, \"play_store\"]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/is/promotional/store_promotional",
+      "field": "latestStore",
+      "operator": "is",
+      "profile": "store_promotional",
+      "predicate": "{\"==\": [{\"var\": \"latest_store\"}, \"promotional\"]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/is/mac_app_store/store_mac_app_store",
+      "field": "latestStore",
+      "operator": "is",
+      "profile": "store_mac_app_store",
+      "predicate": "{\"==\": [{\"var\": \"latest_store\"}, \"mac_app_store\"]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/is/stripe/store_stripe",
+      "field": "latestStore",
+      "operator": "is",
+      "profile": "store_stripe",
+      "predicate": "{\"==\": [{\"var\": \"latest_store\"}, \"stripe\"]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/is/stripe/store_latest_one_time_purchase",
+      "field": "latestStore",
+      "operator": "is",
+      "profile": "store_latest_one_time_purchase",
+      "predicate": "{\"==\": [{\"var\": \"latest_store\"}, \"stripe\"]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/is/amazon/store_amazon",
+      "field": "latestStore",
+      "operator": "is",
+      "profile": "store_amazon",
+      "predicate": "{\"==\": [{\"var\": \"latest_store\"}, \"amazon\"]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/is/amazon/store_one_time_purchase",
+      "field": "latestStore",
+      "operator": "is",
+      "profile": "store_one_time_purchase",
+      "predicate": "{\"==\": [{\"var\": \"latest_store\"}, \"amazon\"]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/is/amazon/store_active_one_time_purchase",
+      "field": "latestStore",
+      "operator": "is",
+      "profile": "store_active_one_time_purchase",
+      "predicate": "{\"==\": [{\"var\": \"latest_store\"}, \"amazon\"]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/is/amazon/store_latest_one_time_purchase",
+      "field": "latestStore",
+      "operator": "is",
+      "profile": "store_latest_one_time_purchase",
+      "predicate": "{\"==\": [{\"var\": \"latest_store\"}, \"amazon\"]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/is/external/store_external",
+      "field": "latestStore",
+      "operator": "is",
+      "profile": "store_external",
+      "predicate": "{\"==\": [{\"var\": \"latest_store\"}, \"external\"]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/is/rc_billing/store_rc_billing",
+      "field": "latestStore",
+      "operator": "is",
+      "profile": "store_rc_billing",
+      "predicate": "{\"==\": [{\"var\": \"latest_store\"}, \"rc_billing\"]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/is/roku/store_roku",
+      "field": "latestStore",
+      "operator": "is",
+      "profile": "store_roku",
+      "predicate": "{\"==\": [{\"var\": \"latest_store\"}, \"roku\"]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/is/paddle/store_paddle",
+      "field": "latestStore",
+      "operator": "is",
+      "profile": "store_paddle",
+      "predicate": "{\"==\": [{\"var\": \"latest_store\"}, \"paddle\"]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/is/test_store/store_test_store",
+      "field": "latestStore",
+      "operator": "is",
+      "profile": "store_test_store",
+      "predicate": "{\"==\": [{\"var\": \"latest_store\"}, \"test_store\"]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/is/paypal/store_paypal",
+      "field": "latestStore",
+      "operator": "is",
+      "profile": "store_paypal",
+      "predicate": "{\"==\": [{\"var\": \"latest_store\"}, \"paypal\"]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/is/galaxy/store_galaxy",
+      "field": "latestStore",
+      "operator": "is",
+      "profile": "store_galaxy",
+      "predicate": "{\"==\": [{\"var\": \"latest_store\"}, \"galaxy\"]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/is/app_store,play_store/new",
+      "field": "latestStore",
+      "operator": "is",
+      "profile": "new",
+      "predicate": "{\"==\": [{\"var\": \"latest_store\"}, \"app_store,play_store\"]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/is/app_store,play_store/renewed",
+      "field": "latestStore",
+      "operator": "is",
+      "profile": "renewed",
+      "predicate": "{\"==\": [{\"var\": \"latest_store\"}, \"app_store,play_store\"]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/is/app_store,play_store/first_purchase",
+      "field": "latestStore",
+      "operator": "is",
+      "profile": "first_purchase",
+      "predicate": "{\"==\": [{\"var\": \"latest_store\"}, \"app_store,play_store\"]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/is/app_store,play_store/unavailable",
+      "field": "latestStore",
+      "operator": "is",
+      "profile": "unavailable",
+      "predicate": "{\"==\": [{\"var\": \"latest_store\"}, \"app_store,play_store\"]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/is/app_store,play_store/store_app_store",
+      "field": "latestStore",
+      "operator": "is",
+      "profile": "store_app_store",
+      "predicate": "{\"==\": [{\"var\": \"latest_store\"}, \"app_store,play_store\"]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/is/app_store,play_store/store_play_store",
+      "field": "latestStore",
+      "operator": "is",
+      "profile": "store_play_store",
+      "predicate": "{\"==\": [{\"var\": \"latest_store\"}, \"app_store,play_store\"]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/is/app_store,play_store/store_promotional",
+      "field": "latestStore",
+      "operator": "is",
+      "profile": "store_promotional",
+      "predicate": "{\"==\": [{\"var\": \"latest_store\"}, \"app_store,play_store\"]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/is/app_store,play_store/store_mac_app_store",
+      "field": "latestStore",
+      "operator": "is",
+      "profile": "store_mac_app_store",
+      "predicate": "{\"==\": [{\"var\": \"latest_store\"}, \"app_store,play_store\"]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/is/app_store,play_store/store_stripe",
+      "field": "latestStore",
+      "operator": "is",
+      "profile": "store_stripe",
+      "predicate": "{\"==\": [{\"var\": \"latest_store\"}, \"app_store,play_store\"]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/is/app_store,play_store/store_amazon",
+      "field": "latestStore",
+      "operator": "is",
+      "profile": "store_amazon",
+      "predicate": "{\"==\": [{\"var\": \"latest_store\"}, \"app_store,play_store\"]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/is/app_store,play_store/store_external",
+      "field": "latestStore",
+      "operator": "is",
+      "profile": "store_external",
+      "predicate": "{\"==\": [{\"var\": \"latest_store\"}, \"app_store,play_store\"]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/is/app_store,play_store/store_rc_billing",
+      "field": "latestStore",
+      "operator": "is",
+      "profile": "store_rc_billing",
+      "predicate": "{\"==\": [{\"var\": \"latest_store\"}, \"app_store,play_store\"]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/is/app_store,play_store/store_roku",
+      "field": "latestStore",
+      "operator": "is",
+      "profile": "store_roku",
+      "predicate": "{\"==\": [{\"var\": \"latest_store\"}, \"app_store,play_store\"]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/is/app_store,play_store/store_paddle",
+      "field": "latestStore",
+      "operator": "is",
+      "profile": "store_paddle",
+      "predicate": "{\"==\": [{\"var\": \"latest_store\"}, \"app_store,play_store\"]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/is/app_store,play_store/store_test_store",
+      "field": "latestStore",
+      "operator": "is",
+      "profile": "store_test_store",
+      "predicate": "{\"==\": [{\"var\": \"latest_store\"}, \"app_store,play_store\"]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/is/app_store,play_store/store_paypal",
+      "field": "latestStore",
+      "operator": "is",
+      "profile": "store_paypal",
+      "predicate": "{\"==\": [{\"var\": \"latest_store\"}, \"app_store,play_store\"]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/is/app_store,play_store/store_galaxy",
+      "field": "latestStore",
+      "operator": "is",
+      "profile": "store_galaxy",
+      "predicate": "{\"==\": [{\"var\": \"latest_store\"}, \"app_store,play_store\"]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/is/app_store,play_store/store_missing",
+      "field": "latestStore",
+      "operator": "is",
+      "profile": "store_missing",
+      "predicate": "{\"==\": [{\"var\": \"latest_store\"}, \"app_store,play_store\"]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/is/app_store,play_store/store_null",
+      "field": "latestStore",
+      "operator": "is",
+      "profile": "store_null",
+      "predicate": "{\"==\": [{\"var\": \"latest_store\"}, \"app_store,play_store\"]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/is/app_store,play_store/store_sandbox_only",
+      "field": "latestStore",
+      "operator": "is",
+      "profile": "store_sandbox_only",
+      "predicate": "{\"==\": [{\"var\": \"latest_store\"}, \"app_store,play_store\"]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/is/app_store,play_store/store_production_before_sandbox",
+      "field": "latestStore",
+      "operator": "is",
+      "profile": "store_production_before_sandbox",
+      "predicate": "{\"==\": [{\"var\": \"latest_store\"}, \"app_store,play_store\"]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/is/app_store,play_store/store_expiration_before_purchase",
+      "field": "latestStore",
+      "operator": "is",
+      "profile": "store_expiration_before_purchase",
+      "predicate": "{\"==\": [{\"var\": \"latest_store\"}, \"app_store,play_store\"]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/is/app_store,play_store/store_latest_renewal",
+      "field": "latestStore",
+      "operator": "is",
+      "profile": "store_latest_renewal",
+      "predicate": "{\"==\": [{\"var\": \"latest_store\"}, \"app_store,play_store\"]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/is/app_store,play_store/store_latest_update",
+      "field": "latestStore",
+      "operator": "is",
+      "profile": "store_latest_update",
+      "predicate": "{\"==\": [{\"var\": \"latest_store\"}, \"app_store,play_store\"]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/is/app_store,play_store/store_one_time_purchase",
+      "field": "latestStore",
+      "operator": "is",
+      "profile": "store_one_time_purchase",
+      "predicate": "{\"==\": [{\"var\": \"latest_store\"}, \"app_store,play_store\"]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/is/app_store,play_store/store_active_one_time_purchase",
+      "field": "latestStore",
+      "operator": "is",
+      "profile": "store_active_one_time_purchase",
+      "predicate": "{\"==\": [{\"var\": \"latest_store\"}, \"app_store,play_store\"]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/is/app_store,play_store/store_latest_one_time_purchase",
+      "field": "latestStore",
+      "operator": "is",
+      "profile": "store_latest_one_time_purchase",
+      "predicate": "{\"==\": [{\"var\": \"latest_store\"}, \"app_store,play_store\"]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isNot/app_store/new",
+      "field": "latestStore",
+      "operator": "isNot",
+      "profile": "new",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_store\", null]}, \"app_store\"]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNot/app_store/renewed",
+      "field": "latestStore",
+      "operator": "isNot",
+      "profile": "renewed",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_store\", null]}, \"app_store\"]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isNot/app_store/first_purchase",
+      "field": "latestStore",
+      "operator": "isNot",
+      "profile": "first_purchase",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_store\", null]}, \"app_store\"]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isNot/app_store/unavailable",
+      "field": "latestStore",
+      "operator": "isNot",
+      "profile": "unavailable",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_store\", null]}, \"app_store\"]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNot/app_store/store_app_store",
+      "field": "latestStore",
+      "operator": "isNot",
+      "profile": "store_app_store",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_store\", null]}, \"app_store\"]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isNot/app_store/store_play_store",
+      "field": "latestStore",
+      "operator": "isNot",
+      "profile": "store_play_store",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_store\", null]}, \"app_store\"]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNot/app_store/store_promotional",
+      "field": "latestStore",
+      "operator": "isNot",
+      "profile": "store_promotional",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_store\", null]}, \"app_store\"]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNot/app_store/store_mac_app_store",
+      "field": "latestStore",
+      "operator": "isNot",
+      "profile": "store_mac_app_store",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_store\", null]}, \"app_store\"]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNot/app_store/store_stripe",
+      "field": "latestStore",
+      "operator": "isNot",
+      "profile": "store_stripe",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_store\", null]}, \"app_store\"]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNot/app_store/store_amazon",
+      "field": "latestStore",
+      "operator": "isNot",
+      "profile": "store_amazon",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_store\", null]}, \"app_store\"]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNot/app_store/store_external",
+      "field": "latestStore",
+      "operator": "isNot",
+      "profile": "store_external",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_store\", null]}, \"app_store\"]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNot/app_store/store_rc_billing",
+      "field": "latestStore",
+      "operator": "isNot",
+      "profile": "store_rc_billing",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_store\", null]}, \"app_store\"]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNot/app_store/store_roku",
+      "field": "latestStore",
+      "operator": "isNot",
+      "profile": "store_roku",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_store\", null]}, \"app_store\"]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNot/app_store/store_paddle",
+      "field": "latestStore",
+      "operator": "isNot",
+      "profile": "store_paddle",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_store\", null]}, \"app_store\"]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNot/app_store/store_test_store",
+      "field": "latestStore",
+      "operator": "isNot",
+      "profile": "store_test_store",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_store\", null]}, \"app_store\"]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNot/app_store/store_paypal",
+      "field": "latestStore",
+      "operator": "isNot",
+      "profile": "store_paypal",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_store\", null]}, \"app_store\"]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNot/app_store/store_galaxy",
+      "field": "latestStore",
+      "operator": "isNot",
+      "profile": "store_galaxy",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_store\", null]}, \"app_store\"]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNot/app_store/store_missing",
+      "field": "latestStore",
+      "operator": "isNot",
+      "profile": "store_missing",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_store\", null]}, \"app_store\"]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNot/app_store/store_null",
+      "field": "latestStore",
+      "operator": "isNot",
+      "profile": "store_null",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_store\", null]}, \"app_store\"]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNot/app_store/store_sandbox_only",
+      "field": "latestStore",
+      "operator": "isNot",
+      "profile": "store_sandbox_only",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_store\", null]}, \"app_store\"]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNot/app_store/store_production_before_sandbox",
+      "field": "latestStore",
+      "operator": "isNot",
+      "profile": "store_production_before_sandbox",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_store\", null]}, \"app_store\"]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isNot/app_store/store_expiration_before_purchase",
+      "field": "latestStore",
+      "operator": "isNot",
+      "profile": "store_expiration_before_purchase",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_store\", null]}, \"app_store\"]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isNot/app_store/store_latest_renewal",
+      "field": "latestStore",
+      "operator": "isNot",
+      "profile": "store_latest_renewal",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_store\", null]}, \"app_store\"]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNot/app_store/store_latest_update",
+      "field": "latestStore",
+      "operator": "isNot",
+      "profile": "store_latest_update",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_store\", null]}, \"app_store\"]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNot/app_store/store_one_time_purchase",
+      "field": "latestStore",
+      "operator": "isNot",
+      "profile": "store_one_time_purchase",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_store\", null]}, \"app_store\"]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNot/app_store/store_active_one_time_purchase",
+      "field": "latestStore",
+      "operator": "isNot",
+      "profile": "store_active_one_time_purchase",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_store\", null]}, \"app_store\"]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNot/app_store/store_latest_one_time_purchase",
+      "field": "latestStore",
+      "operator": "isNot",
+      "profile": "store_latest_one_time_purchase",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_store\", null]}, \"app_store\"]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNot/play_store/new",
+      "field": "latestStore",
+      "operator": "isNot",
+      "profile": "new",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_store\", null]}, \"play_store\"]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNot/play_store/renewed",
+      "field": "latestStore",
+      "operator": "isNot",
+      "profile": "renewed",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_store\", null]}, \"play_store\"]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNot/play_store/first_purchase",
+      "field": "latestStore",
+      "operator": "isNot",
+      "profile": "first_purchase",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_store\", null]}, \"play_store\"]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNot/play_store/unavailable",
+      "field": "latestStore",
+      "operator": "isNot",
+      "profile": "unavailable",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_store\", null]}, \"play_store\"]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNot/play_store/store_app_store",
+      "field": "latestStore",
+      "operator": "isNot",
+      "profile": "store_app_store",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_store\", null]}, \"play_store\"]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNot/play_store/store_play_store",
+      "field": "latestStore",
+      "operator": "isNot",
+      "profile": "store_play_store",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_store\", null]}, \"play_store\"]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isNot/play_store/store_promotional",
+      "field": "latestStore",
+      "operator": "isNot",
+      "profile": "store_promotional",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_store\", null]}, \"play_store\"]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNot/play_store/store_mac_app_store",
+      "field": "latestStore",
+      "operator": "isNot",
+      "profile": "store_mac_app_store",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_store\", null]}, \"play_store\"]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNot/play_store/store_stripe",
+      "field": "latestStore",
+      "operator": "isNot",
+      "profile": "store_stripe",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_store\", null]}, \"play_store\"]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNot/play_store/store_amazon",
+      "field": "latestStore",
+      "operator": "isNot",
+      "profile": "store_amazon",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_store\", null]}, \"play_store\"]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNot/play_store/store_external",
+      "field": "latestStore",
+      "operator": "isNot",
+      "profile": "store_external",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_store\", null]}, \"play_store\"]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNot/play_store/store_rc_billing",
+      "field": "latestStore",
+      "operator": "isNot",
+      "profile": "store_rc_billing",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_store\", null]}, \"play_store\"]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNot/play_store/store_roku",
+      "field": "latestStore",
+      "operator": "isNot",
+      "profile": "store_roku",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_store\", null]}, \"play_store\"]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNot/play_store/store_paddle",
+      "field": "latestStore",
+      "operator": "isNot",
+      "profile": "store_paddle",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_store\", null]}, \"play_store\"]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNot/play_store/store_test_store",
+      "field": "latestStore",
+      "operator": "isNot",
+      "profile": "store_test_store",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_store\", null]}, \"play_store\"]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNot/play_store/store_paypal",
+      "field": "latestStore",
+      "operator": "isNot",
+      "profile": "store_paypal",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_store\", null]}, \"play_store\"]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNot/play_store/store_galaxy",
+      "field": "latestStore",
+      "operator": "isNot",
+      "profile": "store_galaxy",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_store\", null]}, \"play_store\"]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNot/play_store/store_missing",
+      "field": "latestStore",
+      "operator": "isNot",
+      "profile": "store_missing",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_store\", null]}, \"play_store\"]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNot/play_store/store_null",
+      "field": "latestStore",
+      "operator": "isNot",
+      "profile": "store_null",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_store\", null]}, \"play_store\"]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNot/play_store/store_sandbox_only",
+      "field": "latestStore",
+      "operator": "isNot",
+      "profile": "store_sandbox_only",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_store\", null]}, \"play_store\"]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNot/play_store/store_production_before_sandbox",
+      "field": "latestStore",
+      "operator": "isNot",
+      "profile": "store_production_before_sandbox",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_store\", null]}, \"play_store\"]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNot/play_store/store_expiration_before_purchase",
+      "field": "latestStore",
+      "operator": "isNot",
+      "profile": "store_expiration_before_purchase",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_store\", null]}, \"play_store\"]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNot/play_store/store_latest_renewal",
+      "field": "latestStore",
+      "operator": "isNot",
+      "profile": "store_latest_renewal",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_store\", null]}, \"play_store\"]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isNot/play_store/store_latest_update",
+      "field": "latestStore",
+      "operator": "isNot",
+      "profile": "store_latest_update",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_store\", null]}, \"play_store\"]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isNot/play_store/store_one_time_purchase",
+      "field": "latestStore",
+      "operator": "isNot",
+      "profile": "store_one_time_purchase",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_store\", null]}, \"play_store\"]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNot/play_store/store_active_one_time_purchase",
+      "field": "latestStore",
+      "operator": "isNot",
+      "profile": "store_active_one_time_purchase",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_store\", null]}, \"play_store\"]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNot/play_store/store_latest_one_time_purchase",
+      "field": "latestStore",
+      "operator": "isNot",
+      "profile": "store_latest_one_time_purchase",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_store\", null]}, \"play_store\"]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNot/promotional/store_promotional",
+      "field": "latestStore",
+      "operator": "isNot",
+      "profile": "store_promotional",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_store\", null]}, \"promotional\"]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isNot/mac_app_store/store_mac_app_store",
+      "field": "latestStore",
+      "operator": "isNot",
+      "profile": "store_mac_app_store",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_store\", null]}, \"mac_app_store\"]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isNot/stripe/store_stripe",
+      "field": "latestStore",
+      "operator": "isNot",
+      "profile": "store_stripe",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_store\", null]}, \"stripe\"]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isNot/stripe/store_latest_one_time_purchase",
+      "field": "latestStore",
+      "operator": "isNot",
+      "profile": "store_latest_one_time_purchase",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_store\", null]}, \"stripe\"]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isNot/amazon/store_amazon",
+      "field": "latestStore",
+      "operator": "isNot",
+      "profile": "store_amazon",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_store\", null]}, \"amazon\"]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isNot/amazon/store_one_time_purchase",
+      "field": "latestStore",
+      "operator": "isNot",
+      "profile": "store_one_time_purchase",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_store\", null]}, \"amazon\"]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isNot/amazon/store_active_one_time_purchase",
+      "field": "latestStore",
+      "operator": "isNot",
+      "profile": "store_active_one_time_purchase",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_store\", null]}, \"amazon\"]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isNot/amazon/store_latest_one_time_purchase",
+      "field": "latestStore",
+      "operator": "isNot",
+      "profile": "store_latest_one_time_purchase",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_store\", null]}, \"amazon\"]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNot/external/store_external",
+      "field": "latestStore",
+      "operator": "isNot",
+      "profile": "store_external",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_store\", null]}, \"external\"]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isNot/rc_billing/store_rc_billing",
+      "field": "latestStore",
+      "operator": "isNot",
+      "profile": "store_rc_billing",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_store\", null]}, \"rc_billing\"]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isNot/roku/store_roku",
+      "field": "latestStore",
+      "operator": "isNot",
+      "profile": "store_roku",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_store\", null]}, \"roku\"]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isNot/paddle/store_paddle",
+      "field": "latestStore",
+      "operator": "isNot",
+      "profile": "store_paddle",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_store\", null]}, \"paddle\"]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isNot/test_store/store_test_store",
+      "field": "latestStore",
+      "operator": "isNot",
+      "profile": "store_test_store",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_store\", null]}, \"test_store\"]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isNot/paypal/store_paypal",
+      "field": "latestStore",
+      "operator": "isNot",
+      "profile": "store_paypal",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_store\", null]}, \"paypal\"]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isNot/galaxy/store_galaxy",
+      "field": "latestStore",
+      "operator": "isNot",
+      "profile": "store_galaxy",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_store\", null]}, \"galaxy\"]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isNot/app_store,play_store/new",
+      "field": "latestStore",
+      "operator": "isNot",
+      "profile": "new",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_store\", null]}, \"app_store,play_store\"]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNot/app_store,play_store/renewed",
+      "field": "latestStore",
+      "operator": "isNot",
+      "profile": "renewed",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_store\", null]}, \"app_store,play_store\"]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNot/app_store,play_store/first_purchase",
+      "field": "latestStore",
+      "operator": "isNot",
+      "profile": "first_purchase",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_store\", null]}, \"app_store,play_store\"]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNot/app_store,play_store/unavailable",
+      "field": "latestStore",
+      "operator": "isNot",
+      "profile": "unavailable",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_store\", null]}, \"app_store,play_store\"]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNot/app_store,play_store/store_app_store",
+      "field": "latestStore",
+      "operator": "isNot",
+      "profile": "store_app_store",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_store\", null]}, \"app_store,play_store\"]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNot/app_store,play_store/store_play_store",
+      "field": "latestStore",
+      "operator": "isNot",
+      "profile": "store_play_store",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_store\", null]}, \"app_store,play_store\"]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNot/app_store,play_store/store_promotional",
+      "field": "latestStore",
+      "operator": "isNot",
+      "profile": "store_promotional",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_store\", null]}, \"app_store,play_store\"]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNot/app_store,play_store/store_mac_app_store",
+      "field": "latestStore",
+      "operator": "isNot",
+      "profile": "store_mac_app_store",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_store\", null]}, \"app_store,play_store\"]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNot/app_store,play_store/store_stripe",
+      "field": "latestStore",
+      "operator": "isNot",
+      "profile": "store_stripe",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_store\", null]}, \"app_store,play_store\"]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNot/app_store,play_store/store_amazon",
+      "field": "latestStore",
+      "operator": "isNot",
+      "profile": "store_amazon",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_store\", null]}, \"app_store,play_store\"]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNot/app_store,play_store/store_external",
+      "field": "latestStore",
+      "operator": "isNot",
+      "profile": "store_external",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_store\", null]}, \"app_store,play_store\"]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNot/app_store,play_store/store_rc_billing",
+      "field": "latestStore",
+      "operator": "isNot",
+      "profile": "store_rc_billing",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_store\", null]}, \"app_store,play_store\"]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNot/app_store,play_store/store_roku",
+      "field": "latestStore",
+      "operator": "isNot",
+      "profile": "store_roku",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_store\", null]}, \"app_store,play_store\"]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNot/app_store,play_store/store_paddle",
+      "field": "latestStore",
+      "operator": "isNot",
+      "profile": "store_paddle",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_store\", null]}, \"app_store,play_store\"]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNot/app_store,play_store/store_test_store",
+      "field": "latestStore",
+      "operator": "isNot",
+      "profile": "store_test_store",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_store\", null]}, \"app_store,play_store\"]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNot/app_store,play_store/store_paypal",
+      "field": "latestStore",
+      "operator": "isNot",
+      "profile": "store_paypal",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_store\", null]}, \"app_store,play_store\"]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNot/app_store,play_store/store_galaxy",
+      "field": "latestStore",
+      "operator": "isNot",
+      "profile": "store_galaxy",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_store\", null]}, \"app_store,play_store\"]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNot/app_store,play_store/store_missing",
+      "field": "latestStore",
+      "operator": "isNot",
+      "profile": "store_missing",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_store\", null]}, \"app_store,play_store\"]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNot/app_store,play_store/store_null",
+      "field": "latestStore",
+      "operator": "isNot",
+      "profile": "store_null",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_store\", null]}, \"app_store,play_store\"]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNot/app_store,play_store/store_sandbox_only",
+      "field": "latestStore",
+      "operator": "isNot",
+      "profile": "store_sandbox_only",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_store\", null]}, \"app_store,play_store\"]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNot/app_store,play_store/store_production_before_sandbox",
+      "field": "latestStore",
+      "operator": "isNot",
+      "profile": "store_production_before_sandbox",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_store\", null]}, \"app_store,play_store\"]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNot/app_store,play_store/store_expiration_before_purchase",
+      "field": "latestStore",
+      "operator": "isNot",
+      "profile": "store_expiration_before_purchase",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_store\", null]}, \"app_store,play_store\"]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNot/app_store,play_store/store_latest_renewal",
+      "field": "latestStore",
+      "operator": "isNot",
+      "profile": "store_latest_renewal",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_store\", null]}, \"app_store,play_store\"]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNot/app_store,play_store/store_latest_update",
+      "field": "latestStore",
+      "operator": "isNot",
+      "profile": "store_latest_update",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_store\", null]}, \"app_store,play_store\"]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNot/app_store,play_store/store_one_time_purchase",
+      "field": "latestStore",
+      "operator": "isNot",
+      "profile": "store_one_time_purchase",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_store\", null]}, \"app_store,play_store\"]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNot/app_store,play_store/store_active_one_time_purchase",
+      "field": "latestStore",
+      "operator": "isNot",
+      "profile": "store_active_one_time_purchase",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_store\", null]}, \"app_store,play_store\"]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNot/app_store,play_store/store_latest_one_time_purchase",
+      "field": "latestStore",
+      "operator": "isNot",
+      "profile": "store_latest_one_time_purchase",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_store\", null]}, \"app_store,play_store\"]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isAnyOf/app_store/new",
+      "field": "latestStore",
+      "operator": "isAnyOf",
+      "profile": "new",
+      "predicate": "{\"in\": [{\"var\": \"latest_store\"}, [\"app_store\"]]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isAnyOf/app_store/renewed",
+      "field": "latestStore",
+      "operator": "isAnyOf",
+      "profile": "renewed",
+      "predicate": "{\"in\": [{\"var\": \"latest_store\"}, [\"app_store\"]]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isAnyOf/app_store/first_purchase",
+      "field": "latestStore",
+      "operator": "isAnyOf",
+      "profile": "first_purchase",
+      "predicate": "{\"in\": [{\"var\": \"latest_store\"}, [\"app_store\"]]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isAnyOf/app_store/unavailable",
+      "field": "latestStore",
+      "operator": "isAnyOf",
+      "profile": "unavailable",
+      "predicate": "{\"in\": [{\"var\": \"latest_store\"}, [\"app_store\"]]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isAnyOf/app_store/store_app_store",
+      "field": "latestStore",
+      "operator": "isAnyOf",
+      "profile": "store_app_store",
+      "predicate": "{\"in\": [{\"var\": \"latest_store\"}, [\"app_store\"]]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isAnyOf/app_store/store_play_store",
+      "field": "latestStore",
+      "operator": "isAnyOf",
+      "profile": "store_play_store",
+      "predicate": "{\"in\": [{\"var\": \"latest_store\"}, [\"app_store\"]]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isAnyOf/app_store/store_promotional",
+      "field": "latestStore",
+      "operator": "isAnyOf",
+      "profile": "store_promotional",
+      "predicate": "{\"in\": [{\"var\": \"latest_store\"}, [\"app_store\"]]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isAnyOf/app_store/store_mac_app_store",
+      "field": "latestStore",
+      "operator": "isAnyOf",
+      "profile": "store_mac_app_store",
+      "predicate": "{\"in\": [{\"var\": \"latest_store\"}, [\"app_store\"]]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isAnyOf/app_store/store_stripe",
+      "field": "latestStore",
+      "operator": "isAnyOf",
+      "profile": "store_stripe",
+      "predicate": "{\"in\": [{\"var\": \"latest_store\"}, [\"app_store\"]]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isAnyOf/app_store/store_amazon",
+      "field": "latestStore",
+      "operator": "isAnyOf",
+      "profile": "store_amazon",
+      "predicate": "{\"in\": [{\"var\": \"latest_store\"}, [\"app_store\"]]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isAnyOf/app_store/store_external",
+      "field": "latestStore",
+      "operator": "isAnyOf",
+      "profile": "store_external",
+      "predicate": "{\"in\": [{\"var\": \"latest_store\"}, [\"app_store\"]]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isAnyOf/app_store/store_rc_billing",
+      "field": "latestStore",
+      "operator": "isAnyOf",
+      "profile": "store_rc_billing",
+      "predicate": "{\"in\": [{\"var\": \"latest_store\"}, [\"app_store\"]]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isAnyOf/app_store/store_roku",
+      "field": "latestStore",
+      "operator": "isAnyOf",
+      "profile": "store_roku",
+      "predicate": "{\"in\": [{\"var\": \"latest_store\"}, [\"app_store\"]]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isAnyOf/app_store/store_paddle",
+      "field": "latestStore",
+      "operator": "isAnyOf",
+      "profile": "store_paddle",
+      "predicate": "{\"in\": [{\"var\": \"latest_store\"}, [\"app_store\"]]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isAnyOf/app_store/store_test_store",
+      "field": "latestStore",
+      "operator": "isAnyOf",
+      "profile": "store_test_store",
+      "predicate": "{\"in\": [{\"var\": \"latest_store\"}, [\"app_store\"]]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isAnyOf/app_store/store_paypal",
+      "field": "latestStore",
+      "operator": "isAnyOf",
+      "profile": "store_paypal",
+      "predicate": "{\"in\": [{\"var\": \"latest_store\"}, [\"app_store\"]]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isAnyOf/app_store/store_galaxy",
+      "field": "latestStore",
+      "operator": "isAnyOf",
+      "profile": "store_galaxy",
+      "predicate": "{\"in\": [{\"var\": \"latest_store\"}, [\"app_store\"]]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isAnyOf/app_store/store_missing",
+      "field": "latestStore",
+      "operator": "isAnyOf",
+      "profile": "store_missing",
+      "predicate": "{\"in\": [{\"var\": \"latest_store\"}, [\"app_store\"]]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isAnyOf/app_store/store_null",
+      "field": "latestStore",
+      "operator": "isAnyOf",
+      "profile": "store_null",
+      "predicate": "{\"in\": [{\"var\": \"latest_store\"}, [\"app_store\"]]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isAnyOf/app_store/store_sandbox_only",
+      "field": "latestStore",
+      "operator": "isAnyOf",
+      "profile": "store_sandbox_only",
+      "predicate": "{\"in\": [{\"var\": \"latest_store\"}, [\"app_store\"]]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isAnyOf/app_store/store_production_before_sandbox",
+      "field": "latestStore",
+      "operator": "isAnyOf",
+      "profile": "store_production_before_sandbox",
+      "predicate": "{\"in\": [{\"var\": \"latest_store\"}, [\"app_store\"]]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isAnyOf/app_store/store_expiration_before_purchase",
+      "field": "latestStore",
+      "operator": "isAnyOf",
+      "profile": "store_expiration_before_purchase",
+      "predicate": "{\"in\": [{\"var\": \"latest_store\"}, [\"app_store\"]]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isAnyOf/app_store/store_latest_renewal",
+      "field": "latestStore",
+      "operator": "isAnyOf",
+      "profile": "store_latest_renewal",
+      "predicate": "{\"in\": [{\"var\": \"latest_store\"}, [\"app_store\"]]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isAnyOf/app_store/store_latest_update",
+      "field": "latestStore",
+      "operator": "isAnyOf",
+      "profile": "store_latest_update",
+      "predicate": "{\"in\": [{\"var\": \"latest_store\"}, [\"app_store\"]]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isAnyOf/app_store/store_one_time_purchase",
+      "field": "latestStore",
+      "operator": "isAnyOf",
+      "profile": "store_one_time_purchase",
+      "predicate": "{\"in\": [{\"var\": \"latest_store\"}, [\"app_store\"]]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isAnyOf/app_store/store_active_one_time_purchase",
+      "field": "latestStore",
+      "operator": "isAnyOf",
+      "profile": "store_active_one_time_purchase",
+      "predicate": "{\"in\": [{\"var\": \"latest_store\"}, [\"app_store\"]]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isAnyOf/app_store/store_latest_one_time_purchase",
+      "field": "latestStore",
+      "operator": "isAnyOf",
+      "profile": "store_latest_one_time_purchase",
+      "predicate": "{\"in\": [{\"var\": \"latest_store\"}, [\"app_store\"]]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isAnyOf/play_store/new",
+      "field": "latestStore",
+      "operator": "isAnyOf",
+      "profile": "new",
+      "predicate": "{\"in\": [{\"var\": \"latest_store\"}, [\"play_store\"]]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isAnyOf/play_store/renewed",
+      "field": "latestStore",
+      "operator": "isAnyOf",
+      "profile": "renewed",
+      "predicate": "{\"in\": [{\"var\": \"latest_store\"}, [\"play_store\"]]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isAnyOf/play_store/first_purchase",
+      "field": "latestStore",
+      "operator": "isAnyOf",
+      "profile": "first_purchase",
+      "predicate": "{\"in\": [{\"var\": \"latest_store\"}, [\"play_store\"]]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isAnyOf/play_store/unavailable",
+      "field": "latestStore",
+      "operator": "isAnyOf",
+      "profile": "unavailable",
+      "predicate": "{\"in\": [{\"var\": \"latest_store\"}, [\"play_store\"]]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isAnyOf/play_store/store_app_store",
+      "field": "latestStore",
+      "operator": "isAnyOf",
+      "profile": "store_app_store",
+      "predicate": "{\"in\": [{\"var\": \"latest_store\"}, [\"play_store\"]]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isAnyOf/play_store/store_play_store",
+      "field": "latestStore",
+      "operator": "isAnyOf",
+      "profile": "store_play_store",
+      "predicate": "{\"in\": [{\"var\": \"latest_store\"}, [\"play_store\"]]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isAnyOf/play_store/store_promotional",
+      "field": "latestStore",
+      "operator": "isAnyOf",
+      "profile": "store_promotional",
+      "predicate": "{\"in\": [{\"var\": \"latest_store\"}, [\"play_store\"]]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isAnyOf/play_store/store_mac_app_store",
+      "field": "latestStore",
+      "operator": "isAnyOf",
+      "profile": "store_mac_app_store",
+      "predicate": "{\"in\": [{\"var\": \"latest_store\"}, [\"play_store\"]]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isAnyOf/play_store/store_stripe",
+      "field": "latestStore",
+      "operator": "isAnyOf",
+      "profile": "store_stripe",
+      "predicate": "{\"in\": [{\"var\": \"latest_store\"}, [\"play_store\"]]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isAnyOf/play_store/store_amazon",
+      "field": "latestStore",
+      "operator": "isAnyOf",
+      "profile": "store_amazon",
+      "predicate": "{\"in\": [{\"var\": \"latest_store\"}, [\"play_store\"]]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isAnyOf/play_store/store_external",
+      "field": "latestStore",
+      "operator": "isAnyOf",
+      "profile": "store_external",
+      "predicate": "{\"in\": [{\"var\": \"latest_store\"}, [\"play_store\"]]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isAnyOf/play_store/store_rc_billing",
+      "field": "latestStore",
+      "operator": "isAnyOf",
+      "profile": "store_rc_billing",
+      "predicate": "{\"in\": [{\"var\": \"latest_store\"}, [\"play_store\"]]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isAnyOf/play_store/store_roku",
+      "field": "latestStore",
+      "operator": "isAnyOf",
+      "profile": "store_roku",
+      "predicate": "{\"in\": [{\"var\": \"latest_store\"}, [\"play_store\"]]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isAnyOf/play_store/store_paddle",
+      "field": "latestStore",
+      "operator": "isAnyOf",
+      "profile": "store_paddle",
+      "predicate": "{\"in\": [{\"var\": \"latest_store\"}, [\"play_store\"]]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isAnyOf/play_store/store_test_store",
+      "field": "latestStore",
+      "operator": "isAnyOf",
+      "profile": "store_test_store",
+      "predicate": "{\"in\": [{\"var\": \"latest_store\"}, [\"play_store\"]]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isAnyOf/play_store/store_paypal",
+      "field": "latestStore",
+      "operator": "isAnyOf",
+      "profile": "store_paypal",
+      "predicate": "{\"in\": [{\"var\": \"latest_store\"}, [\"play_store\"]]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isAnyOf/play_store/store_galaxy",
+      "field": "latestStore",
+      "operator": "isAnyOf",
+      "profile": "store_galaxy",
+      "predicate": "{\"in\": [{\"var\": \"latest_store\"}, [\"play_store\"]]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isAnyOf/play_store/store_missing",
+      "field": "latestStore",
+      "operator": "isAnyOf",
+      "profile": "store_missing",
+      "predicate": "{\"in\": [{\"var\": \"latest_store\"}, [\"play_store\"]]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isAnyOf/play_store/store_null",
+      "field": "latestStore",
+      "operator": "isAnyOf",
+      "profile": "store_null",
+      "predicate": "{\"in\": [{\"var\": \"latest_store\"}, [\"play_store\"]]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isAnyOf/play_store/store_sandbox_only",
+      "field": "latestStore",
+      "operator": "isAnyOf",
+      "profile": "store_sandbox_only",
+      "predicate": "{\"in\": [{\"var\": \"latest_store\"}, [\"play_store\"]]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isAnyOf/play_store/store_production_before_sandbox",
+      "field": "latestStore",
+      "operator": "isAnyOf",
+      "profile": "store_production_before_sandbox",
+      "predicate": "{\"in\": [{\"var\": \"latest_store\"}, [\"play_store\"]]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isAnyOf/play_store/store_expiration_before_purchase",
+      "field": "latestStore",
+      "operator": "isAnyOf",
+      "profile": "store_expiration_before_purchase",
+      "predicate": "{\"in\": [{\"var\": \"latest_store\"}, [\"play_store\"]]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isAnyOf/play_store/store_latest_renewal",
+      "field": "latestStore",
+      "operator": "isAnyOf",
+      "profile": "store_latest_renewal",
+      "predicate": "{\"in\": [{\"var\": \"latest_store\"}, [\"play_store\"]]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isAnyOf/play_store/store_latest_update",
+      "field": "latestStore",
+      "operator": "isAnyOf",
+      "profile": "store_latest_update",
+      "predicate": "{\"in\": [{\"var\": \"latest_store\"}, [\"play_store\"]]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isAnyOf/play_store/store_one_time_purchase",
+      "field": "latestStore",
+      "operator": "isAnyOf",
+      "profile": "store_one_time_purchase",
+      "predicate": "{\"in\": [{\"var\": \"latest_store\"}, [\"play_store\"]]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isAnyOf/play_store/store_active_one_time_purchase",
+      "field": "latestStore",
+      "operator": "isAnyOf",
+      "profile": "store_active_one_time_purchase",
+      "predicate": "{\"in\": [{\"var\": \"latest_store\"}, [\"play_store\"]]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isAnyOf/play_store/store_latest_one_time_purchase",
+      "field": "latestStore",
+      "operator": "isAnyOf",
+      "profile": "store_latest_one_time_purchase",
+      "predicate": "{\"in\": [{\"var\": \"latest_store\"}, [\"play_store\"]]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isAnyOf/promotional/store_promotional",
+      "field": "latestStore",
+      "operator": "isAnyOf",
+      "profile": "store_promotional",
+      "predicate": "{\"in\": [{\"var\": \"latest_store\"}, [\"promotional\"]]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isAnyOf/mac_app_store/store_mac_app_store",
+      "field": "latestStore",
+      "operator": "isAnyOf",
+      "profile": "store_mac_app_store",
+      "predicate": "{\"in\": [{\"var\": \"latest_store\"}, [\"mac_app_store\"]]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isAnyOf/stripe/store_stripe",
+      "field": "latestStore",
+      "operator": "isAnyOf",
+      "profile": "store_stripe",
+      "predicate": "{\"in\": [{\"var\": \"latest_store\"}, [\"stripe\"]]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isAnyOf/stripe/store_latest_one_time_purchase",
+      "field": "latestStore",
+      "operator": "isAnyOf",
+      "profile": "store_latest_one_time_purchase",
+      "predicate": "{\"in\": [{\"var\": \"latest_store\"}, [\"stripe\"]]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isAnyOf/amazon/store_amazon",
+      "field": "latestStore",
+      "operator": "isAnyOf",
+      "profile": "store_amazon",
+      "predicate": "{\"in\": [{\"var\": \"latest_store\"}, [\"amazon\"]]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isAnyOf/amazon/store_one_time_purchase",
+      "field": "latestStore",
+      "operator": "isAnyOf",
+      "profile": "store_one_time_purchase",
+      "predicate": "{\"in\": [{\"var\": \"latest_store\"}, [\"amazon\"]]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isAnyOf/amazon/store_active_one_time_purchase",
+      "field": "latestStore",
+      "operator": "isAnyOf",
+      "profile": "store_active_one_time_purchase",
+      "predicate": "{\"in\": [{\"var\": \"latest_store\"}, [\"amazon\"]]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isAnyOf/amazon/store_latest_one_time_purchase",
+      "field": "latestStore",
+      "operator": "isAnyOf",
+      "profile": "store_latest_one_time_purchase",
+      "predicate": "{\"in\": [{\"var\": \"latest_store\"}, [\"amazon\"]]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isAnyOf/external/store_external",
+      "field": "latestStore",
+      "operator": "isAnyOf",
+      "profile": "store_external",
+      "predicate": "{\"in\": [{\"var\": \"latest_store\"}, [\"external\"]]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isAnyOf/rc_billing/store_rc_billing",
+      "field": "latestStore",
+      "operator": "isAnyOf",
+      "profile": "store_rc_billing",
+      "predicate": "{\"in\": [{\"var\": \"latest_store\"}, [\"rc_billing\"]]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isAnyOf/roku/store_roku",
+      "field": "latestStore",
+      "operator": "isAnyOf",
+      "profile": "store_roku",
+      "predicate": "{\"in\": [{\"var\": \"latest_store\"}, [\"roku\"]]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isAnyOf/paddle/store_paddle",
+      "field": "latestStore",
+      "operator": "isAnyOf",
+      "profile": "store_paddle",
+      "predicate": "{\"in\": [{\"var\": \"latest_store\"}, [\"paddle\"]]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isAnyOf/test_store/store_test_store",
+      "field": "latestStore",
+      "operator": "isAnyOf",
+      "profile": "store_test_store",
+      "predicate": "{\"in\": [{\"var\": \"latest_store\"}, [\"test_store\"]]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isAnyOf/paypal/store_paypal",
+      "field": "latestStore",
+      "operator": "isAnyOf",
+      "profile": "store_paypal",
+      "predicate": "{\"in\": [{\"var\": \"latest_store\"}, [\"paypal\"]]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isAnyOf/galaxy/store_galaxy",
+      "field": "latestStore",
+      "operator": "isAnyOf",
+      "profile": "store_galaxy",
+      "predicate": "{\"in\": [{\"var\": \"latest_store\"}, [\"galaxy\"]]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isAnyOf/app_store,play_store/new",
+      "field": "latestStore",
+      "operator": "isAnyOf",
+      "profile": "new",
+      "predicate": "{\"in\": [{\"var\": \"latest_store\"}, [\"app_store\", \"play_store\"]]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isAnyOf/app_store,play_store/renewed",
+      "field": "latestStore",
+      "operator": "isAnyOf",
+      "profile": "renewed",
+      "predicate": "{\"in\": [{\"var\": \"latest_store\"}, [\"app_store\", \"play_store\"]]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isAnyOf/app_store,play_store/first_purchase",
+      "field": "latestStore",
+      "operator": "isAnyOf",
+      "profile": "first_purchase",
+      "predicate": "{\"in\": [{\"var\": \"latest_store\"}, [\"app_store\", \"play_store\"]]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isAnyOf/app_store,play_store/unavailable",
+      "field": "latestStore",
+      "operator": "isAnyOf",
+      "profile": "unavailable",
+      "predicate": "{\"in\": [{\"var\": \"latest_store\"}, [\"app_store\", \"play_store\"]]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isAnyOf/app_store,play_store/store_app_store",
+      "field": "latestStore",
+      "operator": "isAnyOf",
+      "profile": "store_app_store",
+      "predicate": "{\"in\": [{\"var\": \"latest_store\"}, [\"app_store\", \"play_store\"]]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isAnyOf/app_store,play_store/store_play_store",
+      "field": "latestStore",
+      "operator": "isAnyOf",
+      "profile": "store_play_store",
+      "predicate": "{\"in\": [{\"var\": \"latest_store\"}, [\"app_store\", \"play_store\"]]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isAnyOf/app_store,play_store/store_promotional",
+      "field": "latestStore",
+      "operator": "isAnyOf",
+      "profile": "store_promotional",
+      "predicate": "{\"in\": [{\"var\": \"latest_store\"}, [\"app_store\", \"play_store\"]]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isAnyOf/app_store,play_store/store_mac_app_store",
+      "field": "latestStore",
+      "operator": "isAnyOf",
+      "profile": "store_mac_app_store",
+      "predicate": "{\"in\": [{\"var\": \"latest_store\"}, [\"app_store\", \"play_store\"]]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isAnyOf/app_store,play_store/store_stripe",
+      "field": "latestStore",
+      "operator": "isAnyOf",
+      "profile": "store_stripe",
+      "predicate": "{\"in\": [{\"var\": \"latest_store\"}, [\"app_store\", \"play_store\"]]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isAnyOf/app_store,play_store/store_amazon",
+      "field": "latestStore",
+      "operator": "isAnyOf",
+      "profile": "store_amazon",
+      "predicate": "{\"in\": [{\"var\": \"latest_store\"}, [\"app_store\", \"play_store\"]]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isAnyOf/app_store,play_store/store_external",
+      "field": "latestStore",
+      "operator": "isAnyOf",
+      "profile": "store_external",
+      "predicate": "{\"in\": [{\"var\": \"latest_store\"}, [\"app_store\", \"play_store\"]]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isAnyOf/app_store,play_store/store_rc_billing",
+      "field": "latestStore",
+      "operator": "isAnyOf",
+      "profile": "store_rc_billing",
+      "predicate": "{\"in\": [{\"var\": \"latest_store\"}, [\"app_store\", \"play_store\"]]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isAnyOf/app_store,play_store/store_roku",
+      "field": "latestStore",
+      "operator": "isAnyOf",
+      "profile": "store_roku",
+      "predicate": "{\"in\": [{\"var\": \"latest_store\"}, [\"app_store\", \"play_store\"]]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isAnyOf/app_store,play_store/store_paddle",
+      "field": "latestStore",
+      "operator": "isAnyOf",
+      "profile": "store_paddle",
+      "predicate": "{\"in\": [{\"var\": \"latest_store\"}, [\"app_store\", \"play_store\"]]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isAnyOf/app_store,play_store/store_test_store",
+      "field": "latestStore",
+      "operator": "isAnyOf",
+      "profile": "store_test_store",
+      "predicate": "{\"in\": [{\"var\": \"latest_store\"}, [\"app_store\", \"play_store\"]]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isAnyOf/app_store,play_store/store_paypal",
+      "field": "latestStore",
+      "operator": "isAnyOf",
+      "profile": "store_paypal",
+      "predicate": "{\"in\": [{\"var\": \"latest_store\"}, [\"app_store\", \"play_store\"]]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isAnyOf/app_store,play_store/store_galaxy",
+      "field": "latestStore",
+      "operator": "isAnyOf",
+      "profile": "store_galaxy",
+      "predicate": "{\"in\": [{\"var\": \"latest_store\"}, [\"app_store\", \"play_store\"]]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isAnyOf/app_store,play_store/store_missing",
+      "field": "latestStore",
+      "operator": "isAnyOf",
+      "profile": "store_missing",
+      "predicate": "{\"in\": [{\"var\": \"latest_store\"}, [\"app_store\", \"play_store\"]]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isAnyOf/app_store,play_store/store_null",
+      "field": "latestStore",
+      "operator": "isAnyOf",
+      "profile": "store_null",
+      "predicate": "{\"in\": [{\"var\": \"latest_store\"}, [\"app_store\", \"play_store\"]]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isAnyOf/app_store,play_store/store_sandbox_only",
+      "field": "latestStore",
+      "operator": "isAnyOf",
+      "profile": "store_sandbox_only",
+      "predicate": "{\"in\": [{\"var\": \"latest_store\"}, [\"app_store\", \"play_store\"]]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isAnyOf/app_store,play_store/store_production_before_sandbox",
+      "field": "latestStore",
+      "operator": "isAnyOf",
+      "profile": "store_production_before_sandbox",
+      "predicate": "{\"in\": [{\"var\": \"latest_store\"}, [\"app_store\", \"play_store\"]]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isAnyOf/app_store,play_store/store_expiration_before_purchase",
+      "field": "latestStore",
+      "operator": "isAnyOf",
+      "profile": "store_expiration_before_purchase",
+      "predicate": "{\"in\": [{\"var\": \"latest_store\"}, [\"app_store\", \"play_store\"]]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isAnyOf/app_store,play_store/store_latest_renewal",
+      "field": "latestStore",
+      "operator": "isAnyOf",
+      "profile": "store_latest_renewal",
+      "predicate": "{\"in\": [{\"var\": \"latest_store\"}, [\"app_store\", \"play_store\"]]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isAnyOf/app_store,play_store/store_latest_update",
+      "field": "latestStore",
+      "operator": "isAnyOf",
+      "profile": "store_latest_update",
+      "predicate": "{\"in\": [{\"var\": \"latest_store\"}, [\"app_store\", \"play_store\"]]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isAnyOf/app_store,play_store/store_one_time_purchase",
+      "field": "latestStore",
+      "operator": "isAnyOf",
+      "profile": "store_one_time_purchase",
+      "predicate": "{\"in\": [{\"var\": \"latest_store\"}, [\"app_store\", \"play_store\"]]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isAnyOf/app_store,play_store/store_active_one_time_purchase",
+      "field": "latestStore",
+      "operator": "isAnyOf",
+      "profile": "store_active_one_time_purchase",
+      "predicate": "{\"in\": [{\"var\": \"latest_store\"}, [\"app_store\", \"play_store\"]]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isAnyOf/app_store,play_store/store_latest_one_time_purchase",
+      "field": "latestStore",
+      "operator": "isAnyOf",
+      "profile": "store_latest_one_time_purchase",
+      "predicate": "{\"in\": [{\"var\": \"latest_store\"}, [\"app_store\", \"play_store\"]]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isNotAnyOf/app_store/new",
+      "field": "latestStore",
+      "operator": "isNotAnyOf",
+      "profile": "new",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_store\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"latest_store\"}, [\"app_store\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNotAnyOf/app_store/renewed",
+      "field": "latestStore",
+      "operator": "isNotAnyOf",
+      "profile": "renewed",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_store\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"latest_store\"}, [\"app_store\"]]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isNotAnyOf/app_store/first_purchase",
+      "field": "latestStore",
+      "operator": "isNotAnyOf",
+      "profile": "first_purchase",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_store\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"latest_store\"}, [\"app_store\"]]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isNotAnyOf/app_store/unavailable",
+      "field": "latestStore",
+      "operator": "isNotAnyOf",
+      "profile": "unavailable",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_store\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"latest_store\"}, [\"app_store\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNotAnyOf/app_store/store_app_store",
+      "field": "latestStore",
+      "operator": "isNotAnyOf",
+      "profile": "store_app_store",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_store\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"latest_store\"}, [\"app_store\"]]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isNotAnyOf/app_store/store_play_store",
+      "field": "latestStore",
+      "operator": "isNotAnyOf",
+      "profile": "store_play_store",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_store\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"latest_store\"}, [\"app_store\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNotAnyOf/app_store/store_promotional",
+      "field": "latestStore",
+      "operator": "isNotAnyOf",
+      "profile": "store_promotional",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_store\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"latest_store\"}, [\"app_store\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNotAnyOf/app_store/store_mac_app_store",
+      "field": "latestStore",
+      "operator": "isNotAnyOf",
+      "profile": "store_mac_app_store",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_store\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"latest_store\"}, [\"app_store\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNotAnyOf/app_store/store_stripe",
+      "field": "latestStore",
+      "operator": "isNotAnyOf",
+      "profile": "store_stripe",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_store\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"latest_store\"}, [\"app_store\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNotAnyOf/app_store/store_amazon",
+      "field": "latestStore",
+      "operator": "isNotAnyOf",
+      "profile": "store_amazon",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_store\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"latest_store\"}, [\"app_store\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNotAnyOf/app_store/store_external",
+      "field": "latestStore",
+      "operator": "isNotAnyOf",
+      "profile": "store_external",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_store\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"latest_store\"}, [\"app_store\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNotAnyOf/app_store/store_rc_billing",
+      "field": "latestStore",
+      "operator": "isNotAnyOf",
+      "profile": "store_rc_billing",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_store\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"latest_store\"}, [\"app_store\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNotAnyOf/app_store/store_roku",
+      "field": "latestStore",
+      "operator": "isNotAnyOf",
+      "profile": "store_roku",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_store\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"latest_store\"}, [\"app_store\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNotAnyOf/app_store/store_paddle",
+      "field": "latestStore",
+      "operator": "isNotAnyOf",
+      "profile": "store_paddle",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_store\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"latest_store\"}, [\"app_store\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNotAnyOf/app_store/store_test_store",
+      "field": "latestStore",
+      "operator": "isNotAnyOf",
+      "profile": "store_test_store",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_store\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"latest_store\"}, [\"app_store\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNotAnyOf/app_store/store_paypal",
+      "field": "latestStore",
+      "operator": "isNotAnyOf",
+      "profile": "store_paypal",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_store\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"latest_store\"}, [\"app_store\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNotAnyOf/app_store/store_galaxy",
+      "field": "latestStore",
+      "operator": "isNotAnyOf",
+      "profile": "store_galaxy",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_store\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"latest_store\"}, [\"app_store\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNotAnyOf/app_store/store_missing",
+      "field": "latestStore",
+      "operator": "isNotAnyOf",
+      "profile": "store_missing",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_store\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"latest_store\"}, [\"app_store\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNotAnyOf/app_store/store_null",
+      "field": "latestStore",
+      "operator": "isNotAnyOf",
+      "profile": "store_null",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_store\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"latest_store\"}, [\"app_store\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNotAnyOf/app_store/store_sandbox_only",
+      "field": "latestStore",
+      "operator": "isNotAnyOf",
+      "profile": "store_sandbox_only",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_store\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"latest_store\"}, [\"app_store\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNotAnyOf/app_store/store_production_before_sandbox",
+      "field": "latestStore",
+      "operator": "isNotAnyOf",
+      "profile": "store_production_before_sandbox",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_store\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"latest_store\"}, [\"app_store\"]]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isNotAnyOf/app_store/store_expiration_before_purchase",
+      "field": "latestStore",
+      "operator": "isNotAnyOf",
+      "profile": "store_expiration_before_purchase",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_store\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"latest_store\"}, [\"app_store\"]]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isNotAnyOf/app_store/store_latest_renewal",
+      "field": "latestStore",
+      "operator": "isNotAnyOf",
+      "profile": "store_latest_renewal",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_store\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"latest_store\"}, [\"app_store\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNotAnyOf/app_store/store_latest_update",
+      "field": "latestStore",
+      "operator": "isNotAnyOf",
+      "profile": "store_latest_update",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_store\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"latest_store\"}, [\"app_store\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNotAnyOf/app_store/store_one_time_purchase",
+      "field": "latestStore",
+      "operator": "isNotAnyOf",
+      "profile": "store_one_time_purchase",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_store\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"latest_store\"}, [\"app_store\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNotAnyOf/app_store/store_active_one_time_purchase",
+      "field": "latestStore",
+      "operator": "isNotAnyOf",
+      "profile": "store_active_one_time_purchase",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_store\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"latest_store\"}, [\"app_store\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNotAnyOf/app_store/store_latest_one_time_purchase",
+      "field": "latestStore",
+      "operator": "isNotAnyOf",
+      "profile": "store_latest_one_time_purchase",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_store\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"latest_store\"}, [\"app_store\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNotAnyOf/play_store/new",
+      "field": "latestStore",
+      "operator": "isNotAnyOf",
+      "profile": "new",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_store\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"latest_store\"}, [\"play_store\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNotAnyOf/play_store/renewed",
+      "field": "latestStore",
+      "operator": "isNotAnyOf",
+      "profile": "renewed",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_store\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"latest_store\"}, [\"play_store\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNotAnyOf/play_store/first_purchase",
+      "field": "latestStore",
+      "operator": "isNotAnyOf",
+      "profile": "first_purchase",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_store\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"latest_store\"}, [\"play_store\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNotAnyOf/play_store/unavailable",
+      "field": "latestStore",
+      "operator": "isNotAnyOf",
+      "profile": "unavailable",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_store\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"latest_store\"}, [\"play_store\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNotAnyOf/play_store/store_app_store",
+      "field": "latestStore",
+      "operator": "isNotAnyOf",
+      "profile": "store_app_store",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_store\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"latest_store\"}, [\"play_store\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNotAnyOf/play_store/store_play_store",
+      "field": "latestStore",
+      "operator": "isNotAnyOf",
+      "profile": "store_play_store",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_store\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"latest_store\"}, [\"play_store\"]]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isNotAnyOf/play_store/store_promotional",
+      "field": "latestStore",
+      "operator": "isNotAnyOf",
+      "profile": "store_promotional",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_store\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"latest_store\"}, [\"play_store\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNotAnyOf/play_store/store_mac_app_store",
+      "field": "latestStore",
+      "operator": "isNotAnyOf",
+      "profile": "store_mac_app_store",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_store\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"latest_store\"}, [\"play_store\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNotAnyOf/play_store/store_stripe",
+      "field": "latestStore",
+      "operator": "isNotAnyOf",
+      "profile": "store_stripe",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_store\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"latest_store\"}, [\"play_store\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNotAnyOf/play_store/store_amazon",
+      "field": "latestStore",
+      "operator": "isNotAnyOf",
+      "profile": "store_amazon",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_store\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"latest_store\"}, [\"play_store\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNotAnyOf/play_store/store_external",
+      "field": "latestStore",
+      "operator": "isNotAnyOf",
+      "profile": "store_external",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_store\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"latest_store\"}, [\"play_store\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNotAnyOf/play_store/store_rc_billing",
+      "field": "latestStore",
+      "operator": "isNotAnyOf",
+      "profile": "store_rc_billing",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_store\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"latest_store\"}, [\"play_store\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNotAnyOf/play_store/store_roku",
+      "field": "latestStore",
+      "operator": "isNotAnyOf",
+      "profile": "store_roku",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_store\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"latest_store\"}, [\"play_store\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNotAnyOf/play_store/store_paddle",
+      "field": "latestStore",
+      "operator": "isNotAnyOf",
+      "profile": "store_paddle",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_store\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"latest_store\"}, [\"play_store\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNotAnyOf/play_store/store_test_store",
+      "field": "latestStore",
+      "operator": "isNotAnyOf",
+      "profile": "store_test_store",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_store\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"latest_store\"}, [\"play_store\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNotAnyOf/play_store/store_paypal",
+      "field": "latestStore",
+      "operator": "isNotAnyOf",
+      "profile": "store_paypal",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_store\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"latest_store\"}, [\"play_store\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNotAnyOf/play_store/store_galaxy",
+      "field": "latestStore",
+      "operator": "isNotAnyOf",
+      "profile": "store_galaxy",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_store\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"latest_store\"}, [\"play_store\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNotAnyOf/play_store/store_missing",
+      "field": "latestStore",
+      "operator": "isNotAnyOf",
+      "profile": "store_missing",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_store\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"latest_store\"}, [\"play_store\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNotAnyOf/play_store/store_null",
+      "field": "latestStore",
+      "operator": "isNotAnyOf",
+      "profile": "store_null",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_store\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"latest_store\"}, [\"play_store\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNotAnyOf/play_store/store_sandbox_only",
+      "field": "latestStore",
+      "operator": "isNotAnyOf",
+      "profile": "store_sandbox_only",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_store\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"latest_store\"}, [\"play_store\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNotAnyOf/play_store/store_production_before_sandbox",
+      "field": "latestStore",
+      "operator": "isNotAnyOf",
+      "profile": "store_production_before_sandbox",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_store\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"latest_store\"}, [\"play_store\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNotAnyOf/play_store/store_expiration_before_purchase",
+      "field": "latestStore",
+      "operator": "isNotAnyOf",
+      "profile": "store_expiration_before_purchase",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_store\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"latest_store\"}, [\"play_store\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNotAnyOf/play_store/store_latest_renewal",
+      "field": "latestStore",
+      "operator": "isNotAnyOf",
+      "profile": "store_latest_renewal",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_store\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"latest_store\"}, [\"play_store\"]]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isNotAnyOf/play_store/store_latest_update",
+      "field": "latestStore",
+      "operator": "isNotAnyOf",
+      "profile": "store_latest_update",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_store\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"latest_store\"}, [\"play_store\"]]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isNotAnyOf/play_store/store_one_time_purchase",
+      "field": "latestStore",
+      "operator": "isNotAnyOf",
+      "profile": "store_one_time_purchase",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_store\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"latest_store\"}, [\"play_store\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNotAnyOf/play_store/store_active_one_time_purchase",
+      "field": "latestStore",
+      "operator": "isNotAnyOf",
+      "profile": "store_active_one_time_purchase",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_store\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"latest_store\"}, [\"play_store\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNotAnyOf/play_store/store_latest_one_time_purchase",
+      "field": "latestStore",
+      "operator": "isNotAnyOf",
+      "profile": "store_latest_one_time_purchase",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_store\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"latest_store\"}, [\"play_store\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNotAnyOf/promotional/store_promotional",
+      "field": "latestStore",
+      "operator": "isNotAnyOf",
+      "profile": "store_promotional",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_store\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"latest_store\"}, [\"promotional\"]]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isNotAnyOf/mac_app_store/store_mac_app_store",
+      "field": "latestStore",
+      "operator": "isNotAnyOf",
+      "profile": "store_mac_app_store",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_store\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"latest_store\"}, [\"mac_app_store\"]]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isNotAnyOf/stripe/store_stripe",
+      "field": "latestStore",
+      "operator": "isNotAnyOf",
+      "profile": "store_stripe",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_store\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"latest_store\"}, [\"stripe\"]]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isNotAnyOf/stripe/store_latest_one_time_purchase",
+      "field": "latestStore",
+      "operator": "isNotAnyOf",
+      "profile": "store_latest_one_time_purchase",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_store\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"latest_store\"}, [\"stripe\"]]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isNotAnyOf/amazon/store_amazon",
+      "field": "latestStore",
+      "operator": "isNotAnyOf",
+      "profile": "store_amazon",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_store\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"latest_store\"}, [\"amazon\"]]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isNotAnyOf/amazon/store_one_time_purchase",
+      "field": "latestStore",
+      "operator": "isNotAnyOf",
+      "profile": "store_one_time_purchase",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_store\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"latest_store\"}, [\"amazon\"]]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isNotAnyOf/amazon/store_active_one_time_purchase",
+      "field": "latestStore",
+      "operator": "isNotAnyOf",
+      "profile": "store_active_one_time_purchase",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_store\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"latest_store\"}, [\"amazon\"]]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isNotAnyOf/amazon/store_latest_one_time_purchase",
+      "field": "latestStore",
+      "operator": "isNotAnyOf",
+      "profile": "store_latest_one_time_purchase",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_store\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"latest_store\"}, [\"amazon\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNotAnyOf/external/store_external",
+      "field": "latestStore",
+      "operator": "isNotAnyOf",
+      "profile": "store_external",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_store\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"latest_store\"}, [\"external\"]]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isNotAnyOf/rc_billing/store_rc_billing",
+      "field": "latestStore",
+      "operator": "isNotAnyOf",
+      "profile": "store_rc_billing",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_store\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"latest_store\"}, [\"rc_billing\"]]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isNotAnyOf/roku/store_roku",
+      "field": "latestStore",
+      "operator": "isNotAnyOf",
+      "profile": "store_roku",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_store\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"latest_store\"}, [\"roku\"]]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isNotAnyOf/paddle/store_paddle",
+      "field": "latestStore",
+      "operator": "isNotAnyOf",
+      "profile": "store_paddle",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_store\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"latest_store\"}, [\"paddle\"]]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isNotAnyOf/test_store/store_test_store",
+      "field": "latestStore",
+      "operator": "isNotAnyOf",
+      "profile": "store_test_store",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_store\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"latest_store\"}, [\"test_store\"]]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isNotAnyOf/paypal/store_paypal",
+      "field": "latestStore",
+      "operator": "isNotAnyOf",
+      "profile": "store_paypal",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_store\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"latest_store\"}, [\"paypal\"]]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isNotAnyOf/galaxy/store_galaxy",
+      "field": "latestStore",
+      "operator": "isNotAnyOf",
+      "profile": "store_galaxy",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_store\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"latest_store\"}, [\"galaxy\"]]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isNotAnyOf/app_store,play_store/new",
+      "field": "latestStore",
+      "operator": "isNotAnyOf",
+      "profile": "new",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_store\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"latest_store\"}, [\"app_store\", \"play_store\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNotAnyOf/app_store,play_store/renewed",
+      "field": "latestStore",
+      "operator": "isNotAnyOf",
+      "profile": "renewed",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_store\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"latest_store\"}, [\"app_store\", \"play_store\"]]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isNotAnyOf/app_store,play_store/first_purchase",
+      "field": "latestStore",
+      "operator": "isNotAnyOf",
+      "profile": "first_purchase",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_store\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"latest_store\"}, [\"app_store\", \"play_store\"]]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isNotAnyOf/app_store,play_store/unavailable",
+      "field": "latestStore",
+      "operator": "isNotAnyOf",
+      "profile": "unavailable",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_store\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"latest_store\"}, [\"app_store\", \"play_store\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNotAnyOf/app_store,play_store/store_app_store",
+      "field": "latestStore",
+      "operator": "isNotAnyOf",
+      "profile": "store_app_store",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_store\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"latest_store\"}, [\"app_store\", \"play_store\"]]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isNotAnyOf/app_store,play_store/store_play_store",
+      "field": "latestStore",
+      "operator": "isNotAnyOf",
+      "profile": "store_play_store",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_store\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"latest_store\"}, [\"app_store\", \"play_store\"]]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isNotAnyOf/app_store,play_store/store_promotional",
+      "field": "latestStore",
+      "operator": "isNotAnyOf",
+      "profile": "store_promotional",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_store\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"latest_store\"}, [\"app_store\", \"play_store\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNotAnyOf/app_store,play_store/store_mac_app_store",
+      "field": "latestStore",
+      "operator": "isNotAnyOf",
+      "profile": "store_mac_app_store",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_store\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"latest_store\"}, [\"app_store\", \"play_store\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNotAnyOf/app_store,play_store/store_stripe",
+      "field": "latestStore",
+      "operator": "isNotAnyOf",
+      "profile": "store_stripe",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_store\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"latest_store\"}, [\"app_store\", \"play_store\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNotAnyOf/app_store,play_store/store_amazon",
+      "field": "latestStore",
+      "operator": "isNotAnyOf",
+      "profile": "store_amazon",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_store\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"latest_store\"}, [\"app_store\", \"play_store\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNotAnyOf/app_store,play_store/store_external",
+      "field": "latestStore",
+      "operator": "isNotAnyOf",
+      "profile": "store_external",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_store\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"latest_store\"}, [\"app_store\", \"play_store\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNotAnyOf/app_store,play_store/store_rc_billing",
+      "field": "latestStore",
+      "operator": "isNotAnyOf",
+      "profile": "store_rc_billing",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_store\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"latest_store\"}, [\"app_store\", \"play_store\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNotAnyOf/app_store,play_store/store_roku",
+      "field": "latestStore",
+      "operator": "isNotAnyOf",
+      "profile": "store_roku",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_store\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"latest_store\"}, [\"app_store\", \"play_store\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNotAnyOf/app_store,play_store/store_paddle",
+      "field": "latestStore",
+      "operator": "isNotAnyOf",
+      "profile": "store_paddle",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_store\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"latest_store\"}, [\"app_store\", \"play_store\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNotAnyOf/app_store,play_store/store_test_store",
+      "field": "latestStore",
+      "operator": "isNotAnyOf",
+      "profile": "store_test_store",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_store\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"latest_store\"}, [\"app_store\", \"play_store\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNotAnyOf/app_store,play_store/store_paypal",
+      "field": "latestStore",
+      "operator": "isNotAnyOf",
+      "profile": "store_paypal",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_store\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"latest_store\"}, [\"app_store\", \"play_store\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNotAnyOf/app_store,play_store/store_galaxy",
+      "field": "latestStore",
+      "operator": "isNotAnyOf",
+      "profile": "store_galaxy",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_store\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"latest_store\"}, [\"app_store\", \"play_store\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNotAnyOf/app_store,play_store/store_missing",
+      "field": "latestStore",
+      "operator": "isNotAnyOf",
+      "profile": "store_missing",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_store\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"latest_store\"}, [\"app_store\", \"play_store\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNotAnyOf/app_store,play_store/store_null",
+      "field": "latestStore",
+      "operator": "isNotAnyOf",
+      "profile": "store_null",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_store\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"latest_store\"}, [\"app_store\", \"play_store\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNotAnyOf/app_store,play_store/store_sandbox_only",
+      "field": "latestStore",
+      "operator": "isNotAnyOf",
+      "profile": "store_sandbox_only",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_store\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"latest_store\"}, [\"app_store\", \"play_store\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNotAnyOf/app_store,play_store/store_production_before_sandbox",
+      "field": "latestStore",
+      "operator": "isNotAnyOf",
+      "profile": "store_production_before_sandbox",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_store\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"latest_store\"}, [\"app_store\", \"play_store\"]]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isNotAnyOf/app_store,play_store/store_expiration_before_purchase",
+      "field": "latestStore",
+      "operator": "isNotAnyOf",
+      "profile": "store_expiration_before_purchase",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_store\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"latest_store\"}, [\"app_store\", \"play_store\"]]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isNotAnyOf/app_store,play_store/store_latest_renewal",
+      "field": "latestStore",
+      "operator": "isNotAnyOf",
+      "profile": "store_latest_renewal",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_store\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"latest_store\"}, [\"app_store\", \"play_store\"]]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isNotAnyOf/app_store,play_store/store_latest_update",
+      "field": "latestStore",
+      "operator": "isNotAnyOf",
+      "profile": "store_latest_update",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_store\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"latest_store\"}, [\"app_store\", \"play_store\"]]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isNotAnyOf/app_store,play_store/store_one_time_purchase",
+      "field": "latestStore",
+      "operator": "isNotAnyOf",
+      "profile": "store_one_time_purchase",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_store\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"latest_store\"}, [\"app_store\", \"play_store\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNotAnyOf/app_store,play_store/store_active_one_time_purchase",
+      "field": "latestStore",
+      "operator": "isNotAnyOf",
+      "profile": "store_active_one_time_purchase",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_store\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"latest_store\"}, [\"app_store\", \"play_store\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNotAnyOf/app_store,play_store/store_latest_one_time_purchase",
+      "field": "latestStore",
+      "operator": "isNotAnyOf",
+      "profile": "store_latest_one_time_purchase",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_store\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"latest_store\"}, [\"app_store\", \"play_store\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isEmpty//new",
+      "field": "latestStore",
+      "operator": "isEmpty",
+      "profile": "new",
+      "predicate": "{\"==\": [{\"var\": [\"latest_store\", null]}, null]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isEmpty//renewed",
+      "field": "latestStore",
+      "operator": "isEmpty",
+      "profile": "renewed",
+      "predicate": "{\"==\": [{\"var\": [\"latest_store\", null]}, null]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isEmpty//first_purchase",
+      "field": "latestStore",
+      "operator": "isEmpty",
+      "profile": "first_purchase",
+      "predicate": "{\"==\": [{\"var\": [\"latest_store\", null]}, null]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isEmpty//unavailable",
+      "field": "latestStore",
+      "operator": "isEmpty",
+      "profile": "unavailable",
+      "predicate": "{\"==\": [{\"var\": [\"latest_store\", null]}, null]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isEmpty//store_app_store",
+      "field": "latestStore",
+      "operator": "isEmpty",
+      "profile": "store_app_store",
+      "predicate": "{\"==\": [{\"var\": [\"latest_store\", null]}, null]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isEmpty//store_play_store",
+      "field": "latestStore",
+      "operator": "isEmpty",
+      "profile": "store_play_store",
+      "predicate": "{\"==\": [{\"var\": [\"latest_store\", null]}, null]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isEmpty//store_promotional",
+      "field": "latestStore",
+      "operator": "isEmpty",
+      "profile": "store_promotional",
+      "predicate": "{\"==\": [{\"var\": [\"latest_store\", null]}, null]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isEmpty//store_mac_app_store",
+      "field": "latestStore",
+      "operator": "isEmpty",
+      "profile": "store_mac_app_store",
+      "predicate": "{\"==\": [{\"var\": [\"latest_store\", null]}, null]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isEmpty//store_stripe",
+      "field": "latestStore",
+      "operator": "isEmpty",
+      "profile": "store_stripe",
+      "predicate": "{\"==\": [{\"var\": [\"latest_store\", null]}, null]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isEmpty//store_amazon",
+      "field": "latestStore",
+      "operator": "isEmpty",
+      "profile": "store_amazon",
+      "predicate": "{\"==\": [{\"var\": [\"latest_store\", null]}, null]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isEmpty//store_external",
+      "field": "latestStore",
+      "operator": "isEmpty",
+      "profile": "store_external",
+      "predicate": "{\"==\": [{\"var\": [\"latest_store\", null]}, null]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isEmpty//store_rc_billing",
+      "field": "latestStore",
+      "operator": "isEmpty",
+      "profile": "store_rc_billing",
+      "predicate": "{\"==\": [{\"var\": [\"latest_store\", null]}, null]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isEmpty//store_roku",
+      "field": "latestStore",
+      "operator": "isEmpty",
+      "profile": "store_roku",
+      "predicate": "{\"==\": [{\"var\": [\"latest_store\", null]}, null]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isEmpty//store_paddle",
+      "field": "latestStore",
+      "operator": "isEmpty",
+      "profile": "store_paddle",
+      "predicate": "{\"==\": [{\"var\": [\"latest_store\", null]}, null]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isEmpty//store_test_store",
+      "field": "latestStore",
+      "operator": "isEmpty",
+      "profile": "store_test_store",
+      "predicate": "{\"==\": [{\"var\": [\"latest_store\", null]}, null]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isEmpty//store_paypal",
+      "field": "latestStore",
+      "operator": "isEmpty",
+      "profile": "store_paypal",
+      "predicate": "{\"==\": [{\"var\": [\"latest_store\", null]}, null]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isEmpty//store_galaxy",
+      "field": "latestStore",
+      "operator": "isEmpty",
+      "profile": "store_galaxy",
+      "predicate": "{\"==\": [{\"var\": [\"latest_store\", null]}, null]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isEmpty//store_missing",
+      "field": "latestStore",
+      "operator": "isEmpty",
+      "profile": "store_missing",
+      "predicate": "{\"==\": [{\"var\": [\"latest_store\", null]}, null]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isEmpty//store_null",
+      "field": "latestStore",
+      "operator": "isEmpty",
+      "profile": "store_null",
+      "predicate": "{\"==\": [{\"var\": [\"latest_store\", null]}, null]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isEmpty//store_sandbox_only",
+      "field": "latestStore",
+      "operator": "isEmpty",
+      "profile": "store_sandbox_only",
+      "predicate": "{\"==\": [{\"var\": [\"latest_store\", null]}, null]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isEmpty//store_production_before_sandbox",
+      "field": "latestStore",
+      "operator": "isEmpty",
+      "profile": "store_production_before_sandbox",
+      "predicate": "{\"==\": [{\"var\": [\"latest_store\", null]}, null]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isEmpty//store_expiration_before_purchase",
+      "field": "latestStore",
+      "operator": "isEmpty",
+      "profile": "store_expiration_before_purchase",
+      "predicate": "{\"==\": [{\"var\": [\"latest_store\", null]}, null]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isEmpty//store_latest_renewal",
+      "field": "latestStore",
+      "operator": "isEmpty",
+      "profile": "store_latest_renewal",
+      "predicate": "{\"==\": [{\"var\": [\"latest_store\", null]}, null]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isEmpty//store_latest_update",
+      "field": "latestStore",
+      "operator": "isEmpty",
+      "profile": "store_latest_update",
+      "predicate": "{\"==\": [{\"var\": [\"latest_store\", null]}, null]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isEmpty//store_one_time_purchase",
+      "field": "latestStore",
+      "operator": "isEmpty",
+      "profile": "store_one_time_purchase",
+      "predicate": "{\"==\": [{\"var\": [\"latest_store\", null]}, null]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isEmpty//store_active_one_time_purchase",
+      "field": "latestStore",
+      "operator": "isEmpty",
+      "profile": "store_active_one_time_purchase",
+      "predicate": "{\"==\": [{\"var\": [\"latest_store\", null]}, null]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isEmpty//store_latest_one_time_purchase",
+      "field": "latestStore",
+      "operator": "isEmpty",
+      "profile": "store_latest_one_time_purchase",
+      "predicate": "{\"==\": [{\"var\": [\"latest_store\", null]}, null]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isNotEmpty//new",
+      "field": "latestStore",
+      "operator": "isNotEmpty",
+      "profile": "new",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_store\", null]}, null]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isNotEmpty//renewed",
+      "field": "latestStore",
+      "operator": "isNotEmpty",
+      "profile": "renewed",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_store\", null]}, null]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNotEmpty//first_purchase",
+      "field": "latestStore",
+      "operator": "isNotEmpty",
+      "profile": "first_purchase",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_store\", null]}, null]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNotEmpty//unavailable",
+      "field": "latestStore",
+      "operator": "isNotEmpty",
+      "profile": "unavailable",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_store\", null]}, null]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isNotEmpty//store_app_store",
+      "field": "latestStore",
+      "operator": "isNotEmpty",
+      "profile": "store_app_store",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_store\", null]}, null]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNotEmpty//store_play_store",
+      "field": "latestStore",
+      "operator": "isNotEmpty",
+      "profile": "store_play_store",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_store\", null]}, null]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNotEmpty//store_promotional",
+      "field": "latestStore",
+      "operator": "isNotEmpty",
+      "profile": "store_promotional",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_store\", null]}, null]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNotEmpty//store_mac_app_store",
+      "field": "latestStore",
+      "operator": "isNotEmpty",
+      "profile": "store_mac_app_store",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_store\", null]}, null]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNotEmpty//store_stripe",
+      "field": "latestStore",
+      "operator": "isNotEmpty",
+      "profile": "store_stripe",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_store\", null]}, null]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNotEmpty//store_amazon",
+      "field": "latestStore",
+      "operator": "isNotEmpty",
+      "profile": "store_amazon",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_store\", null]}, null]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNotEmpty//store_external",
+      "field": "latestStore",
+      "operator": "isNotEmpty",
+      "profile": "store_external",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_store\", null]}, null]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNotEmpty//store_rc_billing",
+      "field": "latestStore",
+      "operator": "isNotEmpty",
+      "profile": "store_rc_billing",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_store\", null]}, null]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNotEmpty//store_roku",
+      "field": "latestStore",
+      "operator": "isNotEmpty",
+      "profile": "store_roku",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_store\", null]}, null]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNotEmpty//store_paddle",
+      "field": "latestStore",
+      "operator": "isNotEmpty",
+      "profile": "store_paddle",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_store\", null]}, null]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNotEmpty//store_test_store",
+      "field": "latestStore",
+      "operator": "isNotEmpty",
+      "profile": "store_test_store",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_store\", null]}, null]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNotEmpty//store_paypal",
+      "field": "latestStore",
+      "operator": "isNotEmpty",
+      "profile": "store_paypal",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_store\", null]}, null]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNotEmpty//store_galaxy",
+      "field": "latestStore",
+      "operator": "isNotEmpty",
+      "profile": "store_galaxy",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_store\", null]}, null]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNotEmpty//store_missing",
+      "field": "latestStore",
+      "operator": "isNotEmpty",
+      "profile": "store_missing",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_store\", null]}, null]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isNotEmpty//store_null",
+      "field": "latestStore",
+      "operator": "isNotEmpty",
+      "profile": "store_null",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_store\", null]}, null]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isNotEmpty//store_sandbox_only",
+      "field": "latestStore",
+      "operator": "isNotEmpty",
+      "profile": "store_sandbox_only",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_store\", null]}, null]}",
+      "expected": false
+    },
+    {
+      "id": "latestStore/isNotEmpty//store_production_before_sandbox",
+      "field": "latestStore",
+      "operator": "isNotEmpty",
+      "profile": "store_production_before_sandbox",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_store\", null]}, null]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNotEmpty//store_expiration_before_purchase",
+      "field": "latestStore",
+      "operator": "isNotEmpty",
+      "profile": "store_expiration_before_purchase",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_store\", null]}, null]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNotEmpty//store_latest_renewal",
+      "field": "latestStore",
+      "operator": "isNotEmpty",
+      "profile": "store_latest_renewal",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_store\", null]}, null]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNotEmpty//store_latest_update",
+      "field": "latestStore",
+      "operator": "isNotEmpty",
+      "profile": "store_latest_update",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_store\", null]}, null]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNotEmpty//store_one_time_purchase",
+      "field": "latestStore",
+      "operator": "isNotEmpty",
+      "profile": "store_one_time_purchase",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_store\", null]}, null]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNotEmpty//store_active_one_time_purchase",
+      "field": "latestStore",
+      "operator": "isNotEmpty",
+      "profile": "store_active_one_time_purchase",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_store\", null]}, null]}",
+      "expected": true
+    },
+    {
+      "id": "latestStore/isNotEmpty//store_latest_one_time_purchase",
+      "field": "latestStore",
+      "operator": "isNotEmpty",
+      "profile": "store_latest_one_time_purchase",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_store\", null]}, null]}",
+      "expected": true
+    }
+  ]
+}

@@ -2,12 +2,14 @@
   "schema_version": 1,
   "required_fields": [
     "country",
+    "latestStore",
     "locale",
     "storefront",
     "totalRenewals"
   ],
   "condition_files": [
     "conditions/country.json",
+    "conditions/latest_store.json",
     "conditions/locale.json",
     "conditions/storefront.json",
     "conditions/total_renewals.json"
@@ -2362,37 +2364,37 @@
     {
       "field": "latestStore",
       "operator": "is",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "latestStore",
       "operator": "isNot",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "latestStore",
       "operator": "isAnyOf",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "latestStore",
       "operator": "isNotAnyOf",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "latestStore",
       "operator": "isEmpty",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "latestStore",
       "operator": "isNotEmpty",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
