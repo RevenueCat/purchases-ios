@@ -396,6 +396,7 @@ struct PaywallsV2View: View {
             : 1
         )
         .accessibilityLabel("Dismiss")
+        .accessibilityIdentifier("paywall_close_button")
     }
 
     private func defaultPaywallView(warning: PaywallWarning) -> some View {
