@@ -29,35 +29,63 @@ extension Package: VariableDataProvider {
     }
 
     func localizedPricePerDay(showZeroDecimalPlacePrices: Bool = false) -> String {
-        guard let price = self.storeProduct.localizedPricePerDay else {
-            Logger.warning(Strings.package_not_subscription(self))
-            return self.storeProduct.localizedPriceString
-        }
-        return formatPrice(price, showZeroDecimalPlacePrices: showZeroDecimalPlacePrices)
+        return self.localizedPricePerDay(
+            showZeroDecimalPlacePrices: showZeroDecimalPlacePrices,
+            deviceLocale: .autoupdatingCurrent
+        )
+    }
+
+    func localizedPricePerDay(showZeroDecimalPlacePrices: Bool, deviceLocale: Locale) -> String {
+        return self.formatPricePerPeriod(
+            self.storeProduct.pricePerDay,
+            showZeroDecimalPlacePrices: showZeroDecimalPlacePrices,
+            deviceLocale: deviceLocale
+        )
     }
 
     func localizedPricePerWeek(showZeroDecimalPlacePrices: Bool = false) -> String {
-        guard let price = self.storeProduct.localizedPricePerWeek else {
-            Logger.warning(Strings.package_not_subscription(self))
-            return self.storeProduct.localizedPriceString
-        }
-        return formatPrice(price, showZeroDecimalPlacePrices: showZeroDecimalPlacePrices)
+        return self.localizedPricePerWeek(
+            showZeroDecimalPlacePrices: showZeroDecimalPlacePrices,
+            deviceLocale: .autoupdatingCurrent
+        )
+    }
+
+    func localizedPricePerWeek(showZeroDecimalPlacePrices: Bool, deviceLocale: Locale) -> String {
+        return self.formatPricePerPeriod(
+            self.storeProduct.pricePerWeek,
+            showZeroDecimalPlacePrices: showZeroDecimalPlacePrices,
+            deviceLocale: deviceLocale
+        )
     }
 
     func localizedPricePerMonth(showZeroDecimalPlacePrices: Bool = false) -> String {
-        guard let price = self.storeProduct.localizedPricePerMonth else {
-            Logger.warning(Strings.package_not_subscription(self))
-            return self.storeProduct.localizedPriceString
-        }
-        return formatPrice(price, showZeroDecimalPlacePrices: showZeroDecimalPlacePrices)
+        return self.localizedPricePerMonth(
+            showZeroDecimalPlacePrices: showZeroDecimalPlacePrices,
+            deviceLocale: .autoupdatingCurrent
+        )
+    }
+
+    func localizedPricePerMonth(showZeroDecimalPlacePrices: Bool, deviceLocale: Locale) -> String {
+        return self.formatPricePerPeriod(
+            self.storeProduct.pricePerMonth,
+            showZeroDecimalPlacePrices: showZeroDecimalPlacePrices,
+            deviceLocale: deviceLocale
+        )
     }
 
     func localizedPricePerYear(showZeroDecimalPlacePrices: Bool = false) -> String {
-        guard let price = self.storeProduct.localizedPricePerYear else {
-            Logger.warning(Strings.package_not_subscription(self))
-            return self.storeProduct.localizedPriceString
-        }
-        return formatPrice(price, showZeroDecimalPlacePrices: showZeroDecimalPlacePrices)
+        return self.localizedPricePerYear(
+            showZeroDecimalPlacePrices: showZeroDecimalPlacePrices,
+            deviceLocale: .autoupdatingCurrent
+        )
+    }
+
+    func localizedPricePerYear(showZeroDecimalPlacePrices: Bool, deviceLocale: Locale) -> String {
+        return self.formatPricePerPeriod(
+            self.storeProduct.pricePerYear,
+            showZeroDecimalPlacePrices: showZeroDecimalPlacePrices,
+            deviceLocale: deviceLocale
+        )
     }
 
     func localizedIntroductoryOfferPrice(showZeroDecimalPlacePrices: Bool = false) -> String? {
@@ -65,6 +93,50 @@ extension Package: VariableDataProvider {
             return self.storeProduct.introductoryDiscount?.localizedPriceString
         }
         return formatPrice(price, showZeroDecimalPlacePrices: showZeroDecimalPlacePrices)
+    }
+
+    /// Formats a per-period price (e.g. price per month) so it looks like `localizedPriceString`.
+    ///
+    /// `StoreProduct.priceFormatter` can use a different locale than `localizedPriceString`
+    /// (for example, device language `fr` with a US storefront), which makes per-period prices
+    /// render with different separators and currency placement than the full price.
+    /// When that happens, this falls back to the device locale if it reproduces `localizedPriceString`.
+    private func formatPricePerPeriod(
+        _ price: NSDecimalNumber?,
+        showZeroDecimalPlacePrices: Bool,
+        deviceLocale: Locale
+    ) -> String {
+        guard let price = price?.decimalValue, let formatter = self.storeProduct.priceFormatter else {
+            Logger.warning(Strings.package_not_subscription(self))
+            return self.storeProduct.localizedPriceString
+        }
+
+        let formatterMatchingDisplayedPrice = self.formatterMatchingLocalizedPriceString(
+            formatter,
+            deviceLocale: deviceLocale
+        )
+
+        return formatterMatchingDisplayedPrice.formattedPriceStrippingTrailingZerosIfNeeded(
+            price,
+            showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
+        ) ?? self.storeProduct.localizedPriceString
+    }
+
+    private func formatterMatchingLocalizedPriceString(
+        _ formatter: NumberFormatter,
+        deviceLocale: Locale
+    ) -> NumberFormatter {
+        let displayedPrice = self.storeProduct.localizedPriceString
+        let fullPrice = self.storeProduct.price as NSDecimalNumber
+
+        guard formatter.string(from: fullPrice) != displayedPrice,
+              formatter.locale != deviceLocale,
+              let copy = formatter.copy() as? NumberFormatter else {
+            return formatter
+        }
+
+        copy.locale = deviceLocale
+        return copy.string(from: fullPrice) == displayedPrice ? copy : formatter
     }
 
     private func formatPrice(_ priceString: String, showZeroDecimalPlacePrices: Bool) -> String {

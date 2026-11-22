@@ -50,6 +50,30 @@ class PackageVariablesTests: TestCase {
         expect(TestData.lifetimePackage.localizedPricePerMonth()) == "$119.49"
     }
 
+    func testLocalizedPricePerMonthMatchesLocalizedPriceWhenFormatterLocaleDiffersFromDeviceLocale() throws {
+        // Device language is French (France) but the storefront region is the US:
+        // the product's formatter uses `fr_US` while `localizedPriceString` uses `fr_FR`.
+        let deviceLocale = Locale(identifier: "fr_FR")
+        let storefrontLocale = Locale(identifier: "fr_US")
+
+        let deviceFormatter = NumberFormatter()
+        deviceFormatter.numberStyle = .currency
+        deviceFormatter.locale = deviceLocale
+        deviceFormatter.currencyCode = "USD"
+
+        let package = TestData.annualPackage.with(
+            deviceFormatter.string(from: TestData.annualPackage.storeProduct.price as NSDecimalNumber)!,
+            storefrontLocale,
+            "USD"
+        )
+        let pricePerMonth = try XCTUnwrap(package.storeProduct.pricePerMonth)
+
+        expect(package.localizedPricePerMonth(showZeroDecimalPlacePrices: false, deviceLocale: deviceLocale))
+        == deviceFormatter.string(from: pricePerMonth)
+        expect(package.localizedPricePerMonth(showZeroDecimalPlacePrices: false, deviceLocale: deviceLocale))
+        != package.storeProduct.localizedPricePerMonth
+    }
+
     func testEnglishLocalizedPricePerPeriod() {
         expect(TestData.weeklyPackage.localizedPricePerPeriod(Self.english)) == "$1.99/wk"
         expect(TestData.monthlyPackage.localizedPricePerPeriod(Self.english)) == "$6.99/mo"
