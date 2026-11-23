@@ -143,7 +143,10 @@ private struct CompatibilityProfile: Decodable {
         let user = self.appUserId
         let device = self.device
         let storeCountry = self.storeCountry
-        let customerInfo = try CustomerInfo(data: self.customerInfo.mapValues(\.asAny))
+        let clock = MockDateProvider(stubbedNow: Date(timeIntervalSince1970: self.evaluatedAt))
+        let customerInfo = try CustomerInfo.$dateProvider.withValue(clock) {
+            try CustomerInfo(data: self.customerInfo.mapValues(\.asAny))
+        }
         let attributes = self.attributes.reduce(into: SubscriberAttribute.Dictionary()) { result, item in
             result[item.key] = SubscriberAttribute(
                 withKey: item.key, value: item.value.value, isSynced: true,
@@ -172,7 +175,7 @@ private struct CompatibilityProfile: Decodable {
                 )
             ],
             currentAppUserIDProvider: { user },
-            dateProvider: MockDateProvider(stubbedNow: Date(timeIntervalSince1970: self.evaluatedAt))
+            dateProvider: clock
         )
     }
 

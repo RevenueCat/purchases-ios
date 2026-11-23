@@ -17,6 +17,8 @@ import Foundation
 
 extension CustomerInfo {
 
+    @TaskLocal static var dateProvider = DateProvider()
+
     /// This grace period allows apps to continue functioning if the backend is down, but for a limited time.
     /// We don't want to continue granting entitlements with an outdated `requestDate` forever,
     /// since that would allow a user to get a free trial, then go offline and keep the entitlement with no time limit.
@@ -138,10 +140,11 @@ private extension CustomerInfo {
     }
 
     static func referenceDate(for requestDate: Date) -> (Date, inGracePeriod: Bool) {
-        if Date().timeIntervalSince(requestDate) <= Self.requestDateGracePeriod.seconds {
+        let now = Self.dateProvider.now()
+        if now.timeIntervalSince(requestDate) <= Self.requestDateGracePeriod.seconds {
             return (requestDate, true)
         } else {
-            return (Date(), false)
+            return (now, false)
         }
     }
 
