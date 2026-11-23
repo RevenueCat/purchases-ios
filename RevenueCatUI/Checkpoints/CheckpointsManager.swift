@@ -83,6 +83,7 @@ final class CheckpointsManager {
         params: CheckpointCallParams
     ) async throws -> CheckpointExecutionResult {
         let globalPaywallPresenter = self.paywallPresenter
+        let identifier = identifier.lowercased()
 
         guard CheckpointIdentifierValidator.isValid(identifier) else {
             Logger.error(CheckpointIdentifierValidator.invalidIdentifierLogMessage(identifier))
@@ -164,6 +165,8 @@ final class CheckpointsManager {
         identifier: String,
         params: CheckpointCallParams
     ) async -> CheckpointCallbackResult {
+        let identifier = identifier.lowercased()
+
         switch await self.checkpointOutcome(identifier: identifier, params: params) {
         case let .completed(result):
             return .completed(result)

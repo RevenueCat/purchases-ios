@@ -64,6 +64,17 @@ class PurchasesCheckpointEventsTests: BasePurchasesTests {
         expect(event.data.checkpointRuleID) == "rule_123"
     }
 
+    func testResolvesAndTracksTheLowercasedIdentifier() async throws {
+        let resolver = RecordingCheckpointWorkflowResolver()
+        self.setUpCheckpointPurchases(resolver: resolver)
+
+        _ = try await self.purchases.resolveCheckpoint(identifier: "Onboarding_Complete", params: .init())
+
+        let event = try await self.singleTrackedCheckpointEvent()
+        expect(resolver.resolvedIdentifiers.value) == ["onboarding_complete"]
+        expect(event.data.identifier) == "onboarding_complete"
+    }
+
     /// The backend joins the hit to the workflow run it started on this id.
     func testHitSharesTheTraceIdOfTheWorkflowItStarts() async throws {
         self.setUpCheckpointPurchases(resolver: WorkflowCheckpointWorkflowResolver())
@@ -147,6 +158,18 @@ private final class ThrowingCheckpointWorkflowResolver: CheckpointWorkflowResolv
 
     func resolve(identifier: String, params: CheckpointParams) async throws -> ResolvedCheckpoint {
         throw ResolutionError()
+    }
+
+}
+
+@available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+private final class RecordingCheckpointWorkflowResolver: CheckpointWorkflowResolver {
+
+    let resolvedIdentifiers: Atomic<[String]> = .init([])
+
+    func resolve(identifier: String, params: CheckpointParams) async throws -> ResolvedCheckpoint {
+        self.resolvedIdentifiers.modify { $0.append(identifier) }
+        return .init(.noAction(.unknownCheckpoint))
     }
 
 }

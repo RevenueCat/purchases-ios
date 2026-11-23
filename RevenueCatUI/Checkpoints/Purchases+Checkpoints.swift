@@ -69,6 +69,7 @@ public extension Purchases {
     /// - Parameters:
     ///   - identifier: The checkpoint identifier configured in the RevenueCat dashboard. It must start with a letter,
     ///     contain only ASCII letters, numbers, underscores, and hyphens, and be no more than 255 characters.
+    ///     Identifiers are case-insensitive.
     ///   - customVariables: Values usable in checkpoint targeting rules, feature events, and the presented flow.
     ///   - presentationMode: How the SDK presents a matching workflow or its own paywall. Defaults to a sheet.
     ///   - paywallPresenter: A custom presenter used if this checkpoint selects an offering. This overrides the global

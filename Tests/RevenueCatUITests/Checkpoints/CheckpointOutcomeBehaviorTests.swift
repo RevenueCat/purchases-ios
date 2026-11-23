@@ -73,6 +73,26 @@ final class CheckpointOutcomeBehaviorTests: TestCase {
         XCTAssertEqual(errorPresenter.presentations.first?.error as NSError?, expectedError)
     }
 
+    // Identifiers are case-insensitive: resolution and error presentation use the lowercased identifier.
+    func testMixedCaseIdentifierIsLowercased() async {
+        let expectedError = NSError(domain: "CheckpointOutcomeBehaviorTests", code: 1)
+        let errorPresenter = ErrorPresentationRecorder()
+        var resolvedIdentifiers: [String] = []
+        let manager = CheckpointsManager { identifier, _ in
+            resolvedIdentifiers.append(identifier)
+            throw expectedError
+        }
+
+        let result = await manager.checkpointForCallback(
+            identifier: "Soft_Paywall",
+            params: self.params(errorPresenter: errorPresenter)
+        )
+
+        self.assertSuppressed(result)
+        XCTAssertEqual(resolvedIdentifiers, ["soft_paywall"])
+        self.assertTerminalErrorWasPresented(by: errorPresenter, checkpointIdentifier: "soft_paywall")
+    }
+
     // Customer information read failure: invoke the error presenter and do not invoke the callback.
     func testCustomerInfoReadFailure() async {
         let expectedError = NSError(domain: "CheckpointOutcomeBehaviorTests", code: 2)

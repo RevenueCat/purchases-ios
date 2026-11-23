@@ -306,6 +306,7 @@ final class PurchasesOrchestrator {
         // Dated before resolving, which awaits the network, and tracked after so the hit carries what it
         // resolved to.
         let date = self.dateProvider.now()
+        let identifier = identifier.lowercased()
 
         let resolved = try await self.checkpointResolver.resolve(
             identifier: identifier,

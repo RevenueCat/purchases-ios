@@ -1604,7 +1604,7 @@ final class CheckpointsManagerTests: TestCase {
         }
     }
 
-    func testValidCheckpointIdentifierReachesResolution() async throws {
+    func testValidCheckpointIdentifierReachesResolutionLowercased() async throws {
         var resolvedIdentifiers: [String] = []
         let manager = CheckpointsManager { identifier, _ in
             resolvedIdentifiers.append(identifier)
@@ -1612,7 +1612,7 @@ final class CheckpointsManagerTests: TestCase {
         }
         _ = try await manager.executeCheckpoint(identifier: "A-1_b", params: .init())
 
-        XCTAssertEqual(resolvedIdentifiers, ["A-1_b"])
+        XCTAssertEqual(resolvedIdentifiers, ["a-1_b"])
     }
 
     func testInvalidCheckpointIdentifierIsLoggedWithoutResolution() async throws {
