@@ -286,6 +286,10 @@ struct WorkflowPaywallView: View {
             self?.view?.handleDismiss()
         }
 
+        lazy var closeWorkflow: () -> Void = { [weak self] in
+            self?.view?.closeWorkflow()
+        }
+
         lazy var triggerAction: (String) -> Bool = { [weak self] componentId in
             return self?.view?.handleTriggeredNavigation(componentId: componentId) ?? false
         }
@@ -312,6 +316,18 @@ struct WorkflowPaywallView: View {
 
     }
 
+    private enum PresentationLifecycle {
+
+        case active
+        case hidden
+        case ended
+
+        mutating func hide() {
+            if self == .active { self = .hidden }
+        }
+
+    }
+
     private enum Constants {
         static let transitionDuration: Double = 0.25
         static let transitionStartDelayNanoseconds: UInt64 = 16_000_000
@@ -324,6 +340,7 @@ struct WorkflowPaywallView: View {
     private let displayCloseButton: Bool
     private let onDismiss: () -> Void
     private let onPresentationError: WorkflowPresentationErrorHandler?
+    private let checkpointGateController: CheckpointWorkflowGateController?
 
     @StateObject private var presentationBridge: PaywallPresentationBridge
 
@@ -357,6 +374,10 @@ struct WorkflowPaywallView: View {
     /// Placeholder render of the initial branch's fallback screen, shown while `initialTrigger` resolves
     /// and dropped as soon as the routed step's real page is built.
     @State private var skeletonPage: RenderedPage?
+    /// Whether a checkpoint's enforced initial gate has not been checked yet, so its page stays unrendered.
+    @State private var isAwaitingEntryGate: Bool
+    @State private var pendingOperationCompletion: WorkflowOperationCompletion = .none
+    @State private var presentationLifecycle: PresentationLifecycle = .active
 
     init(
         context: WorkflowContext,
@@ -367,7 +388,8 @@ struct WorkflowPaywallView: View {
         promoOfferCache: PaywallPromoOfferCache?,
         onDismiss: @escaping () -> Void,
         presentationBridge: PaywallPresentationBridge = PaywallPresentationBridge(),
-        onPresentationError: WorkflowPresentationErrorHandler? = nil
+        onPresentationError: WorkflowPresentationErrorHandler? = nil,
+        checkpointGateController: CheckpointWorkflowGateController? = nil
     ) {
         self.context = context
         self.purchaseHandler = purchaseHandler
@@ -377,6 +399,12 @@ struct WorkflowPaywallView: View {
         self.onDismiss = onDismiss
         self._presentationBridge = .init(wrappedValue: presentationBridge)
         self.onPresentationError = onPresentationError
+        self.checkpointGateController = checkpointGateController
+        self._isAwaitingEntryGate = .init(
+            initialValue: checkpointGateController != nil
+                && context.workflow.initialBranch == nil
+                && context.workflow.steps[context.workflow.initialStepId]?.gating?.isEnforced == true
+        )
         self._navigator = .init(wrappedValue: WorkflowNavigator(
             workflow: context.workflow,
             resolveBranch: purchaseHandler.resolveBranch
@@ -418,6 +446,10 @@ struct WorkflowPaywallView: View {
             initialPage = initialPresentationError == nil
                 ? page(showCloseButton: displayCloseButton, skeleton: false)
                 : nil
+            if checkpointGateController != nil,
+               context.workflow.steps[initialStepId]?.gating?.isEnforced == true {
+                skeletonPage = page(showCloseButton: false, skeleton: true)
+            }
         }
         self._skeletonPage = .init(wrappedValue: skeletonPage)
         self._presentationState = .init(
@@ -475,8 +507,10 @@ struct WorkflowPaywallView: View {
                 // preserves each subtree's identity (and the state it owns) across navigation.
                 // The current and outgoing pages animate; the rest stay mounted but hidden
                 // off-screen, non-interactive.
-                ForEach(self.seenPages) { page in
-                    self.seenPageView(for: page, geometry: geometry, pageActions: pageActions)
+                if !self.isAwaitingEntryGate {
+                    ForEach(self.seenPages) { page in
+                        self.seenPageView(for: page, geometry: geometry, pageActions: pageActions)
+                    }
                 }
 
                 if let skeletonPage = self.skeletonPage {
@@ -527,24 +561,7 @@ struct WorkflowPaywallView: View {
         // Must use exitOfferContext(for:currentStepId:), not context.exitOfferOffering, because
         // exitOfferOffering is not step-aware — it is non-nil for any step whenever configured.
         .onAppear {
-            pageActions.view = self
-            self.presentationBridge.workflowDidAppear(onCompletion: self.completeAndDismiss)
-            switch self.presentationState {
-            case .displayingError(_, .endFlow):
-                self.exitOfferOfferingBinding.wrappedValue = nil
-                self.reportPresentationError(for: self.navigator.currentStepId)
-                return
-            case .failureReported:
-                self.exitOfferOfferingBinding.wrappedValue = nil
-                return
-            case .active, .displayingError(_, .keepCurrentScreen):
-                break
-            }
-            self.syncExitOfferBinding()
-            self.stepEventCoordinator.trackInitialStep(
-                self.navigator.currentStep,
-                hasRenderedPage: self.transitionState.currentPage != nil
-            )
+            self.handleAppear(pageActions: pageActions)
         }
         // This catches dismissal paths that do not pass through a workflow failure: close button,
         // post-purchase auto-dismiss, swipe-to-dismiss on a sheet, and programmatic parent dismiss.
@@ -559,6 +576,8 @@ struct WorkflowPaywallView: View {
         }
         .onDisappear {
             pageActions.view = nil
+            self.presentationLifecycle.hide()
+            self.checkpointGateController?.cancelEntry()
             self.nativeButtonCoordinator?.activatePage(nil)
             self.presentationBridge.workflowDidDisappear()
             self.trackCurrentWorkflowLeft()
@@ -595,6 +614,18 @@ struct WorkflowPaywallView: View {
             }
         )
         .modifier(PaywallURLEventsModifier(purchaseHandler: self.purchaseHandler))
+        .onReceive(self.purchaseHandler.$actionTypeInProgress.dropFirst()) { action in
+            self.handlePurchaseActionChange(action)
+        }
+        .onReceive(self.purchaseHandler.$sessionPurchaseResult.dropFirst()) { result in
+            self.handleSessionPurchaseResult(result)
+        }
+        .onReceive(self.purchaseHandler.$restoredCustomerInfo.dropFirst()) { restoreResult in
+            self.handleRestoredCustomerInfo(restoreResult)
+        }
+        .onChangeOf(self.pendingOperationCompletion) { completion in
+            self.completeOperationAfterCallbacks(completion)
+        }
     }
 
     // MARK: - Helpers
@@ -698,7 +729,7 @@ struct WorkflowPaywallView: View {
             workflowPromoOfferProductCodes: page.effectiveWorkflowPackageContext?.promoOfferCodesByPackageId,
             displayCloseButton: page.showCloseButton,
             onDismiss: pageActions.onDismiss,
-            closeWorkflowAction: self.onDismiss,
+            closeWorkflowAction: pageActions.closeWorkflow,
             failedToLoadFont: pageActions.failedToLoadFont,
             colorScheme: self.colorScheme,
             promoOfferCache: self.promoOfferCacheOwner.cache,
@@ -735,7 +766,7 @@ struct WorkflowPaywallView: View {
                             paywallPromoOfferCache: self.promoOfferCacheOwner.cache,
                             showZeroDecimalPlacePrices: self.showZeroDecimalPlacePrices,
                             onDismiss: pageActions.onDismiss,
-                            closeWorkflowAction: self.onDismiss,
+                            closeWorkflowAction: pageActions.closeWorkflow,
                             failedToLoadFont: pageActions.failedToLoadFont,
                             colorScheme: self.colorScheme,
                             horizontalSizeClass: self.horizontalSizeClass,
@@ -757,47 +788,56 @@ struct WorkflowPaywallView: View {
         }
     }
 
+    private func closeWorkflow() {
+        guard self.presentationLifecycle != .ended else { return }
+        self.presentationLifecycle = .ended
+        self.checkpointGateController?.cancelPendingWork()
+        self.onDismiss()
+    }
+
     private func handleDismiss(dismissalReason: WorkflowDismissalReason = .close) {
-        guard !self.transitionState.isTransitioning else {
+        guard !self.transitionState.isTransitioning, self.presentationLifecycle == .active else {
             return
         }
 
+        self.checkpointGateController?.cancelEntry()
+        let hasUnresolvedGate = self.checkpointGateController?.hasUnresolvedGate ?? false
         switch Self.dismissalAction(
             canNavigateBack: self.navigator.canNavigateBack,
             hasPurchasedInSession: self.purchaseHandler.hasPurchasedInSession,
+            hasUnresolvedGate: hasUnresolvedGate,
             dismissalReason: dismissalReason
         ) {
         case let .dismissWorkflow(reason):
-            if self.purchaseHandler.hasPurchasedInSession {
+            if self.purchaseHandler.hasPurchasedInSession && !hasUnresolvedGate {
                 self.completeAndDismiss()
                 return
             }
             if reason == .navigatedBack {
                 self.workflowDismissalObserver?(.navigatedBack)
             }
-            self.onDismiss()
+            self.closeWorkflow()
         case .navigateBack:
             let fromStep = self.navigator.currentStep
             guard let destination = self.navigator.backNavigationDestination else {
                 return
             }
-            guard Self.presentationError(for: destination.step.id, in: self.context) == nil,
-                  let page = self.renderedPageForBackNavigation(stepId: destination.step.id) else {
-                self.failWorkflowPresentation(for: destination.step.id)
-                return
-            }
+            self.enterThroughGate(step: destination.step) {
+                guard Self.presentationError(for: destination.step.id, in: self.context) == nil,
+                      let page = self.renderedPageForBackNavigation(stepId: destination.step.id) else {
+                    self.failWorkflowPresentation(for: destination.step.id)
+                    return
+                }
 
-            self.navigator.navigateBack()
-            self.stepEventCoordinator.trackTransition(
-                from: fromStep,
-                to: destination.step,
-                renderedPageIsNil: false,
-                entryReason: .back
-            )
-            self.startTransition(
-                to: page,
-                direction: .back
-            )
+                self.navigator.navigateBack()
+                self.stepEventCoordinator.trackTransition(
+                    from: fromStep,
+                    to: destination.step,
+                    renderedPageIsNil: false,
+                    entryReason: .back
+                )
+                self.startTransition(to: page, direction: .back)
+            }
         }
     }
 
@@ -821,6 +861,62 @@ struct WorkflowPaywallView: View {
         self.handleDismiss(dismissalReason: .navigatedBack)
     }
 
+    private func handleAppear(pageActions: PageActions) {
+        guard self.presentationLifecycle != .ended, !self.hasCompletedWorkflowInSession else { return }
+        self.presentationLifecycle = .active
+        pageActions.view = self
+        self.presentationBridge.workflowDidAppear(onCompletion: self.completeAndDismiss)
+        switch self.presentationState {
+        case .displayingError(_, .endFlow):
+            self.exitOfferOfferingBinding.wrappedValue = nil
+            self.reportPresentationError(for: self.navigator.currentStepId)
+            return
+        case .failureReported:
+            self.exitOfferOfferingBinding.wrappedValue = nil
+            return
+        case .active, .displayingError(_, .keepCurrentScreen):
+            break
+        }
+        let deferredCompletion = self.checkpointGateController?.applyDeferredOperation() ?? .none
+        if deferredCompletion != .none {
+            self.pendingOperationCompletion = deferredCompletion
+        }
+        if self.checkpointGateController?.status == .passed {
+            self.pendingOperationCompletion = .completeGate
+            self.completeOperationAfterCallbacks(.completeGate)
+            return
+        }
+        if self.pendingOperationCompletion != .none {
+            self.completeOperationAfterCallbacks(self.pendingOperationCompletion)
+            return
+        }
+        if self.resolvesInitialStep, self.transitionState.currentPage == nil {
+            self.checkpointGateController?.markInitialBranchPending()
+        }
+        guard self.resolvesEntryGate() else { return }
+        self.syncExitOfferBinding()
+        self.stepEventCoordinator.trackInitialStep(
+            self.navigator.currentStep,
+            hasRenderedPage: self.transitionState.currentPage != nil
+        )
+    }
+
+    private func handlePurchaseActionChange(_ action: PurchaseHandler.ActionType?) {
+        guard action != nil else { return }
+        self.pendingOperationCompletion = .none
+        self.checkpointGateController?.beginOperation(appUserID: self.purchaseHandler.appUserID)
+    }
+
+    private func handleSessionPurchaseResult(_ result: PaywallPurchaseResult?) {
+        guard case let .purchased(_, customerInfo)? = result else { return }
+        self.completeCheckpointOperation(customerInfo: customerInfo, isPurchase: true)
+    }
+
+    private func handleRestoredCustomerInfo(_ restoreResult: PurchaseHandler.RestoreResult?) {
+        guard let restoreResult else { return }
+        self.completeCheckpointOperation(customerInfo: restoreResult.customerInfo, isPurchase: false)
+    }
+
     private func syncExitOfferBinding() {
         self.exitOfferOfferingBinding.wrappedValue = self.currentExitOfferContext?.exitOfferOffering
     }
@@ -842,11 +938,13 @@ struct WorkflowPaywallView: View {
     }
 
     private func completeAndDismiss() {
+        guard self.presentationLifecycle == .active,
+              self.checkpointGateController?.hasUnresolvedGate != true else { return }
         self.hasCompletedWorkflowInSession = true
         self.workflowCompletedInSessionBinding.wrappedValue = true
         // Enqueue terminal analytics before the host observes dismissal.
         self.trackCurrentWorkflowLeft()
-        self.onDismiss()
+        self.closeWorkflow()
     }
 
     /// Finishes the current step and, unless purchase or restore completed this presentation, records
@@ -857,7 +955,8 @@ struct WorkflowPaywallView: View {
         let completedInSession = Self.hasCompletedInSession(
             hasPurchasedInSession: self.purchaseHandler.hasPurchasedInSession,
             hasCompletedWorkflowInSession: self.hasCompletedWorkflowInSession ||
-                self.workflowCompletedInSessionBinding.wrappedValue
+                self.workflowCompletedInSessionBinding.wrappedValue,
+            hasUnresolvedGate: self.checkpointGateController?.hasUnresolvedGate ?? false
         )
         self.stepEventCoordinator.trackTerminalCompletion(
             currentStep: self.navigator.currentStep,
@@ -875,9 +974,10 @@ struct WorkflowPaywallView: View {
     /// only when restore actually dismisses the workflow.
     static func hasCompletedInSession(
         hasPurchasedInSession: Bool,
-        hasCompletedWorkflowInSession: Bool
+        hasCompletedWorkflowInSession: Bool,
+        hasUnresolvedGate: Bool = false
     ) -> Bool {
-        return hasPurchasedInSession || hasCompletedWorkflowInSession
+        return !hasUnresolvedGate && (hasPurchasedInSession || hasCompletedWorkflowInSession)
     }
 
     /// How far a page moves sideways during a transition. Pages kept off-screen never move.
@@ -897,13 +997,16 @@ struct WorkflowPaywallView: View {
     static func dismissalAction(
         canNavigateBack: Bool,
         hasPurchasedInSession: Bool,
+        hasUnresolvedGate: Bool = false,
         dismissalReason: WorkflowDismissalReason = .close
     ) -> DismissalAction {
         // After a purchase, always close the whole workflow regardless of back stack —
         // navigating back to a previous step post-purchase would be confusing and
-        // could allow the user to purchase again.
-        guard canNavigateBack, !hasPurchasedInSession else {
-            return .dismissWorkflow(hasPurchasedInSession ? .close : dismissalReason)
+        // could allow the user to purchase again. A purchase that left a gate unresolved completed nothing.
+        let hasCompletedPurchase = hasPurchasedInSession && !hasUnresolvedGate
+        guard canNavigateBack, !hasCompletedPurchase else {
+            let reason: WorkflowDismissalReason = hasUnresolvedGate ? .navigatedBack : dismissalReason
+            return .dismissWorkflow(hasCompletedPurchase ? .close : reason)
         }
 
         return .navigateBack
@@ -921,9 +1024,23 @@ struct WorkflowPaywallView: View {
             return false
         }
 
+        // Consume workflow triggers while a read is pending, leaving ordinary back actions available.
+        guard self.presentationLifecycle == .active,
+              self.checkpointGateController?.entryTask == nil else { return true }
+        if let fromStep, self.checkpointGateController?.blocksForwardNavigation(step: fromStep) == true {
+            return true
+        }
+
+        self.enterThroughGate(step: destination.step) {
+            self.navigateForward(to: destination, from: fromStep)
+        }
+        return true
+    }
+
+    private func navigateForward(to destination: WorkflowForwardNavigationDestination, from fromStep: WorkflowStep?) {
         guard Self.presentationError(for: destination.step.id, in: self.context) == nil else {
             self.failWorkflowPresentation(for: destination.step.id)
-            return true
+            return
         }
 
         guard let page = self.renderedPageForForwardNavigation(
@@ -932,11 +1049,11 @@ struct WorkflowPaywallView: View {
             carryForwardPackage: self.transitionState.currentPage?.packageContext.package
         ) else {
             self.failWorkflowPresentation(for: destination.step.id)
-            return true
+            return
         }
 
-        guard let nextStep = self.navigator.triggerAction(componentId: componentId) else {
-            return false
+        guard let nextStep = self.navigator.navigateForward(to: destination.step.id) else {
+            return
         }
 
         self.stepEventCoordinator.trackTransition(
@@ -946,8 +1063,6 @@ struct WorkflowPaywallView: View {
             entryReason: .forward
         )
         self.startTransition(to: page, direction: .forward)
-
-        return true
     }
 
     private func startTransition(
@@ -1161,11 +1276,20 @@ struct WorkflowPaywallView: View {
     /// view reappears but the back stack survives, so building twice would leave `seenPages` holding
     /// only this step and break back navigation.
     private func startInitialStep() {
-        guard self.transitionState.currentPage == nil, !self.presentationState.hasFailed else { return }
+        guard self.presentationLifecycle == .active,
+              !self.hasCompletedWorkflowInSession,
+              self.transitionState.currentPage == nil,
+              !self.presentationState.hasFailed else { return }
 
         let stepId = self.navigator.currentStepId
-        self.skeletonPage = nil
+        guard let step = self.navigator.currentStep else { return }
+        self.enterThroughGate(step: step) {
+            self.renderInitialStep(stepId: stepId)
+        }
+    }
 
+    private func renderInitialStep(stepId: String) {
+        self.skeletonPage = nil
         guard Self.presentationError(for: stepId, in: self.context) == nil,
               let page = self.renderedPageForForwardNavigation(
                   stepId: stepId,
@@ -1180,6 +1304,82 @@ struct WorkflowPaywallView: View {
         self.transitionState = .init(currentPage: page)
         self.syncExitOfferBinding()
         self.stepEventCoordinator.trackInitialStep(self.navigator.currentStep, hasRenderedPage: true)
+    }
+
+    // MARK: - Checkpoint gate
+
+    /// Keeps the initial page hidden until its gate read finishes.
+    private func resolvesEntryGate() -> Bool {
+        guard self.isAwaitingEntryGate, let step = self.navigator.currentStep else { return true }
+        guard self.checkpointGateController?.entryTask == nil else { return false }
+        self.enterThroughGate(step: step) {
+            self.isAwaitingEntryGate = false
+            self.skeletonPage = nil
+            self.syncExitOfferBinding()
+            self.stepEventCoordinator.trackInitialStep(step, hasRenderedPage: true)
+        }
+        return false
+    }
+
+    /// Marks passage blocked synchronously, then reads entitlements for this visit and this identity.
+    private func enterThroughGate(step: WorkflowStep, enter: @escaping @MainActor () -> Void) {
+        guard let controller = self.checkpointGateController else {
+            enter()
+            return
+        }
+        controller.enter(
+            step: step,
+            customerInfo: { try await self.purchaseHandler.customerInfo() },
+            appUserID: { self.purchaseHandler.appUserID },
+            canApplyResult: { self.presentationLifecycle == .active },
+            completion: { decision in
+                if decision == .passed {
+                    if self.isAwaitingEntryGate {
+                        self.seenPages = []
+                        self.transitionState = .init(currentPage: nil)
+                    }
+                    self.completeCheckpointGate()
+                } else {
+                    enter()
+                }
+            }
+        )
+    }
+
+    private func completeOperationAfterCallbacks(_ completion: WorkflowOperationCompletion) {
+        guard completion != .none else { return }
+        // Schedule from the view update, after purchase/restore preferences can reach host callbacks.
+        DispatchQueue.main.async {
+            guard self.presentationLifecycle == .active,
+                  self.pendingOperationCompletion == completion,
+                  self.checkpointGateController?.hasUnresolvedGate != true else { return }
+            self.pendingOperationCompletion = .none
+            switch completion {
+            case .none:
+                break
+            case .dismissWorkflow:
+                self.handleDismiss()
+            case .completeGate:
+                self.completeCheckpointGate()
+            }
+        }
+    }
+
+    private func completeCheckpointGate() {
+        guard self.presentationLifecycle == .active else { return }
+        self.isAwaitingEntryGate = false
+        self.skeletonPage = nil
+        self.completeAndDismiss()
+    }
+
+    private func completeCheckpointOperation(customerInfo: CustomerInfo, isPurchase: Bool) {
+        guard self.presentationLifecycle != .ended else { return }
+        self.pendingOperationCompletion = self.checkpointGateController?.completeOperation(
+            customerInfo: customerInfo,
+            appUserID: self.purchaseHandler.appUserID,
+            isPresentationHidden: self.presentationLifecycle == .hidden,
+            isPurchase: isPurchase
+        ) ?? (isPurchase ? .dismissWorkflow : .none)
     }
 
     private func failWorkflowPresentation(for stepId: String) {

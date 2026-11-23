@@ -118,6 +118,10 @@ final class PurchaseHandler: ObservableObject {
         return actionTypeInProgress != nil
     }
 
+    func customerInfo() async throws -> CustomerInfo {
+        return try await self.purchases.customerInfo()
+    }
+
     var configuredStoreEnvironment: ConfiguredStoreEnvironment {
         return purchases.configuredStoreEnvironment
     }

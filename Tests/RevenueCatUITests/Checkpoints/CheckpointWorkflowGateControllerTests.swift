@@ -161,6 +161,248 @@ final class CheckpointWorkflowGateControllerTests: TestCase {
         XCTAssertEqual(self.controller.status, .passed)
     }
 
+    func testPurchaseCompletionRequiresAQualifyingOperation() throws {
+        XCTAssertTrue(self.controller.beginEntry(step: self.hard))
+        self.controller.beginOperation(appUserID: "customer")
+
+        let blocked = self.controller.completeOperation(
+            customerInfo: try CheckpointTestFixtures.customerInfo(activeEntitlements: ["unrelated"]),
+            appUserID: "customer", isPresentationHidden: false, isPurchase: true
+        )
+        XCTAssertEqual(self.controller.status, .notPassed)
+        XCTAssertEqual(blocked, .none)
+
+        self.controller.beginOperation(appUserID: "customer")
+        let passed = self.controller.completeOperation(
+            customerInfo: try CheckpointTestFixtures.customerInfo(activeEntitlements: ["pro"]),
+            appUserID: "customer", isPresentationHidden: false, isPurchase: true
+        )
+        XCTAssertEqual(self.controller.status, .passed)
+        XCTAssertEqual(passed, .completeGate)
+    }
+
+    func testQualifyingRestoreCompletesGate() throws {
+        XCTAssertTrue(self.controller.beginEntry(step: self.hard))
+        self.controller.beginOperation(appUserID: "customer")
+
+        let completion = self.controller.completeOperation(
+            customerInfo: try CheckpointTestFixtures.customerInfo(activeEntitlements: ["pro"]),
+            appUserID: "customer", isPresentationHidden: false, isPurchase: false
+        )
+
+        XCTAssertEqual(self.controller.status, .passed)
+        XCTAssertEqual(completion, .completeGate)
+    }
+
+    func testUngatedPurchaseDismissesButRestoreDoesNot() throws {
+        for isPurchase in [true, false] {
+            self.controller.beginOperation(appUserID: "customer")
+            let completion = self.controller.completeOperation(
+                customerInfo: try CheckpointTestFixtures.customerInfo(activeEntitlements: []),
+                appUserID: "customer", isPresentationHidden: false, isPurchase: isPurchase
+            )
+            XCTAssertEqual(completion, isPurchase ? .dismissWorkflow : .none)
+        }
+    }
+
+    func testPurchaseCannotDismissWhileInitialBranchIsPending() throws {
+        self.controller.markInitialBranchPending()
+        self.controller.beginOperation(appUserID: "customer")
+
+        let completion = self.controller.completeOperation(
+            customerInfo: try CheckpointTestFixtures.customerInfo(activeEntitlements: ["pro"]),
+            appUserID: "customer", isPresentationHidden: false, isPurchase: true
+        )
+
+        XCTAssertEqual(completion, .none)
+        XCTAssertEqual(self.controller.status, .notPassed)
+    }
+
+    func testOperationFromDifferentCustomerCannotPassGateAndResumesPendingEntry() throws {
+        for isPurchase in [true, false] {
+            var resumedEntry = false
+            let entryTask = try self.startPendingEntry { _ in resumedEntry = true }
+            self.controller.beginOperation(appUserID: "customer-a")
+
+            let completion = self.controller.completeOperation(
+                customerInfo: try CheckpointTestFixtures.customerInfo(activeEntitlements: ["pro"]),
+                appUserID: "customer-b", isPresentationHidden: false, isPurchase: isPurchase
+            )
+
+            XCTAssertEqual(self.controller.status, .notPassed)
+            XCTAssertEqual(completion, .none)
+            XCTAssertTrue(resumedEntry)
+            XCTAssertTrue(entryTask.isCancelled)
+            XCTAssertNil(self.controller.entryTask)
+        }
+    }
+
+    func testBlockedOperationCancelsEntryReadAndResumesItsDestination() throws {
+        var resumedEntry = false
+        let entryTask = try self.startPendingEntry { _ in resumedEntry = true }
+        self.controller.beginOperation(appUserID: "customer")
+
+        let completion = self.controller.completeOperation(
+            customerInfo: try CheckpointTestFixtures.customerInfo(activeEntitlements: []),
+            appUserID: "customer", isPresentationHidden: false, isPurchase: true
+        )
+
+        XCTAssertEqual(completion, .none)
+        XCTAssertTrue(entryTask.isCancelled)
+        XCTAssertNil(self.controller.entryTask)
+        XCTAssertTrue(resumedEntry)
+        XCTAssertEqual(self.controller.status, .notPassed)
+    }
+
+    func testHiddenOperationsWaitUntilDeferredResultIsApplied() throws {
+        for isPurchase in [true, false] {
+            var resumedEntry = false
+            _ = try self.startPendingEntry { _ in resumedEntry = true }
+            self.controller.beginOperation(appUserID: "customer")
+
+            let completion = self.controller.completeOperation(
+                customerInfo: try CheckpointTestFixtures.customerInfo(activeEntitlements: ["pro"]),
+                appUserID: "customer", isPresentationHidden: true, isPurchase: isPurchase
+            )
+
+            XCTAssertEqual(self.controller.status, .notPassed)
+            XCTAssertEqual(completion, .none)
+            XCTAssertFalse(resumedEntry)
+            XCTAssertEqual(self.controller.applyDeferredOperation(), .completeGate)
+            XCTAssertEqual(self.controller.status, .passed)
+            XCTAssertTrue(self.controller.beginEntry(step: self.hard))
+            XCTAssertEqual(self.controller.applyDeferredOperation(), .none)
+            XCTAssertEqual(self.controller.status, .notPassed)
+        }
+    }
+
+    func testCancellingPendingWorkDiscardsDeferredResultAndEntryRead() throws {
+        XCTAssertTrue(self.controller.beginEntry(step: self.hard))
+        self.controller.beginOperation(appUserID: "customer")
+        _ = self.controller.completeOperation(
+            customerInfo: try CheckpointTestFixtures.customerInfo(activeEntitlements: ["pro"]),
+            appUserID: "customer", isPresentationHidden: true, isPurchase: true
+        )
+        var resumedEntry = false
+        let entryTask = try self.startPendingEntry { _ in resumedEntry = true }
+
+        self.controller.cancelPendingWork()
+
+        XCTAssertEqual(self.controller.applyDeferredOperation(), .none)
+        XCTAssertEqual(self.controller.status, .notPassed)
+        XCTAssertTrue(entryTask.isCancelled)
+        XCTAssertNil(self.controller.entryTask)
+        XCTAssertFalse(resumedEntry)
+    }
+
+    func testEntryReadsEntitlementsAndClearsTaskBeforeCompleting() async throws {
+        var decision: WorkflowGateDecision?
+        var taskWasCleared = false
+        self.controller.enter(
+            step: self.hard,
+            customerInfo: { try CheckpointTestFixtures.customerInfo(activeEntitlements: ["pro"]) },
+            appUserID: { "customer" },
+            canApplyResult: { true },
+            completion: {
+                decision = $0
+                taskWasCleared = self.controller.entryTask == nil
+            }
+        )
+        XCTAssertEqual(self.controller.status, .notPassed)
+        let task = try XCTUnwrap(self.controller.entryTask)
+
+        await task.value
+
+        XCTAssertEqual(decision, .passed)
+        XCTAssertTrue(taskWasCleared)
+        XCTAssertEqual(self.controller.status, .passed)
+    }
+
+    func testFailedEntryReadRendersBlockedDestinationAndClearsTask() async throws {
+        var decision: WorkflowGateDecision?
+        self.controller.enter(
+            step: self.hard,
+            customerInfo: { throw CancellationError() },
+            appUserID: { "customer" },
+            canApplyResult: { true },
+            completion: { decision = $0 }
+        )
+        let task = try XCTUnwrap(self.controller.entryTask)
+
+        await task.value
+
+        XCTAssertEqual(decision, .blocked)
+        XCTAssertNil(self.controller.entryTask)
+        XCTAssertEqual(self.controller.status, .notPassed)
+    }
+
+    func testUngatedEntryDoesNotReadCustomerInfo() {
+        var decision: WorkflowGateDecision?
+        self.controller.enter(
+            step: Self.step(nil),
+            customerInfo: {
+                XCTFail("Ungated entry should not read customer info")
+                throw CancellationError()
+            },
+            appUserID: { "customer" },
+            canApplyResult: { true },
+            completion: { decision = $0 }
+        )
+
+        XCTAssertEqual(decision, .notGated)
+        XCTAssertNil(self.controller.entryTask)
+    }
+
+    func testEntryThatCanNoLongerApplyClearsTaskWithoutCompleting() async throws {
+        var completed = false
+        self.controller.enter(
+            step: self.hard,
+            customerInfo: { try CheckpointTestFixtures.customerInfo(activeEntitlements: ["pro"]) },
+            appUserID: { "customer" },
+            canApplyResult: { false },
+            completion: { _ in completed = true }
+        )
+        let task = try XCTUnwrap(self.controller.entryTask)
+
+        await task.value
+
+        XCTAssertFalse(completed)
+        XCTAssertNil(self.controller.entryTask)
+        XCTAssertEqual(self.controller.status, .notPassed)
+    }
+
+    func testCancelledEntryCannotClearReplacementTask() async throws {
+        var completedFirstEntry = false
+        let firstTask = try self.startPendingEntry { _ in completedFirstEntry = true }
+        let secondTask = try self.startPendingEntry()
+
+        await firstTask.value
+
+        XCTAssertTrue(firstTask.isCancelled)
+        XCTAssertFalse(completedFirstEntry)
+        XCTAssertNotNil(self.controller.entryTask)
+        XCTAssertFalse(secondTask.isCancelled)
+        self.controller.cancelEntry()
+        await secondTask.value
+        XCTAssertNil(self.controller.entryTask)
+    }
+
+    private func startPendingEntry(
+        completion: @escaping @MainActor (WorkflowGateDecision) -> Void = { _ in }
+    ) throws -> Task<Void, Never> {
+        self.controller.enter(
+            step: self.hard,
+            customerInfo: {
+                try await Task.sleep(nanoseconds: 60_000_000_000)
+                return try CheckpointTestFixtures.customerInfo(activeEntitlements: [])
+            },
+            appUserID: { "customer" },
+            canApplyResult: { true },
+            completion: completion
+        )
+        return try XCTUnwrap(self.controller.entryTask)
+    }
+
     private func update(activeEntitlements: [String]) throws -> WorkflowGateDecision {
         return self.controller.update(
             customerInfo: try CheckpointTestFixtures.customerInfo(activeEntitlements: activeEntitlements)

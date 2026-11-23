@@ -595,6 +595,8 @@ struct PaywallsV2View: View {
     }
 
     private func dismissAfterPurchaseCompletionCallbacks() {
+        // The workflow handles purchase completion for all of its mounted pages.
+        guard self.isActiveWorkflowPage == nil else { return }
         // Defer dismissal so purchase completion preferences propagate to parent modifiers first.
         DispatchQueue.main.async {
             guard self.purchaseHandler.hasPurchasedInSession else { return }
