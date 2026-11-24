@@ -1,10 +1,10 @@
 source "https://rubygems.org"
 
 # dependencies
-gem 'fastlane', '2.241.2'
+gem 'fastlane', '2.242.0'
 gem 'cocoapods', '1.17.0'
 gem 'cocoapods-trunk', '1.6.0'
-gem 'danger', '9.6.1'
+gem 'danger', '9.6.2'
 gem 'rest-client', '2.1.0'
 gem 'nokogiri'
 gem 'abbrev'
