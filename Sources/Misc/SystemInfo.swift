@@ -62,6 +62,8 @@ class SystemInfo {
     let useExternalPurchaseCustomLinks: Bool
     let enableExternalPurchasesInSimulator: Bool
 
+    let identifierForVendorHeaderEnabled: Bool
+
     let clock: ClockType
     private let preferredLocalesProvider: PreferredLocalesProvider
 
@@ -234,6 +236,7 @@ class SystemInfo {
          dangerousSettings: DangerousSettings? = nil,
          useExternalPurchaseCustomLinks: Bool = false,
          enableExternalPurchasesInSimulator: Bool = true,
+         identifierForVendorHeaderEnabled: Bool = true,
          isAppBackgrounded: Bool? = nil,
          clock: ClockType = Clock.default,
          preferredLocalesProvider: PreferredLocalesProvider) {
@@ -253,6 +256,7 @@ class SystemInfo {
         self.dangerousSettings = dangerousSettings ?? DangerousSettings()
         self.useExternalPurchaseCustomLinks = useExternalPurchaseCustomLinks
         self.enableExternalPurchasesInSimulator = enableExternalPurchasesInSimulator
+        self.identifierForVendorHeaderEnabled = identifierForVendorHeaderEnabled
         self.clock = clock
         self.preferredLocalesProvider = preferredLocalesProvider
 

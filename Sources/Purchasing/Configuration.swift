@@ -60,7 +60,7 @@ import Foundation
         let entitlementVerificationMode: EntitlementVerificationMode
         let showStoreMessagesAutomatically: Bool
         let preferredLocale: String?
-        let automaticDeviceIdentifierCollectionEnabled: Bool
+        let deviceIdentifierCollectionMode: DeviceIdentifierCollectionMode
         let diagnosticsEnabled: Bool
         let iamEnabled: Bool
         let keychainAccessGroup: String?
@@ -87,9 +87,11 @@ import Foundation
     var platformInfo: Purchases.PlatformInfo? { self.storage.platformInfo }
     var showStoreMessagesAutomatically: Bool { self.storage.showStoreMessagesAutomatically }
     var preferredLocale: String? { self.storage.preferredLocale }
-    var automaticDeviceIdentifierCollectionEnabled: Bool {
-        self.storage.automaticDeviceIdentifierCollectionEnabled
+    var deviceIdentifierCollectionMode: DeviceIdentifierCollectionMode {
+        self.storage.deviceIdentifierCollectionMode
     }
+    var automaticDeviceIdentifierCollectionEnabled: Bool { self.deviceIdentifierCollectionMode.collectsAutomatically }
+    var identifierForVendorHeaderEnabled: Bool { self.deviceIdentifierCollectionMode.sendsHeader }
     internal var diagnosticsEnabled: Bool { self.storage.diagnosticsEnabled }
     internal var iamEnabled: Bool { self.storage.iamEnabled }
     internal var keychainAccessGroup: String? { self.storage.keychainAccessGroup }
@@ -111,7 +113,7 @@ import Foundation
             entitlementVerificationMode: builder.entitlementVerificationMode,
             showStoreMessagesAutomatically: builder.showStoreMessagesAutomatically,
             preferredLocale: builder.preferredLocale,
-            automaticDeviceIdentifierCollectionEnabled: builder.automaticDeviceIdentifierCollectionEnabled,
+            deviceIdentifierCollectionMode: builder.deviceIdentifierCollectionMode,
             diagnosticsEnabled: builder.diagnosticsEnabled,
             iamEnabled: builder.iamEnabled,
             keychainAccessGroup: builder.keychainAccessGroup,
@@ -178,7 +180,7 @@ import Foundation
         ///
         /// This locale is included in all requests made by `HTTPClient`.
         private(set) var preferredLocale: String?
-        private(set) var automaticDeviceIdentifierCollectionEnabled: Bool = true
+        private(set) var deviceIdentifierCollectionMode: DeviceIdentifierCollectionMode = .automatic
 
         #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
 
@@ -382,21 +384,20 @@ import Foundation
             return self
         }
 
+        /// Set how the SDK collects device identifiers. ``DeviceIdentifierCollectionMode/automatic`` by default.
+        @objc public func with(deviceIdentifierCollectionMode: DeviceIdentifierCollectionMode) -> Builder {
+            self.deviceIdentifierCollectionMode = deviceIdentifierCollectionMode
+            return self
+        }
+
         /// Set `automaticDeviceIdentifierCollectionEnabled`. This is enabled by default.
         ///
-        /// Enable this setting to allow the collection of identifiers when setting the identifier for an
-        /// attribution network. For example, when calling``Purchases/setAdjustID(_:)``
-        /// or ``Purchases/setAppsflyerID(_:)``, the SDK would collect the device identifiers like
-        /// IDFA, IDFV or IP, if available, and send them to RevenueCat.
-        /// This is required by some attribution networks to attribute installs and re-installs.
-        ///
-        /// Enabling this setting does NOT mean we will always collect the identifiers. We will only do so when
-        /// setting an attribution network ID and the user has not limited tracking on their device.
-        ///
-        /// With this option disabled you can still collect device identifiers
-        /// by calling ``Purchases/collectDeviceIdentifiers()``
+        /// `true` is equivalent to ``DeviceIdentifierCollectionMode/automatic`` and `false` to
+        /// ``DeviceIdentifierCollectionMode/functional``.
+        @available(*, deprecated,
+                    message: "Use with(deviceIdentifierCollectionMode:): .automatic for true, .functional for false")
         @objc public func with(automaticDeviceIdentifierCollectionEnabled: Bool) -> Builder {
-            self.automaticDeviceIdentifierCollectionEnabled = automaticDeviceIdentifierCollectionEnabled
+            self.deviceIdentifierCollectionMode = automaticDeviceIdentifierCollectionEnabled ? .automatic : .functional
             return self
         }
 
@@ -633,4 +634,63 @@ extension Configuration.APIKeyValidationResult {
         }
         #endif
     }
+}
+
+/// Defines which device identifiers the SDK sends to RevenueCat without an explicit call.
+///
+/// ``Purchases/collectDeviceIdentifiers()`` collects them in every mode.
+///
+/// ### Related Symbols
+/// - ``Configuration/Builder/with(deviceIdentifierCollectionMode:)``
+@objc(RCDeviceIdentifierCollectionMode)
+public final class DeviceIdentifierCollectionMode: NSObject {
+
+    enum Value {
+        case automatic, functional, manualOnly
+    }
+
+    let value: Value
+
+    /// The SDK sends the device's `identifierForVendor` in the `X-Apple-Device-Identifier` header of
+    /// its requests, and collects device identifiers like IDFA, IDFV or IP, if available, when setting
+    /// the identifier for an attribution network. For example, when calling
+    /// ``Purchases/setAdjustID(_:)`` or ``Purchases/setAppsflyerID(_:)``.
+    /// This is required by some attribution networks to attribute installs and re-installs.
+    ///
+    /// The IDFA is all zeros unless the user has authorized tracking. The IDFV and IP are collected
+    /// regardless.
+    @objc public static let automatic = DeviceIdentifierCollectionMode(.automatic)
+
+    /// The SDK only sends the device's `identifierForVendor` in the `X-Apple-Device-Identifier` header
+    /// of its requests. RevenueCat needs it to validate StoreKit 1 receipts created with a StoreKit
+    /// Configuration file in Xcode. In macOS and Mac Catalyst sandbox builds, the header carries an
+    /// identifier derived from the device's MAC address instead.
+    @objc public static let functional = DeviceIdentifierCollectionMode(.functional)
+
+    /// The SDK does not send the `X-Apple-Device-Identifier` header and only collects device
+    /// identifiers when ``Purchases/collectDeviceIdentifiers()`` is called.
+    ///
+    /// - Warning: RevenueCat needs the `X-Apple-Device-Identifier` header to validate StoreKit 1
+    /// receipts created with a StoreKit Configuration file in Xcode. In this mode, those test
+    /// purchases fail.
+    @objc public static let manualOnly = DeviceIdentifierCollectionMode(.manualOnly)
+
+    var collectsAutomatically: Bool {
+        switch self.value {
+        case .automatic: return true
+        case .functional, .manualOnly: return false
+        }
+    }
+
+    var sendsHeader: Bool {
+        switch self.value {
+        case .automatic, .functional: return true
+        case .manualOnly: return false
+        }
+    }
+
+    private init(_ value: Value) {
+        self.value = value
+    }
+
 }

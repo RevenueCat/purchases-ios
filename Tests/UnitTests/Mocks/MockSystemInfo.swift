@@ -32,6 +32,7 @@ class MockSystemInfo: SystemInfo {
                      dangerousSettings: DangerousSettings,
                      useExternalPurchaseCustomLinks: Bool = false,
                      enableExternalPurchasesInSimulator: Bool = true,
+                     identifierForVendorHeaderEnabled: Bool = true,
                      clock: ClockType = TestClock(),
                      preferredLocalesProvider: PreferredLocalesProvider = .mock()) {
         self.init(platformInfo: platformInfo,
@@ -44,6 +45,7 @@ class MockSystemInfo: SystemInfo {
                   dangerousSettings: dangerousSettings,
                   useExternalPurchaseCustomLinks: useExternalPurchaseCustomLinks,
                   enableExternalPurchasesInSimulator: enableExternalPurchasesInSimulator,
+                  identifierForVendorHeaderEnabled: identifierForVendorHeaderEnabled,
                   isAppBackgrounded: false,
                   clock: clock,
                   preferredLocalesProvider: preferredLocalesProvider)
@@ -60,6 +62,7 @@ class MockSystemInfo: SystemInfo {
                      responseVerificationMode: Signing.ResponseVerificationMode = .disabled,
                      useExternalPurchaseCustomLinks: Bool = false,
                      enableExternalPurchasesInSimulator: Bool = true,
+                     identifierForVendorHeaderEnabled: Bool = true,
                      clock: ClockType = TestClock(),
                      preferredLocalesProvider: PreferredLocalesProvider = .mock()) {
         let dangerousSettings = DangerousSettings(
@@ -80,6 +83,7 @@ class MockSystemInfo: SystemInfo {
                   dangerousSettings: dangerousSettings,
                   useExternalPurchaseCustomLinks: useExternalPurchaseCustomLinks,
                   enableExternalPurchasesInSimulator: enableExternalPurchasesInSimulator,
+                  identifierForVendorHeaderEnabled: identifierForVendorHeaderEnabled,
                   clock: clock,
                   preferredLocalesProvider: preferredLocalesProvider)
     }

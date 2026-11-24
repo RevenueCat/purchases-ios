@@ -217,6 +217,14 @@ class PurchasesConfiguringTests: BasePurchasesTests {
         expect(purchases.requestTimeoutManagerBaseTimeout) == networkTimeoutSeconds
     }
 
+    func testConfigurationPassedThroughIdentifierForVendorHeaderEnabled() {
+        let configurationBuilder = Configuration.Builder(withAPIKey: "")
+            .with(deviceIdentifierCollectionMode: .manualOnly)
+        let purchases = Purchases.configure(with: configurationBuilder.build())
+
+        expect(purchases.identifierForVendorHeaderEnabled) == false
+    }
+
     func testSharedInstanceIsSetWhenConfiguring() {
         let purchases = Purchases.configure(withAPIKey: "")
         expect(Purchases.shared) === purchases

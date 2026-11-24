@@ -13,7 +13,7 @@
 
 + (void)checkAPI {
     RCConfigurationBuilder *builder = [RCConfiguration builderWithAPIKey:@""];
-    RCConfiguration *config __unused = [[[[[[[[[[[[[[[[[builder withApiKey:@""]
+    RCConfiguration *config __unused = [[[[[[[[[[[[[[[[[[builder withApiKey:@""]
                                                        withPreferredUILocaleOverride:@"de_DE"]
                                                       withPurchasesAreCompletedBy:RCPurchasesAreCompletedByRevenueCat storeKitVersion:RCStoreKitVersion2]
                                                      withUserDefaults:NSUserDefaults.standardUserDefaults]
@@ -27,6 +27,7 @@
                                              withStoreKitVersion:RCStoreKitVersion2]
                                             withEntitlementVerificationMode:RCEntitlementVerificationModeInformational]
                                            withAutomaticDeviceIdentifierCollectionEnabled:true]
+                                           withDeviceIdentifierCollectionMode:RCDeviceIdentifierCollectionMode.functional]
                                           withIAMEnabled: false]
                                          withIAMEnabled: false keychainAccessGroup:@"access_group"]
                                         build];

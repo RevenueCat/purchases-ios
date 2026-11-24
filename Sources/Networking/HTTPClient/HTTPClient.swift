@@ -143,7 +143,7 @@ class HTTPClient {
             headers["X-Platform-Flavor-Version"] = platformFlavorVersion
         }
 
-        if let idfv = self.systemInfo.identifierForVendor {
+        if self.systemInfo.identifierForVendorHeaderEnabled, let idfv = self.systemInfo.identifierForVendor {
             headers["X-Apple-Device-Identifier"] = idfv
         }
 

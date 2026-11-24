@@ -234,17 +234,54 @@ class ConfigurationTests: TestCase {
         expect(configuration.storeKitVersion) == .default
     }
 
-    func testAutomaticDeviceIdentifierCollectionEnabledIsTrueByDefault() {
+    func testDeviceIdentifierCollectionModeIsAutomaticByDefault() {
         let configuration = Configuration.Builder(withAPIKey: "test")
             .build()
+        expect(configuration.deviceIdentifierCollectionMode) === DeviceIdentifierCollectionMode.automatic
         expect(configuration.automaticDeviceIdentifierCollectionEnabled) == true
+        expect(configuration.identifierForVendorHeaderEnabled) == true
     }
 
-    func testAutomaticDeviceIdentifierCollectionEnabledCanBeSet() {
+    func testFunctionalDeviceIdentifierCollectionModeOnlySendsTheHeader() {
         let configuration = Configuration.Builder(withAPIKey: "test")
-            .with(automaticDeviceIdentifierCollectionEnabled: false)
+            .with(deviceIdentifierCollectionMode: .functional)
             .build()
         expect(configuration.automaticDeviceIdentifierCollectionEnabled) == false
+        expect(configuration.identifierForVendorHeaderEnabled) == true
+    }
+
+    func testManualOnlyDeviceIdentifierCollectionModeCollectsNothing() {
+        let configuration = Configuration.Builder(withAPIKey: "test")
+            .with(deviceIdentifierCollectionMode: .manualOnly)
+            .build()
+        expect(configuration.automaticDeviceIdentifierCollectionEnabled) == false
+        expect(configuration.identifierForVendorHeaderEnabled) == false
+    }
+
+    @available(*, deprecated)
+    func testAutomaticDeviceIdentifierCollectionEnabledMapsToMode() {
+        let enabled = Configuration.Builder(withAPIKey: "test")
+            .with(automaticDeviceIdentifierCollectionEnabled: true)
+            .build()
+        let disabled = Configuration.Builder(withAPIKey: "test")
+            .with(automaticDeviceIdentifierCollectionEnabled: false)
+            .build()
+        expect(enabled.deviceIdentifierCollectionMode) === DeviceIdentifierCollectionMode.automatic
+        expect(disabled.deviceIdentifierCollectionMode) === DeviceIdentifierCollectionMode.functional
+    }
+
+    @available(*, deprecated)
+    func testLastDeviceIdentifierCollectionSettingWins() {
+        let modeLast = Configuration.Builder(withAPIKey: "test")
+            .with(automaticDeviceIdentifierCollectionEnabled: true)
+            .with(deviceIdentifierCollectionMode: .manualOnly)
+            .build()
+        let deprecatedLast = Configuration.Builder(withAPIKey: "test")
+            .with(deviceIdentifierCollectionMode: .manualOnly)
+            .with(automaticDeviceIdentifierCollectionEnabled: false)
+            .build()
+        expect(modeLast.deviceIdentifierCollectionMode) === DeviceIdentifierCollectionMode.manualOnly
+        expect(deprecatedLast.deviceIdentifierCollectionMode) === DeviceIdentifierCollectionMode.functional
     }
 
     func testUseExternalPurchaseCustomLinksIsDisabledByDefault() {
@@ -391,11 +428,11 @@ class ConfigurationTests: TestCase {
         expect(lhs) != rhs
     }
 
-    func testDifferentAutomaticDeviceIdentifierCollectionEnabledIsNotEqual() {
+    func testDifferentDeviceIdentifierCollectionModeIsNotEqual() {
         let lhs = Configuration.Builder(withAPIKey: "test")
-            .with(automaticDeviceIdentifierCollectionEnabled: true).build()
+            .with(deviceIdentifierCollectionMode: .functional).build()
         let rhs = Configuration.Builder(withAPIKey: "test")
-            .with(automaticDeviceIdentifierCollectionEnabled: false).build()
+            .with(deviceIdentifierCollectionMode: .manualOnly).build()
 
         expect(lhs) != rhs
     }
@@ -476,7 +513,7 @@ class ConfigurationTests: TestCase {
             .with(showStoreMessagesAutomatically: true)
             .with(entitlementVerificationMode: .disabled)
             .with(preferredUILocaleOverride: "en-US")
-            .with(automaticDeviceIdentifierCollectionEnabled: true)
+            .with(deviceIdentifierCollectionMode: .automatic)
             .with(iamEnabled: false)
             .with(introEligibilityWarmupPriority: .userInitiated)
             .with(useExternalPurchaseCustomLinks: false, enableExternalPurchasesInSimulator: true)

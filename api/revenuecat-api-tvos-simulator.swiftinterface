@@ -1812,6 +1812,8 @@ extension RevenueCat.PaywallViewMode : Swift.Codable {
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     @objc public func with(diagnosticsEnabled: Swift.Bool) -> RevenueCat.Configuration.Builder
     @objc public func with(storeKitVersion version: RevenueCat.StoreKitVersion) -> RevenueCat.Configuration.Builder
+    @objc public func with(deviceIdentifierCollectionMode: RevenueCat.DeviceIdentifierCollectionMode) -> RevenueCat.Configuration.Builder
+    @available(*, deprecated, message: "Use with(deviceIdentifierCollectionMode:): .automatic for true, .functional for false")
     @objc public func with(automaticDeviceIdentifierCollectionEnabled: Swift.Bool) -> RevenueCat.Configuration.Builder
     @objc public func build() -> RevenueCat.Configuration
     @objc public func with(preferredUILocaleOverride: Swift.String?) -> RevenueCat.Configuration.Builder
@@ -1831,6 +1833,12 @@ extension RevenueCat.Configuration {
       get
     }
   }
+}
+@_hasMissingDesignatedInitializers @objc(RCDeviceIdentifierCollectionMode) final public class DeviceIdentifierCollectionMode : ObjectiveC.NSObject {
+  @objc public static let automatic: RevenueCat.DeviceIdentifierCollectionMode
+  @objc public static let functional: RevenueCat.DeviceIdentifierCollectionMode
+  @objc public static let manualOnly: RevenueCat.DeviceIdentifierCollectionMode
+  @objc deinit
 }
 @objc(RCStore) public enum Store : Swift.Int {
   @objc(RCAppStore) case appStore = 0

@@ -23,7 +23,9 @@ func checkConfigurationAPI() {
         .with(storeKitVersion: .default)
         .with(introEligibilityWarmupPriority: .userInitiated)
         .with(entitlementVerificationMode: .informational)
-        .with(automaticDeviceIdentifierCollectionEnabled: true)
+        .with(deviceIdentifierCollectionMode: .automatic)
+        .with(deviceIdentifierCollectionMode: .functional)
+        .with(deviceIdentifierCollectionMode: .manualOnly)
         .with(iamEnabled: false)
         .with(iamEnabled: false, keychainAccessGroup: "access_group")
         .with(preferredUILocaleOverride: "de_DE")
@@ -51,5 +53,6 @@ func checkConfigurationAPI() {
 func checkDeprecatedConfiguration(_ builder: Configuration.Builder) {
     _ = builder
         .with(usesStoreKit2IfAvailable: false)
+        .with(automaticDeviceIdentifierCollectionEnabled: true)
         .with(appUserID: "")
 }

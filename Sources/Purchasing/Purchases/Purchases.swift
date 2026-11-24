@@ -368,6 +368,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                      diagnosticsEnabled: Bool = false,
                      preferredLocale: String?,
                      automaticDeviceIdentifierCollectionEnabled: Bool = true,
+                     identifierForVendorHeaderEnabled: Bool = true,
                      iamEnabled: Bool = false,
                      keychainAccessGroup: String? = nil,
                      currentConfiguration: Configuration?,
@@ -395,6 +396,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             dangerousSettings: dangerousSettings,
             useExternalPurchaseCustomLinks: useExternalPurchaseCustomLinks,
             enableExternalPurchasesInSimulator: enableExternalPurchasesInSimulator,
+            identifierForVendorHeaderEnabled: identifierForVendorHeaderEnabled,
             preferredLocalesProvider: PreferredLocalesProvider(preferredLocaleOverride: preferredLocale)
         )
 
@@ -2434,6 +2436,7 @@ public extension Purchases {
                 diagnosticsEnabled: configuration.diagnosticsEnabled,
                 preferredLocale: configuration.preferredLocale,
                 automaticDeviceIdentifierCollectionEnabled: configuration.automaticDeviceIdentifierCollectionEnabled,
+                identifierForVendorHeaderEnabled: configuration.identifierForVendorHeaderEnabled,
                 iamEnabled: configuration.iamEnabled,
                 keychainAccessGroup: configuration.keychainAccessGroup,
                 currentConfiguration: configuration
@@ -3177,6 +3180,10 @@ internal extension Purchases {
 
     var observerMode: Bool {
         return self.systemInfo.observerMode
+    }
+
+    var identifierForVendorHeaderEnabled: Bool {
+        return self.systemInfo.identifierForVendorHeaderEnabled
     }
 
     var configuredUserDefaults: UserDefaults {

@@ -135,6 +135,8 @@ public extension Attribution {
      * - `$idfa`
      * - `$idfv`
      * - `$ip`
+     *
+     * This collects them regardless of the configured ``DeviceIdentifierCollectionMode``.
      */
     @objc func collectDeviceIdentifiers() {
         self.subscriberAttributesManager.collectDeviceIdentifiers(forAppUserID: appUserID)
