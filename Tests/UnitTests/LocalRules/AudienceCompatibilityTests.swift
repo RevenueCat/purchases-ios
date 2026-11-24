@@ -144,9 +144,7 @@ private struct CompatibilityProfile: Decodable {
         let device = self.device
         let storeCountry = self.storeCountry
         let clock = MockDateProvider(stubbedNow: Date(timeIntervalSince1970: self.evaluatedAt))
-        let customerInfo = try CustomerInfo.$dateProvider.withValue(clock) {
-            try CustomerInfo(data: self.customerInfo.mapValues(\.asAny))
-        }
+        let customerInfo = try CustomerInfo(data: self.customerInfo.mapValues(\.asAny), dateProvider: clock)
         let attributes = self.attributes.reduce(into: SubscriberAttribute.Dictionary()) { result, item in
             result[item.key] = SubscriberAttribute(
                 withKey: item.key, value: item.value.value, isSynced: true,

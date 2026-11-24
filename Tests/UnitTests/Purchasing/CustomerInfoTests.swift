@@ -835,6 +835,71 @@ class BasicCustomerInfoTests: TestCase {
         expect(info.activeSubscriptions) == Set(["onemonth_freetrial", "twomonth_freetrial"])
     }
 
+    func testActiveSubscriptionsAgreesWithEntitlementsAndSubscriptionInfoForPromotionalProducts() throws {
+        let now = Date()
+        let requestDate = ISO8601DateFormatter.default.string(from: now.addingTimeInterval(-60 * 60))
+        let pastExpiration = ISO8601DateFormatter.default.string(from: now.addingTimeInterval(-10))
+        let futureExpiration = ISO8601DateFormatter.default.string(from: now.addingTimeInterval(60 * 60))
+        let response = [
+            "request_date": requestDate,
+            "subscriber": [
+                "original_app_user_id": "app_user_id",
+                "first_seen": "2019-06-17T16:05:33Z",
+                "non_subscriptions": [:] as [String: Any],
+                "subscriptions": [
+                    "rc_ad_expired": [
+                        "purchase_date": "2019-07-30T02:40:36Z",
+                        "expires_date": pastExpiration,
+                        "store": "promotional"
+                    ],
+                    "rc_ad_active": [
+                        "purchase_date": "2019-07-30T02:40:36Z",
+                        "expires_date": futureExpiration,
+                        "store": "promotional"
+                    ],
+                    "paid_expired": [
+                        "purchase_date": "2019-07-30T02:40:36Z",
+                        "expires_date": pastExpiration,
+                        "store": "app_store"
+                    ],
+                    "rc_ad_expired_plan": [
+                        "purchase_date": "2019-07-30T02:40:36Z",
+                        "expires_date": pastExpiration,
+                        "product_plan_identifier": "monthly",
+                        "store": "promotional"
+                    ]
+                ] as [String: Any],
+                "entitlements": [
+                    "expired_pro": [
+                        "expires_date": pastExpiration,
+                        "product_identifier": "rc_ad_expired",
+                        "purchase_date": "2019-07-30T02:40:36Z"
+                    ],
+                    "active_pro": [
+                        "expires_date": futureExpiration,
+                        "product_identifier": "rc_ad_active",
+                        "purchase_date": "2019-07-30T02:40:36Z"
+                    ],
+                    "paid_pro": [
+                        "expires_date": pastExpiration,
+                        "product_identifier": "paid_expired",
+                        "purchase_date": "2019-07-30T02:40:36Z"
+                    ]
+                ] as [String: Any]
+            ] as [String: Any]
+        ] as [String: Any]
+
+        let info = try CustomerInfo(data: response)
+
+        expect(info.activeSubscriptions) == Set(["rc_ad_active", "paid_expired"])
+        expect(Set(info.entitlements.active.keys)) == Set(["active_pro", "paid_pro"])
+        expect(info.subscriptionsByProductIdentifier["rc_ad_expired"]?.isActive) == false
+        expect(info.subscriptionsByProductIdentifier["rc_ad_active"]?.isActive) == true
+        expect(info.subscriptionsByProductIdentifier["paid_expired"]?.isActive) == true
+        expect(info.subscriptionsByProductIdentifier["rc_ad_expired_plan"]?.isActive) == false
+        expect(info.allPurchasedProductIdentifiers).to(contain("rc_ad_expired_plan:monthly"))
+    }
+
     func testAllPurchasedProductIdentifiersIncludesNullExpDate() throws {
         let response = [
             "request_date": "2018-10-19T02:40:36Z",

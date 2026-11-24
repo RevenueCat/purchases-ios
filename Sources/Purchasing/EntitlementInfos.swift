@@ -122,6 +122,7 @@ extension EntitlementInfos {
         entitlements: [String: CustomerInfoResponse.Entitlement],
         purchases: [String: CustomerInfoResponse.Subscription],
         requestDate: Date,
+        dateProvider: DateProvider,
         sandboxEnvironmentDetector: SandboxEnvironmentDetector = BundleSandboxEnvironmentDetector.default,
         verification: VerificationResult
     ) {
@@ -138,7 +139,8 @@ extension EntitlementInfos {
                                     subscription: subscription,
                                     sandboxEnvironmentDetector: sandboxEnvironmentDetector,
                                     verification: verification,
-                                    requestDate: requestDate)
+                                    requestDate: requestDate,
+                                    dateProvider: dateProvider)
                 )
             }
         )

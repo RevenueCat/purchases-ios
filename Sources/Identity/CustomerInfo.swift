@@ -31,7 +31,7 @@ public typealias ProductIdentifier = String
 
     /// All *subscription* product identifiers with expiration dates in the future.
     @objc public var activeSubscriptions: Set<ProductIdentifier> {
-        self.activeKeys(dates: self.expirationDatesByProductId)
+        self.activeKeys(dates: self.expirationDatesByProductId, stores: self.storesByProductId)
     }
 
     /// All product identifiers purchases by the user regardless of expiration.
@@ -253,6 +253,7 @@ public typealias ProductIdentifier = String
             originalApplicationVersion: nil,
             managementURL: managementURL,
             expirationDatesByProductId: expirationDatesByProductId,
+            storesByProductId: [:],
             purchaseDatesByProductId: purchaseDatesByProductId,
             allPurchasedProductIdentifiers: allPurchasedProductIds,
             subscriptionsByProductIdentifier: [:]
@@ -277,6 +278,7 @@ public typealias ProductIdentifier = String
             withSubscriptionsData: subscriber.nonSubscriptions
         )
         let expirationDatesByProductId = Self.extractExpirationDates(subscriber)
+        let storesByProductId = Self.extractStores(subscriber)
         let purchaseDatesByProductId = Self.extractPurchaseDates(subscriber)
 
         let allPurchasedProductIdentifiers = Set(expirationDatesByProductId.keys)
@@ -300,6 +302,7 @@ public typealias ProductIdentifier = String
                 storeTransactionId: subscriptionData.storeTransactionId,
                 autoResumeDate: subscriptionData.autoResumeDate,
                 requestDate: response.requestDate,
+                dateProvider: data.dateProvider,
                 price: subscriptionData.price.map { ProductPaidPrice(currency: $0.currency, amount: $0.amount) },
                 managementURL: subscriptionData.managementUrl,
                 displayName: subscriptionData.displayName,
@@ -313,6 +316,7 @@ public typealias ProductIdentifier = String
                 entitlements: subscriber.entitlements,
                 purchases: subscriber.allPurchasesByProductId,
                 requestDate: response.requestDate,
+                dateProvider: data.dateProvider,
                 sandboxEnvironmentDetector: sandboxEnvironmentDetector,
                 verification: data.entitlementVerification
             ),
@@ -324,6 +328,7 @@ public typealias ProductIdentifier = String
             originalApplicationVersion: subscriber.originalApplicationVersion,
             managementURL: subscriber.managementUrl,
             expirationDatesByProductId: expirationDatesByProductId,
+            storesByProductId: storesByProductId,
             purchaseDatesByProductId: purchaseDatesByProductId,
             allPurchasedProductIdentifiers: allPurchasedProductIdentifiers,
             subscriptionsByProductIdentifier: subscriptionsByProductIdentifier
@@ -341,6 +346,7 @@ public typealias ProductIdentifier = String
         originalApplicationVersion: String?,
         managementURL: URL?,
         expirationDatesByProductId: [String: Date?],
+        storesByProductId: [String: Store],
         purchaseDatesByProductId: [String: Date?],
         allPurchasedProductIdentifiers: Set<String>,
         subscriptionsByProductIdentifier: [String: SubscriptionInfo]
@@ -355,12 +361,14 @@ public typealias ProductIdentifier = String
         self.originalApplicationVersion = originalApplicationVersion
         self.managementURL = managementURL
         self.expirationDatesByProductId = expirationDatesByProductId
+        self.storesByProductId = storesByProductId
         self.purchaseDatesByProductId = purchaseDatesByProductId
         self.allPurchasedProductIdentifiers = allPurchasedProductIdentifiers
         self.subscriptionsByProductIdentifier = subscriptionsByProductIdentifier
     }
 
     private let expirationDatesByProductId: [String: Date?]
+    private let storesByProductId: [String: Store]
     private let purchaseDatesByProductId: [String: Date?]
 }
 
@@ -374,6 +382,18 @@ extension CustomerInfo {
 
     var schemaVersion: String? {
         return self.data.schemaVersion
+    }
+
+    var dateProvider: DateProvider {
+        return self.data.dateProvider
+    }
+
+    /// Returns a decoder whose decoded ``CustomerInfo`` determine active entitlements and subscriptions
+    /// with `dateProvider`.
+    static func decoder(dateProvider: DateProvider) -> JSONDecoder {
+        let decoder = JSONDecoder.makeDefault()
+        decoder.userInfo[Self.dateProviderUserInfoKey] = dateProvider
+        return decoder
     }
 
     /// Product identifiers of purchases the backend has not been told about yet.
@@ -495,6 +515,9 @@ extension CustomerInfo: Identifiable {
 
 private extension CustomerInfo {
 
+    // swiftlint:disable:next force_unwrapping
+    static let dateProviderUserInfoKey = CodingUserInfoKey(rawValue: "dateProvider")!
+
     /// The actual contents of a ``CustomerInfo``: the response with the associated version and other metadata.
     struct Contents {
 
@@ -505,6 +528,8 @@ private extension CustomerInfo {
         var loadedFromCache: Bool = false
         /// In-memory only: offline `CustomerInfo` is never persisted, so this is intentionally not encoded.
         var unsyncedProductIdentifiers: Set<String> = []
+        /// In-memory only: the clock to compute the active state with, kept so copies compute it the same way.
+        var dateProvider: DateProvider = .init()
 
         init(response: CustomerInfoResponse,
              entitlementVerification: VerificationResult,
@@ -556,6 +581,9 @@ extension CustomerInfo.Contents: Codable {
         self.schemaVersion = try container.decodeIfPresent(String.self, forKey: .schemaVersion)
         self.originalSource = try container.decodeIfPresent(CustomerInfo.OriginalSource.self,
                                                             forKey: .originalSource) ?? .main
+        if let dateProvider = decoder.userInfo[CustomerInfo.dateProviderUserInfoKey] as? DateProvider {
+            self.dateProvider = dateProvider
+        }
     }
 
 }

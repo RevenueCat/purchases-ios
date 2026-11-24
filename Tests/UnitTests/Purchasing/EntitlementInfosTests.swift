@@ -252,6 +252,49 @@ class EntitlementInfosTests: TestCase {
         )
     }
 
+    func testPromotionalEntitlementNotActiveAfterExpirationEvenIfRequestDateWithinGracePeriod() throws {
+        let now = Date()
+        self.stubPromotionalResponse(requestDate: now.addingTimeInterval(-60 * 60),
+                                     expirationDate: now.addingTimeInterval(-10))
+
+        try self.verifyEntitlementActive(false)
+        expect(self.logger.messages).toNot(containElementSatisfying { $0.level == .warn })
+    }
+
+    func testNonPromotionalEntitlementActiveAfterExpirationIfRequestDateWithinGracePeriod() throws {
+        let now = Date()
+        self.stubPromotionalResponse(requestDate: now.addingTimeInterval(-60 * 60),
+                                     expirationDate: now.addingTimeInterval(-10),
+                                     store: "app_store")
+
+        try self.verifyEntitlementActive()
+    }
+
+    func testPromotionalEntitlementActiveBeforeExpiration() throws {
+        let now = Date()
+        self.stubPromotionalResponse(requestDate: now.addingTimeInterval(-60 * 60),
+                                     expirationDate: now.addingTimeInterval(60 * 60))
+
+        try self.verifyEntitlementActive()
+    }
+
+    func testPromotionalEntitlementNotActiveIfDeviceClockIsBehindRequestDate() throws {
+        let now = Date()
+        self.stubPromotionalResponse(requestDate: now.addingTimeInterval(60 * 60),
+                                     expirationDate: now.addingTimeInterval(30 * 60))
+
+        try self.verifyEntitlementActive(false)
+    }
+
+    func testPromotionalEntitlementDoesNotLogGracePeriodWarning() throws {
+        let requestDate = Date().addingTimeInterval(CustomerInfo.requestDateGracePeriod.seconds * -2)
+        self.stubPromotionalResponse(requestDate: requestDate,
+                                     expirationDate: requestDate.addingTimeInterval(100))
+
+        try self.verifyEntitlementActive(false)
+        expect(self.logger.messages).toNot(containElementSatisfying { $0.level == .warn })
+    }
+
     func testInactiveSubscription() throws {
         stubResponse(
             entitlements: [
@@ -1522,6 +1565,34 @@ private extension EntitlementInfosTests {
                 "subscriptions": subscriptions
             ] as [String: Any]
         ]
+    }
+
+    func stubPromotionalResponse(requestDate: Date, expirationDate: Date, store: String = "promotional") {
+        let expiration = Self.formatter.string(from: expirationDate)
+
+        self.stubResponse(
+            entitlements: [
+                "pro_cat": [
+                    "expires_date": expiration,
+                    "product_identifier": "rc_promo_pro_cat_monthly",
+                    "purchase_date": "1999-07-26T23:30:41Z"
+                ]
+            ],
+            nonSubscriptions: [:],
+            subscriptions: [
+                "rc_promo_pro_cat_monthly": [
+                    "billing_issues_detected_at": nil,
+                    "expires_date": expiration,
+                    "is_sandbox": false,
+                    "original_purchase_date": "1999-07-26T23:30:41Z",
+                    "period_type": "normal",
+                    "purchase_date": "1999-07-26T23:30:41Z",
+                    "store": store,
+                    "unsubscribe_detected_at": nil
+                ] as [String: Any?]
+            ],
+            requestDate: Self.formatter.string(from: requestDate)
+        )
     }
 
     func verifySubscriberInfo(file: FileString = #file, line: UInt = #line) throws {

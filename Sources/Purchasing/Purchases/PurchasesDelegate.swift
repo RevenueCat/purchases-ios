@@ -37,7 +37,9 @@ import Foundation
 
     /**
      * Called whenever ``Purchases`` receives updated customer info. This may happen periodically
-     * throughout the life of the app if new information becomes available (e.g. UIApplicationDidBecomeActive).*
+     * throughout the life of the app if new information becomes available (e.g. UIApplicationDidBecomeActive).
+     * It is also called when a promotional entitlement expires according to the device clock, with the
+     * cached ``CustomerInfo`` re-evaluated so that the entitlement is no longer active.
      * - Parameter purchases: Related ``Purchases`` object
      * - Parameter customerInfo: Updated ``CustomerInfo``
      */
