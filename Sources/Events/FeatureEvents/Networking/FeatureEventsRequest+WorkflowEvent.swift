@@ -25,6 +25,7 @@ extension FeatureEventsRequest {
         let eventName: String
         let timestampMs: UInt64
         let appUserID: String
+        let appSessionID: String?
         let context: Context
         let properties: Properties
 
@@ -75,6 +76,7 @@ extension FeatureEventsRequest.WorkflowEvent {
                 eventName: wire.eventName,
                 timestampMs: event.creationData.date.millisecondsSince1970,
                 appUserID: storedEvent.userID,
+                appSessionID: storedEvent.appSessionID?.uuidString,
                 context: Context(locale: event.data.localeIdentifier),
                 properties: Properties(
                     workflowId: event.data.workflowId,
@@ -148,6 +150,7 @@ extension FeatureEventsRequest.WorkflowEvent: Encodable {
         case eventName = "event_name"
         case timestampMs = "timestamp_ms"
         case appUserID = "app_user_id"
+        case appSessionID = "app_session_id"
         case context
         case properties
 

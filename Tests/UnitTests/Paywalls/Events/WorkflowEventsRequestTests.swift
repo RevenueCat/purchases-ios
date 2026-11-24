@@ -114,6 +114,44 @@ class WorkflowEventsRequestTests: TestCase {
         expect(request.properties.entryReason).to(beNil())
     }
 
+    func testWorkflowEventsEncodeAppSessionID() throws {
+        let data = WorkflowEvent.Data(workflowId: "wfl_abc", stepId: "step-1")
+        let events: [WorkflowEvent] = [
+            .stepStarted(.init(id: id, date: date), data),
+            .stepCompleted(.init(id: id, date: date), data),
+            .close(.init(id: id, date: date), data)
+        ]
+        let appSessionID = UUID()
+
+        for event in events {
+            let stored = try XCTUnwrap(StoredFeatureEvent(
+                event: event,
+                userID: Self.userID,
+                feature: .workflows,
+                appSessionID: appSessionID,
+                eventDiscriminator: nil
+            ))
+            let request = try XCTUnwrap(FeatureEventsRequest.WorkflowEvent(storedEvent: stored))
+            let data = try JSONEncoder().encode(request)
+            let json = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
+
+            expect(json["app_session_id"] as? String) == appSessionID.uuidString
+        }
+    }
+
+    func testLegacyWorkflowEventWithoutAppSessionIDIsEncoded() throws {
+        let event = WorkflowEvent.stepStarted(
+            .init(id: id, date: date),
+            .init(workflowId: "wfl_abc", stepId: "step-1")
+        )
+        let stored = try XCTUnwrap(storedEvent(from: event))
+        let request = try XCTUnwrap(FeatureEventsRequest.WorkflowEvent(storedEvent: stored))
+        let json = try XCTUnwrap(JSONSerialization.jsonObject(with: JSONEncoder().encode(request)) as? [String: Any])
+
+        expect(json["app_session_id"]).to(beNil())
+        expect(json["event_name"] as? String) == "workflow_step_started"
+    }
+
     // MARK: - Close wire format
 
     func testCloseEventNameInWireFormat() throws {

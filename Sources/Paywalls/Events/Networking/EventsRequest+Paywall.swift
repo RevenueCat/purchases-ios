@@ -21,6 +21,7 @@ extension FeatureEventsRequest {
         let version: Int
         var type: EventType
         var appUserID: String
+        var appSessionID: String?
         var paywallID: String?
         var sessionID: String
         var offeringID: String
@@ -120,7 +121,11 @@ extension FeatureEventsRequest.PaywallEvent {
 
         do {
             let paywallEvent = try JSONDecoder.default.decode(PaywallEvent.self, from: jsonData)
-            self.init(decodedPaywallEvent: paywallEvent, appUserID: storedEvent.userID)
+            self.init(
+                decodedPaywallEvent: paywallEvent,
+                appUserID: storedEvent.userID,
+                appSessionID: storedEvent.appSessionID?.uuidString
+            )
         } catch {
             Logger.error(Strings.paywalls.event_cannot_deserialize(error))
             return nil
@@ -129,7 +134,7 @@ extension FeatureEventsRequest.PaywallEvent {
 
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
     // swiftlint:disable:next function_body_length
-    private init(decodedPaywallEvent: PaywallEvent, appUserID: String) {
+    private init(decodedPaywallEvent: PaywallEvent, appUserID: String, appSessionID: String?) {
         let creationData = decodedPaywallEvent.creationData
         let data = decodedPaywallEvent.data
         let exitOfferData = decodedPaywallEvent.exitOfferData
@@ -140,6 +145,7 @@ extension FeatureEventsRequest.PaywallEvent {
             version: Self.version,
             type: decodedPaywallEvent.eventType,
             appUserID: appUserID,
+            appSessionID: appSessionID,
             paywallID: data.paywallIdentifier,
             sessionID: data.sessionIdentifier.uuidString,
             offeringID: data.offeringIdentifier,
@@ -219,6 +225,7 @@ extension FeatureEventsRequest.PaywallEvent: Encodable {
         case version
         case type
         case appUserID = "appUserId"
+        case appSessionID = "appSessionId"
         case paywallID = "paywallId"
         case sessionID = "sessionId"
         case offeringID = "offeringId"

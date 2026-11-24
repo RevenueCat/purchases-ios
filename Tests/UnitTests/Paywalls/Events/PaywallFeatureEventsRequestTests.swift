@@ -34,6 +34,34 @@ class PaywallFeatureEventsRequestTests: TestCase {
         assertSnapshot(of: requestEvent, as: .formattedJson)
     }
 
+    func testAppSessionIDIsEncodedAndPaywallSessionIsPreserved() throws {
+        let event = PaywallEvent.impression(Self.eventCreationData, Self.eventData)
+        let storedEvent = try Self.createStoredFeatureEvent(from: event)
+        let request = try XCTUnwrap(FeatureEventsRequest.PaywallEvent(storedEvent: storedEvent))
+        let data = try JSONEncoder.default.encode(request)
+        let json = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
+
+        expect(json["app_session_id"] as? String) == Self.appSessionID?.uuidString
+        expect(json["session_id"] as? String) == Self.eventData.sessionIdentifier.uuidString
+    }
+
+    func testLegacyPaywallEventWithoutAppSessionIDIsEncoded() throws {
+        let event = PaywallEvent.impression(Self.eventCreationData, Self.eventData)
+        let storedEvent = try XCTUnwrap(StoredFeatureEvent(
+            event: event,
+            userID: Self.userID,
+            feature: .paywalls,
+            appSessionID: nil,
+            eventDiscriminator: nil
+        ))
+        let request = try XCTUnwrap(FeatureEventsRequest.PaywallEvent(storedEvent: storedEvent))
+        let data = try JSONEncoder.default.encode(request)
+        let json = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
+
+        expect(json["app_session_id"]).to(beNil())
+        expect(json["session_id"] as? String) == Self.eventData.sessionIdentifier.uuidString
+    }
+
     func testCancelEvent() throws {
         let event = PaywallEvent.cancel(Self.eventCreationData, Self.eventData)
         let storedEvent = try Self.createStoredFeatureEvent(from: event)

@@ -132,7 +132,7 @@ private extension BackendPaywallEventTests {
         return try XCTUnwrap(.init(event: event,
                                    userID: Self.userID,
                                    feature: .paywalls,
-                                   appSessionID: UUID(),
+                                   appSessionID: UUID(uuidString: "83164C05-2BDC-4807-8918-A4105F727DEB"),
                                    eventDiscriminator: "impression"))
     }
 
