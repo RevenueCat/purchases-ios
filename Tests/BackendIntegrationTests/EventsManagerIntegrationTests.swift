@@ -37,6 +37,7 @@ final class EventsManagerIntegrationTests: BaseBackendIntegrationTests {
             apiKey: self.apiKey,
             responseVerificationMode: Self.responseVerificationMode,
             dangerousSettings: DangerousSettings(autoSyncPurchases: true, internalSettings: self),
+            deviceIdentifierCollectionMode: .automatic,
             isAppBackgrounded: false,
             preferredLocalesProvider: PreferredLocalesProvider(preferredLocaleOverride: nil)
         )

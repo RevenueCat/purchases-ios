@@ -122,7 +122,8 @@ class PurchasesOrchestratorSimulatedStoreTests: TestCase {
             deviceCache: self.deviceCache,
             operationDispatcher: MockOperationDispatcher(),
             attributionFetcher: self.attributionFetcher,
-            attributionDataMigrator: MockAttributionDataMigrator())
+            attributionDataMigrator: MockAttributionDataMigrator(),
+            deviceIdentifierCollectionMode: .automatic)
         let attributionPoster = AttributionPoster(deviceCache: self.deviceCache,
                                                   currentUserProvider: self.currentUserProvider,
                                                   backend: self.backend,

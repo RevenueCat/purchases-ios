@@ -127,6 +127,7 @@ private extension BaseProductionRemoteConfigIntegrationTests {
             apiKey: self.apiKey,
             responseVerificationMode: Self.responseVerificationMode,
             dangerousSettings: DangerousSettings(),
+            deviceIdentifierCollectionMode: .automatic,
             isAppBackgrounded: false,
             preferredLocalesProvider: PreferredLocalesProvider(preferredLocaleOverride: nil)
         )

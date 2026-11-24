@@ -31,6 +31,7 @@ class PostReceiptDataOperationFactoryTests: TestCase {
             storeKitVersion: .default,
             apiKey: "test_key",
             responseVerificationMode: .disabled,
+            deviceIdentifierCollectionMode: .automatic,
             isAppBackgrounded: false,
             preferredLocalesProvider: .mock()
         )

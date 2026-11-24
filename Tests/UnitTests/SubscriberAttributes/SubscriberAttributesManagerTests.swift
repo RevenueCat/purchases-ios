@@ -43,7 +43,7 @@ class SubscriberAttributesManagerTests: TestCase {
             operationDispatcher: MockOperationDispatcher(),
             attributionFetcher: mockAttributionFetcher,
             attributionDataMigrator: mockAttributionDataMigrator,
-            automaticDeviceIdentifierCollectionEnabled: true
+            deviceIdentifierCollectionMode: .automatic
         )
         self.subscriberAttributeHeight = SubscriberAttribute(withKey: "height",
                                                              value: "183")
@@ -631,7 +631,7 @@ class SubscriberAttributesManagerTests: TestCase {
             operationDispatcher: MockOperationDispatcher(),
             attributionFetcher: mockAttributionFetcher,
             attributionDataMigrator: mockAttributionDataMigrator,
-            automaticDeviceIdentifierCollectionEnabled: false
+            deviceIdentifierCollectionMode: .functional
         )
         let adjustID = "adjustID"
         self.subscriberAttributesManager.setAdjustID(adjustID, appUserID: "kratos")
@@ -722,7 +722,7 @@ class SubscriberAttributesManagerTests: TestCase {
             operationDispatcher: MockOperationDispatcher(),
             attributionFetcher: mockAttributionFetcher,
             attributionDataMigrator: mockAttributionDataMigrator,
-            automaticDeviceIdentifierCollectionEnabled: false
+            deviceIdentifierCollectionMode: .functional
         )
         let appsflyerID = "appsflyerID"
         self.subscriberAttributesManager.setAppsflyerID(appsflyerID, appUserID: "kratos")
@@ -813,7 +813,7 @@ class SubscriberAttributesManagerTests: TestCase {
             operationDispatcher: MockOperationDispatcher(),
             attributionFetcher: mockAttributionFetcher,
             attributionDataMigrator: mockAttributionDataMigrator,
-            automaticDeviceIdentifierCollectionEnabled: false
+            deviceIdentifierCollectionMode: .functional
         )
         let fbAnonID = "fbAnonID"
         self.subscriberAttributesManager.setFBAnonymousID(fbAnonID, appUserID: "kratos")
@@ -904,7 +904,7 @@ class SubscriberAttributesManagerTests: TestCase {
             operationDispatcher: MockOperationDispatcher(),
             attributionFetcher: mockAttributionFetcher,
             attributionDataMigrator: mockAttributionDataMigrator,
-            automaticDeviceIdentifierCollectionEnabled: false
+            deviceIdentifierCollectionMode: .functional
         )
         let mparticleID = "mparticleID"
         self.subscriberAttributesManager.setMparticleID(mparticleID, appUserID: "kratos")
@@ -1287,7 +1287,7 @@ class SubscriberAttributesManagerTests: TestCase {
             operationDispatcher: MockOperationDispatcher(),
             attributionFetcher: mockAttributionFetcher,
             attributionDataMigrator: mockAttributionDataMigrator,
-            automaticDeviceIdentifierCollectionEnabled: false
+            deviceIdentifierCollectionMode: .functional
         )
         let airbridgeDeviceId = "airbridgeDeviceID"
         self.subscriberAttributesManager.setAirbridgeDeviceID(airbridgeDeviceId, appUserID: "kratos")
@@ -1378,7 +1378,7 @@ class SubscriberAttributesManagerTests: TestCase {
             operationDispatcher: MockOperationDispatcher(),
             attributionFetcher: mockAttributionFetcher,
             attributionDataMigrator: mockAttributionDataMigrator,
-            automaticDeviceIdentifierCollectionEnabled: false
+            deviceIdentifierCollectionMode: .functional
         )
         let kochavaDeviceId = "kochavaDeviceID"
         self.subscriberAttributesManager.setKochavaDeviceID(kochavaDeviceId, appUserID: "kratos")
@@ -2535,7 +2535,7 @@ class SubscriberAttributesManagerTests: TestCase {
             operationDispatcher: MockOperationDispatcher(),
             attributionFetcher: mockAttributionFetcher,
             attributionDataMigrator: mockAttributionDataMigrator,
-            automaticDeviceIdentifierCollectionEnabled: false
+            deviceIdentifierCollectionMode: .functional
         )
         self.subscriberAttributesManager.setAppstackAttributionParams(
             ["appstack_id": "test_id"],

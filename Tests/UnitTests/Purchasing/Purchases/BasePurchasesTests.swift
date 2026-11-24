@@ -94,7 +94,8 @@ class BasePurchasesTests: TestCase {
             deviceCache: self.deviceCache,
             operationDispatcher: self.mockOperationDispatcher,
             attributionFetcher: self.attributionFetcher,
-            attributionDataMigrator: AttributionDataMigrator()
+            attributionDataMigrator: AttributionDataMigrator(),
+            deviceIdentifierCollectionMode: .automatic
         )
         self.attributionPoster = AttributionPoster(deviceCache: self.deviceCache,
                                                    currentUserProvider: self.identityManager,

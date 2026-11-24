@@ -112,7 +112,8 @@ class PurchasesSubscriberAttributesTests: TestCase {
             deviceCache: self.mockDeviceCache,
             operationDispatcher: self.mockOperationDispatcher,
             attributionFetcher: self.mockAttributionFetcher,
-            attributionDataMigrator: AttributionDataMigrator()
+            attributionDataMigrator: AttributionDataMigrator(),
+            deviceIdentifierCollectionMode: .automatic
         )
         self.mockIdentityManager = MockIdentityManager(mockAppUserID: "app_user", mockDeviceCache: self.mockDeviceCache)
         self.mockAttributionPoster = AttributionPoster(deviceCache: self.mockDeviceCache,
@@ -430,7 +431,8 @@ class PurchasesSubscriberAttributesTests: TestCase {
             deviceCache: self.mockDeviceCache,
             operationDispatcher: self.mockOperationDispatcher,
             attributionFetcher: self.mockAttributionFetcher,
-            attributionDataMigrator: AttributionDataMigrator()
+            attributionDataMigrator: AttributionDataMigrator(),
+            deviceIdentifierCollectionMode: .automatic
         )
         let attributionPoster = AttributionPoster(
             deviceCache: self.mockDeviceCache,

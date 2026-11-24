@@ -367,8 +367,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                      showStoreMessagesAutomatically: Bool,
                      diagnosticsEnabled: Bool = false,
                      preferredLocale: String?,
-                     automaticDeviceIdentifierCollectionEnabled: Bool = true,
-                     identifierForVendorHeaderEnabled: Bool = true,
+                     deviceIdentifierCollectionMode: DeviceIdentifierCollectionMode,
                      iamEnabled: Bool = false,
                      keychainAccessGroup: String? = nil,
                      currentConfiguration: Configuration?,
@@ -396,7 +395,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             dangerousSettings: dangerousSettings,
             useExternalPurchaseCustomLinks: useExternalPurchaseCustomLinks,
             enableExternalPurchasesInSimulator: enableExternalPurchasesInSimulator,
-            identifierForVendorHeaderEnabled: identifierForVendorHeaderEnabled,
+            deviceIdentifierCollectionMode: deviceIdentifierCollectionMode,
             preferredLocalesProvider: PreferredLocalesProvider(preferredLocaleOverride: preferredLocale)
         )
 
@@ -539,7 +538,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             operationDispatcher: operationDispatcher,
             attributionFetcher: attributionFetcher,
             attributionDataMigrator: attributionDataMigrator,
-            automaticDeviceIdentifierCollectionEnabled: automaticDeviceIdentifierCollectionEnabled)
+            deviceIdentifierCollectionMode: deviceIdentifierCollectionMode)
         let identityManager = IdentityManager(deviceCache: deviceCache,
                                               systemInfo: systemInfo,
                                               backend: backend,
@@ -2435,8 +2434,7 @@ public extension Purchases {
                 showStoreMessagesAutomatically: configuration.showStoreMessagesAutomatically,
                 diagnosticsEnabled: configuration.diagnosticsEnabled,
                 preferredLocale: configuration.preferredLocale,
-                automaticDeviceIdentifierCollectionEnabled: configuration.automaticDeviceIdentifierCollectionEnabled,
-                identifierForVendorHeaderEnabled: configuration.identifierForVendorHeaderEnabled,
+                deviceIdentifierCollectionMode: configuration.deviceIdentifierCollectionMode,
                 iamEnabled: configuration.iamEnabled,
                 keychainAccessGroup: configuration.keychainAccessGroup,
                 currentConfiguration: configuration
@@ -2709,7 +2707,7 @@ public extension Purchases {
         showStoreMessagesAutomatically: Bool,
         diagnosticsEnabled: Bool,
         preferredLocale: String?,
-        automaticDeviceIdentifierCollectionEnabled: Bool = true,
+        deviceIdentifierCollectionMode: DeviceIdentifierCollectionMode,
         iamEnabled: Bool = false,
         keychainAccessGroup: String? = nil
     ) -> Purchases {
@@ -2728,7 +2726,7 @@ public extension Purchases {
                   showStoreMessagesAutomatically: showStoreMessagesAutomatically,
                   diagnosticsEnabled: diagnosticsEnabled,
                   preferredLocale: preferredLocale,
-                  automaticDeviceIdentifierCollectionEnabled: automaticDeviceIdentifierCollectionEnabled,
+                  deviceIdentifierCollectionMode: deviceIdentifierCollectionMode,
                   iamEnabled: iamEnabled,
                   keychainAccessGroup: keychainAccessGroup,
                   currentConfiguration: nil)
@@ -3182,8 +3180,8 @@ internal extension Purchases {
         return self.systemInfo.observerMode
     }
 
-    var identifierForVendorHeaderEnabled: Bool {
-        return self.systemInfo.identifierForVendorHeaderEnabled
+    var deviceIdentifierCollectionMode: DeviceIdentifierCollectionMode {
+        return self.systemInfo.deviceIdentifierCollectionMode
     }
 
     var configuredUserDefaults: UserDefaults {

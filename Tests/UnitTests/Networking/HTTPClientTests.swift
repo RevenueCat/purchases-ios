@@ -2352,7 +2352,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
     }
 
     func testDoesNotPassAppleDeviceIdentifierWhenHeaderIsDisabled() {
-        let systemInfo = MockSystemInfo(finishTransactions: true, identifierForVendorHeaderEnabled: false)
+        let systemInfo = MockSystemInfo(finishTransactions: true, deviceIdentifierCollectionMode: .manualOnly)
         systemInfo.stubbedIsSandbox = true
         expect(systemInfo.identifierForVendor).toNot(beNil())
         self.client = self.createClient(systemInfo)
@@ -2451,6 +2451,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
         let systemInfo = SystemInfo(platformInfo: platformInfo,
                                     finishTransactions: true,
                                     apiKey: "api_key",
+                                    deviceIdentifierCollectionMode: .automatic,
                                     preferredLocalesProvider: .mock())
 
         self.client = self.createClient(systemInfo)
@@ -2492,6 +2493,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
         let systemInfo = SystemInfo(platformInfo: platformInfo,
                                     finishTransactions: true,
                                     apiKey: "api_key",
+                                    deviceIdentifierCollectionMode: .automatic,
                                     preferredLocalesProvider: .mock())
         self.client = self.createClient(systemInfo)
 
@@ -2532,6 +2534,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
         self.client = self.createClient(SystemInfo(platformInfo: nil,
                                                    finishTransactions: true,
                                                    apiKey: "api_key",
+                                                   deviceIdentifierCollectionMode: .automatic,
                                                    preferredLocalesProvider: .mock()))
 
         waitUntil { completion in
@@ -2547,6 +2550,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
                                     finishTransactions: true,
                                     apiKey: "api_key",
                                     dangerousSettings: .init(uiPreviewMode: true),
+                                    deviceIdentifierCollectionMode: .automatic,
                                     preferredLocalesProvider: .mock())
         self.client = self.createClient(systemInfo)
 
@@ -2572,6 +2576,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
                                     finishTransactions: true,
                                     apiKey: "api_key",
                                     dangerousSettings: .init(uiPreviewMode: false),
+                                    deviceIdentifierCollectionMode: .automatic,
                                     preferredLocalesProvider: .mock())
         self.client = self.createClient(systemInfo)
 
@@ -2644,6 +2649,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
         self.client = self.createClient(SystemInfo(platformInfo: nil,
                                                    finishTransactions: false,
                                                    apiKey: "api_key",
+                                                   deviceIdentifierCollectionMode: .automatic,
                                                    preferredLocalesProvider: .mock()))
 
         waitUntil { completion in
@@ -3153,6 +3159,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
                     autoSyncPurchases: true,
                     internalSettings: DangerousSettings.Internal(forceServerErrorStrategy: .allServersDown)
                 ),
+                deviceIdentifierCollectionMode: .automatic,
                 preferredLocalesProvider: .mock()
             )
         )
@@ -3195,6 +3202,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
                     autoSyncPurchases: true,
                     internalSettings: DangerousSettings.Internal(forceServerErrorStrategy: nil)
                 ),
+                deviceIdentifierCollectionMode: .automatic,
                 preferredLocalesProvider: .mock()
             )
         )
@@ -3235,6 +3243,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
                         return .performRequest
                     })
                 ),
+                deviceIdentifierCollectionMode: .automatic,
                 preferredLocalesProvider: .mock()
             )
         )

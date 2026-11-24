@@ -19,6 +19,7 @@ class SystemInfoTests: TestCase {
         let systemInfo = SystemInfo(platformInfo: platformInfo,
                                     finishTransactions: false,
                                     apiKey: "api_key",
+                                    deviceIdentifierCollectionMode: .automatic,
                                     preferredLocalesProvider: .mock())
         expect(systemInfo.platformFlavor) == flavor
     }
@@ -29,6 +30,7 @@ class SystemInfoTests: TestCase {
         let systemInfo = SystemInfo(platformInfo: platformInfo,
                                     finishTransactions: false,
                                     apiKey: "api_key",
+                                    deviceIdentifierCollectionMode: .automatic,
                                     preferredLocalesProvider: .mock())
         expect(systemInfo.platformFlavorVersion) == flavorVersion
     }
@@ -44,6 +46,7 @@ class SystemInfoTests: TestCase {
         var systemInfo = SystemInfo(platformInfo: nil,
                                     finishTransactions: finishTransactions,
                                     apiKey: "api_key",
+                                    deviceIdentifierCollectionMode: .automatic,
                                     preferredLocalesProvider: .mock())
         expect(systemInfo.finishTransactions) == finishTransactions
         expect(systemInfo.observerMode) == !finishTransactions
@@ -53,6 +56,7 @@ class SystemInfoTests: TestCase {
         systemInfo = SystemInfo(platformInfo: nil,
                                 finishTransactions: finishTransactions,
                                 apiKey: "api_key",
+                                deviceIdentifierCollectionMode: .automatic,
                                 preferredLocalesProvider: .mock())
         expect(systemInfo.finishTransactions) == finishTransactions
         expect(systemInfo.observerMode) == !finishTransactions
@@ -79,6 +83,7 @@ class SystemInfoTests: TestCase {
             finishTransactions: false,
             sandboxEnvironmentDetector: sandboxDetector,
             apiKey: "api_key",
+            deviceIdentifierCollectionMode: .automatic,
             preferredLocalesProvider: .mock()
         )
         let workersReady = DispatchSemaphore(value: 0)
@@ -128,6 +133,7 @@ class SystemInfoTests: TestCase {
         let info = SystemInfo(platformInfo: nil,
                               finishTransactions: false,
                               apiKey: "api_key",
+                              deviceIdentifierCollectionMode: .automatic,
                               preferredLocalesProvider: localesProvider)
         expect(info.preferredLocales).to(equal(["es_ES", "fr_FR", "de_DE", "en_US"]))
     }
@@ -138,6 +144,7 @@ class SystemInfoTests: TestCase {
         let info = SystemInfo(platformInfo: nil,
                               finishTransactions: false,
                               apiKey: "api_key",
+                              deviceIdentifierCollectionMode: .automatic,
                               preferredLocalesProvider: localesProvider)
         expect(info.preferredLocales).to(equal(["fr_FR", "de_DE", "en_US"]))
     }
@@ -304,6 +311,7 @@ class SystemInfoTests: TestCase {
                                     finishTransactions: true,
                                     apiKey: "api_key",
                                     dangerousSettings: DangerousSettings(),
+                                    deviceIdentifierCollectionMode: .automatic,
                                     preferredLocalesProvider: .mock())
         expect(systemInfo.remoteConfigEnabled) == true
     }
@@ -318,6 +326,7 @@ class SystemInfoTests: TestCase {
                                     finishTransactions: true,
                                     apiKey: "api_key",
                                     dangerousSettings: dangerousSettings,
+                                    deviceIdentifierCollectionMode: .automatic,
                                     preferredLocalesProvider: .mock())
         expect(systemInfo.remoteConfigEnabled) == false
     }
@@ -361,6 +370,7 @@ private extension SystemInfo {
                           bundle: bundle,
                           sandboxEnvironmentDetector: sandboxDetector,
                           apiKey: "api_key",
+                          deviceIdentifierCollectionMode: .automatic,
                           preferredLocalesProvider: .mock())
     }
 
@@ -368,6 +378,7 @@ private extension SystemInfo {
         return .init(platformInfo: nil,
                      finishTransactions: true,
                      apiKey: "api_key",
+                     deviceIdentifierCollectionMode: .automatic,
                      preferredLocalesProvider: .mock())
     }
 

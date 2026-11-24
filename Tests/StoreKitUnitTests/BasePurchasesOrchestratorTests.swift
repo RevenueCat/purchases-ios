@@ -124,7 +124,8 @@ class BasePurchasesOrchestratorTests: StoreKitConfigTestCase {
             deviceCache: self.deviceCache,
             operationDispatcher: MockOperationDispatcher(),
             attributionFetcher: self.attributionFetcher,
-            attributionDataMigrator: MockAttributionDataMigrator())
+            attributionDataMigrator: MockAttributionDataMigrator(),
+            deviceIdentifierCollectionMode: .automatic)
         self.mockManageSubsHelper = MockManageSubscriptionsHelper(systemInfo: self.systemInfo,
                                                                   customerInfoManager: self.customerInfoManager,
                                                                   currentUserProvider: self.currentUserProvider)

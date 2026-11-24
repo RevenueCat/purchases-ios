@@ -131,6 +131,7 @@ class PaywallPreviewResourcesLoader {
                 platformInfo: nil,
                 finishTransactions: true,
                 apiKey: "preview_api_key",
+                deviceIdentifierCollectionMode: .automatic,
                 preferredLocalesProvider: .init(preferredLocaleOverride: nil)
             )
             let offerings = OfferingsFactory(systemInfo: systemInfo).createOfferings(from: [

@@ -129,6 +129,7 @@ final class RemoteConfigBlobHealthTests: TestCase {
             platformInfo: nil,
             finishTransactions: true,
             apiKey: apiKey,
+            deviceIdentifierCollectionMode: .automatic,
             preferredLocalesProvider: PreferredLocalesProvider(preferredLocaleOverride: nil)
         )
         let backend = Backend(

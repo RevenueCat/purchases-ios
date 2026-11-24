@@ -53,7 +53,8 @@ class BaseAttributionPosterTests: TestCase {
             deviceCache: self.deviceCache,
             operationDispatcher: MockOperationDispatcher(),
             attributionFetcher: self.attributionFetcher,
-            attributionDataMigrator: AttributionDataMigrator())
+            attributionDataMigrator: AttributionDataMigrator(),
+            deviceIdentifierCollectionMode: .automatic)
         self.currentUserProvider = MockCurrentUserProvider(mockAppUserID: userID)
         self.attributionPoster = AttributionPoster(deviceCache: self.deviceCache,
                                                    currentUserProvider: self.currentUserProvider,

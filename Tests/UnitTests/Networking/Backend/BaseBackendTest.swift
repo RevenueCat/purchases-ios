@@ -68,6 +68,7 @@ class BaseBackendTests: TestCase {
             apiKey: Self.apiKey,
             responseVerificationMode: self.responseVerificationMode,
             dangerousSettings: dangerousSettings,
+            deviceIdentifierCollectionMode: .automatic,
             isAppBackgrounded: false,
             preferredLocalesProvider: localesProvider
         )

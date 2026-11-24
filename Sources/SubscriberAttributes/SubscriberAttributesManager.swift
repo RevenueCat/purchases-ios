@@ -22,7 +22,7 @@ class SubscriberAttributesManager {
     private let operationDispatcher: OperationDispatcher
     private let attributionFetcher: AttributionFetcher
     private let attributionDataMigrator: AttributionDataMigrator
-    private let automaticDeviceIdentifierCollectionEnabled: Bool
+    private let deviceIdentifierCollectionMode: DeviceIdentifierCollectionMode
     private let lock = Lock()
 
     weak var delegate: SubscriberAttributesManagerDelegate?
@@ -32,13 +32,13 @@ class SubscriberAttributesManager {
          operationDispatcher: OperationDispatcher,
          attributionFetcher: AttributionFetcher,
          attributionDataMigrator: AttributionDataMigrator,
-         automaticDeviceIdentifierCollectionEnabled: Bool = true) {
+         deviceIdentifierCollectionMode: DeviceIdentifierCollectionMode) {
         self.backend = backend
         self.deviceCache = deviceCache
         self.operationDispatcher = operationDispatcher
         self.attributionFetcher = attributionFetcher
         self.attributionDataMigrator = attributionDataMigrator
-        self.automaticDeviceIdentifierCollectionEnabled = automaticDeviceIdentifierCollectionEnabled
+        self.deviceIdentifierCollectionMode = deviceIdentifierCollectionMode
     }
 
     func setAttributes(_ attributes: [String: String], appUserID: String) {
@@ -407,7 +407,7 @@ private extension SubscriberAttributesManager {
     func setAttributionID(_ attributionID: String?,
                           forNetworkID networkID: ReservedSubscriberAttribute,
                           appUserID: String) {
-        if automaticDeviceIdentifierCollectionEnabled {
+        if deviceIdentifierCollectionMode.collectsAutomatically {
             collectDeviceIdentifiers(forAppUserID: appUserID)
         }
         setReservedAttribute(networkID, value: attributionID, appUserID: appUserID)

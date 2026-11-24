@@ -90,8 +90,6 @@ import Foundation
     var deviceIdentifierCollectionMode: DeviceIdentifierCollectionMode {
         self.storage.deviceIdentifierCollectionMode
     }
-    var automaticDeviceIdentifierCollectionEnabled: Bool { self.deviceIdentifierCollectionMode.collectsAutomatically }
-    var identifierForVendorHeaderEnabled: Bool { self.deviceIdentifierCollectionMode.sendsHeader }
     internal var diagnosticsEnabled: Bool { self.storage.diagnosticsEnabled }
     internal var iamEnabled: Bool { self.storage.iamEnabled }
     internal var keychainAccessGroup: String? { self.storage.keychainAccessGroup }

@@ -238,24 +238,24 @@ class ConfigurationTests: TestCase {
         let configuration = Configuration.Builder(withAPIKey: "test")
             .build()
         expect(configuration.deviceIdentifierCollectionMode) === DeviceIdentifierCollectionMode.automatic
-        expect(configuration.automaticDeviceIdentifierCollectionEnabled) == true
-        expect(configuration.identifierForVendorHeaderEnabled) == true
+        expect(configuration.deviceIdentifierCollectionMode.collectsAutomatically) == true
+        expect(configuration.deviceIdentifierCollectionMode.sendsHeader) == true
     }
 
     func testFunctionalDeviceIdentifierCollectionModeOnlySendsTheHeader() {
         let configuration = Configuration.Builder(withAPIKey: "test")
             .with(deviceIdentifierCollectionMode: .functional)
             .build()
-        expect(configuration.automaticDeviceIdentifierCollectionEnabled) == false
-        expect(configuration.identifierForVendorHeaderEnabled) == true
+        expect(configuration.deviceIdentifierCollectionMode.collectsAutomatically) == false
+        expect(configuration.deviceIdentifierCollectionMode.sendsHeader) == true
     }
 
     func testManualOnlyDeviceIdentifierCollectionModeCollectsNothing() {
         let configuration = Configuration.Builder(withAPIKey: "test")
             .with(deviceIdentifierCollectionMode: .manualOnly)
             .build()
-        expect(configuration.automaticDeviceIdentifierCollectionEnabled) == false
-        expect(configuration.identifierForVendorHeaderEnabled) == false
+        expect(configuration.deviceIdentifierCollectionMode.collectsAutomatically) == false
+        expect(configuration.deviceIdentifierCollectionMode.sendsHeader) == false
     }
 
     @available(*, deprecated)

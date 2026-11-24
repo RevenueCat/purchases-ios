@@ -32,6 +32,7 @@ import Foundation
         )
         let factory = OfferingsFactory(systemInfo: SystemInfo(
             platformInfo: nil, finishTransactions: false, apiKey: "preview",
+            deviceIdentifierCollectionMode: .automatic,
             preferredLocalesProvider: PreferredLocalesProvider(preferredLocaleOverride: nil)
         ))
         let rawResponse = try JSONSerialization.jsonObject(with: responseData) as? [String: Any]

@@ -56,6 +56,7 @@ class BackendSubscriberAttributesTests: TestCase {
         storeKitVersion: .versionForTests,
         apiKey: BackendSubscriberAttributesTests.apiKey,
         responseVerificationMode: .disabled,
+        deviceIdentifierCollectionMode: .automatic,
         isAppBackgrounded: false,
         preferredLocalesProvider: .mock(locales: ["en-US"])
     )

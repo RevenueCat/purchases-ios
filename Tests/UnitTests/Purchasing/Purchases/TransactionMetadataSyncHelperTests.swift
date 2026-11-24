@@ -54,7 +54,8 @@ class TransactionMetadataSyncHelperTests: TestCase {
             deviceCache: self.deviceCache,
             operationDispatcher: MockOperationDispatcher(),
             attributionFetcher: self.attributionFetcher,
-            attributionDataMigrator: MockAttributionDataMigrator()
+            attributionDataMigrator: MockAttributionDataMigrator(),
+            deviceIdentifierCollectionMode: .automatic
         )
 
         let attributionPoster = AttributionPoster(
