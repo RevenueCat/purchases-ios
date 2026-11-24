@@ -72,6 +72,33 @@ class TextComponentLocalizationTests: TestCase {
         }
     }
 
+    @MainActor
+    func testTextOnlyOverrideKeepsHiddenComponentHidden() throws {
+        let viewModel = try TextComponentViewModel(
+            localizationProvider: .init(locale: .current, localizedStrings: [
+                "base": .string("Subscribe"),
+                "trial": .string("Start trial")
+            ]),
+            uiConfigProvider: Self.createUIConfigProvider(),
+            component: .init(visible: false, text: "base", color: Self.black, overrides: [
+                .init(conditions: [.introOffer], properties: .init(text: "trial"))
+            ])
+        )
+
+        _ = viewModel.styles(
+            state: .default,
+            condition: .compact,
+            selectedPackageId: nil,
+            packageContext: nil,
+            isEligibleForIntroOffer: true,
+            promoOffer: nil
+        ) { style -> EmptyView in
+            XCTAssertEqual(style.text, "Start trial")
+            XCTAssertFalse(style.visible)
+            return EmptyView()
+        }
+    }
+
     // MARK: - Missing Localization Tests
 
     /// When a text_lid has no localization entry, the view model should not throw

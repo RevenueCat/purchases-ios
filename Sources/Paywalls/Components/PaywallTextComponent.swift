@@ -193,7 +193,7 @@ import Foundation
             fontWeightInt.map { PaywallComponent.fontWeightFrom(integer: $0) } ?? fontWeight
         }
         public init(
-            visible: Bool? = true,
+            visible: Bool? = nil,
             name: String? = nil,
             text: LocalizationKey? = nil,
             fontName: String? = nil,
