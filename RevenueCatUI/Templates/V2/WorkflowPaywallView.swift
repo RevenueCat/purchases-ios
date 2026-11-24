@@ -1597,6 +1597,7 @@ private struct WorkflowHeaderOverlayPageView: View {
                     componentsVideoLocalizations: paywallComponents.data.componentsVideoLocalizations,
                     preferredLocales: purchaseHandler.preferredLocales,
                     defaultLocale: paywallComponents.data.defaultLocale,
+                    preferredLocaleOverride: purchaseHandler.preferredLocaleOverrideIdentifier,
                     uiConfigProvider: uiConfigProvider,
                     offering: page.content.renderingOffering,
                     introEligibilityChecker: introEligibilityChecker,

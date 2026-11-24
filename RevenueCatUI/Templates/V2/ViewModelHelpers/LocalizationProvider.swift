@@ -21,6 +21,8 @@ struct LocalizationProvider {
     let locale: Locale
     let localizedStrings: PaywallComponent.LocalizationDictionary
     var localizedVideos: PaywallComponent.VideoLocalizationDictionary = [:]
+    /// The numbering system (`nu`) from the preferred locale override, applied to prices and other numbers.
+    var numberingSystem: String?
 
 }
 

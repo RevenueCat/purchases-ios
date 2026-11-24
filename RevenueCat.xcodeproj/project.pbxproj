@@ -1839,6 +1839,7 @@
 		D15C0F012F0A11E000000001 /* DiscountSavings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscountSavings.swift; sourceTree = "<group>"; };
 		C4E8A91C2F6D4E70A1B3C5D8 /* OfferEligibilityTextDependency.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfferEligibilityTextDependency.swift; sourceTree = "<group>"; };
 		030890832D2B77E20069677B /* VariableHandlerV2Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VariableHandlerV2Tests.swift; sourceTree = "<group>"; };
+		414A9C32DD38050318F87B3D /* NumberingSystemOverrideTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NumberingSystemOverrideTests.swift; sourceTree = "<group>"; };
 		030F918B2D55C9D80085103F /* LocaleFinderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocaleFinderTests.swift; sourceTree = "<group>"; };
 		030F93B22D5ED90B0085103F /* ProgressViewModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressViewModifier.swift; sourceTree = "<group>"; };
 		0313FD40268A506400168386 /* DateProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateProvider.swift; sourceTree = "<group>"; };
@@ -3860,6 +3861,7 @@
 				48D31C8D350D427BB8A5CCF0 /* ConditionDeserializationTests.swift */,
 				48D31C8E350D427BB8A5CCF1 /* ToPresentedOverridesTests.swift */,
 				030890832D2B77E20069677B /* VariableHandlerV2Tests.swift */,
+				414A9C32DD38050318F87B3D /* NumberingSystemOverrideTests.swift */,
 				75909EAA2E74286E009ABBA7 /* UIConfigProviderTests.swift */,
 				077AC81FEBE38D1468AE8670 /* VideoAutoplayHandlerTests.swift */,
 				B29E428C04E073334CD13B58 /* CarouselStateTests.swift */,

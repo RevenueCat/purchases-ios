@@ -91,6 +91,26 @@ class VariableHandlerV2Test: TestCase {
         }
     )
 
+    func testCountdownWithPreviewProductWithoutPriceLocale() {
+        let package = Package(
+            identifier: "weekly",
+            packageType: .weekly,
+            storeProduct: .init(sk1Product: .init()),
+            offeringIdentifier: "default",
+            webCheckoutUrl: nil
+        )
+        let result = variableHandler.processVariables(
+            in: "Ends in {{ count_hours_without_zero }} hours",
+            with: package,
+            locale: locale,
+            localizations: [:],
+            isEligibleForIntroOffer: false,
+            countdownTime: .zero
+        )
+
+        expect(result).to(equal("Ends in 0 hours"))
+    }
+
     func testProductCurrencyCode() {
         let result = variableHandler.processVariables(
             in: "{{ product.currency_code }}",
@@ -1138,6 +1158,136 @@ class VariableHandlerV2Test: TestCase {
             localizations: localizations["en_US"]!,
             isEligibleForIntroOffer: true
         )
+    }
+
+    // MARK: - Numbering system override
+
+    func testNumberingSystemOverrideUsesWesternDigitsWithArabicStoreKitLocale() {
+        let result = self.numberingSystemVariables(numberingSystem: "latn")
+
+        expect(result) == [
+            Self.formatted(7.74, "ar_SA@numbers=latn"),
+            Self.formatted(2.58, "ar_SA@numbers=latn"),
+            "30%",
+            "3mo",
+            Self.formatted(3.87, "ar_SA@numbers=latn"),
+            Self.formatted(3.87, "ar_SA@numbers=latn")
+        ]
+        expect(result.joined().unicodeScalars.contains { (0x0660...0x0669).contains($0.value) }) == false
+    }
+
+    func testWithoutNumberingSystemOverrideKeepsStoreKitFormatting() {
+        let result = self.numberingSystemVariables(numberingSystem: nil)
+
+        expect(result) == [
+            "StoreKit ٧٫٧٤",
+            Self.formatted(2.58, "ar_SA"),
+            "٣٠%",
+            "٣mo",
+            "StoreKit ٣٫٨٧",
+            Self.formatted(3.87, "ar_SA")
+        ]
+    }
+
+    func testNumberingSystemOverrideKeepsZeroDecimalPlacePrices() {
+        let package = self.arabicStoreKitPackage(price: 2, periodValue: 1, introDiscount: nil)
+
+        let result = self.process(
+            "{{ product.price }}",
+            package,
+            numberingSystem: "latn",
+            showZeroDecimalPlacePrices: true
+        )
+
+        expect(result) == Self.formatted(2, "ar_SA@numbers=latn", maximumFractionDigits: 0)
+        expect(result).toNot(contain(".00"))
+    }
+
+    private func numberingSystemVariables(numberingSystem: String?) -> [String] {
+        let package = self.arabicStoreKitPackage(
+            price: 7.74,
+            periodValue: 3,
+            introDiscount: .init(
+                identifier: "intro",
+                price: 3.87,
+                localizedPriceString: "StoreKit ٣٫٨٧",
+                paymentMode: .payUpFront,
+                subscriptionPeriod: .init(value: 3, unit: .month),
+                numberOfPeriods: 1,
+                type: .introductory
+            )
+        )
+
+        return self.process(
+            "{{ product.price }}|{{ product.price_per_month }}|{{ product.relative_discount }}|"
+                + "{{ product.period_abbreviated }}|{{ product.offer_price }}|{{ product.offer_absolute_discount }}",
+            package,
+            numberingSystem: numberingSystem,
+            discountRelativeToMostExpensivePerMonth: 0.3
+        ).components(separatedBy: "|")
+    }
+
+    private func arabicStoreKitPackage(
+        price: Decimal,
+        periodValue: Int,
+        introDiscount: TestStoreProductDiscount?
+    ) -> Package {
+        return Package(
+            identifier: PackageType.monthly.identifier,
+            packageType: .monthly,
+            storeProduct: TestStoreProduct(
+                localizedTitle: "Monthly",
+                price: price,
+                currencyCode: "USD",
+                localizedPriceString: "StoreKit ٧٫٧٤",
+                productIdentifier: "com.revenuecat.product.numbering_system",
+                productType: .autoRenewableSubscription,
+                localizedDescription: "PRO monthly",
+                subscriptionGroupIdentifier: "group",
+                subscriptionPeriod: .init(value: periodValue, unit: .month),
+                introductoryDiscount: introDiscount,
+                locale: Locale(identifier: "ar_SA")
+            ).toStoreProduct(),
+            offeringIdentifier: "offering",
+            webCheckoutUrl: nil
+        )
+    }
+
+    private func process(
+        _ text: String,
+        _ package: Package,
+        numberingSystem: String?,
+        discountRelativeToMostExpensivePerMonth: Decimal? = nil,
+        showZeroDecimalPlacePrices: Bool = false
+    ) -> String {
+        return VariableHandlerV2(
+            variableCompatibilityMap: Self.variableMapping,
+            functionCompatibilityMap: Self.functionMapping,
+            discountRelativeToMostExpensivePerMonth: discountRelativeToMostExpensivePerMonth,
+            showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
+        ).processVariables(
+            in: text,
+            with: package,
+            locale: locale,
+            numberingSystem: numberingSystem,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
+        )
+    }
+
+    private static func formatted(
+        _ price: Decimal,
+        _ localeIdentifier: String,
+        maximumFractionDigits: Int? = nil
+    ) -> String {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .currency
+        formatter.locale = Locale(identifier: localeIdentifier)
+        formatter.currencyCode = "USD"
+        if let maximumFractionDigits {
+            formatter.maximumFractionDigits = maximumFractionDigits
+        }
+        return formatter.string(from: price as NSDecimalNumber) ?? ""
     }
 
     // MARK: - Discount variables

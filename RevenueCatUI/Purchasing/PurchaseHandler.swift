@@ -95,10 +95,6 @@ final class PurchaseHandler: ObservableObject {
         return (Purchases.shared.appUserID, Purchases.shared.isSandbox)
     }
 
-    var preferredLocaleOverride: Locale? {
-        return purchases.preferredLocaleOverride.map(Locale.init)
-    }
-
     /// Whether remote config (and, with it, paywall workflows) is enabled. The single gate for both:
     /// they ship together, so there's no separate workflows switch.
     var remoteConfigEnabled: Bool {
@@ -369,6 +365,20 @@ final class PurchaseHandler: ObservableObject {
         self.keptHostedCheckout = nil
         self.hostedCheckoutResolutionToShow = nil
         #endif
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension PurchaseHandler {
+
+    var preferredLocaleOverride: Locale? {
+        return purchases.preferredLocaleOverride.map(Locale.init)
+    }
+
+    /// The override as set, since `Locale(identifier:)` can drop BCP 47 extensions such as `-u-nu-arab`.
+    var preferredLocaleOverrideIdentifier: String? {
+        return purchases.preferredLocaleOverride
     }
 
 }
