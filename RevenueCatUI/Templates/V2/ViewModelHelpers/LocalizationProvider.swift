@@ -23,6 +23,8 @@ struct LocalizationProvider {
     var localizedVideos: PaywallComponent.VideoLocalizationDictionary = [:]
     /// The numbering system (`nu`) from the preferred locale override, applied to prices and other numbers.
     var numberingSystem: String?
+    /// The locale for prices and other numbers. `nil` uses `locale`.
+    var priceLocale: Locale?
 
 }
 

@@ -33,6 +33,7 @@
 		02F84B23216242A7B8CDAB4A /* ErrorCode+Conformances.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61F92C8B490F4B78AC8B1AAF /* ErrorCode+Conformances.swift */; };
 		030890812D2B764D0069677B /* VariableHandlerV2.swift in Sources */ = {isa = PBXBuildFile; fileRef = 030890802D2B76450069677B /* VariableHandlerV2.swift */; };
 		D15C0F012F0A11E000000002 /* DiscountSavings.swift in Sources */ = {isa = PBXBuildFile; fileRef = D15C0F012F0A11E000000001 /* DiscountSavings.swift */; };
+		70A9CBBD904F188CC2E04E34 /* Locale+PaywallPrice.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D81746878EA5E9EEF1931DF /* Locale+PaywallPrice.swift */; };
 		C4E8A91B2F6D4E70A1B3C5D7 /* OfferEligibilityTextDependency.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4E8A91C2F6D4E70A1B3C5D8 /* OfferEligibilityTextDependency.swift */; };
 		030F93B32D5ED90B0085103F /* ProgressViewModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 030F93B22D5ED90B0085103F /* ProgressViewModifier.swift */; };
 		0313FD41268A506400168386 /* DateProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0313FD40268A506400168386 /* DateProvider.swift */; };
@@ -1837,8 +1838,10 @@
 		019BA4A7731BC93FEC1A74FA /* PaywallScrollEnvironment.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = PaywallScrollEnvironment.swift; path = RevenueCatUI/Templates/V2/Layout/PaywallScrollEnvironment.swift; sourceTree = SOURCE_ROOT; };
 		030890802D2B76450069677B /* VariableHandlerV2.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VariableHandlerV2.swift; sourceTree = "<group>"; };
 		D15C0F012F0A11E000000001 /* DiscountSavings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscountSavings.swift; sourceTree = "<group>"; };
+		2D81746878EA5E9EEF1931DF /* Locale+PaywallPrice.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Locale+PaywallPrice.swift"; sourceTree = "<group>"; };
 		C4E8A91C2F6D4E70A1B3C5D8 /* OfferEligibilityTextDependency.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfferEligibilityTextDependency.swift; sourceTree = "<group>"; };
 		030890832D2B77E20069677B /* VariableHandlerV2Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VariableHandlerV2Tests.swift; sourceTree = "<group>"; };
+		D7BE987EF15D770034F5EA2E /* PaywallPriceLocaleTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallPriceLocaleTests.swift; sourceTree = "<group>"; };
 		414A9C32DD38050318F87B3D /* NumberingSystemOverrideTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NumberingSystemOverrideTests.swift; sourceTree = "<group>"; };
 		030F918B2D55C9D80085103F /* LocaleFinderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocaleFinderTests.swift; sourceTree = "<group>"; };
 		030F93B22D5ED90B0085103F /* ProgressViewModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressViewModifier.swift; sourceTree = "<group>"; };
@@ -3810,6 +3813,7 @@
 			isa = PBXGroup;
 			children = (
 				D15C0F012F0A11E000000001 /* DiscountSavings.swift */,
+				2D81746878EA5E9EEF1931DF /* Locale+PaywallPrice.swift */,
 				C4E8A91C2F6D4E70A1B3C5D8 /* OfferEligibilityTextDependency.swift */,
 				030890802D2B76450069677B /* VariableHandlerV2.swift */,
 			);
@@ -3861,6 +3865,7 @@
 				48D31C8D350D427BB8A5CCF0 /* ConditionDeserializationTests.swift */,
 				48D31C8E350D427BB8A5CCF1 /* ToPresentedOverridesTests.swift */,
 				030890832D2B77E20069677B /* VariableHandlerV2Tests.swift */,
+				D7BE987EF15D770034F5EA2E /* PaywallPriceLocaleTests.swift */,
 				414A9C32DD38050318F87B3D /* NumberingSystemOverrideTests.swift */,
 				75909EAA2E74286E009ABBA7 /* UIConfigProviderTests.swift */,
 				077AC81FEBE38D1468AE8670 /* VideoAutoplayHandlerTests.swift */,
@@ -9688,6 +9693,7 @@
 				887A60732C1D037000E1A461 /* ProcessedLocalizedConfiguration.swift in Sources */,
 				030890812D2B764D0069677B /* VariableHandlerV2.swift in Sources */,
 				D15C0F012F0A11E000000002 /* DiscountSavings.swift in Sources */,
+				70A9CBBD904F188CC2E04E34 /* Locale+PaywallPrice.swift in Sources */,
 				C4E8A91B2F6D4E70A1B3C5D7 /* OfferEligibilityTextDependency.swift in Sources */,
 				887A606F2C1D037000E1A461 /* PaywallData+Validation.swift in Sources */,
 				88A543DF2C37A45B0039C6A5 /* TemplatePackageSetting.swift in Sources */,

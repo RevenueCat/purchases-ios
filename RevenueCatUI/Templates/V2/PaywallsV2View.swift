@@ -209,6 +209,7 @@ struct PaywallsV2View: View {
             componentsVideoLocalizations: paywallComponents.data.componentsVideoLocalizations,
             preferredLocales: purchaseHandler.preferredLocales,
             defaultLocale: paywallComponents.data.defaultLocale,
+            storefrontCountryCode: purchaseHandler.configuredStoreEnvironment.storeFrontCountryCode,
             preferredLocaleOverride: purchaseHandler.preferredLocaleOverrideIdentifier,
             uiConfigProvider: uiConfigProvider,
             offering: offering,
@@ -885,6 +886,7 @@ extension PaywallsV2View {
         componentsVideoLocalizations: [PaywallComponent.LocaleID: PaywallComponent.VideoLocalizationDictionary] = [:],
         preferredLocales: [Locale],
         defaultLocale: String,
+        storefrontCountryCode: String? = nil,
         preferredLocaleOverride: String? = nil,
         uiConfigProvider: UIConfigProvider,
         offering: Offering,
@@ -898,6 +900,7 @@ extension PaywallsV2View {
             componentsVideoLocalizations: componentsVideoLocalizations,
             preferredLocales: preferredLocales,
             defaultLocale: defaultLocale,
+            storefrontCountryCode: storefrontCountryCode,
             preferredLocaleOverride: preferredLocaleOverride
         )
 
@@ -1030,6 +1033,7 @@ extension PaywallsV2View {
         componentsVideoLocalizations: [PaywallComponent.LocaleID: PaywallComponent.VideoLocalizationDictionary] = [:],
         preferredLocales: [Locale],
         defaultLocale: String,
+        storefrontCountryCode: String? = nil,
         preferredLocaleOverride: String? = nil
     ) -> LocalizationProvider {
         let provider = Self.chooseStringLocalization(
@@ -1041,7 +1045,11 @@ extension PaywallsV2View {
             locale: provider.locale,
             localizedStrings: provider.localizedStrings,
             localizedVideos: componentsVideoLocalizations.findLocale(provider.locale) ?? [:],
-            numberingSystem: Locale.numberingSystemOverride(from: preferredLocaleOverride)
+            numberingSystem: Locale.numberingSystemOverride(from: preferredLocaleOverride),
+            priceLocale: .paywallPriceLocale(
+                paywallLocale: provider.locale,
+                storefrontCountryCode: storefrontCountryCode
+            )
         )
     }
 

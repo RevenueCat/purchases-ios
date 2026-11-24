@@ -339,7 +339,10 @@ class TextComponentLocalizationTests: TestCase {
         ]
 
         let viewModel = try TextComponentViewModel(
-            localizationProvider: LocalizationProvider(locale: .current, localizedStrings: localizations),
+            localizationProvider: LocalizationProvider(
+                locale: Locale(identifier: "en_US"),
+                localizedStrings: localizations
+            ),
             uiConfigProvider: try Self.createUIConfigProvider(),
             component: textComponent
         )
