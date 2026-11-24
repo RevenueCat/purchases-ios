@@ -2836,6 +2836,7 @@ extension WorkflowPaywallViewTests {
         closesBeforeHiding: Bool = false,
         hidesInCompletionCallback: Bool = false
     ) async throws {
+        try Self.hostingControllerReappearanceWorksOrSkipTest()
         let harness = try WorkflowGateHarness(activeEntitlements: [], operationEntitlements: ["pro"])
         let coordinator = NativePaywallCloseCoordinator()
         let hidePresentation = Atomic<(@MainActor @Sendable () -> Void)?>(nil)
@@ -2908,6 +2909,7 @@ extension WorkflowPaywallViewTests {
 
     @MainActor
     private func assertPassedGateSurvivesReappearance(initialBranch: Bool) async throws {
+        try Self.hostingControllerReappearanceWorksOrSkipTest()
         let reads = Atomic(0)
         let info = try CheckpointTestFixtures.customerInfo(activeEntitlements: ["pro"])
         let harness = try WorkflowGateHarness(activeEntitlements: [], gateRead: {
@@ -2942,6 +2944,15 @@ extension WorkflowPaywallViewTests {
         await expect(reads.value).toNever(beGreaterThan(1), until: .milliseconds(300))
         expect(harness.gateController.status) == .passed
         expect(harness.dismissals.value) == 1
+    }
+
+    // Before iOS 26, a test window without a scene never forwards UIKit appearance changes to SwiftUI:
+    // removing, covering, or swapping out the hosting controller does not trigger `onDisappear`, and the only
+    // way to trigger it is to remove the view from the SwiftUI tree, which discards the state reappearance needs.
+    private static func hostingControllerReappearanceWorksOrSkipTest() throws {
+        guard #available(iOS 26.0, *) else {
+            throw XCTSkip("Hiding a hosting controller does not trigger SwiftUI's onDisappear before iOS 26")
+        }
     }
     #endif
 
