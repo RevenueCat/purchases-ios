@@ -150,9 +150,34 @@ class PackageContext: ObservableObject {
                 showZeroDecimalPlacePrices: self.variableContext.showZeroDecimalPlacePrices
             )
         )
+        self.retainedSheetSelection = nil
         self.presentedSheetContext = context
         self.update(package: context.package, variableContext: context.variableContext, isReconcile: true)
         return context
+    }
+
+    /// A sheet-only paywall keeps the sheet's final package for the purchase button.
+    /// Let the active tab adopt it even when dismissal does not change the parent's package.
+    private var retainedSheetSelection: (package: Package, wasManuallySelected: Bool)?
+
+    func dismissSheet(retainingSelection: Bool) {
+        if retainingSelection, let sheet = self.presentedSheetContext, let package = sheet.package {
+            self.retainedSheetSelection = (package, sheet.manuallySelectedPackage?.identifier == package.identifier)
+        } else {
+            self.retainedSheetSelection = nil
+        }
+        self.presentedSheetContext = nil
+    }
+
+    @MainActor
+    func adoptRetainedSheetPackage(from parent: PackageContext, tabPackages: [Package]) {
+        guard let selection = parent.retainedSheetSelection,
+              tabPackages.contains(where: { $0.identifier == selection.package.identifier }) else { return }
+        self.update(
+            package: selection.package,
+            variableContext: self.variableContext,
+            isReconcile: !selection.wasManuallySelected
+        )
     }
 
     func clearManualSelection() {

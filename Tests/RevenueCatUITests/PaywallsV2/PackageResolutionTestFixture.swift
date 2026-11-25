@@ -25,7 +25,13 @@ struct PackageResolutionTestFixture {
     let offering: Offering
     let context: PackageContext
 
-    init(competingDefaults: Bool = false) throws {
+    enum SheetPlacement {
+        case none
+        case bothTabs
+        case secondTab
+    }
+
+    init(competingDefaults: Bool = false, sheets: SheetPlacement = .none) throws {
         var monthlyXL = TestData.monthlyProduct
         monthlyXL.price = 29.99
         monthlyXL.localizedPriceString = "$29.99"
@@ -51,11 +57,13 @@ struct PackageResolutionTestFixture {
             ? [Self.package("monthly_xl", selected: true)]
             : [Self.package("monthly_xl", selected: true), Self.package("annual_xl", selected: false)]
         var components: [PaywallComponent] = competingDefaults ? [Self.package("$rc_monthly", selected: true)] : []
+        let firstTab = sheets == .bothTabs ? [Self.sheet("standard", standard)] : standard
+        let secondTab = sheets != .none ? [Self.sheet("xl", xlComponents)] : xlComponents
         components.append(.tabs(.init(
             control: .init(type: .buttons, stack: .init(components: [])),
-            tabs: [.init(id: "tab-1", stack: .init(components: standard)),
-                   .init(id: "tab-2", stack: .init(components: xlComponents))],
-            defaultTabId: "tab-1"
+            tabs: [.init(id: "tab-1", stack: .init(components: firstTab)),
+                   .init(id: "tab-2", stack: .init(components: secondTab))],
+            defaultTabId: sheets != .none ? "tab-2" : "tab-1"
         )))
         if competingDefaults {
             let sheet = PaywallComponent.ButtonComponent.Sheet(
@@ -92,7 +100,9 @@ struct PackageResolutionTestFixture {
             return nil
         }.first)
         self.context = PackageContext(
-            package: self.state.viewModelFactory.packageValidator.defaultSelectedPackage(in: .provisional),
+            package: PaywallsV2View.defaultSelectedPackage(
+                in: self.state.viewModelFactory, context: .provisional, workflowDefaultPackage: nil
+            ),
             variableContext: .init(packages: packages, showZeroDecimalPlacePrices: false)
         )
     }
@@ -133,6 +143,15 @@ struct PackageResolutionTestFixture {
 
 @available(iOS 15.0, *)
 private extension PackageResolutionTestFixture {
+
+    static func sheet(_ id: String, _ components: [PaywallComponent]) -> PaywallComponent {
+        let sheet = PaywallComponent.ButtonComponent.Sheet(
+            id: id, name: id, stack: .init(components: components),
+            backgroundBlur: false, size: .init(width: .fill, height: .fit(nil))
+        )
+        return .button(.init(action: .navigateTo(destination: .sheet(sheet: sheet)),
+                             stack: .init(components: [Self.text("Open sheet")])))
+    }
 
     static func package(_ identifier: String, selected: Bool) -> PaywallComponent {
         .package(.init(packageID: identifier, isSelectedByDefault: selected, applePromoOfferProductCode: nil,

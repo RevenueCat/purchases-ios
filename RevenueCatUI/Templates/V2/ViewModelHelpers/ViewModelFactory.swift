@@ -30,7 +30,7 @@ struct ViewModelFactory {
 
     let packageValidator = PackageValidator()
     /// Sheet inventory also provides the initial selection when the page has no packages.
-    let sheetPackageValidator = PackageValidator()
+    private(set) var sheetPackageValidator = PackageValidator()
 
     /// Closed sheets supply the root selection when the page has no package components.
     var rootSelectionValidator: PackageValidator {
@@ -397,7 +397,10 @@ struct ViewModelFactory {
             let tabViewModels: [TabViewModel] = try component.tabs.map { tab in
                 let tabPackageValidator = PackageValidator()
 
-                let stackViewModel = try toStackViewModel(
+                var tabFactory = self
+                let tabSheets = PackageValidator()
+                tabFactory.sheetPackageValidator = tabSheets
+                let stackViewModel = try tabFactory.toStackViewModel(
                     component: tab.stack,
                     packageValidator: tabPackageValidator,
                     purchaseButtonCollector: purchaseButtonCollector,
@@ -413,15 +416,20 @@ struct ViewModelFactory {
                     discardRules: discardRules
                 )
 
-                // Merging into entire paywall package validator
-                for packageInfo in tabPackageValidator.packageInfos {
-                    packageValidator.addTabScoped(packageInfo)
-                }
+                let initiallySelected = tab.id == (component.defaultTabId ?? component.tabs.first?.id)
+                packageValidator.addTabPackages(from: tabPackageValidator, initiallySelected: initiallySelected)
+                self.sheetPackageValidator.addTabPackages(from: tabSheets, initiallySelected: initiallySelected)
 
+                // The root inventory is complete only after later siblings and the footer are built.
+                let pagePackages = self.packageValidator
                 return .init(
                     tab: tab,
                     stackViewModel: tabsStackViewModel.copy(withViewModels: [.stack(stackViewModel)]),
-                    packageValidator: tabPackageValidator,
+                    resolvePackageValidator: {
+                        pagePackages.hasPageScopedPackages || tabPackageValidator.isValid
+                            ? tabPackageValidator
+                            : tabSheets
+                    },
                     uiConfigProvider: uiConfigProvider
                 )
             }

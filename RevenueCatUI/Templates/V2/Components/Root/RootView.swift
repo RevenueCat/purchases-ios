@@ -267,7 +267,7 @@ struct RootPackageSelectionSheetModifier: ViewModifier {
                         : self.sheetPackageContext?.variableContext ?? self.packageContext.variableContext,
                     isReconcile: true
                 )
-                self.packageContext.presentedSheetContext = nil
+                self.packageContext.dismissSheet(retainingSelection: !self.hasNonSheetPackages)
                 self.sheetPackageContext = nil
                 self.variableContextBeforeOpeningSheet = nil
                 self.packageBeforeOpeningSheet = nil

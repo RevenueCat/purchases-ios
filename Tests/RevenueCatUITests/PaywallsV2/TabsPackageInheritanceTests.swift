@@ -1324,7 +1324,7 @@ extension TabsPackageInheritanceTests {
             colorScheme: .light
         )
         let tab = TabViewModel(tab: .init(id: "tab", stack: .init(components: [])), stackViewModel: stack,
-                               packageValidator: validator, uiConfigProvider: uiConfig)
+                               resolvePackageValidator: { validator }, uiConfigProvider: uiConfig)
         for (intro, promo, width, valid) in [
             (false, false, 400.0, true), (true, false, 400.0, false),
             (false, true, 400.0, false), (false, false, 800.0, false)

@@ -654,6 +654,25 @@ final class PackageValidatorTests: TestCase {
 
     // MARK: - Mixed page and tab scopes
 
+    func testNestedTabPackageIsAnInitialCandidateOnlyWhenBothTabsAreSelected() {
+        let inner = PackageValidator()
+        inner.add(Self.makePackageInfo(package: TestData.annualPackage, isSelectedByDefault: true, visible: true))
+
+        for innerSelected in [false, true] {
+            let outer = PackageValidator()
+            outer.addTabPackages(from: inner, initiallySelected: innerSelected)
+            for outerSelected in [false, true] {
+                let root = PackageValidator()
+                root.addTabPackages(from: outer, initiallySelected: outerSelected)
+
+                XCTAssertFalse(root.hasPageScopedPackages)
+                XCTAssertEqual(root.packages.map(\.identifier), [TestData.annualPackage.identifier])
+                XCTAssertEqual(root.defaultSelectedPackage(in: Self.context())?.identifier,
+                               innerSelected && outerSelected ? TestData.annualPackage.identifier : nil)
+            }
+        }
+    }
+
     /// A package inside a tab must not stop the page from reconciling its own packages, and must not be
     /// picked as the replacement either: the user may be on a different tab.
     func testReconcileFallsBackToAPageScopedPackageWhenTabsAlsoHoldPackages() {

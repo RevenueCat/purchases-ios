@@ -290,6 +290,45 @@ private extension TabsWorkflowDefaultPackageTests {
 @available(iOS 15.0, *)
 extension TabsWorkflowDefaultPackageTests {
 
+    func testPageSelectionFollowsActiveTabsClosedSheet() async throws {
+        try await self.assertSheetSelectionAcrossTabSwitches(sheets: .bothTabs)
+    }
+
+    func testSheetSelectionWhenSiblingTabHasDirectPackages() async throws {
+        try await self.assertSheetSelectionAcrossTabSwitches(sheets: .secondTab)
+    }
+
+    private func assertSheetSelectionAcrossTabSwitches(
+        sheets: PackageResolutionTestFixture.SheetPlacement
+    ) async throws {
+        let fixture = try PackageResolutionTestFixture(sheets: sheets)
+        XCTAssertEqual(fixture.context.package?.identifier, "monthly_xl")
+        let dispose = try fixture.view().addToHierarchy()
+        defer { dispose() }
+        try await PackageResolutionTestFixture.settlePresentation()
+        XCTAssertEqual(fixture.context.package?.identifier, "monthly_xl")
+
+        fixture.tabs.tabControlContext.selectedTabId = "tab-1"
+        try await PackageResolutionTestFixture.settlePresentation()
+        XCTAssertEqual(fixture.context.package?.identifier, "$rc_monthly")
+
+        fixture.tabs.tabControlContext.selectedTabId = "tab-2"
+        try await PackageResolutionTestFixture.settlePresentation()
+        XCTAssertEqual(fixture.context.package?.identifier, "monthly_xl")
+    }
+
+    func testPagePackagesTakePrecedenceOverPerTabSheets() async throws {
+        let fixture = try PackageResolutionTestFixture(competingDefaults: true, sheets: .bothTabs)
+        let dispose = try fixture.view().addToHierarchy()
+        defer { dispose() }
+        try await PackageResolutionTestFixture.settlePresentation()
+        XCTAssertEqual(fixture.context.package?.identifier, "$rc_monthly")
+
+        fixture.tabs.tabControlContext.selectedTabId = "tab-1"
+        try await PackageResolutionTestFixture.settlePresentation()
+        XCTAssertEqual(fixture.context.package?.identifier, "$rc_monthly")
+    }
+
     func testPW10RemembersBothManualChoicesAcrossRoundTripsAndRetaps() async throws {
         let fixture = try PackageResolutionTestFixture()
         let dispose = try fixture.view().addToHierarchy()

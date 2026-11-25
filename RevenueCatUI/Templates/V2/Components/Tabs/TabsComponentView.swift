@@ -440,6 +440,11 @@ struct LoadedTabsComponentView: View {
                     if activeTabViewModel.packages.isEmpty {
                         self.selectionState.parentOwnedPackage = self.packageContext.package
                         self.selectionState.parentOwnedVariableContext = self.packageContext.variableContext
+                    } else {
+                        tierPackageContext.adoptRetainedSheetPackage(
+                            from: self.packageContext,
+                            tabPackages: activeTabViewModel.packages
+                        )
                     }
                     self.reconcileSelection(tierPackageContext, tabViewModel: activeTabViewModel)
                 }

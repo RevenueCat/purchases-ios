@@ -71,13 +71,19 @@ class PackageValidator {
         case tab
     }
 
-    private var scopedPackageInfos: [(info: PackageInfo, scope: Scope)] = []
+    private struct ScopedPackageInfo {
+        var info: PackageInfo
+        let scope: Scope
+        let isInitialSelectionCandidate: Bool
+    }
+
+    private var scopedPackageInfos: [ScopedPackageInfo] = []
 
     var packageInfos: [PackageInfo] {
         self.scopedPackageInfos.map(\.info)
     }
 
-    private var hasPageScopedPackages: Bool {
+    var hasPageScopedPackages: Bool {
         self.scopedPackageInfos.contains { $0.scope == .page }
     }
 
@@ -89,11 +95,24 @@ class PackageValidator {
     private var loggedWarnings: Set<String> = []
 
     func add(_ packageInfo: PackageInfo) {
-        self.scopedPackageInfos.append((packageInfo, .page))
+        self.scopedPackageInfos.append(.init(info: packageInfo, scope: .page, isInitialSelectionCandidate: true))
     }
 
-    func addTabScoped(_ packageInfo: PackageInfo) {
-        self.scopedPackageInfos.append((packageInfo, .tab))
+    func addTabScoped(_ packageInfo: PackageInfo, isInitialSelectionCandidate: Bool = true) {
+        self.scopedPackageInfos.append(.init(
+            info: packageInfo,
+            scope: .tab,
+            isInitialSelectionCandidate: isInitialSelectionCandidate
+        ))
+    }
+
+    func addTabPackages(from tab: PackageValidator, initiallySelected: Bool) {
+        for entry in tab.scopedPackageInfos {
+            self.addTabScoped(
+                entry.info,
+                isInitialSelectionCandidate: initiallySelected && entry.isInitialSelectionCandidate
+            )
+        }
     }
 
     func addAncestorStack(
@@ -148,7 +167,8 @@ class PackageValidator {
     /// 2. otherwise the first visible package in document order
     /// 3. otherwise `nil`
     func defaultSelectedPackage(in context: PackageSelectionContext) -> Package? {
-        return self.defaultSelectedPackage(among: self.packageInfos, in: context)
+        let candidates = self.scopedPackageInfos.filter(\.isInitialSelectionCandidate).map(\.info)
+        return self.defaultSelectedPackage(among: candidates, in: context)
     }
 
     /// The selection that should be in effect, or `nil` when nothing needs to change: only moves a

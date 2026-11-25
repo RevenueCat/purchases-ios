@@ -35,7 +35,16 @@ final class SheetOnlyPackageSelectionTests: TestCase {
             variableContext: sheet.variableContext,
             isReconcile: true
         )
-        context.presentedSheetContext = nil
+        context.dismissSheet(retainingSelection: true)
+
+        let tab = PackageContext(package: TestData.annualPackage, variableContext: context.variableContext)
+        tab.adoptRetainedSheetPackage(from: context, tabPackages: [TestData.annualPackage])
+        XCTAssertEqual(tab.package?.identifier, TestData.annualPackage.identifier)
+        XCTAssertNil(tab.manuallySelectedPackage)
+
+        tab.adoptRetainedSheetPackage(from: context, tabPackages: validator.packages)
+        XCTAssertEqual(tab.package?.identifier, context.package?.identifier)
+        XCTAssertEqual(tab.manuallySelectedPackage?.identifier, TestData.monthlyPackage.identifier)
 
         let reopened = context.activateSheet(
             sheetID: "plans",

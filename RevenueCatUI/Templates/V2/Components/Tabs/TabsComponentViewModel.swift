@@ -152,11 +152,12 @@ class TabViewModel {
     let tab: PaywallComponent.TabsComponent.Tab
     let uiConfigProvider: UIConfigProvider
     let stackViewModel: StackComponentViewModel
-    let packages: [Package]
+    private(set) lazy var packages = self.packageValidator.packages
 
     /// Held rather than pre-resolved because a package's visibility can depend on custom variables and
     /// offer eligibility, which are only known at render time.
-    private let packageValidator: PackageValidator
+    private lazy var packageValidator = self.resolvePackageValidator()
+    private let resolvePackageValidator: () -> PackageValidator
 
     var name: String? {
         return self.tab.name
@@ -165,13 +166,12 @@ class TabViewModel {
     init(
         tab: PaywallComponent.TabsComponent.Tab,
         stackViewModel: StackComponentViewModel,
-        packageValidator: PackageValidator,
+        resolvePackageValidator: @escaping () -> PackageValidator,
         uiConfigProvider: UIConfigProvider
     ) {
         self.tab = tab
         self.stackViewModel = stackViewModel
-        self.packageValidator = packageValidator
-        self.packages = packageValidator.packages
+        self.resolvePackageValidator = resolvePackageValidator
         self.uiConfigProvider = uiConfigProvider
     }
 
