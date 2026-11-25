@@ -86,6 +86,8 @@
         "DisabledSignatureVerificationIntegrationTests",
         "DynamicModeSignatureVerificationIntegrationTests",
         "EnforcedSignatureVerificationIntegrationTests",
+        "FallbackURLSignedBackendStoreKit1IntegrationTests",
+        "FallbackURLUnsignedBackendStoreKit1IntegrationTests",
         "InformationalSignatureVerificationIntegrationTests",
         "LoadShedderSignatureVerificationWithoutHeaderHashIntegrationTests",
         "LoadShedderSignatureVerificationWithoutHeaderHashIntegrationTests\/testCanGetOfferings()",
@@ -118,6 +120,7 @@
         "OfflineWithNoMappingStoreKitIntegrationTests",
         "OtherIntegrationTests",
         "PaywallEventsIntegrationTests",
+        "PurchasesFallbackURLBackendStoreKit1IntegrationTests",
         "SignatureVerificationWithoutHeaderHashIntegrationTests",
         "StoreKit1IntegrationTests",
         "StoreKit1ObserverModeIntegrationTests",
@@ -126,7 +129,8 @@
         "StoreKit2JWSObserverModeIntegrationTests",
         "StoreKit2JWSObserverModeWithExistingPurchasesTests",
         "SubscriberAttributesManagerIntegrationTests",
-        "TestCase"
+        "TestCase",
+        "VirtualCurrencyStoreKit1IntegrationTests"
       ],
       "target" : {
         "containerPath" : "container:RevenueCatTests.xcodeproj",
