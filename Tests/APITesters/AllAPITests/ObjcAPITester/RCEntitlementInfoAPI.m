@@ -50,6 +50,8 @@
         case RCPaddle:
         case RCExternal:
         case RCTestStore:
+        case RCRoku:
+        case RCPayPal:
         case RCGalaxy:
             NSLog(@"%ld", (long)rs);
             break;

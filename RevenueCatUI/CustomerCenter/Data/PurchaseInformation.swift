@@ -615,9 +615,10 @@ extension PurchaseInformation {
         case .promotional: return .cardStorePromotional
         case .amazon: return .storeAmazon
         case .unknownStore: return .storeUnknownStore
-        case .paddle, .stripe, .rcBilling, .external: return .storeWeb
+        case .payPal, .paddle, .stripe, .rcBilling, .external: return .storeWeb
         case .testStore: return .testStore
         case .galaxy: return .galaxyStore
+        case .roku: return .rokuStore
         }
     }
 }

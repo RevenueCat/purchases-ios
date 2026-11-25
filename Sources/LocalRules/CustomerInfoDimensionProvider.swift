@@ -275,6 +275,8 @@ private extension Store {
         case .paddle: return "paddle"
         case .testStore: return "test_store"
         case .galaxy: return "galaxy"
+        case .roku: return "roku"
+        case .payPal: return "paypal"
         }
     }
 

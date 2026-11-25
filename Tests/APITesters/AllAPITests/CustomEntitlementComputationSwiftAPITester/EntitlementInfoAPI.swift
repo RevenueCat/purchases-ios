@@ -55,7 +55,9 @@ func checkEntitlementInfoEnums() {
          .paddle,
          .external,
          .testStore,
-         .galaxy:
+         .galaxy,
+         .roku,
+         .payPal:
         print(store!)
     @unknown default:
         fatalError()

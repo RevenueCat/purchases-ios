@@ -1853,6 +1853,8 @@ extension RevenueCat.Configuration {
   @objc(RCPaddle) case paddle = 9
   @objc(RCTestStore) case testStore = 10
   @objc(RCGalaxy) case galaxy = 11
+  @objc(RCRoku) case roku = 12
+  @objc(RCPayPal) case payPal = 13
   public init?(rawValue: Swift.Int)
   public typealias RawValue = Swift.Int
   public var rawValue: Swift.Int {

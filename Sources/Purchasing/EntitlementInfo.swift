@@ -57,6 +57,12 @@ import Foundation
     /// For entitlements granted via the Galaxy Store.
     @objc(RCGalaxy) case galaxy = 11
 
+    /// For entitlements granted via Roku.
+    @objc(RCRoku) case roku = 12
+
+    /// For entitlements granted via PayPal.
+    @objc(RCPayPal) case payPal = 13
+
 }
 
 extension Store: CaseIterable {}

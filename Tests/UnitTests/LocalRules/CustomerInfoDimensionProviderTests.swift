@@ -310,7 +310,9 @@ struct CustomerInfoDimensionProviderTests {
             ("external", "external"),
             ("paddle", "paddle"),
             ("test_store", "test_store"),
-            ("galaxy", "galaxy")
+            ("galaxy", "galaxy"),
+            ("roku", "roku"),
+            ("paypal", "paypal")
         ]
         let subscriptions = stores.enumerated().reduce(into: [String: Any]()) { result, element in
             result[String(format: "product_%02d", element.offset)] = Self.subscription(store: element.element.rawValue)
