@@ -1,3 +1,6 @@
+#### Releasing a specific version from CircleCI:
+Trigger a pipeline on `main` in CircleCI with the parameters `action: bump` and `next_version: <version>` (for example `10.0.0`). This opens the release PR for that version without running anything locally, also for major versions, which the weekly automatic bump skips. Then continue from the PR approval step below.
+
 #### Releasing:
 1. Create a `fastlane/.env` file with your GitHub API token (see `fastlane/.env.SAMPLE`). This will be used to create the PR, so you should use your own token so the PR gets assigned to you.
 2. Run `bundle exec fastlane ios bump`
