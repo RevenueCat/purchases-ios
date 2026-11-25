@@ -1,0 +1,709 @@
+{
+  "schema_version": 1,
+  "cases": [
+    {
+      "id": "appVersion/equal/1.2.0/new",
+      "field": "appVersion",
+      "operator": "equal",
+      "profile": "new",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"app_version\", null]}, null]}, {\"==\": [{\"rc.semverCompare\": [{\"var\": \"app_version\"}, \"1.2.0\"]}, 0]}]}",
+      "expected": true
+    },
+    {
+      "id": "appVersion/equal/1.2.0/renewed",
+      "field": "appVersion",
+      "operator": "equal",
+      "profile": "renewed",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"app_version\", null]}, null]}, {\"==\": [{\"rc.semverCompare\": [{\"var\": \"app_version\"}, \"1.2.0\"]}, 0]}]}",
+      "expected": false
+    },
+    {
+      "id": "appVersion/equal/1.2.0/first_purchase",
+      "field": "appVersion",
+      "operator": "equal",
+      "profile": "first_purchase",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"app_version\", null]}, null]}, {\"==\": [{\"rc.semverCompare\": [{\"var\": \"app_version\"}, \"1.2.0\"]}, 0]}]}",
+      "expected": false
+    },
+    {
+      "id": "appVersion/equal/1.2.0/unavailable",
+      "field": "appVersion",
+      "operator": "equal",
+      "profile": "unavailable",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"app_version\", null]}, null]}, {\"==\": [{\"rc.semverCompare\": [{\"var\": \"app_version\"}, \"1.2.0\"]}, 0]}]}",
+      "expected": false
+    },
+    {
+      "id": "appVersion/equal/1.10.0/new",
+      "field": "appVersion",
+      "operator": "equal",
+      "profile": "new",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"app_version\", null]}, null]}, {\"==\": [{\"rc.semverCompare\": [{\"var\": \"app_version\"}, \"1.10.0\"]}, 0]}]}",
+      "expected": false
+    },
+    {
+      "id": "appVersion/equal/1.10.0/renewed",
+      "field": "appVersion",
+      "operator": "equal",
+      "profile": "renewed",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"app_version\", null]}, null]}, {\"==\": [{\"rc.semverCompare\": [{\"var\": \"app_version\"}, \"1.10.0\"]}, 0]}]}",
+      "expected": true
+    },
+    {
+      "id": "appVersion/equal/1.10.0/first_purchase",
+      "field": "appVersion",
+      "operator": "equal",
+      "profile": "first_purchase",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"app_version\", null]}, null]}, {\"==\": [{\"rc.semverCompare\": [{\"var\": \"app_version\"}, \"1.10.0\"]}, 0]}]}",
+      "expected": false
+    },
+    {
+      "id": "appVersion/equal/1.10.0/unavailable",
+      "field": "appVersion",
+      "operator": "equal",
+      "profile": "unavailable",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"app_version\", null]}, null]}, {\"==\": [{\"rc.semverCompare\": [{\"var\": \"app_version\"}, \"1.10.0\"]}, 0]}]}",
+      "expected": false
+    },
+    {
+      "id": "appVersion/notEqual/1.2.0/new",
+      "field": "appVersion",
+      "operator": "notEqual",
+      "profile": "new",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"app_version\", null]}, null]}, {\"!=\": [{\"rc.semverCompare\": [{\"var\": \"app_version\"}, \"1.2.0\"]}, 0]}]}",
+      "expected": false
+    },
+    {
+      "id": "appVersion/notEqual/1.2.0/renewed",
+      "field": "appVersion",
+      "operator": "notEqual",
+      "profile": "renewed",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"app_version\", null]}, null]}, {\"!=\": [{\"rc.semverCompare\": [{\"var\": \"app_version\"}, \"1.2.0\"]}, 0]}]}",
+      "expected": true
+    },
+    {
+      "id": "appVersion/notEqual/1.2.0/first_purchase",
+      "field": "appVersion",
+      "operator": "notEqual",
+      "profile": "first_purchase",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"app_version\", null]}, null]}, {\"!=\": [{\"rc.semverCompare\": [{\"var\": \"app_version\"}, \"1.2.0\"]}, 0]}]}",
+      "expected": true
+    },
+    {
+      "id": "appVersion/notEqual/1.2.0/unavailable",
+      "field": "appVersion",
+      "operator": "notEqual",
+      "profile": "unavailable",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"app_version\", null]}, null]}, {\"!=\": [{\"rc.semverCompare\": [{\"var\": \"app_version\"}, \"1.2.0\"]}, 0]}]}",
+      "expected": false
+    },
+    {
+      "id": "appVersion/notEqual/1.10.0/new",
+      "field": "appVersion",
+      "operator": "notEqual",
+      "profile": "new",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"app_version\", null]}, null]}, {\"!=\": [{\"rc.semverCompare\": [{\"var\": \"app_version\"}, \"1.10.0\"]}, 0]}]}",
+      "expected": true
+    },
+    {
+      "id": "appVersion/notEqual/1.10.0/renewed",
+      "field": "appVersion",
+      "operator": "notEqual",
+      "profile": "renewed",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"app_version\", null]}, null]}, {\"!=\": [{\"rc.semverCompare\": [{\"var\": \"app_version\"}, \"1.10.0\"]}, 0]}]}",
+      "expected": false
+    },
+    {
+      "id": "appVersion/notEqual/1.10.0/first_purchase",
+      "field": "appVersion",
+      "operator": "notEqual",
+      "profile": "first_purchase",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"app_version\", null]}, null]}, {\"!=\": [{\"rc.semverCompare\": [{\"var\": \"app_version\"}, \"1.10.0\"]}, 0]}]}",
+      "expected": true
+    },
+    {
+      "id": "appVersion/notEqual/1.10.0/unavailable",
+      "field": "appVersion",
+      "operator": "notEqual",
+      "profile": "unavailable",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"app_version\", null]}, null]}, {\"!=\": [{\"rc.semverCompare\": [{\"var\": \"app_version\"}, \"1.10.0\"]}, 0]}]}",
+      "expected": false
+    },
+    {
+      "id": "appVersion/greaterThan/1.2.0/new",
+      "field": "appVersion",
+      "operator": "greaterThan",
+      "profile": "new",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"app_version\", null]}, null]}, {\">\": [{\"rc.semverCompare\": [{\"var\": \"app_version\"}, \"1.2.0\"]}, 0]}]}",
+      "expected": false
+    },
+    {
+      "id": "appVersion/greaterThan/1.2.0/renewed",
+      "field": "appVersion",
+      "operator": "greaterThan",
+      "profile": "renewed",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"app_version\", null]}, null]}, {\">\": [{\"rc.semverCompare\": [{\"var\": \"app_version\"}, \"1.2.0\"]}, 0]}]}",
+      "expected": true
+    },
+    {
+      "id": "appVersion/greaterThan/1.2.0/first_purchase",
+      "field": "appVersion",
+      "operator": "greaterThan",
+      "profile": "first_purchase",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"app_version\", null]}, null]}, {\">\": [{\"rc.semverCompare\": [{\"var\": \"app_version\"}, \"1.2.0\"]}, 0]}]}",
+      "expected": false
+    },
+    {
+      "id": "appVersion/greaterThan/1.2.0/unavailable",
+      "field": "appVersion",
+      "operator": "greaterThan",
+      "profile": "unavailable",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"app_version\", null]}, null]}, {\">\": [{\"rc.semverCompare\": [{\"var\": \"app_version\"}, \"1.2.0\"]}, 0]}]}",
+      "expected": false
+    },
+    {
+      "id": "appVersion/greaterThan/1.10.0/new",
+      "field": "appVersion",
+      "operator": "greaterThan",
+      "profile": "new",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"app_version\", null]}, null]}, {\">\": [{\"rc.semverCompare\": [{\"var\": \"app_version\"}, \"1.10.0\"]}, 0]}]}",
+      "expected": false
+    },
+    {
+      "id": "appVersion/greaterThan/1.10.0/renewed",
+      "field": "appVersion",
+      "operator": "greaterThan",
+      "profile": "renewed",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"app_version\", null]}, null]}, {\">\": [{\"rc.semverCompare\": [{\"var\": \"app_version\"}, \"1.10.0\"]}, 0]}]}",
+      "expected": false
+    },
+    {
+      "id": "appVersion/greaterThan/1.10.0/first_purchase",
+      "field": "appVersion",
+      "operator": "greaterThan",
+      "profile": "first_purchase",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"app_version\", null]}, null]}, {\">\": [{\"rc.semverCompare\": [{\"var\": \"app_version\"}, \"1.10.0\"]}, 0]}]}",
+      "expected": false
+    },
+    {
+      "id": "appVersion/greaterThan/1.10.0/unavailable",
+      "field": "appVersion",
+      "operator": "greaterThan",
+      "profile": "unavailable",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"app_version\", null]}, null]}, {\">\": [{\"rc.semverCompare\": [{\"var\": \"app_version\"}, \"1.10.0\"]}, 0]}]}",
+      "expected": false
+    },
+    {
+      "id": "appVersion/greaterThanOrEqual/1.2.0/new",
+      "field": "appVersion",
+      "operator": "greaterThanOrEqual",
+      "profile": "new",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"app_version\", null]}, null]}, {\">=\": [{\"rc.semverCompare\": [{\"var\": \"app_version\"}, \"1.2.0\"]}, 0]}]}",
+      "expected": true
+    },
+    {
+      "id": "appVersion/greaterThanOrEqual/1.2.0/renewed",
+      "field": "appVersion",
+      "operator": "greaterThanOrEqual",
+      "profile": "renewed",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"app_version\", null]}, null]}, {\">=\": [{\"rc.semverCompare\": [{\"var\": \"app_version\"}, \"1.2.0\"]}, 0]}]}",
+      "expected": true
+    },
+    {
+      "id": "appVersion/greaterThanOrEqual/1.2.0/first_purchase",
+      "field": "appVersion",
+      "operator": "greaterThanOrEqual",
+      "profile": "first_purchase",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"app_version\", null]}, null]}, {\">=\": [{\"rc.semverCompare\": [{\"var\": \"app_version\"}, \"1.2.0\"]}, 0]}]}",
+      "expected": false
+    },
+    {
+      "id": "appVersion/greaterThanOrEqual/1.2.0/unavailable",
+      "field": "appVersion",
+      "operator": "greaterThanOrEqual",
+      "profile": "unavailable",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"app_version\", null]}, null]}, {\">=\": [{\"rc.semverCompare\": [{\"var\": \"app_version\"}, \"1.2.0\"]}, 0]}]}",
+      "expected": false
+    },
+    {
+      "id": "appVersion/greaterThanOrEqual/1.10.0/new",
+      "field": "appVersion",
+      "operator": "greaterThanOrEqual",
+      "profile": "new",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"app_version\", null]}, null]}, {\">=\": [{\"rc.semverCompare\": [{\"var\": \"app_version\"}, \"1.10.0\"]}, 0]}]}",
+      "expected": false
+    },
+    {
+      "id": "appVersion/greaterThanOrEqual/1.10.0/renewed",
+      "field": "appVersion",
+      "operator": "greaterThanOrEqual",
+      "profile": "renewed",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"app_version\", null]}, null]}, {\">=\": [{\"rc.semverCompare\": [{\"var\": \"app_version\"}, \"1.10.0\"]}, 0]}]}",
+      "expected": true
+    },
+    {
+      "id": "appVersion/greaterThanOrEqual/1.10.0/first_purchase",
+      "field": "appVersion",
+      "operator": "greaterThanOrEqual",
+      "profile": "first_purchase",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"app_version\", null]}, null]}, {\">=\": [{\"rc.semverCompare\": [{\"var\": \"app_version\"}, \"1.10.0\"]}, 0]}]}",
+      "expected": false
+    },
+    {
+      "id": "appVersion/greaterThanOrEqual/1.10.0/unavailable",
+      "field": "appVersion",
+      "operator": "greaterThanOrEqual",
+      "profile": "unavailable",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"app_version\", null]}, null]}, {\">=\": [{\"rc.semverCompare\": [{\"var\": \"app_version\"}, \"1.10.0\"]}, 0]}]}",
+      "expected": false
+    },
+    {
+      "id": "appVersion/lessThan/1.2.0/new",
+      "field": "appVersion",
+      "operator": "lessThan",
+      "profile": "new",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"app_version\", null]}, null]}, {\"<\": [{\"rc.semverCompare\": [{\"var\": \"app_version\"}, \"1.2.0\"]}, 0]}]}",
+      "expected": false
+    },
+    {
+      "id": "appVersion/lessThan/1.2.0/renewed",
+      "field": "appVersion",
+      "operator": "lessThan",
+      "profile": "renewed",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"app_version\", null]}, null]}, {\"<\": [{\"rc.semverCompare\": [{\"var\": \"app_version\"}, \"1.2.0\"]}, 0]}]}",
+      "expected": false
+    },
+    {
+      "id": "appVersion/lessThan/1.2.0/first_purchase",
+      "field": "appVersion",
+      "operator": "lessThan",
+      "profile": "first_purchase",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"app_version\", null]}, null]}, {\"<\": [{\"rc.semverCompare\": [{\"var\": \"app_version\"}, \"1.2.0\"]}, 0]}]}",
+      "expected": true
+    },
+    {
+      "id": "appVersion/lessThan/1.2.0/unavailable",
+      "field": "appVersion",
+      "operator": "lessThan",
+      "profile": "unavailable",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"app_version\", null]}, null]}, {\"<\": [{\"rc.semverCompare\": [{\"var\": \"app_version\"}, \"1.2.0\"]}, 0]}]}",
+      "expected": false
+    },
+    {
+      "id": "appVersion/lessThan/1.10.0/new",
+      "field": "appVersion",
+      "operator": "lessThan",
+      "profile": "new",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"app_version\", null]}, null]}, {\"<\": [{\"rc.semverCompare\": [{\"var\": \"app_version\"}, \"1.10.0\"]}, 0]}]}",
+      "expected": true
+    },
+    {
+      "id": "appVersion/lessThan/1.10.0/renewed",
+      "field": "appVersion",
+      "operator": "lessThan",
+      "profile": "renewed",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"app_version\", null]}, null]}, {\"<\": [{\"rc.semverCompare\": [{\"var\": \"app_version\"}, \"1.10.0\"]}, 0]}]}",
+      "expected": false
+    },
+    {
+      "id": "appVersion/lessThan/1.10.0/first_purchase",
+      "field": "appVersion",
+      "operator": "lessThan",
+      "profile": "first_purchase",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"app_version\", null]}, null]}, {\"<\": [{\"rc.semverCompare\": [{\"var\": \"app_version\"}, \"1.10.0\"]}, 0]}]}",
+      "expected": true
+    },
+    {
+      "id": "appVersion/lessThan/1.10.0/unavailable",
+      "field": "appVersion",
+      "operator": "lessThan",
+      "profile": "unavailable",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"app_version\", null]}, null]}, {\"<\": [{\"rc.semverCompare\": [{\"var\": \"app_version\"}, \"1.10.0\"]}, 0]}]}",
+      "expected": false
+    },
+    {
+      "id": "appVersion/lessThanOrEqual/1.2.0/new",
+      "field": "appVersion",
+      "operator": "lessThanOrEqual",
+      "profile": "new",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"app_version\", null]}, null]}, {\"<=\": [{\"rc.semverCompare\": [{\"var\": \"app_version\"}, \"1.2.0\"]}, 0]}]}",
+      "expected": true
+    },
+    {
+      "id": "appVersion/lessThanOrEqual/1.2.0/renewed",
+      "field": "appVersion",
+      "operator": "lessThanOrEqual",
+      "profile": "renewed",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"app_version\", null]}, null]}, {\"<=\": [{\"rc.semverCompare\": [{\"var\": \"app_version\"}, \"1.2.0\"]}, 0]}]}",
+      "expected": false
+    },
+    {
+      "id": "appVersion/lessThanOrEqual/1.2.0/first_purchase",
+      "field": "appVersion",
+      "operator": "lessThanOrEqual",
+      "profile": "first_purchase",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"app_version\", null]}, null]}, {\"<=\": [{\"rc.semverCompare\": [{\"var\": \"app_version\"}, \"1.2.0\"]}, 0]}]}",
+      "expected": true
+    },
+    {
+      "id": "appVersion/lessThanOrEqual/1.2.0/unavailable",
+      "field": "appVersion",
+      "operator": "lessThanOrEqual",
+      "profile": "unavailable",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"app_version\", null]}, null]}, {\"<=\": [{\"rc.semverCompare\": [{\"var\": \"app_version\"}, \"1.2.0\"]}, 0]}]}",
+      "expected": false
+    },
+    {
+      "id": "appVersion/lessThanOrEqual/1.10.0/new",
+      "field": "appVersion",
+      "operator": "lessThanOrEqual",
+      "profile": "new",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"app_version\", null]}, null]}, {\"<=\": [{\"rc.semverCompare\": [{\"var\": \"app_version\"}, \"1.10.0\"]}, 0]}]}",
+      "expected": true
+    },
+    {
+      "id": "appVersion/lessThanOrEqual/1.10.0/renewed",
+      "field": "appVersion",
+      "operator": "lessThanOrEqual",
+      "profile": "renewed",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"app_version\", null]}, null]}, {\"<=\": [{\"rc.semverCompare\": [{\"var\": \"app_version\"}, \"1.10.0\"]}, 0]}]}",
+      "expected": true
+    },
+    {
+      "id": "appVersion/lessThanOrEqual/1.10.0/first_purchase",
+      "field": "appVersion",
+      "operator": "lessThanOrEqual",
+      "profile": "first_purchase",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"app_version\", null]}, null]}, {\"<=\": [{\"rc.semverCompare\": [{\"var\": \"app_version\"}, \"1.10.0\"]}, 0]}]}",
+      "expected": true
+    },
+    {
+      "id": "appVersion/lessThanOrEqual/1.10.0/unavailable",
+      "field": "appVersion",
+      "operator": "lessThanOrEqual",
+      "profile": "unavailable",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"app_version\", null]}, null]}, {\"<=\": [{\"rc.semverCompare\": [{\"var\": \"app_version\"}, \"1.10.0\"]}, 0]}]}",
+      "expected": false
+    },
+    {
+      "id": "appVersion/contains/1.2.0/new",
+      "field": "appVersion",
+      "operator": "contains",
+      "profile": "new",
+      "predicate": "{\"in\": [{\"rc.lower\": \"1.2.0\"}, {\"rc.lower\": {\"var\": \"app_version\"}}]}",
+      "expected": true
+    },
+    {
+      "id": "appVersion/contains/1.2.0/renewed",
+      "field": "appVersion",
+      "operator": "contains",
+      "profile": "renewed",
+      "predicate": "{\"in\": [{\"rc.lower\": \"1.2.0\"}, {\"rc.lower\": {\"var\": \"app_version\"}}]}",
+      "expected": false
+    },
+    {
+      "id": "appVersion/contains/1.2.0/first_purchase",
+      "field": "appVersion",
+      "operator": "contains",
+      "profile": "first_purchase",
+      "predicate": "{\"in\": [{\"rc.lower\": \"1.2.0\"}, {\"rc.lower\": {\"var\": \"app_version\"}}]}",
+      "expected": false
+    },
+    {
+      "id": "appVersion/contains/1.2.0/unavailable",
+      "field": "appVersion",
+      "operator": "contains",
+      "profile": "unavailable",
+      "predicate": "{\"in\": [{\"rc.lower\": \"1.2.0\"}, {\"rc.lower\": {\"var\": \"app_version\"}}]}",
+      "expected": false
+    },
+    {
+      "id": "appVersion/contains/1.10.0/new",
+      "field": "appVersion",
+      "operator": "contains",
+      "profile": "new",
+      "predicate": "{\"in\": [{\"rc.lower\": \"1.10.0\"}, {\"rc.lower\": {\"var\": \"app_version\"}}]}",
+      "expected": false
+    },
+    {
+      "id": "appVersion/contains/1.10.0/renewed",
+      "field": "appVersion",
+      "operator": "contains",
+      "profile": "renewed",
+      "predicate": "{\"in\": [{\"rc.lower\": \"1.10.0\"}, {\"rc.lower\": {\"var\": \"app_version\"}}]}",
+      "expected": true
+    },
+    {
+      "id": "appVersion/contains/1.10.0/first_purchase",
+      "field": "appVersion",
+      "operator": "contains",
+      "profile": "first_purchase",
+      "predicate": "{\"in\": [{\"rc.lower\": \"1.10.0\"}, {\"rc.lower\": {\"var\": \"app_version\"}}]}",
+      "expected": false
+    },
+    {
+      "id": "appVersion/contains/1.10.0/unavailable",
+      "field": "appVersion",
+      "operator": "contains",
+      "profile": "unavailable",
+      "predicate": "{\"in\": [{\"rc.lower\": \"1.10.0\"}, {\"rc.lower\": {\"var\": \"app_version\"}}]}",
+      "expected": false
+    },
+    {
+      "id": "appVersion/doesNotContain/1.2.0/new",
+      "field": "appVersion",
+      "operator": "doesNotContain",
+      "profile": "new",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"app_version\", null]}, null]}, {\"!\": [{\"in\": [{\"rc.lower\": \"1.2.0\"}, {\"rc.lower\": {\"var\": \"app_version\"}}]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "appVersion/doesNotContain/1.2.0/renewed",
+      "field": "appVersion",
+      "operator": "doesNotContain",
+      "profile": "renewed",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"app_version\", null]}, null]}, {\"!\": [{\"in\": [{\"rc.lower\": \"1.2.0\"}, {\"rc.lower\": {\"var\": \"app_version\"}}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "appVersion/doesNotContain/1.2.0/first_purchase",
+      "field": "appVersion",
+      "operator": "doesNotContain",
+      "profile": "first_purchase",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"app_version\", null]}, null]}, {\"!\": [{\"in\": [{\"rc.lower\": \"1.2.0\"}, {\"rc.lower\": {\"var\": \"app_version\"}}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "appVersion/doesNotContain/1.2.0/unavailable",
+      "field": "appVersion",
+      "operator": "doesNotContain",
+      "profile": "unavailable",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"app_version\", null]}, null]}, {\"!\": [{\"in\": [{\"rc.lower\": \"1.2.0\"}, {\"rc.lower\": {\"var\": \"app_version\"}}]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "appVersion/doesNotContain/1.10.0/new",
+      "field": "appVersion",
+      "operator": "doesNotContain",
+      "profile": "new",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"app_version\", null]}, null]}, {\"!\": [{\"in\": [{\"rc.lower\": \"1.10.0\"}, {\"rc.lower\": {\"var\": \"app_version\"}}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "appVersion/doesNotContain/1.10.0/renewed",
+      "field": "appVersion",
+      "operator": "doesNotContain",
+      "profile": "renewed",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"app_version\", null]}, null]}, {\"!\": [{\"in\": [{\"rc.lower\": \"1.10.0\"}, {\"rc.lower\": {\"var\": \"app_version\"}}]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "appVersion/doesNotContain/1.10.0/first_purchase",
+      "field": "appVersion",
+      "operator": "doesNotContain",
+      "profile": "first_purchase",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"app_version\", null]}, null]}, {\"!\": [{\"in\": [{\"rc.lower\": \"1.10.0\"}, {\"rc.lower\": {\"var\": \"app_version\"}}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "appVersion/doesNotContain/1.10.0/unavailable",
+      "field": "appVersion",
+      "operator": "doesNotContain",
+      "profile": "unavailable",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"app_version\", null]}, null]}, {\"!\": [{\"in\": [{\"rc.lower\": \"1.10.0\"}, {\"rc.lower\": {\"var\": \"app_version\"}}]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "appVersion/isEmpty//new",
+      "field": "appVersion",
+      "operator": "isEmpty",
+      "profile": "new",
+      "predicate": "{\"==\": [{\"var\": [\"app_version\", null]}, null]}",
+      "expected": false
+    },
+    {
+      "id": "appVersion/isEmpty//renewed",
+      "field": "appVersion",
+      "operator": "isEmpty",
+      "profile": "renewed",
+      "predicate": "{\"==\": [{\"var\": [\"app_version\", null]}, null]}",
+      "expected": false
+    },
+    {
+      "id": "appVersion/isEmpty//first_purchase",
+      "field": "appVersion",
+      "operator": "isEmpty",
+      "profile": "first_purchase",
+      "predicate": "{\"==\": [{\"var\": [\"app_version\", null]}, null]}",
+      "expected": false
+    },
+    {
+      "id": "appVersion/isEmpty//unavailable",
+      "field": "appVersion",
+      "operator": "isEmpty",
+      "profile": "unavailable",
+      "predicate": "{\"==\": [{\"var\": [\"app_version\", null]}, null]}",
+      "expected": true
+    },
+    {
+      "id": "appVersion/isNotEmpty//new",
+      "field": "appVersion",
+      "operator": "isNotEmpty",
+      "profile": "new",
+      "predicate": "{\"!=\": [{\"var\": [\"app_version\", null]}, null]}",
+      "expected": true
+    },
+    {
+      "id": "appVersion/isNotEmpty//renewed",
+      "field": "appVersion",
+      "operator": "isNotEmpty",
+      "profile": "renewed",
+      "predicate": "{\"!=\": [{\"var\": [\"app_version\", null]}, null]}",
+      "expected": true
+    },
+    {
+      "id": "appVersion/isNotEmpty//first_purchase",
+      "field": "appVersion",
+      "operator": "isNotEmpty",
+      "profile": "first_purchase",
+      "predicate": "{\"!=\": [{\"var\": [\"app_version\", null]}, null]}",
+      "expected": true
+    },
+    {
+      "id": "appVersion/isNotEmpty//unavailable",
+      "field": "appVersion",
+      "operator": "isNotEmpty",
+      "profile": "unavailable",
+      "predicate": "{\"!=\": [{\"var\": [\"app_version\", null]}, null]}",
+      "expected": false
+    },
+    {
+      "id": "appVersion/is/1.2.0/new",
+      "field": "appVersion",
+      "operator": "is",
+      "profile": "new",
+      "predicate": "{\"==\": [{\"var\": \"app_version\"}, \"1.2.0\"]}",
+      "expected": true
+    },
+    {
+      "id": "appVersion/is/1.2.0/renewed",
+      "field": "appVersion",
+      "operator": "is",
+      "profile": "renewed",
+      "predicate": "{\"==\": [{\"var\": \"app_version\"}, \"1.2.0\"]}",
+      "expected": false
+    },
+    {
+      "id": "appVersion/is/1.2.0/first_purchase",
+      "field": "appVersion",
+      "operator": "is",
+      "profile": "first_purchase",
+      "predicate": "{\"==\": [{\"var\": \"app_version\"}, \"1.2.0\"]}",
+      "expected": false
+    },
+    {
+      "id": "appVersion/is/1.2.0/unavailable",
+      "field": "appVersion",
+      "operator": "is",
+      "profile": "unavailable",
+      "predicate": "{\"==\": [{\"var\": \"app_version\"}, \"1.2.0\"]}",
+      "expected": false
+    },
+    {
+      "id": "appVersion/is/1.10.0/new",
+      "field": "appVersion",
+      "operator": "is",
+      "profile": "new",
+      "predicate": "{\"==\": [{\"var\": \"app_version\"}, \"1.10.0\"]}",
+      "expected": false
+    },
+    {
+      "id": "appVersion/is/1.10.0/renewed",
+      "field": "appVersion",
+      "operator": "is",
+      "profile": "renewed",
+      "predicate": "{\"==\": [{\"var\": \"app_version\"}, \"1.10.0\"]}",
+      "expected": true
+    },
+    {
+      "id": "appVersion/is/1.10.0/first_purchase",
+      "field": "appVersion",
+      "operator": "is",
+      "profile": "first_purchase",
+      "predicate": "{\"==\": [{\"var\": \"app_version\"}, \"1.10.0\"]}",
+      "expected": false
+    },
+    {
+      "id": "appVersion/is/1.10.0/unavailable",
+      "field": "appVersion",
+      "operator": "is",
+      "profile": "unavailable",
+      "predicate": "{\"==\": [{\"var\": \"app_version\"}, \"1.10.0\"]}",
+      "expected": false
+    },
+    {
+      "id": "appVersion/isNot/1.2.0/new",
+      "field": "appVersion",
+      "operator": "isNot",
+      "profile": "new",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"app_version\", null]}, null]}, {\"!=\": [{\"var\": \"app_version\"}, \"1.2.0\"]}]}",
+      "expected": false
+    },
+    {
+      "id": "appVersion/isNot/1.2.0/renewed",
+      "field": "appVersion",
+      "operator": "isNot",
+      "profile": "renewed",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"app_version\", null]}, null]}, {\"!=\": [{\"var\": \"app_version\"}, \"1.2.0\"]}]}",
+      "expected": true
+    },
+    {
+      "id": "appVersion/isNot/1.2.0/first_purchase",
+      "field": "appVersion",
+      "operator": "isNot",
+      "profile": "first_purchase",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"app_version\", null]}, null]}, {\"!=\": [{\"var\": \"app_version\"}, \"1.2.0\"]}]}",
+      "expected": true
+    },
+    {
+      "id": "appVersion/isNot/1.2.0/unavailable",
+      "field": "appVersion",
+      "operator": "isNot",
+      "profile": "unavailable",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"app_version\", null]}, null]}, {\"!=\": [{\"var\": \"app_version\"}, \"1.2.0\"]}]}",
+      "expected": false
+    },
+    {
+      "id": "appVersion/isNot/1.10.0/new",
+      "field": "appVersion",
+      "operator": "isNot",
+      "profile": "new",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"app_version\", null]}, null]}, {\"!=\": [{\"var\": \"app_version\"}, \"1.10.0\"]}]}",
+      "expected": true
+    },
+    {
+      "id": "appVersion/isNot/1.10.0/renewed",
+      "field": "appVersion",
+      "operator": "isNot",
+      "profile": "renewed",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"app_version\", null]}, null]}, {\"!=\": [{\"var\": \"app_version\"}, \"1.10.0\"]}]}",
+      "expected": false
+    },
+    {
+      "id": "appVersion/isNot/1.10.0/first_purchase",
+      "field": "appVersion",
+      "operator": "isNot",
+      "profile": "first_purchase",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"app_version\", null]}, null]}, {\"!=\": [{\"var\": \"app_version\"}, \"1.10.0\"]}]}",
+      "expected": true
+    },
+    {
+      "id": "appVersion/isNot/1.10.0/unavailable",
+      "field": "appVersion",
+      "operator": "isNot",
+      "profile": "unavailable",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": [\"app_version\", null]}, null]}, {\"!=\": [{\"var\": \"app_version\"}, \"1.10.0\"]}]}",
+      "expected": false
+    }
+  ]
+}

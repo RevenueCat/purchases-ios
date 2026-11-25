@@ -1,0 +1,1013 @@
+{
+  "schema_version": 1,
+  "cases": [
+    {
+      "id": "mostRecentRenewalAt/before/2024-05-18/new",
+      "field": "mostRecentRenewalAt",
+      "operator": "before",
+      "profile": "new",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\"<\": [{\"var\": \"most_recent_renewal_at\"}, 1715990400000]}]}",
+      "expected": false
+    },
+    {
+      "id": "mostRecentRenewalAt/before/2024-05-18/renewed",
+      "field": "mostRecentRenewalAt",
+      "operator": "before",
+      "profile": "renewed",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\"<\": [{\"var\": \"most_recent_renewal_at\"}, 1715990400000]}]}",
+      "expected": true
+    },
+    {
+      "id": "mostRecentRenewalAt/before/2024-05-18/first_purchase",
+      "field": "mostRecentRenewalAt",
+      "operator": "before",
+      "profile": "first_purchase",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\"<\": [{\"var\": \"most_recent_renewal_at\"}, 1715990400000]}]}",
+      "expected": false
+    },
+    {
+      "id": "mostRecentRenewalAt/before/2024-05-18/unavailable",
+      "field": "mostRecentRenewalAt",
+      "operator": "before",
+      "profile": "unavailable",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\"<\": [{\"var\": \"most_recent_renewal_at\"}, 1715990400000]}]}",
+      "expected": false
+    },
+    {
+      "id": "mostRecentRenewalAt/before/2024-05-18/purchase_history",
+      "field": "mostRecentRenewalAt",
+      "operator": "before",
+      "profile": "purchase_history",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\"<\": [{\"var\": \"most_recent_renewal_at\"}, 1715990400000]}]}",
+      "expected": false
+    },
+    {
+      "id": "mostRecentRenewalAt/before/2024-05-18/one_time_only",
+      "field": "mostRecentRenewalAt",
+      "operator": "before",
+      "profile": "one_time_only",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\"<\": [{\"var\": \"most_recent_renewal_at\"}, 1715990400000]}]}",
+      "expected": false
+    },
+    {
+      "id": "mostRecentRenewalAt/before/2024-05-25/new",
+      "field": "mostRecentRenewalAt",
+      "operator": "before",
+      "profile": "new",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\"<\": [{\"var\": \"most_recent_renewal_at\"}, 1716595200000]}]}",
+      "expected": false
+    },
+    {
+      "id": "mostRecentRenewalAt/before/2024-05-25/renewed",
+      "field": "mostRecentRenewalAt",
+      "operator": "before",
+      "profile": "renewed",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\"<\": [{\"var\": \"most_recent_renewal_at\"}, 1716595200000]}]}",
+      "expected": true
+    },
+    {
+      "id": "mostRecentRenewalAt/before/2024-05-25/first_purchase",
+      "field": "mostRecentRenewalAt",
+      "operator": "before",
+      "profile": "first_purchase",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\"<\": [{\"var\": \"most_recent_renewal_at\"}, 1716595200000]}]}",
+      "expected": false
+    },
+    {
+      "id": "mostRecentRenewalAt/before/2024-05-25/unavailable",
+      "field": "mostRecentRenewalAt",
+      "operator": "before",
+      "profile": "unavailable",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\"<\": [{\"var\": \"most_recent_renewal_at\"}, 1716595200000]}]}",
+      "expected": false
+    },
+    {
+      "id": "mostRecentRenewalAt/before/2024-05-25/purchase_history",
+      "field": "mostRecentRenewalAt",
+      "operator": "before",
+      "profile": "purchase_history",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\"<\": [{\"var\": \"most_recent_renewal_at\"}, 1716595200000]}]}",
+      "expected": false
+    },
+    {
+      "id": "mostRecentRenewalAt/before/2024-05-25/one_time_only",
+      "field": "mostRecentRenewalAt",
+      "operator": "before",
+      "profile": "one_time_only",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\"<\": [{\"var\": \"most_recent_renewal_at\"}, 1716595200000]}]}",
+      "expected": false
+    },
+    {
+      "id": "mostRecentRenewalAt/before/2024-05-30/new",
+      "field": "mostRecentRenewalAt",
+      "operator": "before",
+      "profile": "new",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\"<\": [{\"var\": \"most_recent_renewal_at\"}, 1717027200000]}]}",
+      "expected": false
+    },
+    {
+      "id": "mostRecentRenewalAt/before/2024-05-30/renewed",
+      "field": "mostRecentRenewalAt",
+      "operator": "before",
+      "profile": "renewed",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\"<\": [{\"var\": \"most_recent_renewal_at\"}, 1717027200000]}]}",
+      "expected": true
+    },
+    {
+      "id": "mostRecentRenewalAt/before/2024-05-30/first_purchase",
+      "field": "mostRecentRenewalAt",
+      "operator": "before",
+      "profile": "first_purchase",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\"<\": [{\"var\": \"most_recent_renewal_at\"}, 1717027200000]}]}",
+      "expected": false
+    },
+    {
+      "id": "mostRecentRenewalAt/before/2024-05-30/unavailable",
+      "field": "mostRecentRenewalAt",
+      "operator": "before",
+      "profile": "unavailable",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\"<\": [{\"var\": \"most_recent_renewal_at\"}, 1717027200000]}]}",
+      "expected": false
+    },
+    {
+      "id": "mostRecentRenewalAt/before/2024-05-30/purchase_history",
+      "field": "mostRecentRenewalAt",
+      "operator": "before",
+      "profile": "purchase_history",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\"<\": [{\"var\": \"most_recent_renewal_at\"}, 1717027200000]}]}",
+      "expected": true
+    },
+    {
+      "id": "mostRecentRenewalAt/before/2024-05-30/one_time_only",
+      "field": "mostRecentRenewalAt",
+      "operator": "before",
+      "profile": "one_time_only",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\"<\": [{\"var\": \"most_recent_renewal_at\"}, 1717027200000]}]}",
+      "expected": false
+    },
+    {
+      "id": "mostRecentRenewalAt/beforeOrOn/2024-05-18/new",
+      "field": "mostRecentRenewalAt",
+      "operator": "beforeOrOn",
+      "profile": "new",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\"<\": [{\"var\": \"most_recent_renewal_at\"}, 1716076800000]}]}",
+      "expected": false
+    },
+    {
+      "id": "mostRecentRenewalAt/beforeOrOn/2024-05-18/renewed",
+      "field": "mostRecentRenewalAt",
+      "operator": "beforeOrOn",
+      "profile": "renewed",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\"<\": [{\"var\": \"most_recent_renewal_at\"}, 1716076800000]}]}",
+      "expected": true
+    },
+    {
+      "id": "mostRecentRenewalAt/beforeOrOn/2024-05-18/first_purchase",
+      "field": "mostRecentRenewalAt",
+      "operator": "beforeOrOn",
+      "profile": "first_purchase",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\"<\": [{\"var\": \"most_recent_renewal_at\"}, 1716076800000]}]}",
+      "expected": false
+    },
+    {
+      "id": "mostRecentRenewalAt/beforeOrOn/2024-05-18/unavailable",
+      "field": "mostRecentRenewalAt",
+      "operator": "beforeOrOn",
+      "profile": "unavailable",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\"<\": [{\"var\": \"most_recent_renewal_at\"}, 1716076800000]}]}",
+      "expected": false
+    },
+    {
+      "id": "mostRecentRenewalAt/beforeOrOn/2024-05-18/purchase_history",
+      "field": "mostRecentRenewalAt",
+      "operator": "beforeOrOn",
+      "profile": "purchase_history",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\"<\": [{\"var\": \"most_recent_renewal_at\"}, 1716076800000]}]}",
+      "expected": false
+    },
+    {
+      "id": "mostRecentRenewalAt/beforeOrOn/2024-05-18/one_time_only",
+      "field": "mostRecentRenewalAt",
+      "operator": "beforeOrOn",
+      "profile": "one_time_only",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\"<\": [{\"var\": \"most_recent_renewal_at\"}, 1716076800000]}]}",
+      "expected": false
+    },
+    {
+      "id": "mostRecentRenewalAt/beforeOrOn/2024-05-25/new",
+      "field": "mostRecentRenewalAt",
+      "operator": "beforeOrOn",
+      "profile": "new",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\"<\": [{\"var\": \"most_recent_renewal_at\"}, 1716681600000]}]}",
+      "expected": false
+    },
+    {
+      "id": "mostRecentRenewalAt/beforeOrOn/2024-05-25/renewed",
+      "field": "mostRecentRenewalAt",
+      "operator": "beforeOrOn",
+      "profile": "renewed",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\"<\": [{\"var\": \"most_recent_renewal_at\"}, 1716681600000]}]}",
+      "expected": true
+    },
+    {
+      "id": "mostRecentRenewalAt/beforeOrOn/2024-05-25/first_purchase",
+      "field": "mostRecentRenewalAt",
+      "operator": "beforeOrOn",
+      "profile": "first_purchase",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\"<\": [{\"var\": \"most_recent_renewal_at\"}, 1716681600000]}]}",
+      "expected": false
+    },
+    {
+      "id": "mostRecentRenewalAt/beforeOrOn/2024-05-25/unavailable",
+      "field": "mostRecentRenewalAt",
+      "operator": "beforeOrOn",
+      "profile": "unavailable",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\"<\": [{\"var\": \"most_recent_renewal_at\"}, 1716681600000]}]}",
+      "expected": false
+    },
+    {
+      "id": "mostRecentRenewalAt/beforeOrOn/2024-05-25/purchase_history",
+      "field": "mostRecentRenewalAt",
+      "operator": "beforeOrOn",
+      "profile": "purchase_history",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\"<\": [{\"var\": \"most_recent_renewal_at\"}, 1716681600000]}]}",
+      "expected": true
+    },
+    {
+      "id": "mostRecentRenewalAt/beforeOrOn/2024-05-25/one_time_only",
+      "field": "mostRecentRenewalAt",
+      "operator": "beforeOrOn",
+      "profile": "one_time_only",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\"<\": [{\"var\": \"most_recent_renewal_at\"}, 1716681600000]}]}",
+      "expected": false
+    },
+    {
+      "id": "mostRecentRenewalAt/beforeOrOn/2024-05-30/new",
+      "field": "mostRecentRenewalAt",
+      "operator": "beforeOrOn",
+      "profile": "new",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\"<\": [{\"var\": \"most_recent_renewal_at\"}, 1717113600000]}]}",
+      "expected": false
+    },
+    {
+      "id": "mostRecentRenewalAt/beforeOrOn/2024-05-30/renewed",
+      "field": "mostRecentRenewalAt",
+      "operator": "beforeOrOn",
+      "profile": "renewed",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\"<\": [{\"var\": \"most_recent_renewal_at\"}, 1717113600000]}]}",
+      "expected": true
+    },
+    {
+      "id": "mostRecentRenewalAt/beforeOrOn/2024-05-30/first_purchase",
+      "field": "mostRecentRenewalAt",
+      "operator": "beforeOrOn",
+      "profile": "first_purchase",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\"<\": [{\"var\": \"most_recent_renewal_at\"}, 1717113600000]}]}",
+      "expected": false
+    },
+    {
+      "id": "mostRecentRenewalAt/beforeOrOn/2024-05-30/unavailable",
+      "field": "mostRecentRenewalAt",
+      "operator": "beforeOrOn",
+      "profile": "unavailable",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\"<\": [{\"var\": \"most_recent_renewal_at\"}, 1717113600000]}]}",
+      "expected": false
+    },
+    {
+      "id": "mostRecentRenewalAt/beforeOrOn/2024-05-30/purchase_history",
+      "field": "mostRecentRenewalAt",
+      "operator": "beforeOrOn",
+      "profile": "purchase_history",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\"<\": [{\"var\": \"most_recent_renewal_at\"}, 1717113600000]}]}",
+      "expected": true
+    },
+    {
+      "id": "mostRecentRenewalAt/beforeOrOn/2024-05-30/one_time_only",
+      "field": "mostRecentRenewalAt",
+      "operator": "beforeOrOn",
+      "profile": "one_time_only",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\"<\": [{\"var\": \"most_recent_renewal_at\"}, 1717113600000]}]}",
+      "expected": false
+    },
+    {
+      "id": "mostRecentRenewalAt/on/2024-05-18/new",
+      "field": "mostRecentRenewalAt",
+      "operator": "on",
+      "profile": "new",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\">=\": [{\"var\": \"most_recent_renewal_at\"}, 1715990400000]}]}, {\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\"<\": [{\"var\": \"most_recent_renewal_at\"}, 1716076800000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "mostRecentRenewalAt/on/2024-05-18/renewed",
+      "field": "mostRecentRenewalAt",
+      "operator": "on",
+      "profile": "renewed",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\">=\": [{\"var\": \"most_recent_renewal_at\"}, 1715990400000]}]}, {\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\"<\": [{\"var\": \"most_recent_renewal_at\"}, 1716076800000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "mostRecentRenewalAt/on/2024-05-18/first_purchase",
+      "field": "mostRecentRenewalAt",
+      "operator": "on",
+      "profile": "first_purchase",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\">=\": [{\"var\": \"most_recent_renewal_at\"}, 1715990400000]}]}, {\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\"<\": [{\"var\": \"most_recent_renewal_at\"}, 1716076800000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "mostRecentRenewalAt/on/2024-05-18/unavailable",
+      "field": "mostRecentRenewalAt",
+      "operator": "on",
+      "profile": "unavailable",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\">=\": [{\"var\": \"most_recent_renewal_at\"}, 1715990400000]}]}, {\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\"<\": [{\"var\": \"most_recent_renewal_at\"}, 1716076800000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "mostRecentRenewalAt/on/2024-05-18/purchase_history",
+      "field": "mostRecentRenewalAt",
+      "operator": "on",
+      "profile": "purchase_history",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\">=\": [{\"var\": \"most_recent_renewal_at\"}, 1715990400000]}]}, {\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\"<\": [{\"var\": \"most_recent_renewal_at\"}, 1716076800000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "mostRecentRenewalAt/on/2024-05-18/one_time_only",
+      "field": "mostRecentRenewalAt",
+      "operator": "on",
+      "profile": "one_time_only",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\">=\": [{\"var\": \"most_recent_renewal_at\"}, 1715990400000]}]}, {\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\"<\": [{\"var\": \"most_recent_renewal_at\"}, 1716076800000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "mostRecentRenewalAt/on/2024-05-25/new",
+      "field": "mostRecentRenewalAt",
+      "operator": "on",
+      "profile": "new",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\">=\": [{\"var\": \"most_recent_renewal_at\"}, 1716595200000]}]}, {\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\"<\": [{\"var\": \"most_recent_renewal_at\"}, 1716681600000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "mostRecentRenewalAt/on/2024-05-25/renewed",
+      "field": "mostRecentRenewalAt",
+      "operator": "on",
+      "profile": "renewed",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\">=\": [{\"var\": \"most_recent_renewal_at\"}, 1716595200000]}]}, {\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\"<\": [{\"var\": \"most_recent_renewal_at\"}, 1716681600000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "mostRecentRenewalAt/on/2024-05-25/first_purchase",
+      "field": "mostRecentRenewalAt",
+      "operator": "on",
+      "profile": "first_purchase",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\">=\": [{\"var\": \"most_recent_renewal_at\"}, 1716595200000]}]}, {\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\"<\": [{\"var\": \"most_recent_renewal_at\"}, 1716681600000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "mostRecentRenewalAt/on/2024-05-25/unavailable",
+      "field": "mostRecentRenewalAt",
+      "operator": "on",
+      "profile": "unavailable",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\">=\": [{\"var\": \"most_recent_renewal_at\"}, 1716595200000]}]}, {\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\"<\": [{\"var\": \"most_recent_renewal_at\"}, 1716681600000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "mostRecentRenewalAt/on/2024-05-25/purchase_history",
+      "field": "mostRecentRenewalAt",
+      "operator": "on",
+      "profile": "purchase_history",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\">=\": [{\"var\": \"most_recent_renewal_at\"}, 1716595200000]}]}, {\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\"<\": [{\"var\": \"most_recent_renewal_at\"}, 1716681600000]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "mostRecentRenewalAt/on/2024-05-25/one_time_only",
+      "field": "mostRecentRenewalAt",
+      "operator": "on",
+      "profile": "one_time_only",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\">=\": [{\"var\": \"most_recent_renewal_at\"}, 1716595200000]}]}, {\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\"<\": [{\"var\": \"most_recent_renewal_at\"}, 1716681600000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "mostRecentRenewalAt/on/2024-05-30/new",
+      "field": "mostRecentRenewalAt",
+      "operator": "on",
+      "profile": "new",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\">=\": [{\"var\": \"most_recent_renewal_at\"}, 1717027200000]}]}, {\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\"<\": [{\"var\": \"most_recent_renewal_at\"}, 1717113600000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "mostRecentRenewalAt/on/2024-05-30/renewed",
+      "field": "mostRecentRenewalAt",
+      "operator": "on",
+      "profile": "renewed",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\">=\": [{\"var\": \"most_recent_renewal_at\"}, 1717027200000]}]}, {\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\"<\": [{\"var\": \"most_recent_renewal_at\"}, 1717113600000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "mostRecentRenewalAt/on/2024-05-30/first_purchase",
+      "field": "mostRecentRenewalAt",
+      "operator": "on",
+      "profile": "first_purchase",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\">=\": [{\"var\": \"most_recent_renewal_at\"}, 1717027200000]}]}, {\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\"<\": [{\"var\": \"most_recent_renewal_at\"}, 1717113600000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "mostRecentRenewalAt/on/2024-05-30/unavailable",
+      "field": "mostRecentRenewalAt",
+      "operator": "on",
+      "profile": "unavailable",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\">=\": [{\"var\": \"most_recent_renewal_at\"}, 1717027200000]}]}, {\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\"<\": [{\"var\": \"most_recent_renewal_at\"}, 1717113600000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "mostRecentRenewalAt/on/2024-05-30/purchase_history",
+      "field": "mostRecentRenewalAt",
+      "operator": "on",
+      "profile": "purchase_history",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\">=\": [{\"var\": \"most_recent_renewal_at\"}, 1717027200000]}]}, {\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\"<\": [{\"var\": \"most_recent_renewal_at\"}, 1717113600000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "mostRecentRenewalAt/on/2024-05-30/one_time_only",
+      "field": "mostRecentRenewalAt",
+      "operator": "on",
+      "profile": "one_time_only",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\">=\": [{\"var\": \"most_recent_renewal_at\"}, 1717027200000]}]}, {\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\"<\": [{\"var\": \"most_recent_renewal_at\"}, 1717113600000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "mostRecentRenewalAt/after/2024-05-18/new",
+      "field": "mostRecentRenewalAt",
+      "operator": "after",
+      "profile": "new",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\">=\": [{\"var\": \"most_recent_renewal_at\"}, 1716076800000]}]}",
+      "expected": false
+    },
+    {
+      "id": "mostRecentRenewalAt/after/2024-05-18/renewed",
+      "field": "mostRecentRenewalAt",
+      "operator": "after",
+      "profile": "renewed",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\">=\": [{\"var\": \"most_recent_renewal_at\"}, 1716076800000]}]}",
+      "expected": false
+    },
+    {
+      "id": "mostRecentRenewalAt/after/2024-05-18/first_purchase",
+      "field": "mostRecentRenewalAt",
+      "operator": "after",
+      "profile": "first_purchase",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\">=\": [{\"var\": \"most_recent_renewal_at\"}, 1716076800000]}]}",
+      "expected": false
+    },
+    {
+      "id": "mostRecentRenewalAt/after/2024-05-18/unavailable",
+      "field": "mostRecentRenewalAt",
+      "operator": "after",
+      "profile": "unavailable",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\">=\": [{\"var\": \"most_recent_renewal_at\"}, 1716076800000]}]}",
+      "expected": false
+    },
+    {
+      "id": "mostRecentRenewalAt/after/2024-05-18/purchase_history",
+      "field": "mostRecentRenewalAt",
+      "operator": "after",
+      "profile": "purchase_history",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\">=\": [{\"var\": \"most_recent_renewal_at\"}, 1716076800000]}]}",
+      "expected": true
+    },
+    {
+      "id": "mostRecentRenewalAt/after/2024-05-18/one_time_only",
+      "field": "mostRecentRenewalAt",
+      "operator": "after",
+      "profile": "one_time_only",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\">=\": [{\"var\": \"most_recent_renewal_at\"}, 1716076800000]}]}",
+      "expected": false
+    },
+    {
+      "id": "mostRecentRenewalAt/after/2024-05-25/new",
+      "field": "mostRecentRenewalAt",
+      "operator": "after",
+      "profile": "new",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\">=\": [{\"var\": \"most_recent_renewal_at\"}, 1716681600000]}]}",
+      "expected": false
+    },
+    {
+      "id": "mostRecentRenewalAt/after/2024-05-25/renewed",
+      "field": "mostRecentRenewalAt",
+      "operator": "after",
+      "profile": "renewed",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\">=\": [{\"var\": \"most_recent_renewal_at\"}, 1716681600000]}]}",
+      "expected": false
+    },
+    {
+      "id": "mostRecentRenewalAt/after/2024-05-25/first_purchase",
+      "field": "mostRecentRenewalAt",
+      "operator": "after",
+      "profile": "first_purchase",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\">=\": [{\"var\": \"most_recent_renewal_at\"}, 1716681600000]}]}",
+      "expected": false
+    },
+    {
+      "id": "mostRecentRenewalAt/after/2024-05-25/unavailable",
+      "field": "mostRecentRenewalAt",
+      "operator": "after",
+      "profile": "unavailable",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\">=\": [{\"var\": \"most_recent_renewal_at\"}, 1716681600000]}]}",
+      "expected": false
+    },
+    {
+      "id": "mostRecentRenewalAt/after/2024-05-25/purchase_history",
+      "field": "mostRecentRenewalAt",
+      "operator": "after",
+      "profile": "purchase_history",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\">=\": [{\"var\": \"most_recent_renewal_at\"}, 1716681600000]}]}",
+      "expected": false
+    },
+    {
+      "id": "mostRecentRenewalAt/after/2024-05-25/one_time_only",
+      "field": "mostRecentRenewalAt",
+      "operator": "after",
+      "profile": "one_time_only",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\">=\": [{\"var\": \"most_recent_renewal_at\"}, 1716681600000]}]}",
+      "expected": false
+    },
+    {
+      "id": "mostRecentRenewalAt/after/2024-05-30/new",
+      "field": "mostRecentRenewalAt",
+      "operator": "after",
+      "profile": "new",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\">=\": [{\"var\": \"most_recent_renewal_at\"}, 1717113600000]}]}",
+      "expected": false
+    },
+    {
+      "id": "mostRecentRenewalAt/after/2024-05-30/renewed",
+      "field": "mostRecentRenewalAt",
+      "operator": "after",
+      "profile": "renewed",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\">=\": [{\"var\": \"most_recent_renewal_at\"}, 1717113600000]}]}",
+      "expected": false
+    },
+    {
+      "id": "mostRecentRenewalAt/after/2024-05-30/first_purchase",
+      "field": "mostRecentRenewalAt",
+      "operator": "after",
+      "profile": "first_purchase",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\">=\": [{\"var\": \"most_recent_renewal_at\"}, 1717113600000]}]}",
+      "expected": false
+    },
+    {
+      "id": "mostRecentRenewalAt/after/2024-05-30/unavailable",
+      "field": "mostRecentRenewalAt",
+      "operator": "after",
+      "profile": "unavailable",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\">=\": [{\"var\": \"most_recent_renewal_at\"}, 1717113600000]}]}",
+      "expected": false
+    },
+    {
+      "id": "mostRecentRenewalAt/after/2024-05-30/purchase_history",
+      "field": "mostRecentRenewalAt",
+      "operator": "after",
+      "profile": "purchase_history",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\">=\": [{\"var\": \"most_recent_renewal_at\"}, 1717113600000]}]}",
+      "expected": false
+    },
+    {
+      "id": "mostRecentRenewalAt/after/2024-05-30/one_time_only",
+      "field": "mostRecentRenewalAt",
+      "operator": "after",
+      "profile": "one_time_only",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\">=\": [{\"var\": \"most_recent_renewal_at\"}, 1717113600000]}]}",
+      "expected": false
+    },
+    {
+      "id": "mostRecentRenewalAt/afterOrOn/2024-05-18/new",
+      "field": "mostRecentRenewalAt",
+      "operator": "afterOrOn",
+      "profile": "new",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\">=\": [{\"var\": \"most_recent_renewal_at\"}, 1715990400000]}]}",
+      "expected": false
+    },
+    {
+      "id": "mostRecentRenewalAt/afterOrOn/2024-05-18/renewed",
+      "field": "mostRecentRenewalAt",
+      "operator": "afterOrOn",
+      "profile": "renewed",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\">=\": [{\"var\": \"most_recent_renewal_at\"}, 1715990400000]}]}",
+      "expected": false
+    },
+    {
+      "id": "mostRecentRenewalAt/afterOrOn/2024-05-18/first_purchase",
+      "field": "mostRecentRenewalAt",
+      "operator": "afterOrOn",
+      "profile": "first_purchase",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\">=\": [{\"var\": \"most_recent_renewal_at\"}, 1715990400000]}]}",
+      "expected": false
+    },
+    {
+      "id": "mostRecentRenewalAt/afterOrOn/2024-05-18/unavailable",
+      "field": "mostRecentRenewalAt",
+      "operator": "afterOrOn",
+      "profile": "unavailable",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\">=\": [{\"var\": \"most_recent_renewal_at\"}, 1715990400000]}]}",
+      "expected": false
+    },
+    {
+      "id": "mostRecentRenewalAt/afterOrOn/2024-05-18/purchase_history",
+      "field": "mostRecentRenewalAt",
+      "operator": "afterOrOn",
+      "profile": "purchase_history",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\">=\": [{\"var\": \"most_recent_renewal_at\"}, 1715990400000]}]}",
+      "expected": true
+    },
+    {
+      "id": "mostRecentRenewalAt/afterOrOn/2024-05-18/one_time_only",
+      "field": "mostRecentRenewalAt",
+      "operator": "afterOrOn",
+      "profile": "one_time_only",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\">=\": [{\"var\": \"most_recent_renewal_at\"}, 1715990400000]}]}",
+      "expected": false
+    },
+    {
+      "id": "mostRecentRenewalAt/afterOrOn/2024-05-25/new",
+      "field": "mostRecentRenewalAt",
+      "operator": "afterOrOn",
+      "profile": "new",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\">=\": [{\"var\": \"most_recent_renewal_at\"}, 1716595200000]}]}",
+      "expected": false
+    },
+    {
+      "id": "mostRecentRenewalAt/afterOrOn/2024-05-25/renewed",
+      "field": "mostRecentRenewalAt",
+      "operator": "afterOrOn",
+      "profile": "renewed",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\">=\": [{\"var\": \"most_recent_renewal_at\"}, 1716595200000]}]}",
+      "expected": false
+    },
+    {
+      "id": "mostRecentRenewalAt/afterOrOn/2024-05-25/first_purchase",
+      "field": "mostRecentRenewalAt",
+      "operator": "afterOrOn",
+      "profile": "first_purchase",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\">=\": [{\"var\": \"most_recent_renewal_at\"}, 1716595200000]}]}",
+      "expected": false
+    },
+    {
+      "id": "mostRecentRenewalAt/afterOrOn/2024-05-25/unavailable",
+      "field": "mostRecentRenewalAt",
+      "operator": "afterOrOn",
+      "profile": "unavailable",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\">=\": [{\"var\": \"most_recent_renewal_at\"}, 1716595200000]}]}",
+      "expected": false
+    },
+    {
+      "id": "mostRecentRenewalAt/afterOrOn/2024-05-25/purchase_history",
+      "field": "mostRecentRenewalAt",
+      "operator": "afterOrOn",
+      "profile": "purchase_history",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\">=\": [{\"var\": \"most_recent_renewal_at\"}, 1716595200000]}]}",
+      "expected": true
+    },
+    {
+      "id": "mostRecentRenewalAt/afterOrOn/2024-05-25/one_time_only",
+      "field": "mostRecentRenewalAt",
+      "operator": "afterOrOn",
+      "profile": "one_time_only",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\">=\": [{\"var\": \"most_recent_renewal_at\"}, 1716595200000]}]}",
+      "expected": false
+    },
+    {
+      "id": "mostRecentRenewalAt/afterOrOn/2024-05-30/new",
+      "field": "mostRecentRenewalAt",
+      "operator": "afterOrOn",
+      "profile": "new",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\">=\": [{\"var\": \"most_recent_renewal_at\"}, 1717027200000]}]}",
+      "expected": false
+    },
+    {
+      "id": "mostRecentRenewalAt/afterOrOn/2024-05-30/renewed",
+      "field": "mostRecentRenewalAt",
+      "operator": "afterOrOn",
+      "profile": "renewed",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\">=\": [{\"var\": \"most_recent_renewal_at\"}, 1717027200000]}]}",
+      "expected": false
+    },
+    {
+      "id": "mostRecentRenewalAt/afterOrOn/2024-05-30/first_purchase",
+      "field": "mostRecentRenewalAt",
+      "operator": "afterOrOn",
+      "profile": "first_purchase",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\">=\": [{\"var\": \"most_recent_renewal_at\"}, 1717027200000]}]}",
+      "expected": false
+    },
+    {
+      "id": "mostRecentRenewalAt/afterOrOn/2024-05-30/unavailable",
+      "field": "mostRecentRenewalAt",
+      "operator": "afterOrOn",
+      "profile": "unavailable",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\">=\": [{\"var\": \"most_recent_renewal_at\"}, 1717027200000]}]}",
+      "expected": false
+    },
+    {
+      "id": "mostRecentRenewalAt/afterOrOn/2024-05-30/purchase_history",
+      "field": "mostRecentRenewalAt",
+      "operator": "afterOrOn",
+      "profile": "purchase_history",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\">=\": [{\"var\": \"most_recent_renewal_at\"}, 1717027200000]}]}",
+      "expected": false
+    },
+    {
+      "id": "mostRecentRenewalAt/afterOrOn/2024-05-30/one_time_only",
+      "field": "mostRecentRenewalAt",
+      "operator": "afterOrOn",
+      "profile": "one_time_only",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\">=\": [{\"var\": \"most_recent_renewal_at\"}, 1717027200000]}]}",
+      "expected": false
+    },
+    {
+      "id": "mostRecentRenewalAt/within/{\"direction\": \"last\", \"value\": 14, \"unit\": \"days\"}/new",
+      "field": "mostRecentRenewalAt",
+      "operator": "within",
+      "profile": "new",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\">=\": [{\"var\": \"most_recent_renewal_at\"}, {\"-\": [{\"rc.rootVar\": \"evaluated_at\"}, 1209600000]}]}, {\"<=\": [{\"var\": \"most_recent_renewal_at\"}, {\"rc.rootVar\": \"evaluated_at\"}]}]}",
+      "expected": false
+    },
+    {
+      "id": "mostRecentRenewalAt/within/{\"direction\": \"last\", \"value\": 14, \"unit\": \"days\"}/renewed",
+      "field": "mostRecentRenewalAt",
+      "operator": "within",
+      "profile": "renewed",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\">=\": [{\"var\": \"most_recent_renewal_at\"}, {\"-\": [{\"rc.rootVar\": \"evaluated_at\"}, 1209600000]}]}, {\"<=\": [{\"var\": \"most_recent_renewal_at\"}, {\"rc.rootVar\": \"evaluated_at\"}]}]}",
+      "expected": false
+    },
+    {
+      "id": "mostRecentRenewalAt/within/{\"direction\": \"last\", \"value\": 14, \"unit\": \"days\"}/first_purchase",
+      "field": "mostRecentRenewalAt",
+      "operator": "within",
+      "profile": "first_purchase",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\">=\": [{\"var\": \"most_recent_renewal_at\"}, {\"-\": [{\"rc.rootVar\": \"evaluated_at\"}, 1209600000]}]}, {\"<=\": [{\"var\": \"most_recent_renewal_at\"}, {\"rc.rootVar\": \"evaluated_at\"}]}]}",
+      "expected": false
+    },
+    {
+      "id": "mostRecentRenewalAt/within/{\"direction\": \"last\", \"value\": 14, \"unit\": \"days\"}/unavailable",
+      "field": "mostRecentRenewalAt",
+      "operator": "within",
+      "profile": "unavailable",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\">=\": [{\"var\": \"most_recent_renewal_at\"}, {\"-\": [{\"rc.rootVar\": \"evaluated_at\"}, 1209600000]}]}, {\"<=\": [{\"var\": \"most_recent_renewal_at\"}, {\"rc.rootVar\": \"evaluated_at\"}]}]}",
+      "expected": false
+    },
+    {
+      "id": "mostRecentRenewalAt/within/{\"direction\": \"last\", \"value\": 14, \"unit\": \"days\"}/purchase_history",
+      "field": "mostRecentRenewalAt",
+      "operator": "within",
+      "profile": "purchase_history",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\">=\": [{\"var\": \"most_recent_renewal_at\"}, {\"-\": [{\"rc.rootVar\": \"evaluated_at\"}, 1209600000]}]}, {\"<=\": [{\"var\": \"most_recent_renewal_at\"}, {\"rc.rootVar\": \"evaluated_at\"}]}]}",
+      "expected": true
+    },
+    {
+      "id": "mostRecentRenewalAt/within/{\"direction\": \"last\", \"value\": 14, \"unit\": \"days\"}/one_time_only",
+      "field": "mostRecentRenewalAt",
+      "operator": "within",
+      "profile": "one_time_only",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\">=\": [{\"var\": \"most_recent_renewal_at\"}, {\"-\": [{\"rc.rootVar\": \"evaluated_at\"}, 1209600000]}]}, {\"<=\": [{\"var\": \"most_recent_renewal_at\"}, {\"rc.rootVar\": \"evaluated_at\"}]}]}",
+      "expected": false
+    },
+    {
+      "id": "mostRecentRenewalAt/notWithin/{\"direction\": \"last\", \"value\": 14, \"unit\": \"days\"}/new",
+      "field": "mostRecentRenewalAt",
+      "operator": "notWithin",
+      "profile": "new",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"most_recent_renewal_at\", null]}, null]}, {\"!\": [{\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\">=\": [{\"var\": \"most_recent_renewal_at\"}, {\"-\": [{\"rc.rootVar\": \"evaluated_at\"}, 1209600000]}]}, {\"<=\": [{\"var\": \"most_recent_renewal_at\"}, {\"rc.rootVar\": \"evaluated_at\"}]}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "mostRecentRenewalAt/notWithin/{\"direction\": \"last\", \"value\": 14, \"unit\": \"days\"}/renewed",
+      "field": "mostRecentRenewalAt",
+      "operator": "notWithin",
+      "profile": "renewed",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"most_recent_renewal_at\", null]}, null]}, {\"!\": [{\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\">=\": [{\"var\": \"most_recent_renewal_at\"}, {\"-\": [{\"rc.rootVar\": \"evaluated_at\"}, 1209600000]}]}, {\"<=\": [{\"var\": \"most_recent_renewal_at\"}, {\"rc.rootVar\": \"evaluated_at\"}]}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "mostRecentRenewalAt/notWithin/{\"direction\": \"last\", \"value\": 14, \"unit\": \"days\"}/first_purchase",
+      "field": "mostRecentRenewalAt",
+      "operator": "notWithin",
+      "profile": "first_purchase",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"most_recent_renewal_at\", null]}, null]}, {\"!\": [{\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\">=\": [{\"var\": \"most_recent_renewal_at\"}, {\"-\": [{\"rc.rootVar\": \"evaluated_at\"}, 1209600000]}]}, {\"<=\": [{\"var\": \"most_recent_renewal_at\"}, {\"rc.rootVar\": \"evaluated_at\"}]}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "mostRecentRenewalAt/notWithin/{\"direction\": \"last\", \"value\": 14, \"unit\": \"days\"}/unavailable",
+      "field": "mostRecentRenewalAt",
+      "operator": "notWithin",
+      "profile": "unavailable",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"most_recent_renewal_at\", null]}, null]}, {\"!\": [{\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\">=\": [{\"var\": \"most_recent_renewal_at\"}, {\"-\": [{\"rc.rootVar\": \"evaluated_at\"}, 1209600000]}]}, {\"<=\": [{\"var\": \"most_recent_renewal_at\"}, {\"rc.rootVar\": \"evaluated_at\"}]}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "mostRecentRenewalAt/notWithin/{\"direction\": \"last\", \"value\": 14, \"unit\": \"days\"}/purchase_history",
+      "field": "mostRecentRenewalAt",
+      "operator": "notWithin",
+      "profile": "purchase_history",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"most_recent_renewal_at\", null]}, null]}, {\"!\": [{\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\">=\": [{\"var\": \"most_recent_renewal_at\"}, {\"-\": [{\"rc.rootVar\": \"evaluated_at\"}, 1209600000]}]}, {\"<=\": [{\"var\": \"most_recent_renewal_at\"}, {\"rc.rootVar\": \"evaluated_at\"}]}]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "mostRecentRenewalAt/notWithin/{\"direction\": \"last\", \"value\": 14, \"unit\": \"days\"}/one_time_only",
+      "field": "mostRecentRenewalAt",
+      "operator": "notWithin",
+      "profile": "one_time_only",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"most_recent_renewal_at\", null]}, null]}, {\"!\": [{\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\">=\": [{\"var\": \"most_recent_renewal_at\"}, {\"-\": [{\"rc.rootVar\": \"evaluated_at\"}, 1209600000]}]}, {\"<=\": [{\"var\": \"most_recent_renewal_at\"}, {\"rc.rootVar\": \"evaluated_at\"}]}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "mostRecentRenewalAt/between/{\"from\": \"2024-05-18\", \"to\": \"2024-05-25\"}/new",
+      "field": "mostRecentRenewalAt",
+      "operator": "between",
+      "profile": "new",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\">=\": [{\"var\": \"most_recent_renewal_at\"}, 1715990400000]}]}, {\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\"<\": [{\"var\": \"most_recent_renewal_at\"}, 1716681600000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "mostRecentRenewalAt/between/{\"from\": \"2024-05-18\", \"to\": \"2024-05-25\"}/renewed",
+      "field": "mostRecentRenewalAt",
+      "operator": "between",
+      "profile": "renewed",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\">=\": [{\"var\": \"most_recent_renewal_at\"}, 1715990400000]}]}, {\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\"<\": [{\"var\": \"most_recent_renewal_at\"}, 1716681600000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "mostRecentRenewalAt/between/{\"from\": \"2024-05-18\", \"to\": \"2024-05-25\"}/first_purchase",
+      "field": "mostRecentRenewalAt",
+      "operator": "between",
+      "profile": "first_purchase",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\">=\": [{\"var\": \"most_recent_renewal_at\"}, 1715990400000]}]}, {\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\"<\": [{\"var\": \"most_recent_renewal_at\"}, 1716681600000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "mostRecentRenewalAt/between/{\"from\": \"2024-05-18\", \"to\": \"2024-05-25\"}/unavailable",
+      "field": "mostRecentRenewalAt",
+      "operator": "between",
+      "profile": "unavailable",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\">=\": [{\"var\": \"most_recent_renewal_at\"}, 1715990400000]}]}, {\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\"<\": [{\"var\": \"most_recent_renewal_at\"}, 1716681600000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "mostRecentRenewalAt/between/{\"from\": \"2024-05-18\", \"to\": \"2024-05-25\"}/purchase_history",
+      "field": "mostRecentRenewalAt",
+      "operator": "between",
+      "profile": "purchase_history",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\">=\": [{\"var\": \"most_recent_renewal_at\"}, 1715990400000]}]}, {\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\"<\": [{\"var\": \"most_recent_renewal_at\"}, 1716681600000]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "mostRecentRenewalAt/between/{\"from\": \"2024-05-18\", \"to\": \"2024-05-25\"}/one_time_only",
+      "field": "mostRecentRenewalAt",
+      "operator": "between",
+      "profile": "one_time_only",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\">=\": [{\"var\": \"most_recent_renewal_at\"}, 1715990400000]}]}, {\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\"<\": [{\"var\": \"most_recent_renewal_at\"}, 1716681600000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "mostRecentRenewalAt/notBetween/{\"from\": \"2024-05-18\", \"to\": \"2024-05-25\"}/new",
+      "field": "mostRecentRenewalAt",
+      "operator": "notBetween",
+      "profile": "new",
+      "predicate": "{\"or\": [{\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\"<\": [{\"var\": \"most_recent_renewal_at\"}, 1715990400000]}]}, {\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\">=\": [{\"var\": \"most_recent_renewal_at\"}, 1716681600000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "mostRecentRenewalAt/notBetween/{\"from\": \"2024-05-18\", \"to\": \"2024-05-25\"}/renewed",
+      "field": "mostRecentRenewalAt",
+      "operator": "notBetween",
+      "profile": "renewed",
+      "predicate": "{\"or\": [{\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\"<\": [{\"var\": \"most_recent_renewal_at\"}, 1715990400000]}]}, {\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\">=\": [{\"var\": \"most_recent_renewal_at\"}, 1716681600000]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "mostRecentRenewalAt/notBetween/{\"from\": \"2024-05-18\", \"to\": \"2024-05-25\"}/first_purchase",
+      "field": "mostRecentRenewalAt",
+      "operator": "notBetween",
+      "profile": "first_purchase",
+      "predicate": "{\"or\": [{\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\"<\": [{\"var\": \"most_recent_renewal_at\"}, 1715990400000]}]}, {\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\">=\": [{\"var\": \"most_recent_renewal_at\"}, 1716681600000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "mostRecentRenewalAt/notBetween/{\"from\": \"2024-05-18\", \"to\": \"2024-05-25\"}/unavailable",
+      "field": "mostRecentRenewalAt",
+      "operator": "notBetween",
+      "profile": "unavailable",
+      "predicate": "{\"or\": [{\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\"<\": [{\"var\": \"most_recent_renewal_at\"}, 1715990400000]}]}, {\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\">=\": [{\"var\": \"most_recent_renewal_at\"}, 1716681600000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "mostRecentRenewalAt/notBetween/{\"from\": \"2024-05-18\", \"to\": \"2024-05-25\"}/purchase_history",
+      "field": "mostRecentRenewalAt",
+      "operator": "notBetween",
+      "profile": "purchase_history",
+      "predicate": "{\"or\": [{\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\"<\": [{\"var\": \"most_recent_renewal_at\"}, 1715990400000]}]}, {\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\">=\": [{\"var\": \"most_recent_renewal_at\"}, 1716681600000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "mostRecentRenewalAt/notBetween/{\"from\": \"2024-05-18\", \"to\": \"2024-05-25\"}/one_time_only",
+      "field": "mostRecentRenewalAt",
+      "operator": "notBetween",
+      "profile": "one_time_only",
+      "predicate": "{\"or\": [{\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\"<\": [{\"var\": \"most_recent_renewal_at\"}, 1715990400000]}]}, {\"and\": [{\"!=\": [{\"var\": \"most_recent_renewal_at\"}, null]}, {\">=\": [{\"var\": \"most_recent_renewal_at\"}, 1716681600000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "mostRecentRenewalAt/isEmpty//new",
+      "field": "mostRecentRenewalAt",
+      "operator": "isEmpty",
+      "profile": "new",
+      "predicate": "{\"==\": [{\"var\": [\"most_recent_renewal_at\", null]}, null]}",
+      "expected": true
+    },
+    {
+      "id": "mostRecentRenewalAt/isEmpty//renewed",
+      "field": "mostRecentRenewalAt",
+      "operator": "isEmpty",
+      "profile": "renewed",
+      "predicate": "{\"==\": [{\"var\": [\"most_recent_renewal_at\", null]}, null]}",
+      "expected": false
+    },
+    {
+      "id": "mostRecentRenewalAt/isEmpty//first_purchase",
+      "field": "mostRecentRenewalAt",
+      "operator": "isEmpty",
+      "profile": "first_purchase",
+      "predicate": "{\"==\": [{\"var\": [\"most_recent_renewal_at\", null]}, null]}",
+      "expected": true
+    },
+    {
+      "id": "mostRecentRenewalAt/isEmpty//unavailable",
+      "field": "mostRecentRenewalAt",
+      "operator": "isEmpty",
+      "profile": "unavailable",
+      "predicate": "{\"==\": [{\"var\": [\"most_recent_renewal_at\", null]}, null]}",
+      "expected": true
+    },
+    {
+      "id": "mostRecentRenewalAt/isEmpty//purchase_history",
+      "field": "mostRecentRenewalAt",
+      "operator": "isEmpty",
+      "profile": "purchase_history",
+      "predicate": "{\"==\": [{\"var\": [\"most_recent_renewal_at\", null]}, null]}",
+      "expected": false
+    },
+    {
+      "id": "mostRecentRenewalAt/isEmpty//one_time_only",
+      "field": "mostRecentRenewalAt",
+      "operator": "isEmpty",
+      "profile": "one_time_only",
+      "predicate": "{\"==\": [{\"var\": [\"most_recent_renewal_at\", null]}, null]}",
+      "expected": true
+    },
+    {
+      "id": "mostRecentRenewalAt/isNotEmpty//new",
+      "field": "mostRecentRenewalAt",
+      "operator": "isNotEmpty",
+      "profile": "new",
+      "predicate": "{\"!=\": [{\"var\": [\"most_recent_renewal_at\", null]}, null]}",
+      "expected": false
+    },
+    {
+      "id": "mostRecentRenewalAt/isNotEmpty//renewed",
+      "field": "mostRecentRenewalAt",
+      "operator": "isNotEmpty",
+      "profile": "renewed",
+      "predicate": "{\"!=\": [{\"var\": [\"most_recent_renewal_at\", null]}, null]}",
+      "expected": true
+    },
+    {
+      "id": "mostRecentRenewalAt/isNotEmpty//first_purchase",
+      "field": "mostRecentRenewalAt",
+      "operator": "isNotEmpty",
+      "profile": "first_purchase",
+      "predicate": "{\"!=\": [{\"var\": [\"most_recent_renewal_at\", null]}, null]}",
+      "expected": false
+    },
+    {
+      "id": "mostRecentRenewalAt/isNotEmpty//unavailable",
+      "field": "mostRecentRenewalAt",
+      "operator": "isNotEmpty",
+      "profile": "unavailable",
+      "predicate": "{\"!=\": [{\"var\": [\"most_recent_renewal_at\", null]}, null]}",
+      "expected": false
+    },
+    {
+      "id": "mostRecentRenewalAt/isNotEmpty//purchase_history",
+      "field": "mostRecentRenewalAt",
+      "operator": "isNotEmpty",
+      "profile": "purchase_history",
+      "predicate": "{\"!=\": [{\"var\": [\"most_recent_renewal_at\", null]}, null]}",
+      "expected": true
+    },
+    {
+      "id": "mostRecentRenewalAt/isNotEmpty//one_time_only",
+      "field": "mostRecentRenewalAt",
+      "operator": "isNotEmpty",
+      "profile": "one_time_only",
+      "predicate": "{\"!=\": [{\"var\": [\"most_recent_renewal_at\", null]}, null]}",
+      "expected": false
+    }
+  ]
+}

@@ -35,7 +35,7 @@ extension Store: Decodable {
         self = type
     }
 
-    private static let mapping: [String: Self] = Self.allCases
+    static let mapping: [String: Self] = Self.allCases
         .reduce(into: [:]) { result, store in
             if let name = store.name { result[name] = store }
         }
@@ -52,7 +52,7 @@ extension Store: Encodable {
 
 }
 
-private extension Store {
+extension Store {
 
     var name: String? {
         switch self {

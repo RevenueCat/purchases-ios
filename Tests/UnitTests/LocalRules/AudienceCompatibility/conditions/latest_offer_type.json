@@ -1,0 +1,1013 @@
+{
+  "schema_version": 1,
+  "cases": [
+    {
+      "id": "latestOfferType/is/no_offer/new",
+      "field": "latestOfferType",
+      "operator": "is",
+      "profile": "new",
+      "predicate": "{\"==\": [{\"var\": \"latest_offer_type\"}, \"no_offer\"]}",
+      "expected": false
+    },
+    {
+      "id": "latestOfferType/is/no_offer/renewed",
+      "field": "latestOfferType",
+      "operator": "is",
+      "profile": "renewed",
+      "predicate": "{\"==\": [{\"var\": \"latest_offer_type\"}, \"no_offer\"]}",
+      "expected": true
+    },
+    {
+      "id": "latestOfferType/is/no_offer/first_purchase",
+      "field": "latestOfferType",
+      "operator": "is",
+      "profile": "first_purchase",
+      "predicate": "{\"==\": [{\"var\": \"latest_offer_type\"}, \"no_offer\"]}",
+      "expected": true
+    },
+    {
+      "id": "latestOfferType/is/no_offer/unavailable",
+      "field": "latestOfferType",
+      "operator": "is",
+      "profile": "unavailable",
+      "predicate": "{\"==\": [{\"var\": \"latest_offer_type\"}, \"no_offer\"]}",
+      "expected": false
+    },
+    {
+      "id": "latestOfferType/is/no_offer/intro_offer",
+      "field": "latestOfferType",
+      "operator": "is",
+      "profile": "intro_offer",
+      "predicate": "{\"==\": [{\"var\": \"latest_offer_type\"}, \"no_offer\"]}",
+      "expected": false
+    },
+    {
+      "id": "latestOfferType/is/no_offer/latest_promo",
+      "field": "latestOfferType",
+      "operator": "is",
+      "profile": "latest_promo",
+      "predicate": "{\"==\": [{\"var\": \"latest_offer_type\"}, \"no_offer\"]}",
+      "expected": false
+    },
+    {
+      "id": "latestOfferType/is/no_offer/latest_intro",
+      "field": "latestOfferType",
+      "operator": "is",
+      "profile": "latest_intro",
+      "predicate": "{\"==\": [{\"var\": \"latest_offer_type\"}, \"no_offer\"]}",
+      "expected": false
+    },
+    {
+      "id": "latestOfferType/is/introductory_offer/new",
+      "field": "latestOfferType",
+      "operator": "is",
+      "profile": "new",
+      "predicate": "{\"==\": [{\"var\": \"latest_offer_type\"}, \"introductory_offer\"]}",
+      "expected": false
+    },
+    {
+      "id": "latestOfferType/is/introductory_offer/renewed",
+      "field": "latestOfferType",
+      "operator": "is",
+      "profile": "renewed",
+      "predicate": "{\"==\": [{\"var\": \"latest_offer_type\"}, \"introductory_offer\"]}",
+      "expected": false
+    },
+    {
+      "id": "latestOfferType/is/introductory_offer/first_purchase",
+      "field": "latestOfferType",
+      "operator": "is",
+      "profile": "first_purchase",
+      "predicate": "{\"==\": [{\"var\": \"latest_offer_type\"}, \"introductory_offer\"]}",
+      "expected": false
+    },
+    {
+      "id": "latestOfferType/is/introductory_offer/unavailable",
+      "field": "latestOfferType",
+      "operator": "is",
+      "profile": "unavailable",
+      "predicate": "{\"==\": [{\"var\": \"latest_offer_type\"}, \"introductory_offer\"]}",
+      "expected": false
+    },
+    {
+      "id": "latestOfferType/is/introductory_offer/intro_offer",
+      "field": "latestOfferType",
+      "operator": "is",
+      "profile": "intro_offer",
+      "predicate": "{\"==\": [{\"var\": \"latest_offer_type\"}, \"introductory_offer\"]}",
+      "expected": true
+    },
+    {
+      "id": "latestOfferType/is/introductory_offer/latest_promo",
+      "field": "latestOfferType",
+      "operator": "is",
+      "profile": "latest_promo",
+      "predicate": "{\"==\": [{\"var\": \"latest_offer_type\"}, \"introductory_offer\"]}",
+      "expected": false
+    },
+    {
+      "id": "latestOfferType/is/introductory_offer/latest_intro",
+      "field": "latestOfferType",
+      "operator": "is",
+      "profile": "latest_intro",
+      "predicate": "{\"==\": [{\"var\": \"latest_offer_type\"}, \"introductory_offer\"]}",
+      "expected": true
+    },
+    {
+      "id": "latestOfferType/is/promotional_offer/new",
+      "field": "latestOfferType",
+      "operator": "is",
+      "profile": "new",
+      "predicate": "{\"==\": [{\"var\": \"latest_offer_type\"}, \"promotional_offer\"]}",
+      "expected": false
+    },
+    {
+      "id": "latestOfferType/is/promotional_offer/renewed",
+      "field": "latestOfferType",
+      "operator": "is",
+      "profile": "renewed",
+      "predicate": "{\"==\": [{\"var\": \"latest_offer_type\"}, \"promotional_offer\"]}",
+      "expected": false
+    },
+    {
+      "id": "latestOfferType/is/promotional_offer/first_purchase",
+      "field": "latestOfferType",
+      "operator": "is",
+      "profile": "first_purchase",
+      "predicate": "{\"==\": [{\"var\": \"latest_offer_type\"}, \"promotional_offer\"]}",
+      "expected": false
+    },
+    {
+      "id": "latestOfferType/is/promotional_offer/unavailable",
+      "field": "latestOfferType",
+      "operator": "is",
+      "profile": "unavailable",
+      "predicate": "{\"==\": [{\"var\": \"latest_offer_type\"}, \"promotional_offer\"]}",
+      "expected": false
+    },
+    {
+      "id": "latestOfferType/is/promotional_offer/intro_offer",
+      "field": "latestOfferType",
+      "operator": "is",
+      "profile": "intro_offer",
+      "predicate": "{\"==\": [{\"var\": \"latest_offer_type\"}, \"promotional_offer\"]}",
+      "expected": false
+    },
+    {
+      "id": "latestOfferType/is/promotional_offer/latest_promo",
+      "field": "latestOfferType",
+      "operator": "is",
+      "profile": "latest_promo",
+      "predicate": "{\"==\": [{\"var\": \"latest_offer_type\"}, \"promotional_offer\"]}",
+      "expected": true
+    },
+    {
+      "id": "latestOfferType/is/promotional_offer/latest_intro",
+      "field": "latestOfferType",
+      "operator": "is",
+      "profile": "latest_intro",
+      "predicate": "{\"==\": [{\"var\": \"latest_offer_type\"}, \"promotional_offer\"]}",
+      "expected": false
+    },
+    {
+      "id": "latestOfferType/is/introductory_offer,promotional_offer/new",
+      "field": "latestOfferType",
+      "operator": "is",
+      "profile": "new",
+      "predicate": "{\"==\": [{\"var\": \"latest_offer_type\"}, \"introductory_offer,promotional_offer\"]}",
+      "expected": false
+    },
+    {
+      "id": "latestOfferType/is/introductory_offer,promotional_offer/renewed",
+      "field": "latestOfferType",
+      "operator": "is",
+      "profile": "renewed",
+      "predicate": "{\"==\": [{\"var\": \"latest_offer_type\"}, \"introductory_offer,promotional_offer\"]}",
+      "expected": false
+    },
+    {
+      "id": "latestOfferType/is/introductory_offer,promotional_offer/first_purchase",
+      "field": "latestOfferType",
+      "operator": "is",
+      "profile": "first_purchase",
+      "predicate": "{\"==\": [{\"var\": \"latest_offer_type\"}, \"introductory_offer,promotional_offer\"]}",
+      "expected": false
+    },
+    {
+      "id": "latestOfferType/is/introductory_offer,promotional_offer/unavailable",
+      "field": "latestOfferType",
+      "operator": "is",
+      "profile": "unavailable",
+      "predicate": "{\"==\": [{\"var\": \"latest_offer_type\"}, \"introductory_offer,promotional_offer\"]}",
+      "expected": false
+    },
+    {
+      "id": "latestOfferType/is/introductory_offer,promotional_offer/intro_offer",
+      "field": "latestOfferType",
+      "operator": "is",
+      "profile": "intro_offer",
+      "predicate": "{\"==\": [{\"var\": \"latest_offer_type\"}, \"introductory_offer,promotional_offer\"]}",
+      "expected": false
+    },
+    {
+      "id": "latestOfferType/is/introductory_offer,promotional_offer/latest_promo",
+      "field": "latestOfferType",
+      "operator": "is",
+      "profile": "latest_promo",
+      "predicate": "{\"==\": [{\"var\": \"latest_offer_type\"}, \"introductory_offer,promotional_offer\"]}",
+      "expected": false
+    },
+    {
+      "id": "latestOfferType/is/introductory_offer,promotional_offer/latest_intro",
+      "field": "latestOfferType",
+      "operator": "is",
+      "profile": "latest_intro",
+      "predicate": "{\"==\": [{\"var\": \"latest_offer_type\"}, \"introductory_offer,promotional_offer\"]}",
+      "expected": false
+    },
+    {
+      "id": "latestOfferType/isNot/no_offer/new",
+      "field": "latestOfferType",
+      "operator": "isNot",
+      "profile": "new",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_offer_type\", null]}, \"no_offer\"]}",
+      "expected": true
+    },
+    {
+      "id": "latestOfferType/isNot/no_offer/renewed",
+      "field": "latestOfferType",
+      "operator": "isNot",
+      "profile": "renewed",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_offer_type\", null]}, \"no_offer\"]}",
+      "expected": false
+    },
+    {
+      "id": "latestOfferType/isNot/no_offer/first_purchase",
+      "field": "latestOfferType",
+      "operator": "isNot",
+      "profile": "first_purchase",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_offer_type\", null]}, \"no_offer\"]}",
+      "expected": false
+    },
+    {
+      "id": "latestOfferType/isNot/no_offer/unavailable",
+      "field": "latestOfferType",
+      "operator": "isNot",
+      "profile": "unavailable",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_offer_type\", null]}, \"no_offer\"]}",
+      "expected": true
+    },
+    {
+      "id": "latestOfferType/isNot/no_offer/intro_offer",
+      "field": "latestOfferType",
+      "operator": "isNot",
+      "profile": "intro_offer",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_offer_type\", null]}, \"no_offer\"]}",
+      "expected": true
+    },
+    {
+      "id": "latestOfferType/isNot/no_offer/latest_promo",
+      "field": "latestOfferType",
+      "operator": "isNot",
+      "profile": "latest_promo",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_offer_type\", null]}, \"no_offer\"]}",
+      "expected": true
+    },
+    {
+      "id": "latestOfferType/isNot/no_offer/latest_intro",
+      "field": "latestOfferType",
+      "operator": "isNot",
+      "profile": "latest_intro",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_offer_type\", null]}, \"no_offer\"]}",
+      "expected": true
+    },
+    {
+      "id": "latestOfferType/isNot/introductory_offer/new",
+      "field": "latestOfferType",
+      "operator": "isNot",
+      "profile": "new",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_offer_type\", null]}, \"introductory_offer\"]}",
+      "expected": true
+    },
+    {
+      "id": "latestOfferType/isNot/introductory_offer/renewed",
+      "field": "latestOfferType",
+      "operator": "isNot",
+      "profile": "renewed",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_offer_type\", null]}, \"introductory_offer\"]}",
+      "expected": true
+    },
+    {
+      "id": "latestOfferType/isNot/introductory_offer/first_purchase",
+      "field": "latestOfferType",
+      "operator": "isNot",
+      "profile": "first_purchase",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_offer_type\", null]}, \"introductory_offer\"]}",
+      "expected": true
+    },
+    {
+      "id": "latestOfferType/isNot/introductory_offer/unavailable",
+      "field": "latestOfferType",
+      "operator": "isNot",
+      "profile": "unavailable",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_offer_type\", null]}, \"introductory_offer\"]}",
+      "expected": true
+    },
+    {
+      "id": "latestOfferType/isNot/introductory_offer/intro_offer",
+      "field": "latestOfferType",
+      "operator": "isNot",
+      "profile": "intro_offer",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_offer_type\", null]}, \"introductory_offer\"]}",
+      "expected": false
+    },
+    {
+      "id": "latestOfferType/isNot/introductory_offer/latest_promo",
+      "field": "latestOfferType",
+      "operator": "isNot",
+      "profile": "latest_promo",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_offer_type\", null]}, \"introductory_offer\"]}",
+      "expected": true
+    },
+    {
+      "id": "latestOfferType/isNot/introductory_offer/latest_intro",
+      "field": "latestOfferType",
+      "operator": "isNot",
+      "profile": "latest_intro",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_offer_type\", null]}, \"introductory_offer\"]}",
+      "expected": false
+    },
+    {
+      "id": "latestOfferType/isNot/promotional_offer/new",
+      "field": "latestOfferType",
+      "operator": "isNot",
+      "profile": "new",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_offer_type\", null]}, \"promotional_offer\"]}",
+      "expected": true
+    },
+    {
+      "id": "latestOfferType/isNot/promotional_offer/renewed",
+      "field": "latestOfferType",
+      "operator": "isNot",
+      "profile": "renewed",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_offer_type\", null]}, \"promotional_offer\"]}",
+      "expected": true
+    },
+    {
+      "id": "latestOfferType/isNot/promotional_offer/first_purchase",
+      "field": "latestOfferType",
+      "operator": "isNot",
+      "profile": "first_purchase",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_offer_type\", null]}, \"promotional_offer\"]}",
+      "expected": true
+    },
+    {
+      "id": "latestOfferType/isNot/promotional_offer/unavailable",
+      "field": "latestOfferType",
+      "operator": "isNot",
+      "profile": "unavailable",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_offer_type\", null]}, \"promotional_offer\"]}",
+      "expected": true
+    },
+    {
+      "id": "latestOfferType/isNot/promotional_offer/intro_offer",
+      "field": "latestOfferType",
+      "operator": "isNot",
+      "profile": "intro_offer",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_offer_type\", null]}, \"promotional_offer\"]}",
+      "expected": true
+    },
+    {
+      "id": "latestOfferType/isNot/promotional_offer/latest_promo",
+      "field": "latestOfferType",
+      "operator": "isNot",
+      "profile": "latest_promo",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_offer_type\", null]}, \"promotional_offer\"]}",
+      "expected": false
+    },
+    {
+      "id": "latestOfferType/isNot/promotional_offer/latest_intro",
+      "field": "latestOfferType",
+      "operator": "isNot",
+      "profile": "latest_intro",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_offer_type\", null]}, \"promotional_offer\"]}",
+      "expected": true
+    },
+    {
+      "id": "latestOfferType/isNot/introductory_offer,promotional_offer/new",
+      "field": "latestOfferType",
+      "operator": "isNot",
+      "profile": "new",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_offer_type\", null]}, \"introductory_offer,promotional_offer\"]}",
+      "expected": true
+    },
+    {
+      "id": "latestOfferType/isNot/introductory_offer,promotional_offer/renewed",
+      "field": "latestOfferType",
+      "operator": "isNot",
+      "profile": "renewed",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_offer_type\", null]}, \"introductory_offer,promotional_offer\"]}",
+      "expected": true
+    },
+    {
+      "id": "latestOfferType/isNot/introductory_offer,promotional_offer/first_purchase",
+      "field": "latestOfferType",
+      "operator": "isNot",
+      "profile": "first_purchase",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_offer_type\", null]}, \"introductory_offer,promotional_offer\"]}",
+      "expected": true
+    },
+    {
+      "id": "latestOfferType/isNot/introductory_offer,promotional_offer/unavailable",
+      "field": "latestOfferType",
+      "operator": "isNot",
+      "profile": "unavailable",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_offer_type\", null]}, \"introductory_offer,promotional_offer\"]}",
+      "expected": true
+    },
+    {
+      "id": "latestOfferType/isNot/introductory_offer,promotional_offer/intro_offer",
+      "field": "latestOfferType",
+      "operator": "isNot",
+      "profile": "intro_offer",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_offer_type\", null]}, \"introductory_offer,promotional_offer\"]}",
+      "expected": true
+    },
+    {
+      "id": "latestOfferType/isNot/introductory_offer,promotional_offer/latest_promo",
+      "field": "latestOfferType",
+      "operator": "isNot",
+      "profile": "latest_promo",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_offer_type\", null]}, \"introductory_offer,promotional_offer\"]}",
+      "expected": true
+    },
+    {
+      "id": "latestOfferType/isNot/introductory_offer,promotional_offer/latest_intro",
+      "field": "latestOfferType",
+      "operator": "isNot",
+      "profile": "latest_intro",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_offer_type\", null]}, \"introductory_offer,promotional_offer\"]}",
+      "expected": true
+    },
+    {
+      "id": "latestOfferType/isAnyOf/no_offer/new",
+      "field": "latestOfferType",
+      "operator": "isAnyOf",
+      "profile": "new",
+      "predicate": "{\"in\": [{\"var\": \"latest_offer_type\"}, [\"no_offer\"]]}",
+      "expected": false
+    },
+    {
+      "id": "latestOfferType/isAnyOf/no_offer/renewed",
+      "field": "latestOfferType",
+      "operator": "isAnyOf",
+      "profile": "renewed",
+      "predicate": "{\"in\": [{\"var\": \"latest_offer_type\"}, [\"no_offer\"]]}",
+      "expected": true
+    },
+    {
+      "id": "latestOfferType/isAnyOf/no_offer/first_purchase",
+      "field": "latestOfferType",
+      "operator": "isAnyOf",
+      "profile": "first_purchase",
+      "predicate": "{\"in\": [{\"var\": \"latest_offer_type\"}, [\"no_offer\"]]}",
+      "expected": true
+    },
+    {
+      "id": "latestOfferType/isAnyOf/no_offer/unavailable",
+      "field": "latestOfferType",
+      "operator": "isAnyOf",
+      "profile": "unavailable",
+      "predicate": "{\"in\": [{\"var\": \"latest_offer_type\"}, [\"no_offer\"]]}",
+      "expected": false
+    },
+    {
+      "id": "latestOfferType/isAnyOf/no_offer/intro_offer",
+      "field": "latestOfferType",
+      "operator": "isAnyOf",
+      "profile": "intro_offer",
+      "predicate": "{\"in\": [{\"var\": \"latest_offer_type\"}, [\"no_offer\"]]}",
+      "expected": false
+    },
+    {
+      "id": "latestOfferType/isAnyOf/no_offer/latest_promo",
+      "field": "latestOfferType",
+      "operator": "isAnyOf",
+      "profile": "latest_promo",
+      "predicate": "{\"in\": [{\"var\": \"latest_offer_type\"}, [\"no_offer\"]]}",
+      "expected": false
+    },
+    {
+      "id": "latestOfferType/isAnyOf/no_offer/latest_intro",
+      "field": "latestOfferType",
+      "operator": "isAnyOf",
+      "profile": "latest_intro",
+      "predicate": "{\"in\": [{\"var\": \"latest_offer_type\"}, [\"no_offer\"]]}",
+      "expected": false
+    },
+    {
+      "id": "latestOfferType/isAnyOf/introductory_offer/new",
+      "field": "latestOfferType",
+      "operator": "isAnyOf",
+      "profile": "new",
+      "predicate": "{\"in\": [{\"var\": \"latest_offer_type\"}, [\"introductory_offer\"]]}",
+      "expected": false
+    },
+    {
+      "id": "latestOfferType/isAnyOf/introductory_offer/renewed",
+      "field": "latestOfferType",
+      "operator": "isAnyOf",
+      "profile": "renewed",
+      "predicate": "{\"in\": [{\"var\": \"latest_offer_type\"}, [\"introductory_offer\"]]}",
+      "expected": false
+    },
+    {
+      "id": "latestOfferType/isAnyOf/introductory_offer/first_purchase",
+      "field": "latestOfferType",
+      "operator": "isAnyOf",
+      "profile": "first_purchase",
+      "predicate": "{\"in\": [{\"var\": \"latest_offer_type\"}, [\"introductory_offer\"]]}",
+      "expected": false
+    },
+    {
+      "id": "latestOfferType/isAnyOf/introductory_offer/unavailable",
+      "field": "latestOfferType",
+      "operator": "isAnyOf",
+      "profile": "unavailable",
+      "predicate": "{\"in\": [{\"var\": \"latest_offer_type\"}, [\"introductory_offer\"]]}",
+      "expected": false
+    },
+    {
+      "id": "latestOfferType/isAnyOf/introductory_offer/intro_offer",
+      "field": "latestOfferType",
+      "operator": "isAnyOf",
+      "profile": "intro_offer",
+      "predicate": "{\"in\": [{\"var\": \"latest_offer_type\"}, [\"introductory_offer\"]]}",
+      "expected": true
+    },
+    {
+      "id": "latestOfferType/isAnyOf/introductory_offer/latest_promo",
+      "field": "latestOfferType",
+      "operator": "isAnyOf",
+      "profile": "latest_promo",
+      "predicate": "{\"in\": [{\"var\": \"latest_offer_type\"}, [\"introductory_offer\"]]}",
+      "expected": false
+    },
+    {
+      "id": "latestOfferType/isAnyOf/introductory_offer/latest_intro",
+      "field": "latestOfferType",
+      "operator": "isAnyOf",
+      "profile": "latest_intro",
+      "predicate": "{\"in\": [{\"var\": \"latest_offer_type\"}, [\"introductory_offer\"]]}",
+      "expected": true
+    },
+    {
+      "id": "latestOfferType/isAnyOf/promotional_offer/new",
+      "field": "latestOfferType",
+      "operator": "isAnyOf",
+      "profile": "new",
+      "predicate": "{\"in\": [{\"var\": \"latest_offer_type\"}, [\"promotional_offer\"]]}",
+      "expected": false
+    },
+    {
+      "id": "latestOfferType/isAnyOf/promotional_offer/renewed",
+      "field": "latestOfferType",
+      "operator": "isAnyOf",
+      "profile": "renewed",
+      "predicate": "{\"in\": [{\"var\": \"latest_offer_type\"}, [\"promotional_offer\"]]}",
+      "expected": false
+    },
+    {
+      "id": "latestOfferType/isAnyOf/promotional_offer/first_purchase",
+      "field": "latestOfferType",
+      "operator": "isAnyOf",
+      "profile": "first_purchase",
+      "predicate": "{\"in\": [{\"var\": \"latest_offer_type\"}, [\"promotional_offer\"]]}",
+      "expected": false
+    },
+    {
+      "id": "latestOfferType/isAnyOf/promotional_offer/unavailable",
+      "field": "latestOfferType",
+      "operator": "isAnyOf",
+      "profile": "unavailable",
+      "predicate": "{\"in\": [{\"var\": \"latest_offer_type\"}, [\"promotional_offer\"]]}",
+      "expected": false
+    },
+    {
+      "id": "latestOfferType/isAnyOf/promotional_offer/intro_offer",
+      "field": "latestOfferType",
+      "operator": "isAnyOf",
+      "profile": "intro_offer",
+      "predicate": "{\"in\": [{\"var\": \"latest_offer_type\"}, [\"promotional_offer\"]]}",
+      "expected": false
+    },
+    {
+      "id": "latestOfferType/isAnyOf/promotional_offer/latest_promo",
+      "field": "latestOfferType",
+      "operator": "isAnyOf",
+      "profile": "latest_promo",
+      "predicate": "{\"in\": [{\"var\": \"latest_offer_type\"}, [\"promotional_offer\"]]}",
+      "expected": true
+    },
+    {
+      "id": "latestOfferType/isAnyOf/promotional_offer/latest_intro",
+      "field": "latestOfferType",
+      "operator": "isAnyOf",
+      "profile": "latest_intro",
+      "predicate": "{\"in\": [{\"var\": \"latest_offer_type\"}, [\"promotional_offer\"]]}",
+      "expected": false
+    },
+    {
+      "id": "latestOfferType/isAnyOf/introductory_offer,promotional_offer/new",
+      "field": "latestOfferType",
+      "operator": "isAnyOf",
+      "profile": "new",
+      "predicate": "{\"in\": [{\"var\": \"latest_offer_type\"}, [\"introductory_offer\", \"promotional_offer\"]]}",
+      "expected": false
+    },
+    {
+      "id": "latestOfferType/isAnyOf/introductory_offer,promotional_offer/renewed",
+      "field": "latestOfferType",
+      "operator": "isAnyOf",
+      "profile": "renewed",
+      "predicate": "{\"in\": [{\"var\": \"latest_offer_type\"}, [\"introductory_offer\", \"promotional_offer\"]]}",
+      "expected": false
+    },
+    {
+      "id": "latestOfferType/isAnyOf/introductory_offer,promotional_offer/first_purchase",
+      "field": "latestOfferType",
+      "operator": "isAnyOf",
+      "profile": "first_purchase",
+      "predicate": "{\"in\": [{\"var\": \"latest_offer_type\"}, [\"introductory_offer\", \"promotional_offer\"]]}",
+      "expected": false
+    },
+    {
+      "id": "latestOfferType/isAnyOf/introductory_offer,promotional_offer/unavailable",
+      "field": "latestOfferType",
+      "operator": "isAnyOf",
+      "profile": "unavailable",
+      "predicate": "{\"in\": [{\"var\": \"latest_offer_type\"}, [\"introductory_offer\", \"promotional_offer\"]]}",
+      "expected": false
+    },
+    {
+      "id": "latestOfferType/isAnyOf/introductory_offer,promotional_offer/intro_offer",
+      "field": "latestOfferType",
+      "operator": "isAnyOf",
+      "profile": "intro_offer",
+      "predicate": "{\"in\": [{\"var\": \"latest_offer_type\"}, [\"introductory_offer\", \"promotional_offer\"]]}",
+      "expected": true
+    },
+    {
+      "id": "latestOfferType/isAnyOf/introductory_offer,promotional_offer/latest_promo",
+      "field": "latestOfferType",
+      "operator": "isAnyOf",
+      "profile": "latest_promo",
+      "predicate": "{\"in\": [{\"var\": \"latest_offer_type\"}, [\"introductory_offer\", \"promotional_offer\"]]}",
+      "expected": true
+    },
+    {
+      "id": "latestOfferType/isAnyOf/introductory_offer,promotional_offer/latest_intro",
+      "field": "latestOfferType",
+      "operator": "isAnyOf",
+      "profile": "latest_intro",
+      "predicate": "{\"in\": [{\"var\": \"latest_offer_type\"}, [\"introductory_offer\", \"promotional_offer\"]]}",
+      "expected": true
+    },
+    {
+      "id": "latestOfferType/isNotAnyOf/no_offer/new",
+      "field": "latestOfferType",
+      "operator": "isNotAnyOf",
+      "profile": "new",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_offer_type\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"latest_offer_type\"}, [\"no_offer\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestOfferType/isNotAnyOf/no_offer/renewed",
+      "field": "latestOfferType",
+      "operator": "isNotAnyOf",
+      "profile": "renewed",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_offer_type\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"latest_offer_type\"}, [\"no_offer\"]]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestOfferType/isNotAnyOf/no_offer/first_purchase",
+      "field": "latestOfferType",
+      "operator": "isNotAnyOf",
+      "profile": "first_purchase",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_offer_type\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"latest_offer_type\"}, [\"no_offer\"]]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestOfferType/isNotAnyOf/no_offer/unavailable",
+      "field": "latestOfferType",
+      "operator": "isNotAnyOf",
+      "profile": "unavailable",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_offer_type\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"latest_offer_type\"}, [\"no_offer\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestOfferType/isNotAnyOf/no_offer/intro_offer",
+      "field": "latestOfferType",
+      "operator": "isNotAnyOf",
+      "profile": "intro_offer",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_offer_type\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"latest_offer_type\"}, [\"no_offer\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestOfferType/isNotAnyOf/no_offer/latest_promo",
+      "field": "latestOfferType",
+      "operator": "isNotAnyOf",
+      "profile": "latest_promo",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_offer_type\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"latest_offer_type\"}, [\"no_offer\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestOfferType/isNotAnyOf/no_offer/latest_intro",
+      "field": "latestOfferType",
+      "operator": "isNotAnyOf",
+      "profile": "latest_intro",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_offer_type\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"latest_offer_type\"}, [\"no_offer\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestOfferType/isNotAnyOf/introductory_offer/new",
+      "field": "latestOfferType",
+      "operator": "isNotAnyOf",
+      "profile": "new",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_offer_type\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"latest_offer_type\"}, [\"introductory_offer\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestOfferType/isNotAnyOf/introductory_offer/renewed",
+      "field": "latestOfferType",
+      "operator": "isNotAnyOf",
+      "profile": "renewed",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_offer_type\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"latest_offer_type\"}, [\"introductory_offer\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestOfferType/isNotAnyOf/introductory_offer/first_purchase",
+      "field": "latestOfferType",
+      "operator": "isNotAnyOf",
+      "profile": "first_purchase",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_offer_type\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"latest_offer_type\"}, [\"introductory_offer\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestOfferType/isNotAnyOf/introductory_offer/unavailable",
+      "field": "latestOfferType",
+      "operator": "isNotAnyOf",
+      "profile": "unavailable",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_offer_type\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"latest_offer_type\"}, [\"introductory_offer\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestOfferType/isNotAnyOf/introductory_offer/intro_offer",
+      "field": "latestOfferType",
+      "operator": "isNotAnyOf",
+      "profile": "intro_offer",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_offer_type\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"latest_offer_type\"}, [\"introductory_offer\"]]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestOfferType/isNotAnyOf/introductory_offer/latest_promo",
+      "field": "latestOfferType",
+      "operator": "isNotAnyOf",
+      "profile": "latest_promo",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_offer_type\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"latest_offer_type\"}, [\"introductory_offer\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestOfferType/isNotAnyOf/introductory_offer/latest_intro",
+      "field": "latestOfferType",
+      "operator": "isNotAnyOf",
+      "profile": "latest_intro",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_offer_type\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"latest_offer_type\"}, [\"introductory_offer\"]]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestOfferType/isNotAnyOf/promotional_offer/new",
+      "field": "latestOfferType",
+      "operator": "isNotAnyOf",
+      "profile": "new",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_offer_type\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"latest_offer_type\"}, [\"promotional_offer\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestOfferType/isNotAnyOf/promotional_offer/renewed",
+      "field": "latestOfferType",
+      "operator": "isNotAnyOf",
+      "profile": "renewed",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_offer_type\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"latest_offer_type\"}, [\"promotional_offer\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestOfferType/isNotAnyOf/promotional_offer/first_purchase",
+      "field": "latestOfferType",
+      "operator": "isNotAnyOf",
+      "profile": "first_purchase",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_offer_type\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"latest_offer_type\"}, [\"promotional_offer\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestOfferType/isNotAnyOf/promotional_offer/unavailable",
+      "field": "latestOfferType",
+      "operator": "isNotAnyOf",
+      "profile": "unavailable",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_offer_type\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"latest_offer_type\"}, [\"promotional_offer\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestOfferType/isNotAnyOf/promotional_offer/intro_offer",
+      "field": "latestOfferType",
+      "operator": "isNotAnyOf",
+      "profile": "intro_offer",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_offer_type\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"latest_offer_type\"}, [\"promotional_offer\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestOfferType/isNotAnyOf/promotional_offer/latest_promo",
+      "field": "latestOfferType",
+      "operator": "isNotAnyOf",
+      "profile": "latest_promo",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_offer_type\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"latest_offer_type\"}, [\"promotional_offer\"]]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestOfferType/isNotAnyOf/promotional_offer/latest_intro",
+      "field": "latestOfferType",
+      "operator": "isNotAnyOf",
+      "profile": "latest_intro",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_offer_type\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"latest_offer_type\"}, [\"promotional_offer\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestOfferType/isNotAnyOf/introductory_offer,promotional_offer/new",
+      "field": "latestOfferType",
+      "operator": "isNotAnyOf",
+      "profile": "new",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_offer_type\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"latest_offer_type\"}, [\"introductory_offer\", \"promotional_offer\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestOfferType/isNotAnyOf/introductory_offer,promotional_offer/renewed",
+      "field": "latestOfferType",
+      "operator": "isNotAnyOf",
+      "profile": "renewed",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_offer_type\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"latest_offer_type\"}, [\"introductory_offer\", \"promotional_offer\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestOfferType/isNotAnyOf/introductory_offer,promotional_offer/first_purchase",
+      "field": "latestOfferType",
+      "operator": "isNotAnyOf",
+      "profile": "first_purchase",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_offer_type\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"latest_offer_type\"}, [\"introductory_offer\", \"promotional_offer\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestOfferType/isNotAnyOf/introductory_offer,promotional_offer/unavailable",
+      "field": "latestOfferType",
+      "operator": "isNotAnyOf",
+      "profile": "unavailable",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_offer_type\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"latest_offer_type\"}, [\"introductory_offer\", \"promotional_offer\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestOfferType/isNotAnyOf/introductory_offer,promotional_offer/intro_offer",
+      "field": "latestOfferType",
+      "operator": "isNotAnyOf",
+      "profile": "intro_offer",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_offer_type\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"latest_offer_type\"}, [\"introductory_offer\", \"promotional_offer\"]]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestOfferType/isNotAnyOf/introductory_offer,promotional_offer/latest_promo",
+      "field": "latestOfferType",
+      "operator": "isNotAnyOf",
+      "profile": "latest_promo",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_offer_type\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"latest_offer_type\"}, [\"introductory_offer\", \"promotional_offer\"]]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestOfferType/isNotAnyOf/introductory_offer,promotional_offer/latest_intro",
+      "field": "latestOfferType",
+      "operator": "isNotAnyOf",
+      "profile": "latest_intro",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_offer_type\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"latest_offer_type\"}, [\"introductory_offer\", \"promotional_offer\"]]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestOfferType/isEmpty//new",
+      "field": "latestOfferType",
+      "operator": "isEmpty",
+      "profile": "new",
+      "predicate": "{\"==\": [{\"var\": [\"latest_offer_type\", null]}, null]}",
+      "expected": true
+    },
+    {
+      "id": "latestOfferType/isEmpty//renewed",
+      "field": "latestOfferType",
+      "operator": "isEmpty",
+      "profile": "renewed",
+      "predicate": "{\"==\": [{\"var\": [\"latest_offer_type\", null]}, null]}",
+      "expected": false
+    },
+    {
+      "id": "latestOfferType/isEmpty//first_purchase",
+      "field": "latestOfferType",
+      "operator": "isEmpty",
+      "profile": "first_purchase",
+      "predicate": "{\"==\": [{\"var\": [\"latest_offer_type\", null]}, null]}",
+      "expected": false
+    },
+    {
+      "id": "latestOfferType/isEmpty//unavailable",
+      "field": "latestOfferType",
+      "operator": "isEmpty",
+      "profile": "unavailable",
+      "predicate": "{\"==\": [{\"var\": [\"latest_offer_type\", null]}, null]}",
+      "expected": true
+    },
+    {
+      "id": "latestOfferType/isEmpty//intro_offer",
+      "field": "latestOfferType",
+      "operator": "isEmpty",
+      "profile": "intro_offer",
+      "predicate": "{\"==\": [{\"var\": [\"latest_offer_type\", null]}, null]}",
+      "expected": false
+    },
+    {
+      "id": "latestOfferType/isEmpty//latest_promo",
+      "field": "latestOfferType",
+      "operator": "isEmpty",
+      "profile": "latest_promo",
+      "predicate": "{\"==\": [{\"var\": [\"latest_offer_type\", null]}, null]}",
+      "expected": false
+    },
+    {
+      "id": "latestOfferType/isEmpty//latest_intro",
+      "field": "latestOfferType",
+      "operator": "isEmpty",
+      "profile": "latest_intro",
+      "predicate": "{\"==\": [{\"var\": [\"latest_offer_type\", null]}, null]}",
+      "expected": false
+    },
+    {
+      "id": "latestOfferType/isNotEmpty//new",
+      "field": "latestOfferType",
+      "operator": "isNotEmpty",
+      "profile": "new",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_offer_type\", null]}, null]}",
+      "expected": false
+    },
+    {
+      "id": "latestOfferType/isNotEmpty//renewed",
+      "field": "latestOfferType",
+      "operator": "isNotEmpty",
+      "profile": "renewed",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_offer_type\", null]}, null]}",
+      "expected": true
+    },
+    {
+      "id": "latestOfferType/isNotEmpty//first_purchase",
+      "field": "latestOfferType",
+      "operator": "isNotEmpty",
+      "profile": "first_purchase",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_offer_type\", null]}, null]}",
+      "expected": true
+    },
+    {
+      "id": "latestOfferType/isNotEmpty//unavailable",
+      "field": "latestOfferType",
+      "operator": "isNotEmpty",
+      "profile": "unavailable",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_offer_type\", null]}, null]}",
+      "expected": false
+    },
+    {
+      "id": "latestOfferType/isNotEmpty//intro_offer",
+      "field": "latestOfferType",
+      "operator": "isNotEmpty",
+      "profile": "intro_offer",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_offer_type\", null]}, null]}",
+      "expected": true
+    },
+    {
+      "id": "latestOfferType/isNotEmpty//latest_promo",
+      "field": "latestOfferType",
+      "operator": "isNotEmpty",
+      "profile": "latest_promo",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_offer_type\", null]}, null]}",
+      "expected": true
+    },
+    {
+      "id": "latestOfferType/isNotEmpty//latest_intro",
+      "field": "latestOfferType",
+      "operator": "isNotEmpty",
+      "profile": "latest_intro",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_offer_type\", null]}, null]}",
+      "expected": true
+    }
+  ]
+}

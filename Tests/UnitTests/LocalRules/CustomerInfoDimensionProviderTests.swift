@@ -298,13 +298,16 @@ struct CustomerInfoDimensionProviderTests {
 
     @Test
     func mapsEveryStoreIncludingUnknown() async throws {
-        let stores: [(rawValue: Any, expected: String)] = [
+        let stores: [(rawValue: Any?, expected: String?)] = [
             ("app_store", "app_store"),
             ("mac_app_store", "mac_app_store"),
             ("play_store", "play_store"),
             ("stripe", "stripe"),
             ("promotional", "promotional"),
-            (NSNull(), "unknown"),
+            (NSNull(), nil),
+            (nil, nil),
+            ("", nil),
+            ("future_store", "future_store"),
             ("amazon", "amazon"),
             ("rc_billing", "rc_billing"),
             ("external", "external"),
@@ -315,7 +318,9 @@ struct CustomerInfoDimensionProviderTests {
             ("paypal", "paypal")
         ]
         let subscriptions = stores.enumerated().reduce(into: [String: Any]()) { result, element in
-            result[String(format: "product_%02d", element.offset)] = Self.subscription(store: element.element.rawValue)
+            var subscription = Self.subscription()
+            subscription["store"] = element.element.rawValue
+            result[String(format: "product_%02d", element.offset)] = subscription
         }
         let provider = Self.provider(customerInfoData: Self.customerInfoData(subscriptions: subscriptions))
 
@@ -324,7 +329,8 @@ struct CustomerInfoDimensionProviderTests {
 
         for (index, store) in stores.enumerated() {
             let identifier = String(format: "product_%02d", index)
-            #expect(purchases[identifier]?["store"] == .string(store.expected))
+            let purchase = try #require(purchases[identifier])
+            #expect(purchase["store"] == store.expected.map(DimensionValue.string))
         }
     }
 

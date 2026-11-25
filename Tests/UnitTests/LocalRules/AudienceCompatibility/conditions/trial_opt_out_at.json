@@ -1,0 +1,1181 @@
+{
+  "schema_version": 1,
+  "cases": [
+    {
+      "id": "trialOptOutAt/before/2024-05-18/new",
+      "field": "trialOptOutAt",
+      "operator": "before",
+      "profile": "new",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"trial_opt_out_at\"}, 1715990400000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialOptOutAt/before/2024-05-18/renewed",
+      "field": "trialOptOutAt",
+      "operator": "before",
+      "profile": "renewed",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"trial_opt_out_at\"}, 1715990400000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialOptOutAt/before/2024-05-18/first_purchase",
+      "field": "trialOptOutAt",
+      "operator": "before",
+      "profile": "first_purchase",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"trial_opt_out_at\"}, 1715990400000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialOptOutAt/before/2024-05-18/unavailable",
+      "field": "trialOptOutAt",
+      "operator": "before",
+      "profile": "unavailable",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"trial_opt_out_at\"}, 1715990400000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialOptOutAt/before/2024-05-18/older_trial",
+      "field": "trialOptOutAt",
+      "operator": "before",
+      "profile": "older_trial",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"trial_opt_out_at\"}, 1715990400000]}]}",
+      "expected": true
+    },
+    {
+      "id": "trialOptOutAt/before/2024-05-18/latest_trial_cancelled",
+      "field": "trialOptOutAt",
+      "operator": "before",
+      "profile": "latest_trial_cancelled",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"trial_opt_out_at\"}, 1715990400000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialOptOutAt/before/2024-05-18/cancelled_after_latest_trial",
+      "field": "trialOptOutAt",
+      "operator": "before",
+      "profile": "cancelled_after_latest_trial",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"trial_opt_out_at\"}, 1715990400000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialOptOutAt/before/2024-05-25/new",
+      "field": "trialOptOutAt",
+      "operator": "before",
+      "profile": "new",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"trial_opt_out_at\"}, 1716595200000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialOptOutAt/before/2024-05-25/renewed",
+      "field": "trialOptOutAt",
+      "operator": "before",
+      "profile": "renewed",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"trial_opt_out_at\"}, 1716595200000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialOptOutAt/before/2024-05-25/first_purchase",
+      "field": "trialOptOutAt",
+      "operator": "before",
+      "profile": "first_purchase",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"trial_opt_out_at\"}, 1716595200000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialOptOutAt/before/2024-05-25/unavailable",
+      "field": "trialOptOutAt",
+      "operator": "before",
+      "profile": "unavailable",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"trial_opt_out_at\"}, 1716595200000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialOptOutAt/before/2024-05-25/older_trial",
+      "field": "trialOptOutAt",
+      "operator": "before",
+      "profile": "older_trial",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"trial_opt_out_at\"}, 1716595200000]}]}",
+      "expected": true
+    },
+    {
+      "id": "trialOptOutAt/before/2024-05-25/latest_trial_cancelled",
+      "field": "trialOptOutAt",
+      "operator": "before",
+      "profile": "latest_trial_cancelled",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"trial_opt_out_at\"}, 1716595200000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialOptOutAt/before/2024-05-25/cancelled_after_latest_trial",
+      "field": "trialOptOutAt",
+      "operator": "before",
+      "profile": "cancelled_after_latest_trial",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"trial_opt_out_at\"}, 1716595200000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialOptOutAt/before/2024-05-30/new",
+      "field": "trialOptOutAt",
+      "operator": "before",
+      "profile": "new",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"trial_opt_out_at\"}, 1717027200000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialOptOutAt/before/2024-05-30/renewed",
+      "field": "trialOptOutAt",
+      "operator": "before",
+      "profile": "renewed",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"trial_opt_out_at\"}, 1717027200000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialOptOutAt/before/2024-05-30/first_purchase",
+      "field": "trialOptOutAt",
+      "operator": "before",
+      "profile": "first_purchase",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"trial_opt_out_at\"}, 1717027200000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialOptOutAt/before/2024-05-30/unavailable",
+      "field": "trialOptOutAt",
+      "operator": "before",
+      "profile": "unavailable",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"trial_opt_out_at\"}, 1717027200000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialOptOutAt/before/2024-05-30/older_trial",
+      "field": "trialOptOutAt",
+      "operator": "before",
+      "profile": "older_trial",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"trial_opt_out_at\"}, 1717027200000]}]}",
+      "expected": true
+    },
+    {
+      "id": "trialOptOutAt/before/2024-05-30/latest_trial_cancelled",
+      "field": "trialOptOutAt",
+      "operator": "before",
+      "profile": "latest_trial_cancelled",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"trial_opt_out_at\"}, 1717027200000]}]}",
+      "expected": true
+    },
+    {
+      "id": "trialOptOutAt/before/2024-05-30/cancelled_after_latest_trial",
+      "field": "trialOptOutAt",
+      "operator": "before",
+      "profile": "cancelled_after_latest_trial",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"trial_opt_out_at\"}, 1717027200000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialOptOutAt/beforeOrOn/2024-05-18/new",
+      "field": "trialOptOutAt",
+      "operator": "beforeOrOn",
+      "profile": "new",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"trial_opt_out_at\"}, 1716076800000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialOptOutAt/beforeOrOn/2024-05-18/renewed",
+      "field": "trialOptOutAt",
+      "operator": "beforeOrOn",
+      "profile": "renewed",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"trial_opt_out_at\"}, 1716076800000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialOptOutAt/beforeOrOn/2024-05-18/first_purchase",
+      "field": "trialOptOutAt",
+      "operator": "beforeOrOn",
+      "profile": "first_purchase",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"trial_opt_out_at\"}, 1716076800000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialOptOutAt/beforeOrOn/2024-05-18/unavailable",
+      "field": "trialOptOutAt",
+      "operator": "beforeOrOn",
+      "profile": "unavailable",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"trial_opt_out_at\"}, 1716076800000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialOptOutAt/beforeOrOn/2024-05-18/older_trial",
+      "field": "trialOptOutAt",
+      "operator": "beforeOrOn",
+      "profile": "older_trial",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"trial_opt_out_at\"}, 1716076800000]}]}",
+      "expected": true
+    },
+    {
+      "id": "trialOptOutAt/beforeOrOn/2024-05-18/latest_trial_cancelled",
+      "field": "trialOptOutAt",
+      "operator": "beforeOrOn",
+      "profile": "latest_trial_cancelled",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"trial_opt_out_at\"}, 1716076800000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialOptOutAt/beforeOrOn/2024-05-18/cancelled_after_latest_trial",
+      "field": "trialOptOutAt",
+      "operator": "beforeOrOn",
+      "profile": "cancelled_after_latest_trial",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"trial_opt_out_at\"}, 1716076800000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialOptOutAt/beforeOrOn/2024-05-25/new",
+      "field": "trialOptOutAt",
+      "operator": "beforeOrOn",
+      "profile": "new",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"trial_opt_out_at\"}, 1716681600000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialOptOutAt/beforeOrOn/2024-05-25/renewed",
+      "field": "trialOptOutAt",
+      "operator": "beforeOrOn",
+      "profile": "renewed",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"trial_opt_out_at\"}, 1716681600000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialOptOutAt/beforeOrOn/2024-05-25/first_purchase",
+      "field": "trialOptOutAt",
+      "operator": "beforeOrOn",
+      "profile": "first_purchase",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"trial_opt_out_at\"}, 1716681600000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialOptOutAt/beforeOrOn/2024-05-25/unavailable",
+      "field": "trialOptOutAt",
+      "operator": "beforeOrOn",
+      "profile": "unavailable",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"trial_opt_out_at\"}, 1716681600000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialOptOutAt/beforeOrOn/2024-05-25/older_trial",
+      "field": "trialOptOutAt",
+      "operator": "beforeOrOn",
+      "profile": "older_trial",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"trial_opt_out_at\"}, 1716681600000]}]}",
+      "expected": true
+    },
+    {
+      "id": "trialOptOutAt/beforeOrOn/2024-05-25/latest_trial_cancelled",
+      "field": "trialOptOutAt",
+      "operator": "beforeOrOn",
+      "profile": "latest_trial_cancelled",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"trial_opt_out_at\"}, 1716681600000]}]}",
+      "expected": true
+    },
+    {
+      "id": "trialOptOutAt/beforeOrOn/2024-05-25/cancelled_after_latest_trial",
+      "field": "trialOptOutAt",
+      "operator": "beforeOrOn",
+      "profile": "cancelled_after_latest_trial",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"trial_opt_out_at\"}, 1716681600000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialOptOutAt/beforeOrOn/2024-05-30/new",
+      "field": "trialOptOutAt",
+      "operator": "beforeOrOn",
+      "profile": "new",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"trial_opt_out_at\"}, 1717113600000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialOptOutAt/beforeOrOn/2024-05-30/renewed",
+      "field": "trialOptOutAt",
+      "operator": "beforeOrOn",
+      "profile": "renewed",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"trial_opt_out_at\"}, 1717113600000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialOptOutAt/beforeOrOn/2024-05-30/first_purchase",
+      "field": "trialOptOutAt",
+      "operator": "beforeOrOn",
+      "profile": "first_purchase",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"trial_opt_out_at\"}, 1717113600000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialOptOutAt/beforeOrOn/2024-05-30/unavailable",
+      "field": "trialOptOutAt",
+      "operator": "beforeOrOn",
+      "profile": "unavailable",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"trial_opt_out_at\"}, 1717113600000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialOptOutAt/beforeOrOn/2024-05-30/older_trial",
+      "field": "trialOptOutAt",
+      "operator": "beforeOrOn",
+      "profile": "older_trial",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"trial_opt_out_at\"}, 1717113600000]}]}",
+      "expected": true
+    },
+    {
+      "id": "trialOptOutAt/beforeOrOn/2024-05-30/latest_trial_cancelled",
+      "field": "trialOptOutAt",
+      "operator": "beforeOrOn",
+      "profile": "latest_trial_cancelled",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"trial_opt_out_at\"}, 1717113600000]}]}",
+      "expected": true
+    },
+    {
+      "id": "trialOptOutAt/beforeOrOn/2024-05-30/cancelled_after_latest_trial",
+      "field": "trialOptOutAt",
+      "operator": "beforeOrOn",
+      "profile": "cancelled_after_latest_trial",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"trial_opt_out_at\"}, 1717113600000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialOptOutAt/on/2024-05-18/new",
+      "field": "trialOptOutAt",
+      "operator": "on",
+      "profile": "new",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"trial_opt_out_at\"}, 1715990400000]}]}, {\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"trial_opt_out_at\"}, 1716076800000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialOptOutAt/on/2024-05-18/renewed",
+      "field": "trialOptOutAt",
+      "operator": "on",
+      "profile": "renewed",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"trial_opt_out_at\"}, 1715990400000]}]}, {\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"trial_opt_out_at\"}, 1716076800000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialOptOutAt/on/2024-05-18/first_purchase",
+      "field": "trialOptOutAt",
+      "operator": "on",
+      "profile": "first_purchase",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"trial_opt_out_at\"}, 1715990400000]}]}, {\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"trial_opt_out_at\"}, 1716076800000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialOptOutAt/on/2024-05-18/unavailable",
+      "field": "trialOptOutAt",
+      "operator": "on",
+      "profile": "unavailable",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"trial_opt_out_at\"}, 1715990400000]}]}, {\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"trial_opt_out_at\"}, 1716076800000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialOptOutAt/on/2024-05-18/older_trial",
+      "field": "trialOptOutAt",
+      "operator": "on",
+      "profile": "older_trial",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"trial_opt_out_at\"}, 1715990400000]}]}, {\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"trial_opt_out_at\"}, 1716076800000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialOptOutAt/on/2024-05-18/latest_trial_cancelled",
+      "field": "trialOptOutAt",
+      "operator": "on",
+      "profile": "latest_trial_cancelled",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"trial_opt_out_at\"}, 1715990400000]}]}, {\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"trial_opt_out_at\"}, 1716076800000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialOptOutAt/on/2024-05-18/cancelled_after_latest_trial",
+      "field": "trialOptOutAt",
+      "operator": "on",
+      "profile": "cancelled_after_latest_trial",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"trial_opt_out_at\"}, 1715990400000]}]}, {\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"trial_opt_out_at\"}, 1716076800000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialOptOutAt/on/2024-05-25/new",
+      "field": "trialOptOutAt",
+      "operator": "on",
+      "profile": "new",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"trial_opt_out_at\"}, 1716595200000]}]}, {\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"trial_opt_out_at\"}, 1716681600000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialOptOutAt/on/2024-05-25/renewed",
+      "field": "trialOptOutAt",
+      "operator": "on",
+      "profile": "renewed",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"trial_opt_out_at\"}, 1716595200000]}]}, {\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"trial_opt_out_at\"}, 1716681600000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialOptOutAt/on/2024-05-25/first_purchase",
+      "field": "trialOptOutAt",
+      "operator": "on",
+      "profile": "first_purchase",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"trial_opt_out_at\"}, 1716595200000]}]}, {\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"trial_opt_out_at\"}, 1716681600000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialOptOutAt/on/2024-05-25/unavailable",
+      "field": "trialOptOutAt",
+      "operator": "on",
+      "profile": "unavailable",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"trial_opt_out_at\"}, 1716595200000]}]}, {\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"trial_opt_out_at\"}, 1716681600000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialOptOutAt/on/2024-05-25/older_trial",
+      "field": "trialOptOutAt",
+      "operator": "on",
+      "profile": "older_trial",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"trial_opt_out_at\"}, 1716595200000]}]}, {\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"trial_opt_out_at\"}, 1716681600000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialOptOutAt/on/2024-05-25/latest_trial_cancelled",
+      "field": "trialOptOutAt",
+      "operator": "on",
+      "profile": "latest_trial_cancelled",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"trial_opt_out_at\"}, 1716595200000]}]}, {\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"trial_opt_out_at\"}, 1716681600000]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "trialOptOutAt/on/2024-05-25/cancelled_after_latest_trial",
+      "field": "trialOptOutAt",
+      "operator": "on",
+      "profile": "cancelled_after_latest_trial",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"trial_opt_out_at\"}, 1716595200000]}]}, {\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"trial_opt_out_at\"}, 1716681600000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialOptOutAt/on/2024-05-30/new",
+      "field": "trialOptOutAt",
+      "operator": "on",
+      "profile": "new",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"trial_opt_out_at\"}, 1717027200000]}]}, {\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"trial_opt_out_at\"}, 1717113600000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialOptOutAt/on/2024-05-30/renewed",
+      "field": "trialOptOutAt",
+      "operator": "on",
+      "profile": "renewed",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"trial_opt_out_at\"}, 1717027200000]}]}, {\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"trial_opt_out_at\"}, 1717113600000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialOptOutAt/on/2024-05-30/first_purchase",
+      "field": "trialOptOutAt",
+      "operator": "on",
+      "profile": "first_purchase",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"trial_opt_out_at\"}, 1717027200000]}]}, {\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"trial_opt_out_at\"}, 1717113600000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialOptOutAt/on/2024-05-30/unavailable",
+      "field": "trialOptOutAt",
+      "operator": "on",
+      "profile": "unavailable",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"trial_opt_out_at\"}, 1717027200000]}]}, {\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"trial_opt_out_at\"}, 1717113600000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialOptOutAt/on/2024-05-30/older_trial",
+      "field": "trialOptOutAt",
+      "operator": "on",
+      "profile": "older_trial",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"trial_opt_out_at\"}, 1717027200000]}]}, {\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"trial_opt_out_at\"}, 1717113600000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialOptOutAt/on/2024-05-30/latest_trial_cancelled",
+      "field": "trialOptOutAt",
+      "operator": "on",
+      "profile": "latest_trial_cancelled",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"trial_opt_out_at\"}, 1717027200000]}]}, {\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"trial_opt_out_at\"}, 1717113600000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialOptOutAt/on/2024-05-30/cancelled_after_latest_trial",
+      "field": "trialOptOutAt",
+      "operator": "on",
+      "profile": "cancelled_after_latest_trial",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"trial_opt_out_at\"}, 1717027200000]}]}, {\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"trial_opt_out_at\"}, 1717113600000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialOptOutAt/after/2024-05-18/new",
+      "field": "trialOptOutAt",
+      "operator": "after",
+      "profile": "new",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"trial_opt_out_at\"}, 1716076800000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialOptOutAt/after/2024-05-18/renewed",
+      "field": "trialOptOutAt",
+      "operator": "after",
+      "profile": "renewed",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"trial_opt_out_at\"}, 1716076800000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialOptOutAt/after/2024-05-18/first_purchase",
+      "field": "trialOptOutAt",
+      "operator": "after",
+      "profile": "first_purchase",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"trial_opt_out_at\"}, 1716076800000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialOptOutAt/after/2024-05-18/unavailable",
+      "field": "trialOptOutAt",
+      "operator": "after",
+      "profile": "unavailable",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"trial_opt_out_at\"}, 1716076800000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialOptOutAt/after/2024-05-18/older_trial",
+      "field": "trialOptOutAt",
+      "operator": "after",
+      "profile": "older_trial",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"trial_opt_out_at\"}, 1716076800000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialOptOutAt/after/2024-05-18/latest_trial_cancelled",
+      "field": "trialOptOutAt",
+      "operator": "after",
+      "profile": "latest_trial_cancelled",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"trial_opt_out_at\"}, 1716076800000]}]}",
+      "expected": true
+    },
+    {
+      "id": "trialOptOutAt/after/2024-05-18/cancelled_after_latest_trial",
+      "field": "trialOptOutAt",
+      "operator": "after",
+      "profile": "cancelled_after_latest_trial",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"trial_opt_out_at\"}, 1716076800000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialOptOutAt/after/2024-05-25/new",
+      "field": "trialOptOutAt",
+      "operator": "after",
+      "profile": "new",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"trial_opt_out_at\"}, 1716681600000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialOptOutAt/after/2024-05-25/renewed",
+      "field": "trialOptOutAt",
+      "operator": "after",
+      "profile": "renewed",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"trial_opt_out_at\"}, 1716681600000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialOptOutAt/after/2024-05-25/first_purchase",
+      "field": "trialOptOutAt",
+      "operator": "after",
+      "profile": "first_purchase",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"trial_opt_out_at\"}, 1716681600000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialOptOutAt/after/2024-05-25/unavailable",
+      "field": "trialOptOutAt",
+      "operator": "after",
+      "profile": "unavailable",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"trial_opt_out_at\"}, 1716681600000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialOptOutAt/after/2024-05-25/older_trial",
+      "field": "trialOptOutAt",
+      "operator": "after",
+      "profile": "older_trial",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"trial_opt_out_at\"}, 1716681600000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialOptOutAt/after/2024-05-25/latest_trial_cancelled",
+      "field": "trialOptOutAt",
+      "operator": "after",
+      "profile": "latest_trial_cancelled",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"trial_opt_out_at\"}, 1716681600000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialOptOutAt/after/2024-05-25/cancelled_after_latest_trial",
+      "field": "trialOptOutAt",
+      "operator": "after",
+      "profile": "cancelled_after_latest_trial",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"trial_opt_out_at\"}, 1716681600000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialOptOutAt/after/2024-05-30/new",
+      "field": "trialOptOutAt",
+      "operator": "after",
+      "profile": "new",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"trial_opt_out_at\"}, 1717113600000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialOptOutAt/after/2024-05-30/renewed",
+      "field": "trialOptOutAt",
+      "operator": "after",
+      "profile": "renewed",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"trial_opt_out_at\"}, 1717113600000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialOptOutAt/after/2024-05-30/first_purchase",
+      "field": "trialOptOutAt",
+      "operator": "after",
+      "profile": "first_purchase",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"trial_opt_out_at\"}, 1717113600000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialOptOutAt/after/2024-05-30/unavailable",
+      "field": "trialOptOutAt",
+      "operator": "after",
+      "profile": "unavailable",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"trial_opt_out_at\"}, 1717113600000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialOptOutAt/after/2024-05-30/older_trial",
+      "field": "trialOptOutAt",
+      "operator": "after",
+      "profile": "older_trial",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"trial_opt_out_at\"}, 1717113600000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialOptOutAt/after/2024-05-30/latest_trial_cancelled",
+      "field": "trialOptOutAt",
+      "operator": "after",
+      "profile": "latest_trial_cancelled",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"trial_opt_out_at\"}, 1717113600000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialOptOutAt/after/2024-05-30/cancelled_after_latest_trial",
+      "field": "trialOptOutAt",
+      "operator": "after",
+      "profile": "cancelled_after_latest_trial",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"trial_opt_out_at\"}, 1717113600000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialOptOutAt/afterOrOn/2024-05-18/new",
+      "field": "trialOptOutAt",
+      "operator": "afterOrOn",
+      "profile": "new",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"trial_opt_out_at\"}, 1715990400000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialOptOutAt/afterOrOn/2024-05-18/renewed",
+      "field": "trialOptOutAt",
+      "operator": "afterOrOn",
+      "profile": "renewed",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"trial_opt_out_at\"}, 1715990400000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialOptOutAt/afterOrOn/2024-05-18/first_purchase",
+      "field": "trialOptOutAt",
+      "operator": "afterOrOn",
+      "profile": "first_purchase",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"trial_opt_out_at\"}, 1715990400000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialOptOutAt/afterOrOn/2024-05-18/unavailable",
+      "field": "trialOptOutAt",
+      "operator": "afterOrOn",
+      "profile": "unavailable",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"trial_opt_out_at\"}, 1715990400000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialOptOutAt/afterOrOn/2024-05-18/older_trial",
+      "field": "trialOptOutAt",
+      "operator": "afterOrOn",
+      "profile": "older_trial",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"trial_opt_out_at\"}, 1715990400000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialOptOutAt/afterOrOn/2024-05-18/latest_trial_cancelled",
+      "field": "trialOptOutAt",
+      "operator": "afterOrOn",
+      "profile": "latest_trial_cancelled",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"trial_opt_out_at\"}, 1715990400000]}]}",
+      "expected": true
+    },
+    {
+      "id": "trialOptOutAt/afterOrOn/2024-05-18/cancelled_after_latest_trial",
+      "field": "trialOptOutAt",
+      "operator": "afterOrOn",
+      "profile": "cancelled_after_latest_trial",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"trial_opt_out_at\"}, 1715990400000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialOptOutAt/afterOrOn/2024-05-25/new",
+      "field": "trialOptOutAt",
+      "operator": "afterOrOn",
+      "profile": "new",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"trial_opt_out_at\"}, 1716595200000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialOptOutAt/afterOrOn/2024-05-25/renewed",
+      "field": "trialOptOutAt",
+      "operator": "afterOrOn",
+      "profile": "renewed",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"trial_opt_out_at\"}, 1716595200000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialOptOutAt/afterOrOn/2024-05-25/first_purchase",
+      "field": "trialOptOutAt",
+      "operator": "afterOrOn",
+      "profile": "first_purchase",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"trial_opt_out_at\"}, 1716595200000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialOptOutAt/afterOrOn/2024-05-25/unavailable",
+      "field": "trialOptOutAt",
+      "operator": "afterOrOn",
+      "profile": "unavailable",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"trial_opt_out_at\"}, 1716595200000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialOptOutAt/afterOrOn/2024-05-25/older_trial",
+      "field": "trialOptOutAt",
+      "operator": "afterOrOn",
+      "profile": "older_trial",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"trial_opt_out_at\"}, 1716595200000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialOptOutAt/afterOrOn/2024-05-25/latest_trial_cancelled",
+      "field": "trialOptOutAt",
+      "operator": "afterOrOn",
+      "profile": "latest_trial_cancelled",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"trial_opt_out_at\"}, 1716595200000]}]}",
+      "expected": true
+    },
+    {
+      "id": "trialOptOutAt/afterOrOn/2024-05-25/cancelled_after_latest_trial",
+      "field": "trialOptOutAt",
+      "operator": "afterOrOn",
+      "profile": "cancelled_after_latest_trial",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"trial_opt_out_at\"}, 1716595200000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialOptOutAt/afterOrOn/2024-05-30/new",
+      "field": "trialOptOutAt",
+      "operator": "afterOrOn",
+      "profile": "new",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"trial_opt_out_at\"}, 1717027200000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialOptOutAt/afterOrOn/2024-05-30/renewed",
+      "field": "trialOptOutAt",
+      "operator": "afterOrOn",
+      "profile": "renewed",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"trial_opt_out_at\"}, 1717027200000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialOptOutAt/afterOrOn/2024-05-30/first_purchase",
+      "field": "trialOptOutAt",
+      "operator": "afterOrOn",
+      "profile": "first_purchase",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"trial_opt_out_at\"}, 1717027200000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialOptOutAt/afterOrOn/2024-05-30/unavailable",
+      "field": "trialOptOutAt",
+      "operator": "afterOrOn",
+      "profile": "unavailable",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"trial_opt_out_at\"}, 1717027200000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialOptOutAt/afterOrOn/2024-05-30/older_trial",
+      "field": "trialOptOutAt",
+      "operator": "afterOrOn",
+      "profile": "older_trial",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"trial_opt_out_at\"}, 1717027200000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialOptOutAt/afterOrOn/2024-05-30/latest_trial_cancelled",
+      "field": "trialOptOutAt",
+      "operator": "afterOrOn",
+      "profile": "latest_trial_cancelled",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"trial_opt_out_at\"}, 1717027200000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialOptOutAt/afterOrOn/2024-05-30/cancelled_after_latest_trial",
+      "field": "trialOptOutAt",
+      "operator": "afterOrOn",
+      "profile": "cancelled_after_latest_trial",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"trial_opt_out_at\"}, 1717027200000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialOptOutAt/within/{\"direction\": \"last\", \"value\": 14, \"unit\": \"days\"}/new",
+      "field": "trialOptOutAt",
+      "operator": "within",
+      "profile": "new",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"trial_opt_out_at\"}, {\"-\": [{\"rc.rootVar\": \"evaluated_at\"}, 1209600000]}]}, {\"<=\": [{\"var\": \"trial_opt_out_at\"}, {\"rc.rootVar\": \"evaluated_at\"}]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialOptOutAt/within/{\"direction\": \"last\", \"value\": 14, \"unit\": \"days\"}/renewed",
+      "field": "trialOptOutAt",
+      "operator": "within",
+      "profile": "renewed",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"trial_opt_out_at\"}, {\"-\": [{\"rc.rootVar\": \"evaluated_at\"}, 1209600000]}]}, {\"<=\": [{\"var\": \"trial_opt_out_at\"}, {\"rc.rootVar\": \"evaluated_at\"}]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialOptOutAt/within/{\"direction\": \"last\", \"value\": 14, \"unit\": \"days\"}/first_purchase",
+      "field": "trialOptOutAt",
+      "operator": "within",
+      "profile": "first_purchase",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"trial_opt_out_at\"}, {\"-\": [{\"rc.rootVar\": \"evaluated_at\"}, 1209600000]}]}, {\"<=\": [{\"var\": \"trial_opt_out_at\"}, {\"rc.rootVar\": \"evaluated_at\"}]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialOptOutAt/within/{\"direction\": \"last\", \"value\": 14, \"unit\": \"days\"}/unavailable",
+      "field": "trialOptOutAt",
+      "operator": "within",
+      "profile": "unavailable",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"trial_opt_out_at\"}, {\"-\": [{\"rc.rootVar\": \"evaluated_at\"}, 1209600000]}]}, {\"<=\": [{\"var\": \"trial_opt_out_at\"}, {\"rc.rootVar\": \"evaluated_at\"}]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialOptOutAt/within/{\"direction\": \"last\", \"value\": 14, \"unit\": \"days\"}/older_trial",
+      "field": "trialOptOutAt",
+      "operator": "within",
+      "profile": "older_trial",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"trial_opt_out_at\"}, {\"-\": [{\"rc.rootVar\": \"evaluated_at\"}, 1209600000]}]}, {\"<=\": [{\"var\": \"trial_opt_out_at\"}, {\"rc.rootVar\": \"evaluated_at\"}]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialOptOutAt/within/{\"direction\": \"last\", \"value\": 14, \"unit\": \"days\"}/latest_trial_cancelled",
+      "field": "trialOptOutAt",
+      "operator": "within",
+      "profile": "latest_trial_cancelled",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"trial_opt_out_at\"}, {\"-\": [{\"rc.rootVar\": \"evaluated_at\"}, 1209600000]}]}, {\"<=\": [{\"var\": \"trial_opt_out_at\"}, {\"rc.rootVar\": \"evaluated_at\"}]}]}",
+      "expected": true
+    },
+    {
+      "id": "trialOptOutAt/within/{\"direction\": \"last\", \"value\": 14, \"unit\": \"days\"}/cancelled_after_latest_trial",
+      "field": "trialOptOutAt",
+      "operator": "within",
+      "profile": "cancelled_after_latest_trial",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"trial_opt_out_at\"}, {\"-\": [{\"rc.rootVar\": \"evaluated_at\"}, 1209600000]}]}, {\"<=\": [{\"var\": \"trial_opt_out_at\"}, {\"rc.rootVar\": \"evaluated_at\"}]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialOptOutAt/notWithin/{\"direction\": \"last\", \"value\": 14, \"unit\": \"days\"}/new",
+      "field": "trialOptOutAt",
+      "operator": "notWithin",
+      "profile": "new",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"trial_opt_out_at\", null]}, null]}, {\"!\": [{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"trial_opt_out_at\"}, {\"-\": [{\"rc.rootVar\": \"evaluated_at\"}, 1209600000]}]}, {\"<=\": [{\"var\": \"trial_opt_out_at\"}, {\"rc.rootVar\": \"evaluated_at\"}]}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "trialOptOutAt/notWithin/{\"direction\": \"last\", \"value\": 14, \"unit\": \"days\"}/renewed",
+      "field": "trialOptOutAt",
+      "operator": "notWithin",
+      "profile": "renewed",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"trial_opt_out_at\", null]}, null]}, {\"!\": [{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"trial_opt_out_at\"}, {\"-\": [{\"rc.rootVar\": \"evaluated_at\"}, 1209600000]}]}, {\"<=\": [{\"var\": \"trial_opt_out_at\"}, {\"rc.rootVar\": \"evaluated_at\"}]}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "trialOptOutAt/notWithin/{\"direction\": \"last\", \"value\": 14, \"unit\": \"days\"}/first_purchase",
+      "field": "trialOptOutAt",
+      "operator": "notWithin",
+      "profile": "first_purchase",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"trial_opt_out_at\", null]}, null]}, {\"!\": [{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"trial_opt_out_at\"}, {\"-\": [{\"rc.rootVar\": \"evaluated_at\"}, 1209600000]}]}, {\"<=\": [{\"var\": \"trial_opt_out_at\"}, {\"rc.rootVar\": \"evaluated_at\"}]}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "trialOptOutAt/notWithin/{\"direction\": \"last\", \"value\": 14, \"unit\": \"days\"}/unavailable",
+      "field": "trialOptOutAt",
+      "operator": "notWithin",
+      "profile": "unavailable",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"trial_opt_out_at\", null]}, null]}, {\"!\": [{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"trial_opt_out_at\"}, {\"-\": [{\"rc.rootVar\": \"evaluated_at\"}, 1209600000]}]}, {\"<=\": [{\"var\": \"trial_opt_out_at\"}, {\"rc.rootVar\": \"evaluated_at\"}]}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "trialOptOutAt/notWithin/{\"direction\": \"last\", \"value\": 14, \"unit\": \"days\"}/older_trial",
+      "field": "trialOptOutAt",
+      "operator": "notWithin",
+      "profile": "older_trial",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"trial_opt_out_at\", null]}, null]}, {\"!\": [{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"trial_opt_out_at\"}, {\"-\": [{\"rc.rootVar\": \"evaluated_at\"}, 1209600000]}]}, {\"<=\": [{\"var\": \"trial_opt_out_at\"}, {\"rc.rootVar\": \"evaluated_at\"}]}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "trialOptOutAt/notWithin/{\"direction\": \"last\", \"value\": 14, \"unit\": \"days\"}/latest_trial_cancelled",
+      "field": "trialOptOutAt",
+      "operator": "notWithin",
+      "profile": "latest_trial_cancelled",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"trial_opt_out_at\", null]}, null]}, {\"!\": [{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"trial_opt_out_at\"}, {\"-\": [{\"rc.rootVar\": \"evaluated_at\"}, 1209600000]}]}, {\"<=\": [{\"var\": \"trial_opt_out_at\"}, {\"rc.rootVar\": \"evaluated_at\"}]}]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialOptOutAt/notWithin/{\"direction\": \"last\", \"value\": 14, \"unit\": \"days\"}/cancelled_after_latest_trial",
+      "field": "trialOptOutAt",
+      "operator": "notWithin",
+      "profile": "cancelled_after_latest_trial",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"trial_opt_out_at\", null]}, null]}, {\"!\": [{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"trial_opt_out_at\"}, {\"-\": [{\"rc.rootVar\": \"evaluated_at\"}, 1209600000]}]}, {\"<=\": [{\"var\": \"trial_opt_out_at\"}, {\"rc.rootVar\": \"evaluated_at\"}]}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "trialOptOutAt/between/{\"from\": \"2024-05-18\", \"to\": \"2024-05-25\"}/new",
+      "field": "trialOptOutAt",
+      "operator": "between",
+      "profile": "new",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"trial_opt_out_at\"}, 1715990400000]}]}, {\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"trial_opt_out_at\"}, 1716681600000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialOptOutAt/between/{\"from\": \"2024-05-18\", \"to\": \"2024-05-25\"}/renewed",
+      "field": "trialOptOutAt",
+      "operator": "between",
+      "profile": "renewed",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"trial_opt_out_at\"}, 1715990400000]}]}, {\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"trial_opt_out_at\"}, 1716681600000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialOptOutAt/between/{\"from\": \"2024-05-18\", \"to\": \"2024-05-25\"}/first_purchase",
+      "field": "trialOptOutAt",
+      "operator": "between",
+      "profile": "first_purchase",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"trial_opt_out_at\"}, 1715990400000]}]}, {\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"trial_opt_out_at\"}, 1716681600000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialOptOutAt/between/{\"from\": \"2024-05-18\", \"to\": \"2024-05-25\"}/unavailable",
+      "field": "trialOptOutAt",
+      "operator": "between",
+      "profile": "unavailable",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"trial_opt_out_at\"}, 1715990400000]}]}, {\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"trial_opt_out_at\"}, 1716681600000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialOptOutAt/between/{\"from\": \"2024-05-18\", \"to\": \"2024-05-25\"}/older_trial",
+      "field": "trialOptOutAt",
+      "operator": "between",
+      "profile": "older_trial",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"trial_opt_out_at\"}, 1715990400000]}]}, {\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"trial_opt_out_at\"}, 1716681600000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialOptOutAt/between/{\"from\": \"2024-05-18\", \"to\": \"2024-05-25\"}/latest_trial_cancelled",
+      "field": "trialOptOutAt",
+      "operator": "between",
+      "profile": "latest_trial_cancelled",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"trial_opt_out_at\"}, 1715990400000]}]}, {\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"trial_opt_out_at\"}, 1716681600000]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "trialOptOutAt/between/{\"from\": \"2024-05-18\", \"to\": \"2024-05-25\"}/cancelled_after_latest_trial",
+      "field": "trialOptOutAt",
+      "operator": "between",
+      "profile": "cancelled_after_latest_trial",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"trial_opt_out_at\"}, 1715990400000]}]}, {\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"trial_opt_out_at\"}, 1716681600000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialOptOutAt/notBetween/{\"from\": \"2024-05-18\", \"to\": \"2024-05-25\"}/new",
+      "field": "trialOptOutAt",
+      "operator": "notBetween",
+      "profile": "new",
+      "predicate": "{\"or\": [{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"trial_opt_out_at\"}, 1715990400000]}]}, {\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"trial_opt_out_at\"}, 1716681600000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialOptOutAt/notBetween/{\"from\": \"2024-05-18\", \"to\": \"2024-05-25\"}/renewed",
+      "field": "trialOptOutAt",
+      "operator": "notBetween",
+      "profile": "renewed",
+      "predicate": "{\"or\": [{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"trial_opt_out_at\"}, 1715990400000]}]}, {\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"trial_opt_out_at\"}, 1716681600000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialOptOutAt/notBetween/{\"from\": \"2024-05-18\", \"to\": \"2024-05-25\"}/first_purchase",
+      "field": "trialOptOutAt",
+      "operator": "notBetween",
+      "profile": "first_purchase",
+      "predicate": "{\"or\": [{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"trial_opt_out_at\"}, 1715990400000]}]}, {\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"trial_opt_out_at\"}, 1716681600000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialOptOutAt/notBetween/{\"from\": \"2024-05-18\", \"to\": \"2024-05-25\"}/unavailable",
+      "field": "trialOptOutAt",
+      "operator": "notBetween",
+      "profile": "unavailable",
+      "predicate": "{\"or\": [{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"trial_opt_out_at\"}, 1715990400000]}]}, {\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"trial_opt_out_at\"}, 1716681600000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialOptOutAt/notBetween/{\"from\": \"2024-05-18\", \"to\": \"2024-05-25\"}/older_trial",
+      "field": "trialOptOutAt",
+      "operator": "notBetween",
+      "profile": "older_trial",
+      "predicate": "{\"or\": [{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"trial_opt_out_at\"}, 1715990400000]}]}, {\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"trial_opt_out_at\"}, 1716681600000]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "trialOptOutAt/notBetween/{\"from\": \"2024-05-18\", \"to\": \"2024-05-25\"}/latest_trial_cancelled",
+      "field": "trialOptOutAt",
+      "operator": "notBetween",
+      "profile": "latest_trial_cancelled",
+      "predicate": "{\"or\": [{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"trial_opt_out_at\"}, 1715990400000]}]}, {\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"trial_opt_out_at\"}, 1716681600000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialOptOutAt/notBetween/{\"from\": \"2024-05-18\", \"to\": \"2024-05-25\"}/cancelled_after_latest_trial",
+      "field": "trialOptOutAt",
+      "operator": "notBetween",
+      "profile": "cancelled_after_latest_trial",
+      "predicate": "{\"or\": [{\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"trial_opt_out_at\"}, 1715990400000]}]}, {\"and\": [{\"!=\": [{\"var\": \"trial_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"trial_opt_out_at\"}, 1716681600000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialOptOutAt/isEmpty//new",
+      "field": "trialOptOutAt",
+      "operator": "isEmpty",
+      "profile": "new",
+      "predicate": "{\"==\": [{\"var\": [\"trial_opt_out_at\", null]}, null]}",
+      "expected": true
+    },
+    {
+      "id": "trialOptOutAt/isEmpty//renewed",
+      "field": "trialOptOutAt",
+      "operator": "isEmpty",
+      "profile": "renewed",
+      "predicate": "{\"==\": [{\"var\": [\"trial_opt_out_at\", null]}, null]}",
+      "expected": true
+    },
+    {
+      "id": "trialOptOutAt/isEmpty//first_purchase",
+      "field": "trialOptOutAt",
+      "operator": "isEmpty",
+      "profile": "first_purchase",
+      "predicate": "{\"==\": [{\"var\": [\"trial_opt_out_at\", null]}, null]}",
+      "expected": true
+    },
+    {
+      "id": "trialOptOutAt/isEmpty//unavailable",
+      "field": "trialOptOutAt",
+      "operator": "isEmpty",
+      "profile": "unavailable",
+      "predicate": "{\"==\": [{\"var\": [\"trial_opt_out_at\", null]}, null]}",
+      "expected": true
+    },
+    {
+      "id": "trialOptOutAt/isEmpty//older_trial",
+      "field": "trialOptOutAt",
+      "operator": "isEmpty",
+      "profile": "older_trial",
+      "predicate": "{\"==\": [{\"var\": [\"trial_opt_out_at\", null]}, null]}",
+      "expected": false
+    },
+    {
+      "id": "trialOptOutAt/isEmpty//latest_trial_cancelled",
+      "field": "trialOptOutAt",
+      "operator": "isEmpty",
+      "profile": "latest_trial_cancelled",
+      "predicate": "{\"==\": [{\"var\": [\"trial_opt_out_at\", null]}, null]}",
+      "expected": false
+    },
+    {
+      "id": "trialOptOutAt/isEmpty//cancelled_after_latest_trial",
+      "field": "trialOptOutAt",
+      "operator": "isEmpty",
+      "profile": "cancelled_after_latest_trial",
+      "predicate": "{\"==\": [{\"var\": [\"trial_opt_out_at\", null]}, null]}",
+      "expected": true
+    },
+    {
+      "id": "trialOptOutAt/isNotEmpty//new",
+      "field": "trialOptOutAt",
+      "operator": "isNotEmpty",
+      "profile": "new",
+      "predicate": "{\"!=\": [{\"var\": [\"trial_opt_out_at\", null]}, null]}",
+      "expected": false
+    },
+    {
+      "id": "trialOptOutAt/isNotEmpty//renewed",
+      "field": "trialOptOutAt",
+      "operator": "isNotEmpty",
+      "profile": "renewed",
+      "predicate": "{\"!=\": [{\"var\": [\"trial_opt_out_at\", null]}, null]}",
+      "expected": false
+    },
+    {
+      "id": "trialOptOutAt/isNotEmpty//first_purchase",
+      "field": "trialOptOutAt",
+      "operator": "isNotEmpty",
+      "profile": "first_purchase",
+      "predicate": "{\"!=\": [{\"var\": [\"trial_opt_out_at\", null]}, null]}",
+      "expected": false
+    },
+    {
+      "id": "trialOptOutAt/isNotEmpty//unavailable",
+      "field": "trialOptOutAt",
+      "operator": "isNotEmpty",
+      "profile": "unavailable",
+      "predicate": "{\"!=\": [{\"var\": [\"trial_opt_out_at\", null]}, null]}",
+      "expected": false
+    },
+    {
+      "id": "trialOptOutAt/isNotEmpty//older_trial",
+      "field": "trialOptOutAt",
+      "operator": "isNotEmpty",
+      "profile": "older_trial",
+      "predicate": "{\"!=\": [{\"var\": [\"trial_opt_out_at\", null]}, null]}",
+      "expected": true
+    },
+    {
+      "id": "trialOptOutAt/isNotEmpty//latest_trial_cancelled",
+      "field": "trialOptOutAt",
+      "operator": "isNotEmpty",
+      "profile": "latest_trial_cancelled",
+      "predicate": "{\"!=\": [{\"var\": [\"trial_opt_out_at\", null]}, null]}",
+      "expected": true
+    },
+    {
+      "id": "trialOptOutAt/isNotEmpty//cancelled_after_latest_trial",
+      "field": "trialOptOutAt",
+      "operator": "isNotEmpty",
+      "profile": "cancelled_after_latest_trial",
+      "predicate": "{\"!=\": [{\"var\": [\"trial_opt_out_at\", null]}, null]}",
+      "expected": false
+    }
+  ]
+}

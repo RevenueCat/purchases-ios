@@ -1,0 +1,1181 @@
+{
+  "schema_version": 1,
+  "cases": [
+    {
+      "id": "trialEndAt/before/2024-05-18/new",
+      "field": "trialEndAt",
+      "operator": "before",
+      "profile": "new",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\"<\": [{\"var\": \"trial_end_at\"}, 1715990400000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialEndAt/before/2024-05-18/renewed",
+      "field": "trialEndAt",
+      "operator": "before",
+      "profile": "renewed",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\"<\": [{\"var\": \"trial_end_at\"}, 1715990400000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialEndAt/before/2024-05-18/first_purchase",
+      "field": "trialEndAt",
+      "operator": "before",
+      "profile": "first_purchase",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\"<\": [{\"var\": \"trial_end_at\"}, 1715990400000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialEndAt/before/2024-05-18/unavailable",
+      "field": "trialEndAt",
+      "operator": "before",
+      "profile": "unavailable",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\"<\": [{\"var\": \"trial_end_at\"}, 1715990400000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialEndAt/before/2024-05-18/older_trial",
+      "field": "trialEndAt",
+      "operator": "before",
+      "profile": "older_trial",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\"<\": [{\"var\": \"trial_end_at\"}, 1715990400000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialEndAt/before/2024-05-18/latest_trial_cancelled",
+      "field": "trialEndAt",
+      "operator": "before",
+      "profile": "latest_trial_cancelled",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\"<\": [{\"var\": \"trial_end_at\"}, 1715990400000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialEndAt/before/2024-05-18/cancelled_after_latest_trial",
+      "field": "trialEndAt",
+      "operator": "before",
+      "profile": "cancelled_after_latest_trial",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\"<\": [{\"var\": \"trial_end_at\"}, 1715990400000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialEndAt/before/2024-05-25/new",
+      "field": "trialEndAt",
+      "operator": "before",
+      "profile": "new",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\"<\": [{\"var\": \"trial_end_at\"}, 1716595200000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialEndAt/before/2024-05-25/renewed",
+      "field": "trialEndAt",
+      "operator": "before",
+      "profile": "renewed",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\"<\": [{\"var\": \"trial_end_at\"}, 1716595200000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialEndAt/before/2024-05-25/first_purchase",
+      "field": "trialEndAt",
+      "operator": "before",
+      "profile": "first_purchase",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\"<\": [{\"var\": \"trial_end_at\"}, 1716595200000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialEndAt/before/2024-05-25/unavailable",
+      "field": "trialEndAt",
+      "operator": "before",
+      "profile": "unavailable",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\"<\": [{\"var\": \"trial_end_at\"}, 1716595200000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialEndAt/before/2024-05-25/older_trial",
+      "field": "trialEndAt",
+      "operator": "before",
+      "profile": "older_trial",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\"<\": [{\"var\": \"trial_end_at\"}, 1716595200000]}]}",
+      "expected": true
+    },
+    {
+      "id": "trialEndAt/before/2024-05-25/latest_trial_cancelled",
+      "field": "trialEndAt",
+      "operator": "before",
+      "profile": "latest_trial_cancelled",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\"<\": [{\"var\": \"trial_end_at\"}, 1716595200000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialEndAt/before/2024-05-25/cancelled_after_latest_trial",
+      "field": "trialEndAt",
+      "operator": "before",
+      "profile": "cancelled_after_latest_trial",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\"<\": [{\"var\": \"trial_end_at\"}, 1716595200000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialEndAt/before/2024-05-30/new",
+      "field": "trialEndAt",
+      "operator": "before",
+      "profile": "new",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\"<\": [{\"var\": \"trial_end_at\"}, 1717027200000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialEndAt/before/2024-05-30/renewed",
+      "field": "trialEndAt",
+      "operator": "before",
+      "profile": "renewed",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\"<\": [{\"var\": \"trial_end_at\"}, 1717027200000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialEndAt/before/2024-05-30/first_purchase",
+      "field": "trialEndAt",
+      "operator": "before",
+      "profile": "first_purchase",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\"<\": [{\"var\": \"trial_end_at\"}, 1717027200000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialEndAt/before/2024-05-30/unavailable",
+      "field": "trialEndAt",
+      "operator": "before",
+      "profile": "unavailable",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\"<\": [{\"var\": \"trial_end_at\"}, 1717027200000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialEndAt/before/2024-05-30/older_trial",
+      "field": "trialEndAt",
+      "operator": "before",
+      "profile": "older_trial",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\"<\": [{\"var\": \"trial_end_at\"}, 1717027200000]}]}",
+      "expected": true
+    },
+    {
+      "id": "trialEndAt/before/2024-05-30/latest_trial_cancelled",
+      "field": "trialEndAt",
+      "operator": "before",
+      "profile": "latest_trial_cancelled",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\"<\": [{\"var\": \"trial_end_at\"}, 1717027200000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialEndAt/before/2024-05-30/cancelled_after_latest_trial",
+      "field": "trialEndAt",
+      "operator": "before",
+      "profile": "cancelled_after_latest_trial",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\"<\": [{\"var\": \"trial_end_at\"}, 1717027200000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialEndAt/beforeOrOn/2024-05-18/new",
+      "field": "trialEndAt",
+      "operator": "beforeOrOn",
+      "profile": "new",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\"<\": [{\"var\": \"trial_end_at\"}, 1716076800000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialEndAt/beforeOrOn/2024-05-18/renewed",
+      "field": "trialEndAt",
+      "operator": "beforeOrOn",
+      "profile": "renewed",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\"<\": [{\"var\": \"trial_end_at\"}, 1716076800000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialEndAt/beforeOrOn/2024-05-18/first_purchase",
+      "field": "trialEndAt",
+      "operator": "beforeOrOn",
+      "profile": "first_purchase",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\"<\": [{\"var\": \"trial_end_at\"}, 1716076800000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialEndAt/beforeOrOn/2024-05-18/unavailable",
+      "field": "trialEndAt",
+      "operator": "beforeOrOn",
+      "profile": "unavailable",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\"<\": [{\"var\": \"trial_end_at\"}, 1716076800000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialEndAt/beforeOrOn/2024-05-18/older_trial",
+      "field": "trialEndAt",
+      "operator": "beforeOrOn",
+      "profile": "older_trial",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\"<\": [{\"var\": \"trial_end_at\"}, 1716076800000]}]}",
+      "expected": true
+    },
+    {
+      "id": "trialEndAt/beforeOrOn/2024-05-18/latest_trial_cancelled",
+      "field": "trialEndAt",
+      "operator": "beforeOrOn",
+      "profile": "latest_trial_cancelled",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\"<\": [{\"var\": \"trial_end_at\"}, 1716076800000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialEndAt/beforeOrOn/2024-05-18/cancelled_after_latest_trial",
+      "field": "trialEndAt",
+      "operator": "beforeOrOn",
+      "profile": "cancelled_after_latest_trial",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\"<\": [{\"var\": \"trial_end_at\"}, 1716076800000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialEndAt/beforeOrOn/2024-05-25/new",
+      "field": "trialEndAt",
+      "operator": "beforeOrOn",
+      "profile": "new",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\"<\": [{\"var\": \"trial_end_at\"}, 1716681600000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialEndAt/beforeOrOn/2024-05-25/renewed",
+      "field": "trialEndAt",
+      "operator": "beforeOrOn",
+      "profile": "renewed",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\"<\": [{\"var\": \"trial_end_at\"}, 1716681600000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialEndAt/beforeOrOn/2024-05-25/first_purchase",
+      "field": "trialEndAt",
+      "operator": "beforeOrOn",
+      "profile": "first_purchase",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\"<\": [{\"var\": \"trial_end_at\"}, 1716681600000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialEndAt/beforeOrOn/2024-05-25/unavailable",
+      "field": "trialEndAt",
+      "operator": "beforeOrOn",
+      "profile": "unavailable",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\"<\": [{\"var\": \"trial_end_at\"}, 1716681600000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialEndAt/beforeOrOn/2024-05-25/older_trial",
+      "field": "trialEndAt",
+      "operator": "beforeOrOn",
+      "profile": "older_trial",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\"<\": [{\"var\": \"trial_end_at\"}, 1716681600000]}]}",
+      "expected": true
+    },
+    {
+      "id": "trialEndAt/beforeOrOn/2024-05-25/latest_trial_cancelled",
+      "field": "trialEndAt",
+      "operator": "beforeOrOn",
+      "profile": "latest_trial_cancelled",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\"<\": [{\"var\": \"trial_end_at\"}, 1716681600000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialEndAt/beforeOrOn/2024-05-25/cancelled_after_latest_trial",
+      "field": "trialEndAt",
+      "operator": "beforeOrOn",
+      "profile": "cancelled_after_latest_trial",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\"<\": [{\"var\": \"trial_end_at\"}, 1716681600000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialEndAt/beforeOrOn/2024-05-30/new",
+      "field": "trialEndAt",
+      "operator": "beforeOrOn",
+      "profile": "new",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\"<\": [{\"var\": \"trial_end_at\"}, 1717113600000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialEndAt/beforeOrOn/2024-05-30/renewed",
+      "field": "trialEndAt",
+      "operator": "beforeOrOn",
+      "profile": "renewed",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\"<\": [{\"var\": \"trial_end_at\"}, 1717113600000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialEndAt/beforeOrOn/2024-05-30/first_purchase",
+      "field": "trialEndAt",
+      "operator": "beforeOrOn",
+      "profile": "first_purchase",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\"<\": [{\"var\": \"trial_end_at\"}, 1717113600000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialEndAt/beforeOrOn/2024-05-30/unavailable",
+      "field": "trialEndAt",
+      "operator": "beforeOrOn",
+      "profile": "unavailable",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\"<\": [{\"var\": \"trial_end_at\"}, 1717113600000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialEndAt/beforeOrOn/2024-05-30/older_trial",
+      "field": "trialEndAt",
+      "operator": "beforeOrOn",
+      "profile": "older_trial",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\"<\": [{\"var\": \"trial_end_at\"}, 1717113600000]}]}",
+      "expected": true
+    },
+    {
+      "id": "trialEndAt/beforeOrOn/2024-05-30/latest_trial_cancelled",
+      "field": "trialEndAt",
+      "operator": "beforeOrOn",
+      "profile": "latest_trial_cancelled",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\"<\": [{\"var\": \"trial_end_at\"}, 1717113600000]}]}",
+      "expected": true
+    },
+    {
+      "id": "trialEndAt/beforeOrOn/2024-05-30/cancelled_after_latest_trial",
+      "field": "trialEndAt",
+      "operator": "beforeOrOn",
+      "profile": "cancelled_after_latest_trial",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\"<\": [{\"var\": \"trial_end_at\"}, 1717113600000]}]}",
+      "expected": true
+    },
+    {
+      "id": "trialEndAt/on/2024-05-18/new",
+      "field": "trialEndAt",
+      "operator": "on",
+      "profile": "new",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\">=\": [{\"var\": \"trial_end_at\"}, 1715990400000]}]}, {\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\"<\": [{\"var\": \"trial_end_at\"}, 1716076800000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialEndAt/on/2024-05-18/renewed",
+      "field": "trialEndAt",
+      "operator": "on",
+      "profile": "renewed",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\">=\": [{\"var\": \"trial_end_at\"}, 1715990400000]}]}, {\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\"<\": [{\"var\": \"trial_end_at\"}, 1716076800000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialEndAt/on/2024-05-18/first_purchase",
+      "field": "trialEndAt",
+      "operator": "on",
+      "profile": "first_purchase",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\">=\": [{\"var\": \"trial_end_at\"}, 1715990400000]}]}, {\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\"<\": [{\"var\": \"trial_end_at\"}, 1716076800000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialEndAt/on/2024-05-18/unavailable",
+      "field": "trialEndAt",
+      "operator": "on",
+      "profile": "unavailable",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\">=\": [{\"var\": \"trial_end_at\"}, 1715990400000]}]}, {\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\"<\": [{\"var\": \"trial_end_at\"}, 1716076800000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialEndAt/on/2024-05-18/older_trial",
+      "field": "trialEndAt",
+      "operator": "on",
+      "profile": "older_trial",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\">=\": [{\"var\": \"trial_end_at\"}, 1715990400000]}]}, {\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\"<\": [{\"var\": \"trial_end_at\"}, 1716076800000]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "trialEndAt/on/2024-05-18/latest_trial_cancelled",
+      "field": "trialEndAt",
+      "operator": "on",
+      "profile": "latest_trial_cancelled",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\">=\": [{\"var\": \"trial_end_at\"}, 1715990400000]}]}, {\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\"<\": [{\"var\": \"trial_end_at\"}, 1716076800000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialEndAt/on/2024-05-18/cancelled_after_latest_trial",
+      "field": "trialEndAt",
+      "operator": "on",
+      "profile": "cancelled_after_latest_trial",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\">=\": [{\"var\": \"trial_end_at\"}, 1715990400000]}]}, {\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\"<\": [{\"var\": \"trial_end_at\"}, 1716076800000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialEndAt/on/2024-05-25/new",
+      "field": "trialEndAt",
+      "operator": "on",
+      "profile": "new",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\">=\": [{\"var\": \"trial_end_at\"}, 1716595200000]}]}, {\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\"<\": [{\"var\": \"trial_end_at\"}, 1716681600000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialEndAt/on/2024-05-25/renewed",
+      "field": "trialEndAt",
+      "operator": "on",
+      "profile": "renewed",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\">=\": [{\"var\": \"trial_end_at\"}, 1716595200000]}]}, {\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\"<\": [{\"var\": \"trial_end_at\"}, 1716681600000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialEndAt/on/2024-05-25/first_purchase",
+      "field": "trialEndAt",
+      "operator": "on",
+      "profile": "first_purchase",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\">=\": [{\"var\": \"trial_end_at\"}, 1716595200000]}]}, {\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\"<\": [{\"var\": \"trial_end_at\"}, 1716681600000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialEndAt/on/2024-05-25/unavailable",
+      "field": "trialEndAt",
+      "operator": "on",
+      "profile": "unavailable",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\">=\": [{\"var\": \"trial_end_at\"}, 1716595200000]}]}, {\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\"<\": [{\"var\": \"trial_end_at\"}, 1716681600000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialEndAt/on/2024-05-25/older_trial",
+      "field": "trialEndAt",
+      "operator": "on",
+      "profile": "older_trial",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\">=\": [{\"var\": \"trial_end_at\"}, 1716595200000]}]}, {\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\"<\": [{\"var\": \"trial_end_at\"}, 1716681600000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialEndAt/on/2024-05-25/latest_trial_cancelled",
+      "field": "trialEndAt",
+      "operator": "on",
+      "profile": "latest_trial_cancelled",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\">=\": [{\"var\": \"trial_end_at\"}, 1716595200000]}]}, {\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\"<\": [{\"var\": \"trial_end_at\"}, 1716681600000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialEndAt/on/2024-05-25/cancelled_after_latest_trial",
+      "field": "trialEndAt",
+      "operator": "on",
+      "profile": "cancelled_after_latest_trial",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\">=\": [{\"var\": \"trial_end_at\"}, 1716595200000]}]}, {\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\"<\": [{\"var\": \"trial_end_at\"}, 1716681600000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialEndAt/on/2024-05-30/new",
+      "field": "trialEndAt",
+      "operator": "on",
+      "profile": "new",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\">=\": [{\"var\": \"trial_end_at\"}, 1717027200000]}]}, {\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\"<\": [{\"var\": \"trial_end_at\"}, 1717113600000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialEndAt/on/2024-05-30/renewed",
+      "field": "trialEndAt",
+      "operator": "on",
+      "profile": "renewed",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\">=\": [{\"var\": \"trial_end_at\"}, 1717027200000]}]}, {\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\"<\": [{\"var\": \"trial_end_at\"}, 1717113600000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialEndAt/on/2024-05-30/first_purchase",
+      "field": "trialEndAt",
+      "operator": "on",
+      "profile": "first_purchase",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\">=\": [{\"var\": \"trial_end_at\"}, 1717027200000]}]}, {\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\"<\": [{\"var\": \"trial_end_at\"}, 1717113600000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialEndAt/on/2024-05-30/unavailable",
+      "field": "trialEndAt",
+      "operator": "on",
+      "profile": "unavailable",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\">=\": [{\"var\": \"trial_end_at\"}, 1717027200000]}]}, {\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\"<\": [{\"var\": \"trial_end_at\"}, 1717113600000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialEndAt/on/2024-05-30/older_trial",
+      "field": "trialEndAt",
+      "operator": "on",
+      "profile": "older_trial",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\">=\": [{\"var\": \"trial_end_at\"}, 1717027200000]}]}, {\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\"<\": [{\"var\": \"trial_end_at\"}, 1717113600000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialEndAt/on/2024-05-30/latest_trial_cancelled",
+      "field": "trialEndAt",
+      "operator": "on",
+      "profile": "latest_trial_cancelled",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\">=\": [{\"var\": \"trial_end_at\"}, 1717027200000]}]}, {\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\"<\": [{\"var\": \"trial_end_at\"}, 1717113600000]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "trialEndAt/on/2024-05-30/cancelled_after_latest_trial",
+      "field": "trialEndAt",
+      "operator": "on",
+      "profile": "cancelled_after_latest_trial",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\">=\": [{\"var\": \"trial_end_at\"}, 1717027200000]}]}, {\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\"<\": [{\"var\": \"trial_end_at\"}, 1717113600000]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "trialEndAt/after/2024-05-18/new",
+      "field": "trialEndAt",
+      "operator": "after",
+      "profile": "new",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\">=\": [{\"var\": \"trial_end_at\"}, 1716076800000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialEndAt/after/2024-05-18/renewed",
+      "field": "trialEndAt",
+      "operator": "after",
+      "profile": "renewed",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\">=\": [{\"var\": \"trial_end_at\"}, 1716076800000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialEndAt/after/2024-05-18/first_purchase",
+      "field": "trialEndAt",
+      "operator": "after",
+      "profile": "first_purchase",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\">=\": [{\"var\": \"trial_end_at\"}, 1716076800000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialEndAt/after/2024-05-18/unavailable",
+      "field": "trialEndAt",
+      "operator": "after",
+      "profile": "unavailable",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\">=\": [{\"var\": \"trial_end_at\"}, 1716076800000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialEndAt/after/2024-05-18/older_trial",
+      "field": "trialEndAt",
+      "operator": "after",
+      "profile": "older_trial",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\">=\": [{\"var\": \"trial_end_at\"}, 1716076800000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialEndAt/after/2024-05-18/latest_trial_cancelled",
+      "field": "trialEndAt",
+      "operator": "after",
+      "profile": "latest_trial_cancelled",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\">=\": [{\"var\": \"trial_end_at\"}, 1716076800000]}]}",
+      "expected": true
+    },
+    {
+      "id": "trialEndAt/after/2024-05-18/cancelled_after_latest_trial",
+      "field": "trialEndAt",
+      "operator": "after",
+      "profile": "cancelled_after_latest_trial",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\">=\": [{\"var\": \"trial_end_at\"}, 1716076800000]}]}",
+      "expected": true
+    },
+    {
+      "id": "trialEndAt/after/2024-05-25/new",
+      "field": "trialEndAt",
+      "operator": "after",
+      "profile": "new",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\">=\": [{\"var\": \"trial_end_at\"}, 1716681600000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialEndAt/after/2024-05-25/renewed",
+      "field": "trialEndAt",
+      "operator": "after",
+      "profile": "renewed",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\">=\": [{\"var\": \"trial_end_at\"}, 1716681600000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialEndAt/after/2024-05-25/first_purchase",
+      "field": "trialEndAt",
+      "operator": "after",
+      "profile": "first_purchase",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\">=\": [{\"var\": \"trial_end_at\"}, 1716681600000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialEndAt/after/2024-05-25/unavailable",
+      "field": "trialEndAt",
+      "operator": "after",
+      "profile": "unavailable",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\">=\": [{\"var\": \"trial_end_at\"}, 1716681600000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialEndAt/after/2024-05-25/older_trial",
+      "field": "trialEndAt",
+      "operator": "after",
+      "profile": "older_trial",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\">=\": [{\"var\": \"trial_end_at\"}, 1716681600000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialEndAt/after/2024-05-25/latest_trial_cancelled",
+      "field": "trialEndAt",
+      "operator": "after",
+      "profile": "latest_trial_cancelled",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\">=\": [{\"var\": \"trial_end_at\"}, 1716681600000]}]}",
+      "expected": true
+    },
+    {
+      "id": "trialEndAt/after/2024-05-25/cancelled_after_latest_trial",
+      "field": "trialEndAt",
+      "operator": "after",
+      "profile": "cancelled_after_latest_trial",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\">=\": [{\"var\": \"trial_end_at\"}, 1716681600000]}]}",
+      "expected": true
+    },
+    {
+      "id": "trialEndAt/after/2024-05-30/new",
+      "field": "trialEndAt",
+      "operator": "after",
+      "profile": "new",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\">=\": [{\"var\": \"trial_end_at\"}, 1717113600000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialEndAt/after/2024-05-30/renewed",
+      "field": "trialEndAt",
+      "operator": "after",
+      "profile": "renewed",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\">=\": [{\"var\": \"trial_end_at\"}, 1717113600000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialEndAt/after/2024-05-30/first_purchase",
+      "field": "trialEndAt",
+      "operator": "after",
+      "profile": "first_purchase",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\">=\": [{\"var\": \"trial_end_at\"}, 1717113600000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialEndAt/after/2024-05-30/unavailable",
+      "field": "trialEndAt",
+      "operator": "after",
+      "profile": "unavailable",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\">=\": [{\"var\": \"trial_end_at\"}, 1717113600000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialEndAt/after/2024-05-30/older_trial",
+      "field": "trialEndAt",
+      "operator": "after",
+      "profile": "older_trial",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\">=\": [{\"var\": \"trial_end_at\"}, 1717113600000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialEndAt/after/2024-05-30/latest_trial_cancelled",
+      "field": "trialEndAt",
+      "operator": "after",
+      "profile": "latest_trial_cancelled",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\">=\": [{\"var\": \"trial_end_at\"}, 1717113600000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialEndAt/after/2024-05-30/cancelled_after_latest_trial",
+      "field": "trialEndAt",
+      "operator": "after",
+      "profile": "cancelled_after_latest_trial",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\">=\": [{\"var\": \"trial_end_at\"}, 1717113600000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialEndAt/afterOrOn/2024-05-18/new",
+      "field": "trialEndAt",
+      "operator": "afterOrOn",
+      "profile": "new",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\">=\": [{\"var\": \"trial_end_at\"}, 1715990400000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialEndAt/afterOrOn/2024-05-18/renewed",
+      "field": "trialEndAt",
+      "operator": "afterOrOn",
+      "profile": "renewed",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\">=\": [{\"var\": \"trial_end_at\"}, 1715990400000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialEndAt/afterOrOn/2024-05-18/first_purchase",
+      "field": "trialEndAt",
+      "operator": "afterOrOn",
+      "profile": "first_purchase",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\">=\": [{\"var\": \"trial_end_at\"}, 1715990400000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialEndAt/afterOrOn/2024-05-18/unavailable",
+      "field": "trialEndAt",
+      "operator": "afterOrOn",
+      "profile": "unavailable",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\">=\": [{\"var\": \"trial_end_at\"}, 1715990400000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialEndAt/afterOrOn/2024-05-18/older_trial",
+      "field": "trialEndAt",
+      "operator": "afterOrOn",
+      "profile": "older_trial",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\">=\": [{\"var\": \"trial_end_at\"}, 1715990400000]}]}",
+      "expected": true
+    },
+    {
+      "id": "trialEndAt/afterOrOn/2024-05-18/latest_trial_cancelled",
+      "field": "trialEndAt",
+      "operator": "afterOrOn",
+      "profile": "latest_trial_cancelled",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\">=\": [{\"var\": \"trial_end_at\"}, 1715990400000]}]}",
+      "expected": true
+    },
+    {
+      "id": "trialEndAt/afterOrOn/2024-05-18/cancelled_after_latest_trial",
+      "field": "trialEndAt",
+      "operator": "afterOrOn",
+      "profile": "cancelled_after_latest_trial",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\">=\": [{\"var\": \"trial_end_at\"}, 1715990400000]}]}",
+      "expected": true
+    },
+    {
+      "id": "trialEndAt/afterOrOn/2024-05-25/new",
+      "field": "trialEndAt",
+      "operator": "afterOrOn",
+      "profile": "new",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\">=\": [{\"var\": \"trial_end_at\"}, 1716595200000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialEndAt/afterOrOn/2024-05-25/renewed",
+      "field": "trialEndAt",
+      "operator": "afterOrOn",
+      "profile": "renewed",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\">=\": [{\"var\": \"trial_end_at\"}, 1716595200000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialEndAt/afterOrOn/2024-05-25/first_purchase",
+      "field": "trialEndAt",
+      "operator": "afterOrOn",
+      "profile": "first_purchase",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\">=\": [{\"var\": \"trial_end_at\"}, 1716595200000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialEndAt/afterOrOn/2024-05-25/unavailable",
+      "field": "trialEndAt",
+      "operator": "afterOrOn",
+      "profile": "unavailable",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\">=\": [{\"var\": \"trial_end_at\"}, 1716595200000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialEndAt/afterOrOn/2024-05-25/older_trial",
+      "field": "trialEndAt",
+      "operator": "afterOrOn",
+      "profile": "older_trial",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\">=\": [{\"var\": \"trial_end_at\"}, 1716595200000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialEndAt/afterOrOn/2024-05-25/latest_trial_cancelled",
+      "field": "trialEndAt",
+      "operator": "afterOrOn",
+      "profile": "latest_trial_cancelled",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\">=\": [{\"var\": \"trial_end_at\"}, 1716595200000]}]}",
+      "expected": true
+    },
+    {
+      "id": "trialEndAt/afterOrOn/2024-05-25/cancelled_after_latest_trial",
+      "field": "trialEndAt",
+      "operator": "afterOrOn",
+      "profile": "cancelled_after_latest_trial",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\">=\": [{\"var\": \"trial_end_at\"}, 1716595200000]}]}",
+      "expected": true
+    },
+    {
+      "id": "trialEndAt/afterOrOn/2024-05-30/new",
+      "field": "trialEndAt",
+      "operator": "afterOrOn",
+      "profile": "new",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\">=\": [{\"var\": \"trial_end_at\"}, 1717027200000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialEndAt/afterOrOn/2024-05-30/renewed",
+      "field": "trialEndAt",
+      "operator": "afterOrOn",
+      "profile": "renewed",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\">=\": [{\"var\": \"trial_end_at\"}, 1717027200000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialEndAt/afterOrOn/2024-05-30/first_purchase",
+      "field": "trialEndAt",
+      "operator": "afterOrOn",
+      "profile": "first_purchase",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\">=\": [{\"var\": \"trial_end_at\"}, 1717027200000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialEndAt/afterOrOn/2024-05-30/unavailable",
+      "field": "trialEndAt",
+      "operator": "afterOrOn",
+      "profile": "unavailable",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\">=\": [{\"var\": \"trial_end_at\"}, 1717027200000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialEndAt/afterOrOn/2024-05-30/older_trial",
+      "field": "trialEndAt",
+      "operator": "afterOrOn",
+      "profile": "older_trial",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\">=\": [{\"var\": \"trial_end_at\"}, 1717027200000]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialEndAt/afterOrOn/2024-05-30/latest_trial_cancelled",
+      "field": "trialEndAt",
+      "operator": "afterOrOn",
+      "profile": "latest_trial_cancelled",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\">=\": [{\"var\": \"trial_end_at\"}, 1717027200000]}]}",
+      "expected": true
+    },
+    {
+      "id": "trialEndAt/afterOrOn/2024-05-30/cancelled_after_latest_trial",
+      "field": "trialEndAt",
+      "operator": "afterOrOn",
+      "profile": "cancelled_after_latest_trial",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\">=\": [{\"var\": \"trial_end_at\"}, 1717027200000]}]}",
+      "expected": true
+    },
+    {
+      "id": "trialEndAt/within/{\"direction\": \"last\", \"value\": 14, \"unit\": \"days\"}/new",
+      "field": "trialEndAt",
+      "operator": "within",
+      "profile": "new",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\">=\": [{\"var\": \"trial_end_at\"}, {\"-\": [{\"rc.rootVar\": \"evaluated_at\"}, 1209600000]}]}, {\"<=\": [{\"var\": \"trial_end_at\"}, {\"rc.rootVar\": \"evaluated_at\"}]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialEndAt/within/{\"direction\": \"last\", \"value\": 14, \"unit\": \"days\"}/renewed",
+      "field": "trialEndAt",
+      "operator": "within",
+      "profile": "renewed",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\">=\": [{\"var\": \"trial_end_at\"}, {\"-\": [{\"rc.rootVar\": \"evaluated_at\"}, 1209600000]}]}, {\"<=\": [{\"var\": \"trial_end_at\"}, {\"rc.rootVar\": \"evaluated_at\"}]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialEndAt/within/{\"direction\": \"last\", \"value\": 14, \"unit\": \"days\"}/first_purchase",
+      "field": "trialEndAt",
+      "operator": "within",
+      "profile": "first_purchase",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\">=\": [{\"var\": \"trial_end_at\"}, {\"-\": [{\"rc.rootVar\": \"evaluated_at\"}, 1209600000]}]}, {\"<=\": [{\"var\": \"trial_end_at\"}, {\"rc.rootVar\": \"evaluated_at\"}]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialEndAt/within/{\"direction\": \"last\", \"value\": 14, \"unit\": \"days\"}/unavailable",
+      "field": "trialEndAt",
+      "operator": "within",
+      "profile": "unavailable",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\">=\": [{\"var\": \"trial_end_at\"}, {\"-\": [{\"rc.rootVar\": \"evaluated_at\"}, 1209600000]}]}, {\"<=\": [{\"var\": \"trial_end_at\"}, {\"rc.rootVar\": \"evaluated_at\"}]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialEndAt/within/{\"direction\": \"last\", \"value\": 14, \"unit\": \"days\"}/older_trial",
+      "field": "trialEndAt",
+      "operator": "within",
+      "profile": "older_trial",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\">=\": [{\"var\": \"trial_end_at\"}, {\"-\": [{\"rc.rootVar\": \"evaluated_at\"}, 1209600000]}]}, {\"<=\": [{\"var\": \"trial_end_at\"}, {\"rc.rootVar\": \"evaluated_at\"}]}]}",
+      "expected": true
+    },
+    {
+      "id": "trialEndAt/within/{\"direction\": \"last\", \"value\": 14, \"unit\": \"days\"}/latest_trial_cancelled",
+      "field": "trialEndAt",
+      "operator": "within",
+      "profile": "latest_trial_cancelled",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\">=\": [{\"var\": \"trial_end_at\"}, {\"-\": [{\"rc.rootVar\": \"evaluated_at\"}, 1209600000]}]}, {\"<=\": [{\"var\": \"trial_end_at\"}, {\"rc.rootVar\": \"evaluated_at\"}]}]}",
+      "expected": true
+    },
+    {
+      "id": "trialEndAt/within/{\"direction\": \"last\", \"value\": 14, \"unit\": \"days\"}/cancelled_after_latest_trial",
+      "field": "trialEndAt",
+      "operator": "within",
+      "profile": "cancelled_after_latest_trial",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\">=\": [{\"var\": \"trial_end_at\"}, {\"-\": [{\"rc.rootVar\": \"evaluated_at\"}, 1209600000]}]}, {\"<=\": [{\"var\": \"trial_end_at\"}, {\"rc.rootVar\": \"evaluated_at\"}]}]}",
+      "expected": true
+    },
+    {
+      "id": "trialEndAt/notWithin/{\"direction\": \"last\", \"value\": 14, \"unit\": \"days\"}/new",
+      "field": "trialEndAt",
+      "operator": "notWithin",
+      "profile": "new",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"trial_end_at\", null]}, null]}, {\"!\": [{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\">=\": [{\"var\": \"trial_end_at\"}, {\"-\": [{\"rc.rootVar\": \"evaluated_at\"}, 1209600000]}]}, {\"<=\": [{\"var\": \"trial_end_at\"}, {\"rc.rootVar\": \"evaluated_at\"}]}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "trialEndAt/notWithin/{\"direction\": \"last\", \"value\": 14, \"unit\": \"days\"}/renewed",
+      "field": "trialEndAt",
+      "operator": "notWithin",
+      "profile": "renewed",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"trial_end_at\", null]}, null]}, {\"!\": [{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\">=\": [{\"var\": \"trial_end_at\"}, {\"-\": [{\"rc.rootVar\": \"evaluated_at\"}, 1209600000]}]}, {\"<=\": [{\"var\": \"trial_end_at\"}, {\"rc.rootVar\": \"evaluated_at\"}]}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "trialEndAt/notWithin/{\"direction\": \"last\", \"value\": 14, \"unit\": \"days\"}/first_purchase",
+      "field": "trialEndAt",
+      "operator": "notWithin",
+      "profile": "first_purchase",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"trial_end_at\", null]}, null]}, {\"!\": [{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\">=\": [{\"var\": \"trial_end_at\"}, {\"-\": [{\"rc.rootVar\": \"evaluated_at\"}, 1209600000]}]}, {\"<=\": [{\"var\": \"trial_end_at\"}, {\"rc.rootVar\": \"evaluated_at\"}]}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "trialEndAt/notWithin/{\"direction\": \"last\", \"value\": 14, \"unit\": \"days\"}/unavailable",
+      "field": "trialEndAt",
+      "operator": "notWithin",
+      "profile": "unavailable",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"trial_end_at\", null]}, null]}, {\"!\": [{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\">=\": [{\"var\": \"trial_end_at\"}, {\"-\": [{\"rc.rootVar\": \"evaluated_at\"}, 1209600000]}]}, {\"<=\": [{\"var\": \"trial_end_at\"}, {\"rc.rootVar\": \"evaluated_at\"}]}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "trialEndAt/notWithin/{\"direction\": \"last\", \"value\": 14, \"unit\": \"days\"}/older_trial",
+      "field": "trialEndAt",
+      "operator": "notWithin",
+      "profile": "older_trial",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"trial_end_at\", null]}, null]}, {\"!\": [{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\">=\": [{\"var\": \"trial_end_at\"}, {\"-\": [{\"rc.rootVar\": \"evaluated_at\"}, 1209600000]}]}, {\"<=\": [{\"var\": \"trial_end_at\"}, {\"rc.rootVar\": \"evaluated_at\"}]}]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialEndAt/notWithin/{\"direction\": \"last\", \"value\": 14, \"unit\": \"days\"}/latest_trial_cancelled",
+      "field": "trialEndAt",
+      "operator": "notWithin",
+      "profile": "latest_trial_cancelled",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"trial_end_at\", null]}, null]}, {\"!\": [{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\">=\": [{\"var\": \"trial_end_at\"}, {\"-\": [{\"rc.rootVar\": \"evaluated_at\"}, 1209600000]}]}, {\"<=\": [{\"var\": \"trial_end_at\"}, {\"rc.rootVar\": \"evaluated_at\"}]}]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialEndAt/notWithin/{\"direction\": \"last\", \"value\": 14, \"unit\": \"days\"}/cancelled_after_latest_trial",
+      "field": "trialEndAt",
+      "operator": "notWithin",
+      "profile": "cancelled_after_latest_trial",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"trial_end_at\", null]}, null]}, {\"!\": [{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\">=\": [{\"var\": \"trial_end_at\"}, {\"-\": [{\"rc.rootVar\": \"evaluated_at\"}, 1209600000]}]}, {\"<=\": [{\"var\": \"trial_end_at\"}, {\"rc.rootVar\": \"evaluated_at\"}]}]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialEndAt/between/{\"from\": \"2024-05-18\", \"to\": \"2024-05-25\"}/new",
+      "field": "trialEndAt",
+      "operator": "between",
+      "profile": "new",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\">=\": [{\"var\": \"trial_end_at\"}, 1715990400000]}]}, {\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\"<\": [{\"var\": \"trial_end_at\"}, 1716681600000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialEndAt/between/{\"from\": \"2024-05-18\", \"to\": \"2024-05-25\"}/renewed",
+      "field": "trialEndAt",
+      "operator": "between",
+      "profile": "renewed",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\">=\": [{\"var\": \"trial_end_at\"}, 1715990400000]}]}, {\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\"<\": [{\"var\": \"trial_end_at\"}, 1716681600000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialEndAt/between/{\"from\": \"2024-05-18\", \"to\": \"2024-05-25\"}/first_purchase",
+      "field": "trialEndAt",
+      "operator": "between",
+      "profile": "first_purchase",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\">=\": [{\"var\": \"trial_end_at\"}, 1715990400000]}]}, {\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\"<\": [{\"var\": \"trial_end_at\"}, 1716681600000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialEndAt/between/{\"from\": \"2024-05-18\", \"to\": \"2024-05-25\"}/unavailable",
+      "field": "trialEndAt",
+      "operator": "between",
+      "profile": "unavailable",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\">=\": [{\"var\": \"trial_end_at\"}, 1715990400000]}]}, {\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\"<\": [{\"var\": \"trial_end_at\"}, 1716681600000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialEndAt/between/{\"from\": \"2024-05-18\", \"to\": \"2024-05-25\"}/older_trial",
+      "field": "trialEndAt",
+      "operator": "between",
+      "profile": "older_trial",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\">=\": [{\"var\": \"trial_end_at\"}, 1715990400000]}]}, {\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\"<\": [{\"var\": \"trial_end_at\"}, 1716681600000]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "trialEndAt/between/{\"from\": \"2024-05-18\", \"to\": \"2024-05-25\"}/latest_trial_cancelled",
+      "field": "trialEndAt",
+      "operator": "between",
+      "profile": "latest_trial_cancelled",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\">=\": [{\"var\": \"trial_end_at\"}, 1715990400000]}]}, {\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\"<\": [{\"var\": \"trial_end_at\"}, 1716681600000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialEndAt/between/{\"from\": \"2024-05-18\", \"to\": \"2024-05-25\"}/cancelled_after_latest_trial",
+      "field": "trialEndAt",
+      "operator": "between",
+      "profile": "cancelled_after_latest_trial",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\">=\": [{\"var\": \"trial_end_at\"}, 1715990400000]}]}, {\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\"<\": [{\"var\": \"trial_end_at\"}, 1716681600000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialEndAt/notBetween/{\"from\": \"2024-05-18\", \"to\": \"2024-05-25\"}/new",
+      "field": "trialEndAt",
+      "operator": "notBetween",
+      "profile": "new",
+      "predicate": "{\"or\": [{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\"<\": [{\"var\": \"trial_end_at\"}, 1715990400000]}]}, {\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\">=\": [{\"var\": \"trial_end_at\"}, 1716681600000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialEndAt/notBetween/{\"from\": \"2024-05-18\", \"to\": \"2024-05-25\"}/renewed",
+      "field": "trialEndAt",
+      "operator": "notBetween",
+      "profile": "renewed",
+      "predicate": "{\"or\": [{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\"<\": [{\"var\": \"trial_end_at\"}, 1715990400000]}]}, {\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\">=\": [{\"var\": \"trial_end_at\"}, 1716681600000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialEndAt/notBetween/{\"from\": \"2024-05-18\", \"to\": \"2024-05-25\"}/first_purchase",
+      "field": "trialEndAt",
+      "operator": "notBetween",
+      "profile": "first_purchase",
+      "predicate": "{\"or\": [{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\"<\": [{\"var\": \"trial_end_at\"}, 1715990400000]}]}, {\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\">=\": [{\"var\": \"trial_end_at\"}, 1716681600000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialEndAt/notBetween/{\"from\": \"2024-05-18\", \"to\": \"2024-05-25\"}/unavailable",
+      "field": "trialEndAt",
+      "operator": "notBetween",
+      "profile": "unavailable",
+      "predicate": "{\"or\": [{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\"<\": [{\"var\": \"trial_end_at\"}, 1715990400000]}]}, {\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\">=\": [{\"var\": \"trial_end_at\"}, 1716681600000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialEndAt/notBetween/{\"from\": \"2024-05-18\", \"to\": \"2024-05-25\"}/older_trial",
+      "field": "trialEndAt",
+      "operator": "notBetween",
+      "profile": "older_trial",
+      "predicate": "{\"or\": [{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\"<\": [{\"var\": \"trial_end_at\"}, 1715990400000]}]}, {\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\">=\": [{\"var\": \"trial_end_at\"}, 1716681600000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "trialEndAt/notBetween/{\"from\": \"2024-05-18\", \"to\": \"2024-05-25\"}/latest_trial_cancelled",
+      "field": "trialEndAt",
+      "operator": "notBetween",
+      "profile": "latest_trial_cancelled",
+      "predicate": "{\"or\": [{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\"<\": [{\"var\": \"trial_end_at\"}, 1715990400000]}]}, {\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\">=\": [{\"var\": \"trial_end_at\"}, 1716681600000]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "trialEndAt/notBetween/{\"from\": \"2024-05-18\", \"to\": \"2024-05-25\"}/cancelled_after_latest_trial",
+      "field": "trialEndAt",
+      "operator": "notBetween",
+      "profile": "cancelled_after_latest_trial",
+      "predicate": "{\"or\": [{\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\"<\": [{\"var\": \"trial_end_at\"}, 1715990400000]}]}, {\"and\": [{\"!=\": [{\"var\": \"trial_end_at\"}, null]}, {\">=\": [{\"var\": \"trial_end_at\"}, 1716681600000]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "trialEndAt/isEmpty//new",
+      "field": "trialEndAt",
+      "operator": "isEmpty",
+      "profile": "new",
+      "predicate": "{\"==\": [{\"var\": [\"trial_end_at\", null]}, null]}",
+      "expected": true
+    },
+    {
+      "id": "trialEndAt/isEmpty//renewed",
+      "field": "trialEndAt",
+      "operator": "isEmpty",
+      "profile": "renewed",
+      "predicate": "{\"==\": [{\"var\": [\"trial_end_at\", null]}, null]}",
+      "expected": true
+    },
+    {
+      "id": "trialEndAt/isEmpty//first_purchase",
+      "field": "trialEndAt",
+      "operator": "isEmpty",
+      "profile": "first_purchase",
+      "predicate": "{\"==\": [{\"var\": [\"trial_end_at\", null]}, null]}",
+      "expected": true
+    },
+    {
+      "id": "trialEndAt/isEmpty//unavailable",
+      "field": "trialEndAt",
+      "operator": "isEmpty",
+      "profile": "unavailable",
+      "predicate": "{\"==\": [{\"var\": [\"trial_end_at\", null]}, null]}",
+      "expected": true
+    },
+    {
+      "id": "trialEndAt/isEmpty//older_trial",
+      "field": "trialEndAt",
+      "operator": "isEmpty",
+      "profile": "older_trial",
+      "predicate": "{\"==\": [{\"var\": [\"trial_end_at\", null]}, null]}",
+      "expected": false
+    },
+    {
+      "id": "trialEndAt/isEmpty//latest_trial_cancelled",
+      "field": "trialEndAt",
+      "operator": "isEmpty",
+      "profile": "latest_trial_cancelled",
+      "predicate": "{\"==\": [{\"var\": [\"trial_end_at\", null]}, null]}",
+      "expected": false
+    },
+    {
+      "id": "trialEndAt/isEmpty//cancelled_after_latest_trial",
+      "field": "trialEndAt",
+      "operator": "isEmpty",
+      "profile": "cancelled_after_latest_trial",
+      "predicate": "{\"==\": [{\"var\": [\"trial_end_at\", null]}, null]}",
+      "expected": false
+    },
+    {
+      "id": "trialEndAt/isNotEmpty//new",
+      "field": "trialEndAt",
+      "operator": "isNotEmpty",
+      "profile": "new",
+      "predicate": "{\"!=\": [{\"var\": [\"trial_end_at\", null]}, null]}",
+      "expected": false
+    },
+    {
+      "id": "trialEndAt/isNotEmpty//renewed",
+      "field": "trialEndAt",
+      "operator": "isNotEmpty",
+      "profile": "renewed",
+      "predicate": "{\"!=\": [{\"var\": [\"trial_end_at\", null]}, null]}",
+      "expected": false
+    },
+    {
+      "id": "trialEndAt/isNotEmpty//first_purchase",
+      "field": "trialEndAt",
+      "operator": "isNotEmpty",
+      "profile": "first_purchase",
+      "predicate": "{\"!=\": [{\"var\": [\"trial_end_at\", null]}, null]}",
+      "expected": false
+    },
+    {
+      "id": "trialEndAt/isNotEmpty//unavailable",
+      "field": "trialEndAt",
+      "operator": "isNotEmpty",
+      "profile": "unavailable",
+      "predicate": "{\"!=\": [{\"var\": [\"trial_end_at\", null]}, null]}",
+      "expected": false
+    },
+    {
+      "id": "trialEndAt/isNotEmpty//older_trial",
+      "field": "trialEndAt",
+      "operator": "isNotEmpty",
+      "profile": "older_trial",
+      "predicate": "{\"!=\": [{\"var\": [\"trial_end_at\", null]}, null]}",
+      "expected": true
+    },
+    {
+      "id": "trialEndAt/isNotEmpty//latest_trial_cancelled",
+      "field": "trialEndAt",
+      "operator": "isNotEmpty",
+      "profile": "latest_trial_cancelled",
+      "predicate": "{\"!=\": [{\"var\": [\"trial_end_at\", null]}, null]}",
+      "expected": true
+    },
+    {
+      "id": "trialEndAt/isNotEmpty//cancelled_after_latest_trial",
+      "field": "trialEndAt",
+      "operator": "isNotEmpty",
+      "profile": "cancelled_after_latest_trial",
+      "predicate": "{\"!=\": [{\"var\": [\"trial_end_at\", null]}, null]}",
+      "expected": true
+    }
+  ]
+}

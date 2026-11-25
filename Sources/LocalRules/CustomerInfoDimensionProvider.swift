@@ -67,7 +67,7 @@ private extension CustomerInfoDimensionProvider {
     struct DatedPurchase {
 
         let purchaseDate: Date
-        let store: Store
+        let storeIdentifier: String?
         let values: [String: DimensionValue]
     }
 
@@ -75,12 +75,13 @@ private extension CustomerInfoDimensionProvider {
         // Only a CustomerInfo computed offline can hold a purchase the backend has not been told about.
         let unsyncedProductIdentifiers = customerInfo.unsyncedProductIdentifiers
 
+        let subscriptionResponses = customerInfo.subscriber.subscriptions
         let subscriptions = customerInfo.subscriptionsByProductIdentifier.values
             .sorted { $0.productIdentifier < $1.productIdentifier }
             .map { subscription in
                 DatedPurchase(
                     purchaseDate: subscription.purchaseDate,
-                    store: subscription.store,
+                    storeIdentifier: subscriptionResponses[subscription.productIdentifier]?.storeIdentifier,
                     values: Self.values(
                         for: subscription,
                         at: date,
@@ -92,7 +93,7 @@ private extension CustomerInfoDimensionProvider {
         let nonSubscriptions = customerInfo.nonSubscriptions.map { transaction in
             DatedPurchase(
                 purchaseDate: transaction.purchaseDate,
-                store: transaction.store,
+                storeIdentifier: transaction.store.dimensionValue,
                 values: Self.values(
                     for: transaction,
                     isSynced: !unsyncedProductIdentifiers.contains(transaction.productIdentifier)
@@ -114,9 +115,7 @@ private extension CustomerInfoDimensionProvider {
             .map { indexedPurchase in
                 let purchase = indexedPurchase.element
                 var values = purchase.values
-                if let store = purchase.store.dimensionValue {
-                    values["store"] = .string(store)
-                }
+                values.set("store", string: purchase.storeIdentifier)
                 return values
             }
     }

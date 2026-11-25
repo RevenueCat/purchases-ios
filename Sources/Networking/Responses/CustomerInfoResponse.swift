@@ -54,8 +54,11 @@ extension CustomerInfoResponse {
         var purchaseDate: Date
         var originalPurchaseDate: Date?
         var expiresDate: Date?
-        @IgnoreDecodeErrors<Store>
-        var store: Store
+        @IgnoreDecodeErrors<String?>
+        var storeIdentifier: String?
+        var store: Store {
+            return storeIdentifier.flatMap { Store.mapping[$0] } ?? .unknownStore
+        }
         @DefaultDecodable.False
         var isSandbox: Bool
         var unsubscribeDetectedAt: Date?
@@ -132,7 +135,17 @@ extension CustomerInfoResponse {
 // MARK: - Codable
 
 extension CustomerInfoResponse.Subscriber: Codable, Hashable {}
-extension CustomerInfoResponse.Subscription: Codable, Hashable {}
+extension CustomerInfoResponse.Subscription: Codable, Hashable {
+    // Keep the raw store ID under the JSON key "store" so audience rules can use IDs the SDK does not recognize.
+    // With an explicit CodingKeys enum, every field we encode or decode needs a key here.
+    private enum CodingKeys: String, CodingKey {
+        case storeIdentifier = "store"
+        case periodType, purchaseDate, originalPurchaseDate, expiresDate, isSandbox
+        case unsubscribeDetectedAt, billingIssuesDetectedAt, ownershipType, productPlanIdentifier
+        case metadata, gracePeriodExpiresDate, refundedAt, storeTransactionId, autoResumeDate
+        case displayName, price, managementUrl
+    }
+}
 extension CustomerInfoResponse.PurchasePaidPrice: Codable, Hashable {}
 
 extension CustomerInfoResponse.Entitlement: Hashable {}
@@ -330,7 +343,7 @@ extension CustomerInfoResponse.Subscription {
         self.purchaseDate = purchaseDate
         self.originalPurchaseDate = originalPurchaseDate
         self.expiresDate = expiresDate
-        self.store = store
+        self.storeIdentifier = store.name
         self.isSandbox = isSandbox
         self.unsubscribeDetectedAt = unsubscribeDetectedAt
         self.billingIssuesDetectedAt = billingIssuesDetectedAt

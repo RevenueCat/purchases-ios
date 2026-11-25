@@ -1,20 +1,44 @@
 {
   "schema_version": 1,
   "required_fields": [
+    "anyActiveStore",
+    "appVersion",
     "country",
+    "firstPurchaseAt",
+    "latestOffer",
+    "latestOfferType",
     "latestOwnershipType",
+    "latestPurchasedOffering",
     "latestStore",
     "locale",
+    "mostRecentPurchaseAt",
+    "mostRecentRenewalAt",
+    "status",
     "storefront",
-    "totalRenewals"
+    "totalRenewals",
+    "trialEndAt",
+    "trialOptOutAt",
+    "trialStartAt"
   ],
   "condition_files": [
+    "conditions/any_active_store.json",
+    "conditions/app_version.json",
     "conditions/country.json",
+    "conditions/first_purchase_at.json",
+    "conditions/latest_offer.json",
+    "conditions/latest_offer_type.json",
     "conditions/latest_ownership_type.json",
+    "conditions/latest_purchased_offering.json",
     "conditions/latest_store.json",
     "conditions/locale.json",
+    "conditions/most_recent_purchase_at.json",
+    "conditions/most_recent_renewal_at.json",
+    "conditions/status.json",
     "conditions/storefront.json",
-    "conditions/total_renewals.json"
+    "conditions/total_renewals.json",
+    "conditions/trial_end_at.json",
+    "conditions/trial_opt_out_at.json",
+    "conditions/trial_start_at.json"
   ],
   "coverage": [
     {
@@ -92,37 +116,37 @@
     {
       "field": "status",
       "operator": "is",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "status",
       "operator": "isNot",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "status",
       "operator": "isAnyOf",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "status",
       "operator": "isNotAnyOf",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "status",
       "operator": "isEmpty",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "status",
       "operator": "isNotEmpty",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
@@ -356,73 +380,73 @@
     {
       "field": "appVersion",
       "operator": "equal",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "appVersion",
       "operator": "notEqual",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "appVersion",
       "operator": "greaterThan",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "appVersion",
       "operator": "greaterThanOrEqual",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "appVersion",
       "operator": "lessThan",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "appVersion",
       "operator": "lessThanOrEqual",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "appVersion",
       "operator": "contains",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "appVersion",
       "operator": "doesNotContain",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "appVersion",
       "operator": "isEmpty",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "appVersion",
       "operator": "isNotEmpty",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "appVersion",
       "operator": "is",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "appVersion",
       "operator": "isNot",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
@@ -668,199 +692,199 @@
     {
       "field": "firstPurchaseAt",
       "operator": "before",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "firstPurchaseAt",
       "operator": "beforeOrOn",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "firstPurchaseAt",
       "operator": "on",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "firstPurchaseAt",
       "operator": "after",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "firstPurchaseAt",
       "operator": "afterOrOn",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "firstPurchaseAt",
       "operator": "within",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "firstPurchaseAt",
       "operator": "notWithin",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "firstPurchaseAt",
       "operator": "between",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "firstPurchaseAt",
       "operator": "notBetween",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "firstPurchaseAt",
       "operator": "isEmpty",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "firstPurchaseAt",
       "operator": "isNotEmpty",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "mostRecentPurchaseAt",
       "operator": "before",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "mostRecentPurchaseAt",
       "operator": "beforeOrOn",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "mostRecentPurchaseAt",
       "operator": "on",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "mostRecentPurchaseAt",
       "operator": "after",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "mostRecentPurchaseAt",
       "operator": "afterOrOn",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "mostRecentPurchaseAt",
       "operator": "within",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "mostRecentPurchaseAt",
       "operator": "notWithin",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "mostRecentPurchaseAt",
       "operator": "between",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "mostRecentPurchaseAt",
       "operator": "notBetween",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "mostRecentPurchaseAt",
       "operator": "isEmpty",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "mostRecentPurchaseAt",
       "operator": "isNotEmpty",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "mostRecentRenewalAt",
       "operator": "before",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "mostRecentRenewalAt",
       "operator": "beforeOrOn",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "mostRecentRenewalAt",
       "operator": "on",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "mostRecentRenewalAt",
       "operator": "after",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "mostRecentRenewalAt",
       "operator": "afterOrOn",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "mostRecentRenewalAt",
       "operator": "within",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "mostRecentRenewalAt",
       "operator": "notWithin",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "mostRecentRenewalAt",
       "operator": "between",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "mostRecentRenewalAt",
       "operator": "notBetween",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "mostRecentRenewalAt",
       "operator": "isEmpty",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "mostRecentRenewalAt",
       "operator": "isNotEmpty",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
@@ -932,133 +956,133 @@
     {
       "field": "trialStartAt",
       "operator": "before",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "trialStartAt",
       "operator": "beforeOrOn",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "trialStartAt",
       "operator": "on",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "trialStartAt",
       "operator": "after",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "trialStartAt",
       "operator": "afterOrOn",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "trialStartAt",
       "operator": "within",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "trialStartAt",
       "operator": "notWithin",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "trialStartAt",
       "operator": "between",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "trialStartAt",
       "operator": "notBetween",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "trialStartAt",
       "operator": "isEmpty",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "trialStartAt",
       "operator": "isNotEmpty",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "trialEndAt",
       "operator": "before",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "trialEndAt",
       "operator": "beforeOrOn",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "trialEndAt",
       "operator": "on",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "trialEndAt",
       "operator": "after",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "trialEndAt",
       "operator": "afterOrOn",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "trialEndAt",
       "operator": "within",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "trialEndAt",
       "operator": "notWithin",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "trialEndAt",
       "operator": "between",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "trialEndAt",
       "operator": "notBetween",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "trialEndAt",
       "operator": "isEmpty",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "trialEndAt",
       "operator": "isNotEmpty",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
@@ -1130,67 +1154,67 @@
     {
       "field": "trialOptOutAt",
       "operator": "before",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "trialOptOutAt",
       "operator": "beforeOrOn",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "trialOptOutAt",
       "operator": "on",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "trialOptOutAt",
       "operator": "after",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "trialOptOutAt",
       "operator": "afterOrOn",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "trialOptOutAt",
       "operator": "within",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "trialOptOutAt",
       "operator": "notWithin",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "trialOptOutAt",
       "operator": "between",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "trialOptOutAt",
       "operator": "notBetween",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "trialOptOutAt",
       "operator": "isEmpty",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "trialOptOutAt",
       "operator": "isNotEmpty",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
@@ -1616,73 +1640,73 @@
     {
       "field": "latestOffer",
       "operator": "is",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "latestOffer",
       "operator": "isNot",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "latestOffer",
       "operator": "contains",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "latestOffer",
       "operator": "doesNotContain",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "latestOffer",
       "operator": "isEmpty",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "latestOffer",
       "operator": "isNotEmpty",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "latestOfferType",
       "operator": "is",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "latestOfferType",
       "operator": "isNot",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "latestOfferType",
       "operator": "isAnyOf",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "latestOfferType",
       "operator": "isNotAnyOf",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "latestOfferType",
       "operator": "isEmpty",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "latestOfferType",
       "operator": "isNotEmpty",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
@@ -2402,37 +2426,37 @@
     {
       "field": "anyActiveStore",
       "operator": "is",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "anyActiveStore",
       "operator": "isNot",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "anyActiveStore",
       "operator": "isAnyOf",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "anyActiveStore",
       "operator": "isNotAnyOf",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "anyActiveStore",
       "operator": "isEmpty",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "anyActiveStore",
       "operator": "isNotEmpty",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
@@ -2510,37 +2534,37 @@
     {
       "field": "latestPurchasedOffering",
       "operator": "is",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "latestPurchasedOffering",
       "operator": "isNot",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "latestPurchasedOffering",
       "operator": "contains",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "latestPurchasedOffering",
       "operator": "doesNotContain",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "latestPurchasedOffering",
       "operator": "isEmpty",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "latestPurchasedOffering",
       "operator": "isNotEmpty",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {

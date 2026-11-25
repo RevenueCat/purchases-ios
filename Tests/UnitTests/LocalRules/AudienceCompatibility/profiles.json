@@ -5,7 +5,7 @@
       "app_user_id": "compatibility-user",
       "evaluated_at": 1717200000,
       "device": {
-        "app_version": "1.0.0",
+        "app_version": "1.2.0",
         "platform": "ios",
         "platform_version": [
           26,
@@ -68,7 +68,7 @@
       "app_user_id": "compatibility-user",
       "evaluated_at": 1717200000,
       "device": {
-        "app_version": "1.0.0",
+        "app_version": "1.10.0",
         "platform": "ios",
         "platform_version": [
           26,
@@ -212,7 +212,7 @@
       "app_user_id": "compatibility-user",
       "evaluated_at": 1717200000,
       "device": {
-        "app_version": "1.0.0",
+        "app_version": "",
         "platform": "ios",
         "platform_version": [
           26,
@@ -3043,6 +3043,2601 @@
           "last_rewarded_ad_completion_at": null
         },
         "as_of": 350000
+      }
+    },
+    "active_store_app_store": {
+      "app_user_id": "compatibility-user",
+      "evaluated_at": 1717200000,
+      "device": {
+        "app_version": "1.0.0",
+        "platform": "ios",
+        "platform_version": [
+          26,
+          0,
+          0
+        ],
+        "sdk_version": "10.0.0",
+        "locale": null
+      },
+      "store_country": null,
+      "attributes": {},
+      "customer_info": {
+        "request_date": "2024-06-01T00:00:00+00:00",
+        "subscriber": {
+          "first_seen": "1970-01-01T00:00:01Z",
+          "original_app_user_id": "compatibility-user",
+          "original_application_version": "1.0",
+          "subscriptions": {
+            "premium": {
+              "purchase_date": "1970-01-01T00:01:40Z",
+              "original_purchase_date": "1970-01-01T00:01:40Z",
+              "expires_date": "2024-06-02T00:00:00Z",
+              "store": "app_store",
+              "is_sandbox": false,
+              "period_type": "normal"
+            }
+          },
+          "non_subscriptions": {},
+          "entitlements": {}
+        }
+      },
+      "subscriber_dimensions": {
+        "dimensions": {
+          "country": null,
+          "sdk_flavor": null,
+          "last_seen_at": null,
+          "subscription_status": "active",
+          "total_renewals": 1,
+          "total_spent": 0,
+          "first_purchase_at": 100000,
+          "most_recent_purchase_at": 100000,
+          "most_recent_renewal_at": 100000,
+          "latest_expiration_at": 1717286400000,
+          "trial_start_at": null,
+          "trial_end_at": null,
+          "subscription_opt_out_at": null,
+          "trial_opt_out_at": null,
+          "latest_product_identifier": "premium",
+          "latest_offer": null,
+          "latest_store": "app_store",
+          "is_rc_promo": false,
+          "latest_ownership_type": "PURCHASED",
+          "latest_purchased_offering": null,
+          "price_experiment_id": null,
+          "price_experiment_variant": null,
+          "latest_auto_renew_intent": false,
+          "latest_offer_type": "no_offer",
+          "latest_store_country": null,
+          "total_ad_impressions": null,
+          "total_ad_revenue": null,
+          "total_rewarded_ad_completions": null,
+          "last_ad_impression_at": null,
+          "last_rewarded_ad_completion_at": null
+        },
+        "as_of": 350000
+      }
+    },
+    "active_store_play_store": {
+      "app_user_id": "compatibility-user",
+      "evaluated_at": 1717200000,
+      "device": {
+        "app_version": "1.0.0",
+        "platform": "ios",
+        "platform_version": [
+          26,
+          0,
+          0
+        ],
+        "sdk_version": "10.0.0",
+        "locale": null
+      },
+      "store_country": null,
+      "attributes": {},
+      "customer_info": {
+        "request_date": "2024-06-01T00:00:00+00:00",
+        "subscriber": {
+          "first_seen": "1970-01-01T00:00:01Z",
+          "original_app_user_id": "compatibility-user",
+          "original_application_version": "1.0",
+          "subscriptions": {
+            "premium": {
+              "purchase_date": "1970-01-01T00:01:40Z",
+              "original_purchase_date": "1970-01-01T00:01:40Z",
+              "expires_date": "2024-06-02T00:00:00Z",
+              "store": "play_store",
+              "is_sandbox": false,
+              "period_type": "normal"
+            }
+          },
+          "non_subscriptions": {},
+          "entitlements": {}
+        }
+      },
+      "subscriber_dimensions": {
+        "dimensions": {
+          "country": null,
+          "sdk_flavor": null,
+          "last_seen_at": null,
+          "subscription_status": "active",
+          "total_renewals": 1,
+          "total_spent": 0,
+          "first_purchase_at": 100000,
+          "most_recent_purchase_at": 100000,
+          "most_recent_renewal_at": 100000,
+          "latest_expiration_at": 1717286400000,
+          "trial_start_at": null,
+          "trial_end_at": null,
+          "subscription_opt_out_at": null,
+          "trial_opt_out_at": null,
+          "latest_product_identifier": "premium",
+          "latest_offer": null,
+          "latest_store": "play_store",
+          "is_rc_promo": false,
+          "latest_ownership_type": "PURCHASED",
+          "latest_purchased_offering": null,
+          "price_experiment_id": null,
+          "price_experiment_variant": null,
+          "latest_auto_renew_intent": false,
+          "latest_offer_type": "no_offer",
+          "latest_store_country": null,
+          "total_ad_impressions": null,
+          "total_ad_revenue": null,
+          "total_rewarded_ad_completions": null,
+          "last_ad_impression_at": null,
+          "last_rewarded_ad_completion_at": null
+        },
+        "as_of": 350000
+      }
+    },
+    "active_store_promotional": {
+      "app_user_id": "compatibility-user",
+      "evaluated_at": 1717200000,
+      "device": {
+        "app_version": "1.0.0",
+        "platform": "ios",
+        "platform_version": [
+          26,
+          0,
+          0
+        ],
+        "sdk_version": "10.0.0",
+        "locale": null
+      },
+      "store_country": null,
+      "attributes": {},
+      "customer_info": {
+        "request_date": "2024-06-01T00:00:00+00:00",
+        "subscriber": {
+          "first_seen": "1970-01-01T00:00:01Z",
+          "original_app_user_id": "compatibility-user",
+          "original_application_version": "1.0",
+          "subscriptions": {
+            "premium": {
+              "purchase_date": "1970-01-01T00:01:40Z",
+              "original_purchase_date": "1970-01-01T00:01:40Z",
+              "expires_date": "2024-06-02T00:00:00Z",
+              "store": "promotional",
+              "is_sandbox": false,
+              "period_type": "normal"
+            }
+          },
+          "non_subscriptions": {},
+          "entitlements": {}
+        }
+      },
+      "subscriber_dimensions": {
+        "dimensions": {
+          "country": null,
+          "sdk_flavor": null,
+          "last_seen_at": null,
+          "subscription_status": "active",
+          "total_renewals": 1,
+          "total_spent": 0,
+          "first_purchase_at": 100000,
+          "most_recent_purchase_at": 100000,
+          "most_recent_renewal_at": 100000,
+          "latest_expiration_at": 1717286400000,
+          "trial_start_at": null,
+          "trial_end_at": null,
+          "subscription_opt_out_at": null,
+          "trial_opt_out_at": null,
+          "latest_product_identifier": "premium",
+          "latest_offer": null,
+          "latest_store": "promotional",
+          "is_rc_promo": true,
+          "latest_ownership_type": "PURCHASED",
+          "latest_purchased_offering": null,
+          "price_experiment_id": null,
+          "price_experiment_variant": null,
+          "latest_auto_renew_intent": false,
+          "latest_offer_type": "no_offer",
+          "latest_store_country": null,
+          "total_ad_impressions": null,
+          "total_ad_revenue": null,
+          "total_rewarded_ad_completions": null,
+          "last_ad_impression_at": null,
+          "last_rewarded_ad_completion_at": null
+        },
+        "as_of": 350000
+      }
+    },
+    "active_store_mac_app_store": {
+      "app_user_id": "compatibility-user",
+      "evaluated_at": 1717200000,
+      "device": {
+        "app_version": "1.0.0",
+        "platform": "ios",
+        "platform_version": [
+          26,
+          0,
+          0
+        ],
+        "sdk_version": "10.0.0",
+        "locale": null
+      },
+      "store_country": null,
+      "attributes": {},
+      "customer_info": {
+        "request_date": "2024-06-01T00:00:00+00:00",
+        "subscriber": {
+          "first_seen": "1970-01-01T00:00:01Z",
+          "original_app_user_id": "compatibility-user",
+          "original_application_version": "1.0",
+          "subscriptions": {
+            "premium": {
+              "purchase_date": "1970-01-01T00:01:40Z",
+              "original_purchase_date": "1970-01-01T00:01:40Z",
+              "expires_date": "2024-06-02T00:00:00Z",
+              "store": "mac_app_store",
+              "is_sandbox": false,
+              "period_type": "normal"
+            }
+          },
+          "non_subscriptions": {},
+          "entitlements": {}
+        }
+      },
+      "subscriber_dimensions": {
+        "dimensions": {
+          "country": null,
+          "sdk_flavor": null,
+          "last_seen_at": null,
+          "subscription_status": "active",
+          "total_renewals": 1,
+          "total_spent": 0,
+          "first_purchase_at": 100000,
+          "most_recent_purchase_at": 100000,
+          "most_recent_renewal_at": 100000,
+          "latest_expiration_at": 1717286400000,
+          "trial_start_at": null,
+          "trial_end_at": null,
+          "subscription_opt_out_at": null,
+          "trial_opt_out_at": null,
+          "latest_product_identifier": "premium",
+          "latest_offer": null,
+          "latest_store": "mac_app_store",
+          "is_rc_promo": false,
+          "latest_ownership_type": "PURCHASED",
+          "latest_purchased_offering": null,
+          "price_experiment_id": null,
+          "price_experiment_variant": null,
+          "latest_auto_renew_intent": false,
+          "latest_offer_type": "no_offer",
+          "latest_store_country": null,
+          "total_ad_impressions": null,
+          "total_ad_revenue": null,
+          "total_rewarded_ad_completions": null,
+          "last_ad_impression_at": null,
+          "last_rewarded_ad_completion_at": null
+        },
+        "as_of": 350000
+      }
+    },
+    "active_store_stripe": {
+      "app_user_id": "compatibility-user",
+      "evaluated_at": 1717200000,
+      "device": {
+        "app_version": "1.0.0",
+        "platform": "ios",
+        "platform_version": [
+          26,
+          0,
+          0
+        ],
+        "sdk_version": "10.0.0",
+        "locale": null
+      },
+      "store_country": null,
+      "attributes": {},
+      "customer_info": {
+        "request_date": "2024-06-01T00:00:00+00:00",
+        "subscriber": {
+          "first_seen": "1970-01-01T00:00:01Z",
+          "original_app_user_id": "compatibility-user",
+          "original_application_version": "1.0",
+          "subscriptions": {
+            "premium": {
+              "purchase_date": "1970-01-01T00:01:40Z",
+              "original_purchase_date": "1970-01-01T00:01:40Z",
+              "expires_date": "2024-06-02T00:00:00Z",
+              "store": "stripe",
+              "is_sandbox": false,
+              "period_type": "normal"
+            }
+          },
+          "non_subscriptions": {},
+          "entitlements": {}
+        }
+      },
+      "subscriber_dimensions": {
+        "dimensions": {
+          "country": null,
+          "sdk_flavor": null,
+          "last_seen_at": null,
+          "subscription_status": "active",
+          "total_renewals": 1,
+          "total_spent": 0,
+          "first_purchase_at": 100000,
+          "most_recent_purchase_at": 100000,
+          "most_recent_renewal_at": 100000,
+          "latest_expiration_at": 1717286400000,
+          "trial_start_at": null,
+          "trial_end_at": null,
+          "subscription_opt_out_at": null,
+          "trial_opt_out_at": null,
+          "latest_product_identifier": "premium",
+          "latest_offer": null,
+          "latest_store": "stripe",
+          "is_rc_promo": false,
+          "latest_ownership_type": "PURCHASED",
+          "latest_purchased_offering": null,
+          "price_experiment_id": null,
+          "price_experiment_variant": null,
+          "latest_auto_renew_intent": false,
+          "latest_offer_type": "no_offer",
+          "latest_store_country": null,
+          "total_ad_impressions": null,
+          "total_ad_revenue": null,
+          "total_rewarded_ad_completions": null,
+          "last_ad_impression_at": null,
+          "last_rewarded_ad_completion_at": null
+        },
+        "as_of": 350000
+      }
+    },
+    "active_store_amazon": {
+      "app_user_id": "compatibility-user",
+      "evaluated_at": 1717200000,
+      "device": {
+        "app_version": "1.0.0",
+        "platform": "ios",
+        "platform_version": [
+          26,
+          0,
+          0
+        ],
+        "sdk_version": "10.0.0",
+        "locale": null
+      },
+      "store_country": null,
+      "attributes": {},
+      "customer_info": {
+        "request_date": "2024-06-01T00:00:00+00:00",
+        "subscriber": {
+          "first_seen": "1970-01-01T00:00:01Z",
+          "original_app_user_id": "compatibility-user",
+          "original_application_version": "1.0",
+          "subscriptions": {
+            "premium": {
+              "purchase_date": "1970-01-01T00:01:40Z",
+              "original_purchase_date": "1970-01-01T00:01:40Z",
+              "expires_date": "2024-06-02T00:00:00Z",
+              "store": "amazon",
+              "is_sandbox": false,
+              "period_type": "normal"
+            }
+          },
+          "non_subscriptions": {},
+          "entitlements": {}
+        }
+      },
+      "subscriber_dimensions": {
+        "dimensions": {
+          "country": null,
+          "sdk_flavor": null,
+          "last_seen_at": null,
+          "subscription_status": "active",
+          "total_renewals": 1,
+          "total_spent": 0,
+          "first_purchase_at": 100000,
+          "most_recent_purchase_at": 100000,
+          "most_recent_renewal_at": 100000,
+          "latest_expiration_at": 1717286400000,
+          "trial_start_at": null,
+          "trial_end_at": null,
+          "subscription_opt_out_at": null,
+          "trial_opt_out_at": null,
+          "latest_product_identifier": "premium",
+          "latest_offer": null,
+          "latest_store": "amazon",
+          "is_rc_promo": false,
+          "latest_ownership_type": "PURCHASED",
+          "latest_purchased_offering": null,
+          "price_experiment_id": null,
+          "price_experiment_variant": null,
+          "latest_auto_renew_intent": false,
+          "latest_offer_type": "no_offer",
+          "latest_store_country": null,
+          "total_ad_impressions": null,
+          "total_ad_revenue": null,
+          "total_rewarded_ad_completions": null,
+          "last_ad_impression_at": null,
+          "last_rewarded_ad_completion_at": null
+        },
+        "as_of": 350000
+      }
+    },
+    "active_store_external": {
+      "app_user_id": "compatibility-user",
+      "evaluated_at": 1717200000,
+      "device": {
+        "app_version": "1.0.0",
+        "platform": "ios",
+        "platform_version": [
+          26,
+          0,
+          0
+        ],
+        "sdk_version": "10.0.0",
+        "locale": null
+      },
+      "store_country": null,
+      "attributes": {},
+      "customer_info": {
+        "request_date": "2024-06-01T00:00:00+00:00",
+        "subscriber": {
+          "first_seen": "1970-01-01T00:00:01Z",
+          "original_app_user_id": "compatibility-user",
+          "original_application_version": "1.0",
+          "subscriptions": {
+            "premium": {
+              "purchase_date": "1970-01-01T00:01:40Z",
+              "original_purchase_date": "1970-01-01T00:01:40Z",
+              "expires_date": "2024-06-02T00:00:00Z",
+              "store": "external",
+              "is_sandbox": false,
+              "period_type": "normal"
+            }
+          },
+          "non_subscriptions": {},
+          "entitlements": {}
+        }
+      },
+      "subscriber_dimensions": {
+        "dimensions": {
+          "country": null,
+          "sdk_flavor": null,
+          "last_seen_at": null,
+          "subscription_status": "active",
+          "total_renewals": 1,
+          "total_spent": 0,
+          "first_purchase_at": 100000,
+          "most_recent_purchase_at": 100000,
+          "most_recent_renewal_at": 100000,
+          "latest_expiration_at": 1717286400000,
+          "trial_start_at": null,
+          "trial_end_at": null,
+          "subscription_opt_out_at": null,
+          "trial_opt_out_at": null,
+          "latest_product_identifier": "premium",
+          "latest_offer": null,
+          "latest_store": "external",
+          "is_rc_promo": false,
+          "latest_ownership_type": "PURCHASED",
+          "latest_purchased_offering": null,
+          "price_experiment_id": null,
+          "price_experiment_variant": null,
+          "latest_auto_renew_intent": false,
+          "latest_offer_type": "no_offer",
+          "latest_store_country": null,
+          "total_ad_impressions": null,
+          "total_ad_revenue": null,
+          "total_rewarded_ad_completions": null,
+          "last_ad_impression_at": null,
+          "last_rewarded_ad_completion_at": null
+        },
+        "as_of": 350000
+      }
+    },
+    "active_store_rc_billing": {
+      "app_user_id": "compatibility-user",
+      "evaluated_at": 1717200000,
+      "device": {
+        "app_version": "1.0.0",
+        "platform": "ios",
+        "platform_version": [
+          26,
+          0,
+          0
+        ],
+        "sdk_version": "10.0.0",
+        "locale": null
+      },
+      "store_country": null,
+      "attributes": {},
+      "customer_info": {
+        "request_date": "2024-06-01T00:00:00+00:00",
+        "subscriber": {
+          "first_seen": "1970-01-01T00:00:01Z",
+          "original_app_user_id": "compatibility-user",
+          "original_application_version": "1.0",
+          "subscriptions": {
+            "premium": {
+              "purchase_date": "1970-01-01T00:01:40Z",
+              "original_purchase_date": "1970-01-01T00:01:40Z",
+              "expires_date": "2024-06-02T00:00:00Z",
+              "store": "rc_billing",
+              "is_sandbox": false,
+              "period_type": "normal"
+            }
+          },
+          "non_subscriptions": {},
+          "entitlements": {}
+        }
+      },
+      "subscriber_dimensions": {
+        "dimensions": {
+          "country": null,
+          "sdk_flavor": null,
+          "last_seen_at": null,
+          "subscription_status": "active",
+          "total_renewals": 1,
+          "total_spent": 0,
+          "first_purchase_at": 100000,
+          "most_recent_purchase_at": 100000,
+          "most_recent_renewal_at": 100000,
+          "latest_expiration_at": 1717286400000,
+          "trial_start_at": null,
+          "trial_end_at": null,
+          "subscription_opt_out_at": null,
+          "trial_opt_out_at": null,
+          "latest_product_identifier": "premium",
+          "latest_offer": null,
+          "latest_store": "rc_billing",
+          "is_rc_promo": false,
+          "latest_ownership_type": "PURCHASED",
+          "latest_purchased_offering": null,
+          "price_experiment_id": null,
+          "price_experiment_variant": null,
+          "latest_auto_renew_intent": false,
+          "latest_offer_type": "no_offer",
+          "latest_store_country": null,
+          "total_ad_impressions": null,
+          "total_ad_revenue": null,
+          "total_rewarded_ad_completions": null,
+          "last_ad_impression_at": null,
+          "last_rewarded_ad_completion_at": null
+        },
+        "as_of": 350000
+      }
+    },
+    "active_store_roku": {
+      "app_user_id": "compatibility-user",
+      "evaluated_at": 1717200000,
+      "device": {
+        "app_version": "1.0.0",
+        "platform": "ios",
+        "platform_version": [
+          26,
+          0,
+          0
+        ],
+        "sdk_version": "10.0.0",
+        "locale": null
+      },
+      "store_country": null,
+      "attributes": {},
+      "customer_info": {
+        "request_date": "2024-06-01T00:00:00+00:00",
+        "subscriber": {
+          "first_seen": "1970-01-01T00:00:01Z",
+          "original_app_user_id": "compatibility-user",
+          "original_application_version": "1.0",
+          "subscriptions": {
+            "premium": {
+              "purchase_date": "1970-01-01T00:01:40Z",
+              "original_purchase_date": "1970-01-01T00:01:40Z",
+              "expires_date": "2024-06-02T00:00:00Z",
+              "store": "roku",
+              "is_sandbox": false,
+              "period_type": "normal"
+            }
+          },
+          "non_subscriptions": {},
+          "entitlements": {}
+        }
+      },
+      "subscriber_dimensions": {
+        "dimensions": {
+          "country": null,
+          "sdk_flavor": null,
+          "last_seen_at": null,
+          "subscription_status": "active",
+          "total_renewals": 1,
+          "total_spent": 0,
+          "first_purchase_at": 100000,
+          "most_recent_purchase_at": 100000,
+          "most_recent_renewal_at": 100000,
+          "latest_expiration_at": 1717286400000,
+          "trial_start_at": null,
+          "trial_end_at": null,
+          "subscription_opt_out_at": null,
+          "trial_opt_out_at": null,
+          "latest_product_identifier": "premium",
+          "latest_offer": null,
+          "latest_store": "roku",
+          "is_rc_promo": false,
+          "latest_ownership_type": "PURCHASED",
+          "latest_purchased_offering": null,
+          "price_experiment_id": null,
+          "price_experiment_variant": null,
+          "latest_auto_renew_intent": false,
+          "latest_offer_type": "no_offer",
+          "latest_store_country": null,
+          "total_ad_impressions": null,
+          "total_ad_revenue": null,
+          "total_rewarded_ad_completions": null,
+          "last_ad_impression_at": null,
+          "last_rewarded_ad_completion_at": null
+        },
+        "as_of": 350000
+      }
+    },
+    "active_store_paddle": {
+      "app_user_id": "compatibility-user",
+      "evaluated_at": 1717200000,
+      "device": {
+        "app_version": "1.0.0",
+        "platform": "ios",
+        "platform_version": [
+          26,
+          0,
+          0
+        ],
+        "sdk_version": "10.0.0",
+        "locale": null
+      },
+      "store_country": null,
+      "attributes": {},
+      "customer_info": {
+        "request_date": "2024-06-01T00:00:00+00:00",
+        "subscriber": {
+          "first_seen": "1970-01-01T00:00:01Z",
+          "original_app_user_id": "compatibility-user",
+          "original_application_version": "1.0",
+          "subscriptions": {
+            "premium": {
+              "purchase_date": "1970-01-01T00:01:40Z",
+              "original_purchase_date": "1970-01-01T00:01:40Z",
+              "expires_date": "2024-06-02T00:00:00Z",
+              "store": "paddle",
+              "is_sandbox": false,
+              "period_type": "normal"
+            }
+          },
+          "non_subscriptions": {},
+          "entitlements": {}
+        }
+      },
+      "subscriber_dimensions": {
+        "dimensions": {
+          "country": null,
+          "sdk_flavor": null,
+          "last_seen_at": null,
+          "subscription_status": "active",
+          "total_renewals": 1,
+          "total_spent": 0,
+          "first_purchase_at": 100000,
+          "most_recent_purchase_at": 100000,
+          "most_recent_renewal_at": 100000,
+          "latest_expiration_at": 1717286400000,
+          "trial_start_at": null,
+          "trial_end_at": null,
+          "subscription_opt_out_at": null,
+          "trial_opt_out_at": null,
+          "latest_product_identifier": "premium",
+          "latest_offer": null,
+          "latest_store": "paddle",
+          "is_rc_promo": false,
+          "latest_ownership_type": "PURCHASED",
+          "latest_purchased_offering": null,
+          "price_experiment_id": null,
+          "price_experiment_variant": null,
+          "latest_auto_renew_intent": false,
+          "latest_offer_type": "no_offer",
+          "latest_store_country": null,
+          "total_ad_impressions": null,
+          "total_ad_revenue": null,
+          "total_rewarded_ad_completions": null,
+          "last_ad_impression_at": null,
+          "last_rewarded_ad_completion_at": null
+        },
+        "as_of": 350000
+      }
+    },
+    "active_store_test_store": {
+      "app_user_id": "compatibility-user",
+      "evaluated_at": 1717200000,
+      "device": {
+        "app_version": "1.0.0",
+        "platform": "ios",
+        "platform_version": [
+          26,
+          0,
+          0
+        ],
+        "sdk_version": "10.0.0",
+        "locale": null
+      },
+      "store_country": null,
+      "attributes": {},
+      "customer_info": {
+        "request_date": "2024-06-01T00:00:00+00:00",
+        "subscriber": {
+          "first_seen": "1970-01-01T00:00:01Z",
+          "original_app_user_id": "compatibility-user",
+          "original_application_version": "1.0",
+          "subscriptions": {
+            "premium": {
+              "purchase_date": "1970-01-01T00:01:40Z",
+              "original_purchase_date": "1970-01-01T00:01:40Z",
+              "expires_date": "2024-06-02T00:00:00Z",
+              "store": "test_store",
+              "is_sandbox": false,
+              "period_type": "normal"
+            }
+          },
+          "non_subscriptions": {},
+          "entitlements": {}
+        }
+      },
+      "subscriber_dimensions": {
+        "dimensions": {
+          "country": null,
+          "sdk_flavor": null,
+          "last_seen_at": null,
+          "subscription_status": "active",
+          "total_renewals": 1,
+          "total_spent": 0,
+          "first_purchase_at": 100000,
+          "most_recent_purchase_at": 100000,
+          "most_recent_renewal_at": 100000,
+          "latest_expiration_at": 1717286400000,
+          "trial_start_at": null,
+          "trial_end_at": null,
+          "subscription_opt_out_at": null,
+          "trial_opt_out_at": null,
+          "latest_product_identifier": "premium",
+          "latest_offer": null,
+          "latest_store": "test_store",
+          "is_rc_promo": false,
+          "latest_ownership_type": "PURCHASED",
+          "latest_purchased_offering": null,
+          "price_experiment_id": null,
+          "price_experiment_variant": null,
+          "latest_auto_renew_intent": false,
+          "latest_offer_type": "no_offer",
+          "latest_store_country": null,
+          "total_ad_impressions": null,
+          "total_ad_revenue": null,
+          "total_rewarded_ad_completions": null,
+          "last_ad_impression_at": null,
+          "last_rewarded_ad_completion_at": null
+        },
+        "as_of": 350000
+      }
+    },
+    "active_store_paypal": {
+      "app_user_id": "compatibility-user",
+      "evaluated_at": 1717200000,
+      "device": {
+        "app_version": "1.0.0",
+        "platform": "ios",
+        "platform_version": [
+          26,
+          0,
+          0
+        ],
+        "sdk_version": "10.0.0",
+        "locale": null
+      },
+      "store_country": null,
+      "attributes": {},
+      "customer_info": {
+        "request_date": "2024-06-01T00:00:00+00:00",
+        "subscriber": {
+          "first_seen": "1970-01-01T00:00:01Z",
+          "original_app_user_id": "compatibility-user",
+          "original_application_version": "1.0",
+          "subscriptions": {
+            "premium": {
+              "purchase_date": "1970-01-01T00:01:40Z",
+              "original_purchase_date": "1970-01-01T00:01:40Z",
+              "expires_date": "2024-06-02T00:00:00Z",
+              "store": "paypal",
+              "is_sandbox": false,
+              "period_type": "normal"
+            }
+          },
+          "non_subscriptions": {},
+          "entitlements": {}
+        }
+      },
+      "subscriber_dimensions": {
+        "dimensions": {
+          "country": null,
+          "sdk_flavor": null,
+          "last_seen_at": null,
+          "subscription_status": "active",
+          "total_renewals": 1,
+          "total_spent": 0,
+          "first_purchase_at": 100000,
+          "most_recent_purchase_at": 100000,
+          "most_recent_renewal_at": 100000,
+          "latest_expiration_at": 1717286400000,
+          "trial_start_at": null,
+          "trial_end_at": null,
+          "subscription_opt_out_at": null,
+          "trial_opt_out_at": null,
+          "latest_product_identifier": "premium",
+          "latest_offer": null,
+          "latest_store": "paypal",
+          "is_rc_promo": false,
+          "latest_ownership_type": "PURCHASED",
+          "latest_purchased_offering": null,
+          "price_experiment_id": null,
+          "price_experiment_variant": null,
+          "latest_auto_renew_intent": false,
+          "latest_offer_type": "no_offer",
+          "latest_store_country": null,
+          "total_ad_impressions": null,
+          "total_ad_revenue": null,
+          "total_rewarded_ad_completions": null,
+          "last_ad_impression_at": null,
+          "last_rewarded_ad_completion_at": null
+        },
+        "as_of": 350000
+      }
+    },
+    "active_store_galaxy": {
+      "app_user_id": "compatibility-user",
+      "evaluated_at": 1717200000,
+      "device": {
+        "app_version": "1.0.0",
+        "platform": "ios",
+        "platform_version": [
+          26,
+          0,
+          0
+        ],
+        "sdk_version": "10.0.0",
+        "locale": null
+      },
+      "store_country": null,
+      "attributes": {},
+      "customer_info": {
+        "request_date": "2024-06-01T00:00:00+00:00",
+        "subscriber": {
+          "first_seen": "1970-01-01T00:00:01Z",
+          "original_app_user_id": "compatibility-user",
+          "original_application_version": "1.0",
+          "subscriptions": {
+            "premium": {
+              "purchase_date": "1970-01-01T00:01:40Z",
+              "original_purchase_date": "1970-01-01T00:01:40Z",
+              "expires_date": "2024-06-02T00:00:00Z",
+              "store": "galaxy",
+              "is_sandbox": false,
+              "period_type": "normal"
+            }
+          },
+          "non_subscriptions": {},
+          "entitlements": {}
+        }
+      },
+      "subscriber_dimensions": {
+        "dimensions": {
+          "country": null,
+          "sdk_flavor": null,
+          "last_seen_at": null,
+          "subscription_status": "active",
+          "total_renewals": 1,
+          "total_spent": 0,
+          "first_purchase_at": 100000,
+          "most_recent_purchase_at": 100000,
+          "most_recent_renewal_at": 100000,
+          "latest_expiration_at": 1717286400000,
+          "trial_start_at": null,
+          "trial_end_at": null,
+          "subscription_opt_out_at": null,
+          "trial_opt_out_at": null,
+          "latest_product_identifier": "premium",
+          "latest_offer": null,
+          "latest_store": "galaxy",
+          "is_rc_promo": false,
+          "latest_ownership_type": "PURCHASED",
+          "latest_purchased_offering": null,
+          "price_experiment_id": null,
+          "price_experiment_variant": null,
+          "latest_auto_renew_intent": false,
+          "latest_offer_type": "no_offer",
+          "latest_store_country": null,
+          "total_ad_impressions": null,
+          "total_ad_revenue": null,
+          "total_rewarded_ad_completions": null,
+          "last_ad_impression_at": null,
+          "last_rewarded_ad_completion_at": null
+        },
+        "as_of": 350000
+      }
+    },
+    "active_store_missing": {
+      "app_user_id": "compatibility-user",
+      "evaluated_at": 1717200000,
+      "device": {
+        "app_version": "1.0.0",
+        "platform": "ios",
+        "platform_version": [
+          26,
+          0,
+          0
+        ],
+        "sdk_version": "10.0.0",
+        "locale": null
+      },
+      "store_country": null,
+      "attributes": {},
+      "customer_info": {
+        "request_date": "2024-06-01T00:00:00+00:00",
+        "subscriber": {
+          "first_seen": "1970-01-01T00:00:01Z",
+          "original_app_user_id": "compatibility-user",
+          "original_application_version": "1.0",
+          "subscriptions": {
+            "premium": {
+              "purchase_date": "1970-01-01T00:01:40Z",
+              "original_purchase_date": "1970-01-01T00:01:40Z",
+              "expires_date": "2024-06-02T00:00:00Z",
+              "is_sandbox": false,
+              "period_type": "normal"
+            }
+          },
+          "non_subscriptions": {},
+          "entitlements": {}
+        }
+      },
+      "subscriber_dimensions": {
+        "dimensions": {
+          "country": null,
+          "sdk_flavor": null,
+          "last_seen_at": null,
+          "subscription_status": "active",
+          "total_renewals": 1,
+          "total_spent": 0,
+          "first_purchase_at": 100000,
+          "most_recent_purchase_at": 100000,
+          "most_recent_renewal_at": 100000,
+          "latest_expiration_at": 1717286400000,
+          "trial_start_at": null,
+          "trial_end_at": null,
+          "subscription_opt_out_at": null,
+          "trial_opt_out_at": null,
+          "latest_product_identifier": "premium",
+          "latest_offer": null,
+          "latest_store": null,
+          "is_rc_promo": false,
+          "latest_ownership_type": "PURCHASED",
+          "latest_purchased_offering": null,
+          "price_experiment_id": null,
+          "price_experiment_variant": null,
+          "latest_auto_renew_intent": false,
+          "latest_offer_type": "no_offer",
+          "latest_store_country": null,
+          "total_ad_impressions": null,
+          "total_ad_revenue": null,
+          "total_rewarded_ad_completions": null,
+          "last_ad_impression_at": null,
+          "last_rewarded_ad_completion_at": null
+        },
+        "as_of": 350000
+      }
+    },
+    "active_store_null": {
+      "app_user_id": "compatibility-user",
+      "evaluated_at": 1717200000,
+      "device": {
+        "app_version": "1.0.0",
+        "platform": "ios",
+        "platform_version": [
+          26,
+          0,
+          0
+        ],
+        "sdk_version": "10.0.0",
+        "locale": null
+      },
+      "store_country": null,
+      "attributes": {},
+      "customer_info": {
+        "request_date": "2024-06-01T00:00:00+00:00",
+        "subscriber": {
+          "first_seen": "1970-01-01T00:00:01Z",
+          "original_app_user_id": "compatibility-user",
+          "original_application_version": "1.0",
+          "subscriptions": {
+            "premium": {
+              "purchase_date": "1970-01-01T00:01:40Z",
+              "original_purchase_date": "1970-01-01T00:01:40Z",
+              "expires_date": "2024-06-02T00:00:00Z",
+              "store": null,
+              "is_sandbox": false,
+              "period_type": "normal"
+            }
+          },
+          "non_subscriptions": {},
+          "entitlements": {}
+        }
+      },
+      "subscriber_dimensions": {
+        "dimensions": {
+          "country": null,
+          "sdk_flavor": null,
+          "last_seen_at": null,
+          "subscription_status": "active",
+          "total_renewals": 1,
+          "total_spent": 0,
+          "first_purchase_at": 100000,
+          "most_recent_purchase_at": 100000,
+          "most_recent_renewal_at": 100000,
+          "latest_expiration_at": 1717286400000,
+          "trial_start_at": null,
+          "trial_end_at": null,
+          "subscription_opt_out_at": null,
+          "trial_opt_out_at": null,
+          "latest_product_identifier": "premium",
+          "latest_offer": null,
+          "latest_store": null,
+          "is_rc_promo": false,
+          "latest_ownership_type": "PURCHASED",
+          "latest_purchased_offering": null,
+          "price_experiment_id": null,
+          "price_experiment_variant": null,
+          "latest_auto_renew_intent": false,
+          "latest_offer_type": "no_offer",
+          "latest_store_country": null,
+          "total_ad_impressions": null,
+          "total_ad_revenue": null,
+          "total_rewarded_ad_completions": null,
+          "last_ad_impression_at": null,
+          "last_rewarded_ad_completion_at": null
+        },
+        "as_of": 350000
+      }
+    },
+    "active_store_empty": {
+      "app_user_id": "compatibility-user",
+      "evaluated_at": 1717200000,
+      "device": {
+        "app_version": "1.0.0",
+        "platform": "ios",
+        "platform_version": [
+          26,
+          0,
+          0
+        ],
+        "sdk_version": "10.0.0",
+        "locale": null
+      },
+      "store_country": null,
+      "attributes": {},
+      "customer_info": {
+        "request_date": "2024-06-01T00:00:00+00:00",
+        "subscriber": {
+          "first_seen": "1970-01-01T00:00:01Z",
+          "original_app_user_id": "compatibility-user",
+          "original_application_version": "1.0",
+          "subscriptions": {
+            "premium": {
+              "purchase_date": "1970-01-01T00:01:40Z",
+              "original_purchase_date": "1970-01-01T00:01:40Z",
+              "expires_date": "2024-06-02T00:00:00Z",
+              "store": "",
+              "is_sandbox": false,
+              "period_type": "normal"
+            }
+          },
+          "non_subscriptions": {},
+          "entitlements": {}
+        }
+      },
+      "subscriber_dimensions": {
+        "dimensions": {
+          "country": null,
+          "sdk_flavor": null,
+          "last_seen_at": null,
+          "subscription_status": "active",
+          "total_renewals": 1,
+          "total_spent": 0,
+          "first_purchase_at": 100000,
+          "most_recent_purchase_at": 100000,
+          "most_recent_renewal_at": 100000,
+          "latest_expiration_at": 1717286400000,
+          "trial_start_at": null,
+          "trial_end_at": null,
+          "subscription_opt_out_at": null,
+          "trial_opt_out_at": null,
+          "latest_product_identifier": "premium",
+          "latest_offer": null,
+          "latest_store": null,
+          "is_rc_promo": false,
+          "latest_ownership_type": "PURCHASED",
+          "latest_purchased_offering": null,
+          "price_experiment_id": null,
+          "price_experiment_variant": null,
+          "latest_auto_renew_intent": false,
+          "latest_offer_type": "no_offer",
+          "latest_store_country": null,
+          "total_ad_impressions": null,
+          "total_ad_revenue": null,
+          "total_rewarded_ad_completions": null,
+          "last_ad_impression_at": null,
+          "last_rewarded_ad_completion_at": null
+        },
+        "as_of": 350000
+      }
+    },
+    "active_store_grace_period": {
+      "app_user_id": "compatibility-user",
+      "evaluated_at": 1717200000,
+      "device": {
+        "app_version": "1.0.0",
+        "platform": "ios",
+        "platform_version": [
+          26,
+          0,
+          0
+        ],
+        "sdk_version": "10.0.0",
+        "locale": null
+      },
+      "store_country": null,
+      "attributes": {},
+      "customer_info": {
+        "request_date": "2024-06-01T00:00:00+00:00",
+        "subscriber": {
+          "first_seen": "1970-01-01T00:00:01Z",
+          "original_app_user_id": "compatibility-user",
+          "original_application_version": "1.0",
+          "subscriptions": {
+            "premium": {
+              "purchase_date": "1970-01-01T00:01:40Z",
+              "original_purchase_date": "1970-01-01T00:01:40Z",
+              "expires_date": "2024-06-02T00:00:00Z",
+              "grace_period_expires_date": "2024-06-02T00:00:00Z",
+              "billing_issues_detected_at": "2024-05-31T00:00:00Z",
+              "store": "app_store",
+              "is_sandbox": false,
+              "period_type": "normal"
+            }
+          },
+          "non_subscriptions": {},
+          "entitlements": {}
+        }
+      },
+      "subscriber_dimensions": {
+        "dimensions": {
+          "country": null,
+          "sdk_flavor": null,
+          "last_seen_at": null,
+          "subscription_status": "in_grace_period",
+          "total_renewals": 1,
+          "total_spent": 0,
+          "first_purchase_at": 100000,
+          "most_recent_purchase_at": 100000,
+          "most_recent_renewal_at": 100000,
+          "latest_expiration_at": 1717286400000,
+          "trial_start_at": null,
+          "trial_end_at": null,
+          "subscription_opt_out_at": null,
+          "trial_opt_out_at": null,
+          "latest_product_identifier": "premium",
+          "latest_offer": null,
+          "latest_store": "app_store",
+          "is_rc_promo": false,
+          "latest_ownership_type": "PURCHASED",
+          "latest_purchased_offering": null,
+          "price_experiment_id": null,
+          "price_experiment_variant": null,
+          "latest_auto_renew_intent": false,
+          "latest_offer_type": "no_offer",
+          "latest_store_country": null,
+          "total_ad_impressions": null,
+          "total_ad_revenue": null,
+          "total_rewarded_ad_completions": null,
+          "last_ad_impression_at": null,
+          "last_rewarded_ad_completion_at": null
+        },
+        "as_of": 350000
+      }
+    },
+    "active_store_expired_grace_period": {
+      "app_user_id": "compatibility-user",
+      "evaluated_at": 1717200000,
+      "device": {
+        "app_version": "1.0.0",
+        "platform": "ios",
+        "platform_version": [
+          26,
+          0,
+          0
+        ],
+        "sdk_version": "10.0.0",
+        "locale": null
+      },
+      "store_country": null,
+      "attributes": {},
+      "customer_info": {
+        "request_date": "2024-06-01T00:00:00+00:00",
+        "subscriber": {
+          "first_seen": "1970-01-01T00:00:01Z",
+          "original_app_user_id": "compatibility-user",
+          "original_application_version": "1.0",
+          "subscriptions": {
+            "premium": {
+              "purchase_date": "1970-01-01T00:01:40Z",
+              "original_purchase_date": "1970-01-01T00:01:40Z",
+              "expires_date": "2024-05-31T00:00:00Z",
+              "billing_issues_detected_at": "2024-05-31T00:00:00Z",
+              "store": "app_store",
+              "is_sandbox": false,
+              "period_type": "normal"
+            }
+          },
+          "non_subscriptions": {},
+          "entitlements": {}
+        }
+      },
+      "subscriber_dimensions": {
+        "dimensions": {
+          "country": null,
+          "sdk_flavor": null,
+          "last_seen_at": null,
+          "subscription_status": "expired",
+          "total_renewals": 1,
+          "total_spent": 0,
+          "first_purchase_at": 100000,
+          "most_recent_purchase_at": 100000,
+          "most_recent_renewal_at": 100000,
+          "latest_expiration_at": 1717113600000,
+          "trial_start_at": null,
+          "trial_end_at": null,
+          "subscription_opt_out_at": null,
+          "trial_opt_out_at": null,
+          "latest_product_identifier": "premium",
+          "latest_offer": null,
+          "latest_store": "app_store",
+          "is_rc_promo": false,
+          "latest_ownership_type": "PURCHASED",
+          "latest_purchased_offering": null,
+          "price_experiment_id": null,
+          "price_experiment_variant": null,
+          "latest_auto_renew_intent": false,
+          "latest_offer_type": "no_offer",
+          "latest_store_country": null,
+          "total_ad_impressions": null,
+          "total_ad_revenue": null,
+          "total_rewarded_ad_completions": null,
+          "last_ad_impression_at": null,
+          "last_rewarded_ad_completion_at": null
+        },
+        "as_of": 350000
+      }
+    },
+    "active_store_expired": {
+      "app_user_id": "compatibility-user",
+      "evaluated_at": 1717200000,
+      "device": {
+        "app_version": "1.0.0",
+        "platform": "ios",
+        "platform_version": [
+          26,
+          0,
+          0
+        ],
+        "sdk_version": "10.0.0",
+        "locale": null
+      },
+      "store_country": null,
+      "attributes": {},
+      "customer_info": {
+        "request_date": "2024-06-01T00:00:00+00:00",
+        "subscriber": {
+          "first_seen": "1970-01-01T00:00:01Z",
+          "original_app_user_id": "compatibility-user",
+          "original_application_version": "1.0",
+          "subscriptions": {
+            "premium": {
+              "purchase_date": "1970-01-01T00:01:40Z",
+              "original_purchase_date": "1970-01-01T00:01:40Z",
+              "expires_date": "2024-05-31T00:00:00Z",
+              "store": "app_store",
+              "is_sandbox": false,
+              "period_type": "normal"
+            }
+          },
+          "non_subscriptions": {},
+          "entitlements": {}
+        }
+      },
+      "subscriber_dimensions": {
+        "dimensions": {
+          "country": null,
+          "sdk_flavor": null,
+          "last_seen_at": null,
+          "subscription_status": "expired",
+          "total_renewals": 1,
+          "total_spent": 0,
+          "first_purchase_at": 100000,
+          "most_recent_purchase_at": 100000,
+          "most_recent_renewal_at": 100000,
+          "latest_expiration_at": 1717113600000,
+          "trial_start_at": null,
+          "trial_end_at": null,
+          "subscription_opt_out_at": null,
+          "trial_opt_out_at": null,
+          "latest_product_identifier": "premium",
+          "latest_offer": null,
+          "latest_store": "app_store",
+          "is_rc_promo": false,
+          "latest_ownership_type": "PURCHASED",
+          "latest_purchased_offering": null,
+          "price_experiment_id": null,
+          "price_experiment_variant": null,
+          "latest_auto_renew_intent": false,
+          "latest_offer_type": "no_offer",
+          "latest_store_country": null,
+          "total_ad_impressions": null,
+          "total_ad_revenue": null,
+          "total_rewarded_ad_completions": null,
+          "last_ad_impression_at": null,
+          "last_rewarded_ad_completion_at": null
+        },
+        "as_of": 350000
+      }
+    },
+    "active_store_billing_retry": {
+      "app_user_id": "compatibility-user",
+      "evaluated_at": 1717200000,
+      "device": {
+        "app_version": "1.0.0",
+        "platform": "ios",
+        "platform_version": [
+          26,
+          0,
+          0
+        ],
+        "sdk_version": "10.0.0",
+        "locale": null
+      },
+      "store_country": null,
+      "attributes": {},
+      "customer_info": {
+        "request_date": "2024-06-01T00:00:00+00:00",
+        "subscriber": {
+          "first_seen": "1970-01-01T00:00:01Z",
+          "original_app_user_id": "compatibility-user",
+          "original_application_version": "1.0",
+          "subscriptions": {
+            "premium": {
+              "purchase_date": "1970-01-01T00:01:40Z",
+              "original_purchase_date": "1970-01-01T00:01:40Z",
+              "expires_date": "2024-05-31T00:00:00Z",
+              "billing_issues_detected_at": "2024-05-31T00:00:00Z",
+              "store": "app_store",
+              "is_sandbox": false,
+              "period_type": "normal"
+            }
+          },
+          "non_subscriptions": {},
+          "entitlements": {}
+        }
+      },
+      "subscriber_dimensions": {
+        "dimensions": {
+          "country": null,
+          "sdk_flavor": null,
+          "last_seen_at": null,
+          "subscription_status": "in_billing_retry",
+          "total_renewals": 1,
+          "total_spent": 0,
+          "first_purchase_at": 100000,
+          "most_recent_purchase_at": 100000,
+          "most_recent_renewal_at": 100000,
+          "latest_expiration_at": 1717113600000,
+          "trial_start_at": null,
+          "trial_end_at": null,
+          "subscription_opt_out_at": null,
+          "trial_opt_out_at": null,
+          "latest_product_identifier": "premium",
+          "latest_offer": null,
+          "latest_store": "app_store",
+          "is_rc_promo": false,
+          "latest_ownership_type": "PURCHASED",
+          "latest_purchased_offering": null,
+          "price_experiment_id": null,
+          "price_experiment_variant": null,
+          "latest_auto_renew_intent": false,
+          "latest_offer_type": "no_offer",
+          "latest_store_country": null,
+          "total_ad_impressions": null,
+          "total_ad_revenue": null,
+          "total_rewarded_ad_completions": null,
+          "last_ad_impression_at": null,
+          "last_rewarded_ad_completion_at": null
+        },
+        "as_of": 350000
+      }
+    },
+    "active_store_paused": {
+      "app_user_id": "compatibility-user",
+      "evaluated_at": 1717200000,
+      "device": {
+        "app_version": "1.0.0",
+        "platform": "ios",
+        "platform_version": [
+          26,
+          0,
+          0
+        ],
+        "sdk_version": "10.0.0",
+        "locale": null
+      },
+      "store_country": null,
+      "attributes": {},
+      "customer_info": {
+        "request_date": "2024-06-01T00:00:00+00:00",
+        "subscriber": {
+          "first_seen": "1970-01-01T00:00:01Z",
+          "original_app_user_id": "compatibility-user",
+          "original_application_version": "1.0",
+          "subscriptions": {
+            "premium": {
+              "purchase_date": "1970-01-01T00:01:40Z",
+              "original_purchase_date": "1970-01-01T00:01:40Z",
+              "expires_date": "2024-05-31T00:00:00Z",
+              "store": "app_store",
+              "is_sandbox": false,
+              "period_type": "normal"
+            }
+          },
+          "non_subscriptions": {},
+          "entitlements": {}
+        }
+      },
+      "subscriber_dimensions": {
+        "dimensions": {
+          "country": null,
+          "sdk_flavor": null,
+          "last_seen_at": null,
+          "subscription_status": "paused",
+          "total_renewals": 1,
+          "total_spent": 0,
+          "first_purchase_at": 100000,
+          "most_recent_purchase_at": 100000,
+          "most_recent_renewal_at": 100000,
+          "latest_expiration_at": 1717113600000,
+          "trial_start_at": null,
+          "trial_end_at": null,
+          "subscription_opt_out_at": null,
+          "trial_opt_out_at": null,
+          "latest_product_identifier": "premium",
+          "latest_offer": null,
+          "latest_store": "app_store",
+          "is_rc_promo": false,
+          "latest_ownership_type": "PURCHASED",
+          "latest_purchased_offering": null,
+          "price_experiment_id": null,
+          "price_experiment_variant": null,
+          "latest_auto_renew_intent": false,
+          "latest_offer_type": "no_offer",
+          "latest_store_country": null,
+          "total_ad_impressions": null,
+          "total_ad_revenue": null,
+          "total_rewarded_ad_completions": null,
+          "last_ad_impression_at": null,
+          "last_rewarded_ad_completion_at": null
+        },
+        "as_of": 350000
+      }
+    },
+    "active_store_trialing": {
+      "app_user_id": "compatibility-user",
+      "evaluated_at": 1717200000,
+      "device": {
+        "app_version": "1.0.0",
+        "platform": "ios",
+        "platform_version": [
+          26,
+          0,
+          0
+        ],
+        "sdk_version": "10.0.0",
+        "locale": null
+      },
+      "store_country": null,
+      "attributes": {},
+      "customer_info": {
+        "request_date": "2024-06-01T00:00:00+00:00",
+        "subscriber": {
+          "first_seen": "1970-01-01T00:00:01Z",
+          "original_app_user_id": "compatibility-user",
+          "original_application_version": "1.0",
+          "subscriptions": {
+            "premium": {
+              "purchase_date": "1970-01-01T00:01:40Z",
+              "original_purchase_date": "1970-01-01T00:01:40Z",
+              "expires_date": "2024-06-02T00:00:00Z",
+              "store": "app_store",
+              "is_sandbox": false,
+              "period_type": "trial"
+            }
+          },
+          "non_subscriptions": {},
+          "entitlements": {}
+        }
+      },
+      "subscriber_dimensions": {
+        "dimensions": {
+          "country": null,
+          "sdk_flavor": null,
+          "last_seen_at": null,
+          "subscription_status": "trialing",
+          "total_renewals": 1,
+          "total_spent": 0,
+          "first_purchase_at": 100000,
+          "most_recent_purchase_at": 100000,
+          "most_recent_renewal_at": null,
+          "latest_expiration_at": 1717286400000,
+          "trial_start_at": null,
+          "trial_end_at": null,
+          "subscription_opt_out_at": null,
+          "trial_opt_out_at": null,
+          "latest_product_identifier": "premium",
+          "latest_offer": null,
+          "latest_store": "app_store",
+          "is_rc_promo": false,
+          "latest_ownership_type": "PURCHASED",
+          "latest_purchased_offering": null,
+          "price_experiment_id": null,
+          "price_experiment_variant": null,
+          "latest_auto_renew_intent": false,
+          "latest_offer_type": "no_offer",
+          "latest_store_country": null,
+          "total_ad_impressions": null,
+          "total_ad_revenue": null,
+          "total_rewarded_ad_completions": null,
+          "last_ad_impression_at": null,
+          "last_rewarded_ad_completion_at": null
+        },
+        "as_of": 350000
+      }
+    },
+    "active_store_multiple": {
+      "app_user_id": "compatibility-user",
+      "evaluated_at": 1717200000,
+      "device": {
+        "app_version": "1.0.0",
+        "platform": "ios",
+        "platform_version": [
+          26,
+          0,
+          0
+        ],
+        "sdk_version": "10.0.0",
+        "locale": null
+      },
+      "store_country": null,
+      "attributes": {},
+      "customer_info": {
+        "request_date": "2024-06-01T00:00:00+00:00",
+        "subscriber": {
+          "first_seen": "1970-01-01T00:00:01Z",
+          "original_app_user_id": "compatibility-user",
+          "original_application_version": "1.0",
+          "subscriptions": {
+            "premium": {
+              "purchase_date": "1970-01-01T00:01:40Z",
+              "original_purchase_date": "1970-01-01T00:01:40Z",
+              "expires_date": "2024-06-02T00:00:00Z",
+              "store": "app_store",
+              "is_sandbox": false,
+              "period_type": "normal"
+            },
+            "monthly": {
+              "purchase_date": "1970-01-01T00:01:40Z",
+              "original_purchase_date": "1970-01-01T00:01:40Z",
+              "expires_date": "2024-06-02T00:00:00Z",
+              "store": "play_store",
+              "is_sandbox": false,
+              "period_type": "normal"
+            }
+          },
+          "non_subscriptions": {},
+          "entitlements": {}
+        }
+      },
+      "subscriber_dimensions": {
+        "dimensions": {
+          "country": null,
+          "sdk_flavor": null,
+          "last_seen_at": null,
+          "subscription_status": "active",
+          "total_renewals": 2,
+          "total_spent": 0,
+          "first_purchase_at": 100000,
+          "most_recent_purchase_at": 100000,
+          "most_recent_renewal_at": 100000,
+          "latest_expiration_at": 1717286400000,
+          "trial_start_at": null,
+          "trial_end_at": null,
+          "subscription_opt_out_at": null,
+          "trial_opt_out_at": null,
+          "latest_product_identifier": "premium",
+          "latest_offer": null,
+          "latest_store": "app_store",
+          "is_rc_promo": false,
+          "latest_ownership_type": "PURCHASED",
+          "latest_purchased_offering": null,
+          "price_experiment_id": null,
+          "price_experiment_variant": null,
+          "latest_auto_renew_intent": false,
+          "latest_offer_type": "no_offer",
+          "latest_store_country": null,
+          "total_ad_impressions": null,
+          "total_ad_revenue": null,
+          "total_rewarded_ad_completions": null,
+          "last_ad_impression_at": null,
+          "last_rewarded_ad_completion_at": null
+        },
+        "as_of": 350000
+      }
+    },
+    "active_store_mixed": {
+      "app_user_id": "compatibility-user",
+      "evaluated_at": 1717200000,
+      "device": {
+        "app_version": "1.0.0",
+        "platform": "ios",
+        "platform_version": [
+          26,
+          0,
+          0
+        ],
+        "sdk_version": "10.0.0",
+        "locale": null
+      },
+      "store_country": null,
+      "attributes": {},
+      "customer_info": {
+        "request_date": "2024-06-01T00:00:00+00:00",
+        "subscriber": {
+          "first_seen": "1970-01-01T00:00:01Z",
+          "original_app_user_id": "compatibility-user",
+          "original_application_version": "1.0",
+          "subscriptions": {
+            "premium": {
+              "purchase_date": "1970-01-01T00:01:40Z",
+              "original_purchase_date": "1970-01-01T00:01:40Z",
+              "expires_date": "2024-05-31T00:00:00Z",
+              "store": "app_store",
+              "is_sandbox": false,
+              "period_type": "normal"
+            },
+            "monthly": {
+              "purchase_date": "1970-01-01T00:01:40Z",
+              "original_purchase_date": "1970-01-01T00:01:40Z",
+              "expires_date": "2024-06-02T00:00:00Z",
+              "store": "play_store",
+              "is_sandbox": false,
+              "period_type": "normal"
+            }
+          },
+          "non_subscriptions": {},
+          "entitlements": {}
+        }
+      },
+      "subscriber_dimensions": {
+        "dimensions": {
+          "country": null,
+          "sdk_flavor": null,
+          "last_seen_at": null,
+          "subscription_status": "active",
+          "total_renewals": 2,
+          "total_spent": 0,
+          "first_purchase_at": 100000,
+          "most_recent_purchase_at": 100000,
+          "most_recent_renewal_at": 100000,
+          "latest_expiration_at": 1717286400000,
+          "trial_start_at": null,
+          "trial_end_at": null,
+          "subscription_opt_out_at": null,
+          "trial_opt_out_at": null,
+          "latest_product_identifier": "monthly",
+          "latest_offer": null,
+          "latest_store": "play_store",
+          "is_rc_promo": false,
+          "latest_ownership_type": "PURCHASED",
+          "latest_purchased_offering": null,
+          "price_experiment_id": null,
+          "price_experiment_variant": null,
+          "latest_auto_renew_intent": false,
+          "latest_offer_type": "no_offer",
+          "latest_store_country": null,
+          "total_ad_impressions": null,
+          "total_ad_revenue": null,
+          "total_rewarded_ad_completions": null,
+          "last_ad_impression_at": null,
+          "last_rewarded_ad_completion_at": null
+        },
+        "as_of": 350000
+      }
+    },
+    "active_store_sandbox_only": {
+      "app_user_id": "compatibility-user",
+      "evaluated_at": 1717200000,
+      "device": {
+        "app_version": "1.0.0",
+        "platform": "ios",
+        "platform_version": [
+          26,
+          0,
+          0
+        ],
+        "sdk_version": "10.0.0",
+        "locale": null
+      },
+      "store_country": null,
+      "attributes": {},
+      "customer_info": {
+        "request_date": "2024-06-01T00:00:00+00:00",
+        "subscriber": {
+          "first_seen": "1970-01-01T00:00:01Z",
+          "original_app_user_id": "compatibility-user",
+          "original_application_version": "1.0",
+          "subscriptions": {
+            "premium": {
+              "purchase_date": "1970-01-01T00:01:40Z",
+              "original_purchase_date": "1970-01-01T00:01:40Z",
+              "expires_date": "2024-06-02T00:00:00Z",
+              "store": "app_store",
+              "is_sandbox": true,
+              "period_type": "normal"
+            }
+          },
+          "non_subscriptions": {},
+          "entitlements": {}
+        }
+      },
+      "subscriber_dimensions": {
+        "dimensions": {
+          "country": null,
+          "sdk_flavor": null,
+          "last_seen_at": null,
+          "subscription_status": null,
+          "total_renewals": 0,
+          "total_spent": null,
+          "first_purchase_at": null,
+          "most_recent_purchase_at": null,
+          "most_recent_renewal_at": null,
+          "latest_expiration_at": null,
+          "trial_start_at": null,
+          "trial_end_at": null,
+          "subscription_opt_out_at": null,
+          "trial_opt_out_at": null,
+          "latest_product_identifier": null,
+          "latest_offer": null,
+          "latest_store": null,
+          "is_rc_promo": false,
+          "latest_ownership_type": "PURCHASED",
+          "latest_purchased_offering": null,
+          "price_experiment_id": null,
+          "price_experiment_variant": null,
+          "latest_auto_renew_intent": false,
+          "latest_offer_type": null,
+          "latest_store_country": null,
+          "total_ad_impressions": null,
+          "total_ad_revenue": null,
+          "total_rewarded_ad_completions": null,
+          "last_ad_impression_at": null,
+          "last_rewarded_ad_completion_at": null
+        },
+        "as_of": 350000
+      }
+    },
+    "active_store_production_and_sandbox": {
+      "app_user_id": "compatibility-user",
+      "evaluated_at": 1717200000,
+      "device": {
+        "app_version": "1.0.0",
+        "platform": "ios",
+        "platform_version": [
+          26,
+          0,
+          0
+        ],
+        "sdk_version": "10.0.0",
+        "locale": null
+      },
+      "store_country": null,
+      "attributes": {},
+      "customer_info": {
+        "request_date": "2024-06-01T00:00:00+00:00",
+        "subscriber": {
+          "first_seen": "1970-01-01T00:00:01Z",
+          "original_app_user_id": "compatibility-user",
+          "original_application_version": "1.0",
+          "subscriptions": {
+            "premium": {
+              "purchase_date": "1970-01-01T00:01:40Z",
+              "original_purchase_date": "1970-01-01T00:01:40Z",
+              "expires_date": "2024-06-02T00:00:00Z",
+              "store": "app_store",
+              "is_sandbox": false,
+              "period_type": "normal"
+            },
+            "monthly": {
+              "purchase_date": "1970-01-01T00:01:40Z",
+              "original_purchase_date": "1970-01-01T00:01:40Z",
+              "expires_date": "2024-06-02T00:00:00Z",
+              "store": "play_store",
+              "is_sandbox": true,
+              "period_type": "normal"
+            }
+          },
+          "non_subscriptions": {},
+          "entitlements": {}
+        }
+      },
+      "subscriber_dimensions": {
+        "dimensions": {
+          "country": null,
+          "sdk_flavor": null,
+          "last_seen_at": null,
+          "subscription_status": "active",
+          "total_renewals": 1,
+          "total_spent": 0,
+          "first_purchase_at": 100000,
+          "most_recent_purchase_at": 100000,
+          "most_recent_renewal_at": 100000,
+          "latest_expiration_at": 1717286400000,
+          "trial_start_at": null,
+          "trial_end_at": null,
+          "subscription_opt_out_at": null,
+          "trial_opt_out_at": null,
+          "latest_product_identifier": "premium",
+          "latest_offer": null,
+          "latest_store": "app_store",
+          "is_rc_promo": false,
+          "latest_ownership_type": "PURCHASED",
+          "latest_purchased_offering": null,
+          "price_experiment_id": null,
+          "price_experiment_variant": null,
+          "latest_auto_renew_intent": false,
+          "latest_offer_type": "no_offer",
+          "latest_store_country": null,
+          "total_ad_impressions": null,
+          "total_ad_revenue": null,
+          "total_rewarded_ad_completions": null,
+          "last_ad_impression_at": null,
+          "last_rewarded_ad_completion_at": null
+        },
+        "as_of": 350000
+      }
+    },
+    "active_store_one_time_purchase": {
+      "app_user_id": "compatibility-user",
+      "evaluated_at": 1717200000,
+      "device": {
+        "app_version": "1.0.0",
+        "platform": "ios",
+        "platform_version": [
+          26,
+          0,
+          0
+        ],
+        "sdk_version": "10.0.0",
+        "locale": null
+      },
+      "store_country": null,
+      "attributes": {},
+      "customer_info": {
+        "request_date": "2024-06-01T00:00:00+00:00",
+        "subscriber": {
+          "first_seen": "1970-01-01T00:00:01Z",
+          "original_app_user_id": "compatibility-user",
+          "original_application_version": "1.0",
+          "subscriptions": {},
+          "non_subscriptions": {
+            "lifetime": [
+              {
+                "id": "0",
+                "purchase_date": "2024-05-31T00:00:00Z",
+                "store": "app_store",
+                "is_sandbox": false
+              }
+            ]
+          },
+          "entitlements": {}
+        }
+      },
+      "subscriber_dimensions": {
+        "dimensions": {
+          "country": null,
+          "sdk_flavor": null,
+          "last_seen_at": null,
+          "subscription_status": null,
+          "total_renewals": 0,
+          "total_spent": 0,
+          "first_purchase_at": 1717113600000,
+          "most_recent_purchase_at": 1717113600000,
+          "most_recent_renewal_at": null,
+          "latest_expiration_at": null,
+          "trial_start_at": null,
+          "trial_end_at": null,
+          "subscription_opt_out_at": null,
+          "trial_opt_out_at": null,
+          "latest_product_identifier": "lifetime",
+          "latest_offer": null,
+          "latest_store": "app_store",
+          "is_rc_promo": false,
+          "latest_ownership_type": "PURCHASED",
+          "latest_purchased_offering": null,
+          "price_experiment_id": null,
+          "price_experiment_variant": null,
+          "latest_auto_renew_intent": false,
+          "latest_offer_type": "no_offer",
+          "latest_store_country": null,
+          "total_ad_impressions": null,
+          "total_ad_revenue": null,
+          "total_rewarded_ad_completions": null,
+          "last_ad_impression_at": null,
+          "last_rewarded_ad_completion_at": null
+        },
+        "as_of": 0
+      }
+    },
+    "intro_offer": {
+      "app_user_id": "compatibility-user",
+      "evaluated_at": 1717200000,
+      "device": {
+        "app_version": "1.0.0",
+        "platform": "ios",
+        "platform_version": [
+          26,
+          0,
+          0
+        ],
+        "sdk_version": "10.0.0",
+        "locale": null
+      },
+      "store_country": null,
+      "attributes": {},
+      "customer_info": {
+        "request_date": "2024-06-01T00:00:00+00:00",
+        "subscriber": {
+          "first_seen": "1970-01-01T00:00:01Z",
+          "original_app_user_id": "compatibility-user",
+          "original_application_version": "1.0",
+          "subscriptions": {
+            "premium": {
+              "purchase_date": "1970-01-01T00:01:40Z",
+              "original_purchase_date": "1970-01-01T00:01:40Z",
+              "expires_date": "1970-01-01T00:05:00Z",
+              "store": "app_store",
+              "is_sandbox": false,
+              "period_type": "normal"
+            }
+          },
+          "non_subscriptions": {},
+          "entitlements": {}
+        }
+      },
+      "subscriber_dimensions": {
+        "dimensions": {
+          "country": null,
+          "sdk_flavor": null,
+          "last_seen_at": null,
+          "subscription_status": "expired",
+          "total_renewals": 1,
+          "total_spent": 0,
+          "first_purchase_at": 100000,
+          "most_recent_purchase_at": 100000,
+          "most_recent_renewal_at": 100000,
+          "latest_expiration_at": 300000,
+          "trial_start_at": null,
+          "trial_end_at": null,
+          "subscription_opt_out_at": null,
+          "trial_opt_out_at": null,
+          "latest_product_identifier": "premium",
+          "latest_offer": "Intro Offer (premium)",
+          "latest_store": "app_store",
+          "is_rc_promo": false,
+          "latest_ownership_type": "PURCHASED",
+          "latest_purchased_offering": "welcome",
+          "price_experiment_id": null,
+          "price_experiment_variant": null,
+          "latest_auto_renew_intent": false,
+          "latest_offer_type": "introductory_offer",
+          "latest_store_country": null,
+          "total_ad_impressions": null,
+          "total_ad_revenue": null,
+          "total_rewarded_ad_completions": null,
+          "last_ad_impression_at": null,
+          "last_rewarded_ad_completion_at": null
+        },
+        "as_of": 350000
+      }
+    },
+    "latest_promo": {
+      "app_user_id": "compatibility-user",
+      "evaluated_at": 1717200000,
+      "device": {
+        "app_version": "1.0.0",
+        "platform": "ios",
+        "platform_version": [
+          26,
+          0,
+          0
+        ],
+        "sdk_version": "10.0.0",
+        "locale": null
+      },
+      "store_country": null,
+      "attributes": {},
+      "customer_info": {
+        "request_date": "2024-06-01T00:00:00+00:00",
+        "subscriber": {
+          "first_seen": "1970-01-01T00:00:01Z",
+          "original_app_user_id": "compatibility-user",
+          "original_application_version": "1.0",
+          "subscriptions": {
+            "premium": {
+              "purchase_date": "1970-01-01T00:01:40Z",
+              "original_purchase_date": "1970-01-01T00:01:40Z",
+              "expires_date": "1970-01-01T00:05:00Z",
+              "store": "app_store",
+              "is_sandbox": false,
+              "period_type": "normal"
+            }
+          },
+          "non_subscriptions": {
+            "lifetime": [
+              {
+                "id": "0",
+                "purchase_date": "1970-01-01T00:06:40Z",
+                "store": "app_store",
+                "is_sandbox": false
+              }
+            ]
+          },
+          "entitlements": {}
+        }
+      },
+      "subscriber_dimensions": {
+        "dimensions": {
+          "country": null,
+          "sdk_flavor": null,
+          "last_seen_at": null,
+          "subscription_status": "expired",
+          "total_renewals": 1,
+          "total_spent": 0,
+          "first_purchase_at": 100000,
+          "most_recent_purchase_at": 400000,
+          "most_recent_renewal_at": 100000,
+          "latest_expiration_at": 300000,
+          "trial_start_at": null,
+          "trial_end_at": null,
+          "subscription_opt_out_at": null,
+          "trial_opt_out_at": null,
+          "latest_product_identifier": "lifetime",
+          "latest_offer": "spring (lifetime)",
+          "latest_store": "app_store",
+          "is_rc_promo": false,
+          "latest_ownership_type": "PURCHASED",
+          "latest_purchased_offering": "seasonal",
+          "price_experiment_id": null,
+          "price_experiment_variant": null,
+          "latest_auto_renew_intent": false,
+          "latest_offer_type": "promotional_offer",
+          "latest_store_country": null,
+          "total_ad_impressions": null,
+          "total_ad_revenue": null,
+          "total_rewarded_ad_completions": null,
+          "last_ad_impression_at": null,
+          "last_rewarded_ad_completion_at": null
+        },
+        "as_of": 400000
+      }
+    },
+    "latest_intro": {
+      "app_user_id": "compatibility-user",
+      "evaluated_at": 1717200000,
+      "device": {
+        "app_version": "1.0.0",
+        "platform": "ios",
+        "platform_version": [
+          26,
+          0,
+          0
+        ],
+        "sdk_version": "10.0.0",
+        "locale": null
+      },
+      "store_country": null,
+      "attributes": {},
+      "customer_info": {
+        "request_date": "2024-06-01T00:00:00+00:00",
+        "subscriber": {
+          "first_seen": "1970-01-01T00:00:01Z",
+          "original_app_user_id": "compatibility-user",
+          "original_application_version": "1.0",
+          "subscriptions": {
+            "premium": {
+              "purchase_date": "1970-01-01T00:01:40Z",
+              "original_purchase_date": "1970-01-01T00:01:40Z",
+              "expires_date": "2024-06-02T00:00:00Z",
+              "store": "app_store",
+              "is_sandbox": false,
+              "period_type": "normal"
+            }
+          },
+          "non_subscriptions": {
+            "lifetime": [
+              {
+                "id": "0",
+                "purchase_date": "1970-01-01T00:00:50Z",
+                "store": "app_store",
+                "is_sandbox": false
+              }
+            ]
+          },
+          "entitlements": {}
+        }
+      },
+      "subscriber_dimensions": {
+        "dimensions": {
+          "country": null,
+          "sdk_flavor": null,
+          "last_seen_at": null,
+          "subscription_status": "active",
+          "total_renewals": 1,
+          "total_spent": 0,
+          "first_purchase_at": 50000,
+          "most_recent_purchase_at": 100000,
+          "most_recent_renewal_at": 100000,
+          "latest_expiration_at": 1717286400000,
+          "trial_start_at": null,
+          "trial_end_at": null,
+          "subscription_opt_out_at": null,
+          "trial_opt_out_at": null,
+          "latest_product_identifier": "premium",
+          "latest_offer": "Intro Offer (premium)",
+          "latest_store": "app_store",
+          "is_rc_promo": false,
+          "latest_ownership_type": "PURCHASED",
+          "latest_purchased_offering": "welcome",
+          "price_experiment_id": null,
+          "price_experiment_variant": null,
+          "latest_auto_renew_intent": false,
+          "latest_offer_type": "introductory_offer",
+          "latest_store_country": null,
+          "total_ad_impressions": null,
+          "total_ad_revenue": null,
+          "total_rewarded_ad_completions": null,
+          "last_ad_impression_at": null,
+          "last_rewarded_ad_completion_at": null
+        },
+        "as_of": 350000
+      }
+    },
+    "purchase_history": {
+      "app_user_id": "compatibility-user",
+      "evaluated_at": 1717200000,
+      "device": {
+        "app_version": "1.0.0",
+        "platform": "ios",
+        "platform_version": [
+          26,
+          0,
+          0
+        ],
+        "sdk_version": "10.0.0",
+        "locale": null
+      },
+      "store_country": null,
+      "attributes": {},
+      "customer_info": {
+        "request_date": "2024-06-01T00:00:00+00:00",
+        "subscriber": {
+          "first_seen": "1970-01-01T00:00:01Z",
+          "original_app_user_id": "compatibility-user",
+          "original_application_version": "1.0",
+          "subscriptions": {
+            "premium": {
+              "purchase_date": "2024-05-25T00:00:00Z",
+              "original_purchase_date": "2024-05-18T00:00:00Z",
+              "expires_date": "2024-05-29T00:00:00Z",
+              "store": "app_store",
+              "is_sandbox": false,
+              "period_type": "normal"
+            }
+          },
+          "non_subscriptions": {
+            "lifetime": [
+              {
+                "id": "0",
+                "purchase_date": "2024-05-30T00:00:00Z",
+                "store": "app_store",
+                "is_sandbox": false
+              }
+            ]
+          },
+          "entitlements": {}
+        }
+      },
+      "subscriber_dimensions": {
+        "dimensions": {
+          "country": null,
+          "sdk_flavor": null,
+          "last_seen_at": null,
+          "subscription_status": "expired",
+          "total_renewals": 1,
+          "total_spent": 0,
+          "first_purchase_at": 1715990400000,
+          "most_recent_purchase_at": 1717027200000,
+          "most_recent_renewal_at": 1716595200000,
+          "latest_expiration_at": 1716940800000,
+          "trial_start_at": null,
+          "trial_end_at": null,
+          "subscription_opt_out_at": null,
+          "trial_opt_out_at": null,
+          "latest_product_identifier": "lifetime",
+          "latest_offer": null,
+          "latest_store": "app_store",
+          "is_rc_promo": false,
+          "latest_ownership_type": "PURCHASED",
+          "latest_purchased_offering": null,
+          "price_experiment_id": null,
+          "price_experiment_variant": null,
+          "latest_auto_renew_intent": false,
+          "latest_offer_type": "no_offer",
+          "latest_store_country": null,
+          "total_ad_impressions": null,
+          "total_ad_revenue": null,
+          "total_rewarded_ad_completions": null,
+          "last_ad_impression_at": null,
+          "last_rewarded_ad_completion_at": null
+        },
+        "as_of": 1717027200000
+      }
+    },
+    "one_time_only": {
+      "app_user_id": "compatibility-user",
+      "evaluated_at": 1717200000,
+      "device": {
+        "app_version": "1.0.0",
+        "platform": "ios",
+        "platform_version": [
+          26,
+          0,
+          0
+        ],
+        "sdk_version": "10.0.0",
+        "locale": null
+      },
+      "store_country": null,
+      "attributes": {},
+      "customer_info": {
+        "request_date": "2024-06-01T00:00:00+00:00",
+        "subscriber": {
+          "first_seen": "1970-01-01T00:00:01Z",
+          "original_app_user_id": "compatibility-user",
+          "original_application_version": "1.0",
+          "subscriptions": {},
+          "non_subscriptions": {
+            "lifetime": [
+              {
+                "id": "0",
+                "purchase_date": "2024-05-25T00:00:00Z",
+                "store": "app_store",
+                "is_sandbox": false
+              }
+            ]
+          },
+          "entitlements": {}
+        }
+      },
+      "subscriber_dimensions": {
+        "dimensions": {
+          "country": null,
+          "sdk_flavor": null,
+          "last_seen_at": null,
+          "subscription_status": null,
+          "total_renewals": 0,
+          "total_spent": 0,
+          "first_purchase_at": 1716595200000,
+          "most_recent_purchase_at": 1716595200000,
+          "most_recent_renewal_at": null,
+          "latest_expiration_at": null,
+          "trial_start_at": null,
+          "trial_end_at": null,
+          "subscription_opt_out_at": null,
+          "trial_opt_out_at": null,
+          "latest_product_identifier": "lifetime",
+          "latest_offer": null,
+          "latest_store": "app_store",
+          "is_rc_promo": false,
+          "latest_ownership_type": "PURCHASED",
+          "latest_purchased_offering": null,
+          "price_experiment_id": null,
+          "price_experiment_variant": null,
+          "latest_auto_renew_intent": false,
+          "latest_offer_type": "no_offer",
+          "latest_store_country": null,
+          "total_ad_impressions": null,
+          "total_ad_revenue": null,
+          "total_rewarded_ad_completions": null,
+          "last_ad_impression_at": null,
+          "last_rewarded_ad_completion_at": null
+        },
+        "as_of": 1716595200000
+      }
+    },
+    "older_trial": {
+      "app_user_id": "compatibility-user",
+      "evaluated_at": 1717200000,
+      "device": {
+        "app_version": "1.0.0",
+        "platform": "ios",
+        "platform_version": [
+          26,
+          0,
+          0
+        ],
+        "sdk_version": "10.0.0",
+        "locale": null
+      },
+      "store_country": null,
+      "attributes": {},
+      "customer_info": {
+        "request_date": "2024-06-01T00:00:00+00:00",
+        "subscriber": {
+          "first_seen": "1970-01-01T00:00:01Z",
+          "original_app_user_id": "compatibility-user",
+          "original_application_version": "1.0",
+          "subscriptions": {
+            "monthly": {
+              "purchase_date": "2024-05-04T00:00:00Z",
+              "original_purchase_date": "2024-05-04T00:00:00Z",
+              "expires_date": "2024-05-18T00:00:00Z",
+              "unsubscribe_detected_at": "2024-05-11T00:00:00Z",
+              "store": "app_store",
+              "is_sandbox": false,
+              "period_type": "trial"
+            }
+          },
+          "non_subscriptions": {},
+          "entitlements": {}
+        }
+      },
+      "subscriber_dimensions": {
+        "dimensions": {
+          "country": null,
+          "sdk_flavor": null,
+          "last_seen_at": null,
+          "subscription_status": "expired",
+          "total_renewals": 0,
+          "total_spent": 0,
+          "first_purchase_at": 1714780800000,
+          "most_recent_purchase_at": 1714780800000,
+          "most_recent_renewal_at": null,
+          "latest_expiration_at": 1715990400000,
+          "trial_start_at": 1714780800000,
+          "trial_end_at": 1715990400000,
+          "subscription_opt_out_at": 1715385600000,
+          "trial_opt_out_at": 1715385600000,
+          "latest_product_identifier": "monthly",
+          "latest_offer": null,
+          "latest_store": "app_store",
+          "is_rc_promo": false,
+          "latest_ownership_type": "PURCHASED",
+          "latest_purchased_offering": null,
+          "price_experiment_id": null,
+          "price_experiment_variant": null,
+          "latest_auto_renew_intent": false,
+          "latest_offer_type": "no_offer",
+          "latest_store_country": null,
+          "total_ad_impressions": null,
+          "total_ad_revenue": null,
+          "total_rewarded_ad_completions": null,
+          "last_ad_impression_at": null,
+          "last_rewarded_ad_completion_at": null
+        },
+        "as_of": 1715990400000
+      }
+    },
+    "latest_trial_cancelled": {
+      "app_user_id": "compatibility-user",
+      "evaluated_at": 1717200000,
+      "device": {
+        "app_version": "1.0.0",
+        "platform": "ios",
+        "platform_version": [
+          26,
+          0,
+          0
+        ],
+        "sdk_version": "10.0.0",
+        "locale": null
+      },
+      "store_country": null,
+      "attributes": {},
+      "customer_info": {
+        "request_date": "2024-06-01T00:00:00+00:00",
+        "subscriber": {
+          "first_seen": "1970-01-01T00:00:01Z",
+          "original_app_user_id": "compatibility-user",
+          "original_application_version": "1.0",
+          "subscriptions": {
+            "annual": {
+              "purchase_date": "2024-05-18T00:00:00Z",
+              "original_purchase_date": "2024-05-18T00:00:00Z",
+              "expires_date": "2024-05-30T00:00:00Z",
+              "unsubscribe_detected_at": "2024-05-25T00:00:00Z",
+              "store": "app_store",
+              "is_sandbox": false,
+              "period_type": "trial"
+            },
+            "monthly": {
+              "purchase_date": "2024-05-04T00:00:00Z",
+              "original_purchase_date": "2024-05-04T00:00:00Z",
+              "expires_date": "2024-05-18T00:00:00Z",
+              "unsubscribe_detected_at": "2024-05-11T00:00:00Z",
+              "store": "app_store",
+              "is_sandbox": false,
+              "period_type": "trial"
+            }
+          },
+          "non_subscriptions": {},
+          "entitlements": {}
+        }
+      },
+      "subscriber_dimensions": {
+        "dimensions": {
+          "country": null,
+          "sdk_flavor": null,
+          "last_seen_at": null,
+          "subscription_status": "expired",
+          "total_renewals": 0,
+          "total_spent": 0,
+          "first_purchase_at": 1714780800000,
+          "most_recent_purchase_at": 1715990400000,
+          "most_recent_renewal_at": null,
+          "latest_expiration_at": 1717027200000,
+          "trial_start_at": 1715990400000,
+          "trial_end_at": 1717027200000,
+          "subscription_opt_out_at": 1716595200000,
+          "trial_opt_out_at": 1716595200000,
+          "latest_product_identifier": "annual",
+          "latest_offer": null,
+          "latest_store": "app_store",
+          "is_rc_promo": false,
+          "latest_ownership_type": "PURCHASED",
+          "latest_purchased_offering": null,
+          "price_experiment_id": null,
+          "price_experiment_variant": null,
+          "latest_auto_renew_intent": false,
+          "latest_offer_type": "no_offer",
+          "latest_store_country": null,
+          "total_ad_impressions": null,
+          "total_ad_revenue": null,
+          "total_rewarded_ad_completions": null,
+          "last_ad_impression_at": null,
+          "last_rewarded_ad_completion_at": null
+        },
+        "as_of": 1717027200000
+      }
+    },
+    "cancelled_after_latest_trial": {
+      "app_user_id": "compatibility-user",
+      "evaluated_at": 1717200000,
+      "device": {
+        "app_version": "1.0.0",
+        "platform": "ios",
+        "platform_version": [
+          26,
+          0,
+          0
+        ],
+        "sdk_version": "10.0.0",
+        "locale": null
+      },
+      "store_country": null,
+      "attributes": {},
+      "customer_info": {
+        "request_date": "2024-06-01T00:00:00+00:00",
+        "subscriber": {
+          "first_seen": "1970-01-01T00:00:01Z",
+          "original_app_user_id": "compatibility-user",
+          "original_application_version": "1.0",
+          "subscriptions": {
+            "monthly": {
+              "purchase_date": "2024-05-04T00:00:00Z",
+              "original_purchase_date": "2024-05-04T00:00:00Z",
+              "expires_date": "2024-05-18T00:00:00Z",
+              "unsubscribe_detected_at": "2024-05-11T00:00:00Z",
+              "store": "app_store",
+              "is_sandbox": false,
+              "period_type": "trial"
+            },
+            "annual": {
+              "purchase_date": "2024-05-25T00:00:00Z",
+              "original_purchase_date": "2024-05-25T00:00:00Z",
+              "expires_date": "2024-05-30T00:00:00Z",
+              "unsubscribe_detected_at": "2024-05-31T00:00:00Z",
+              "store": "app_store",
+              "is_sandbox": false,
+              "period_type": "trial"
+            }
+          },
+          "non_subscriptions": {},
+          "entitlements": {}
+        }
+      },
+      "subscriber_dimensions": {
+        "dimensions": {
+          "country": null,
+          "sdk_flavor": null,
+          "last_seen_at": null,
+          "subscription_status": "expired",
+          "total_renewals": 0,
+          "total_spent": 0,
+          "first_purchase_at": 1714780800000,
+          "most_recent_purchase_at": 1716595200000,
+          "most_recent_renewal_at": null,
+          "latest_expiration_at": 1717027200000,
+          "trial_start_at": 1716595200000,
+          "trial_end_at": 1717027200000,
+          "subscription_opt_out_at": 1717113600000,
+          "trial_opt_out_at": null,
+          "latest_product_identifier": "annual",
+          "latest_offer": null,
+          "latest_store": "app_store",
+          "is_rc_promo": false,
+          "latest_ownership_type": "PURCHASED",
+          "latest_purchased_offering": null,
+          "price_experiment_id": null,
+          "price_experiment_variant": null,
+          "latest_auto_renew_intent": false,
+          "latest_offer_type": "no_offer",
+          "latest_store_country": null,
+          "total_ad_impressions": null,
+          "total_ad_revenue": null,
+          "total_rewarded_ad_completions": null,
+          "last_ad_impression_at": null,
+          "last_rewarded_ad_completion_at": null
+        },
+        "as_of": 1717113600000
       }
     }
   }

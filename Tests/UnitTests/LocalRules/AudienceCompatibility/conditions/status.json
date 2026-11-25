@@ -1,0 +1,901 @@
+{
+  "schema_version": 1,
+  "cases": [
+    {
+      "id": "status/is/active/new",
+      "field": "status",
+      "operator": "is",
+      "profile": "new",
+      "predicate": "{\"==\": [{\"var\": \"subscription_status\"}, \"active\"]}",
+      "expected": false
+    },
+    {
+      "id": "status/is/active/renewed",
+      "field": "status",
+      "operator": "is",
+      "profile": "renewed",
+      "predicate": "{\"==\": [{\"var\": \"subscription_status\"}, \"active\"]}",
+      "expected": false
+    },
+    {
+      "id": "status/is/active/first_purchase",
+      "field": "status",
+      "operator": "is",
+      "profile": "first_purchase",
+      "predicate": "{\"==\": [{\"var\": \"subscription_status\"}, \"active\"]}",
+      "expected": false
+    },
+    {
+      "id": "status/is/active/unavailable",
+      "field": "status",
+      "operator": "is",
+      "profile": "unavailable",
+      "predicate": "{\"==\": [{\"var\": \"subscription_status\"}, \"active\"]}",
+      "expected": false
+    },
+    {
+      "id": "status/is/active/active_store_app_store",
+      "field": "status",
+      "operator": "is",
+      "profile": "active_store_app_store",
+      "predicate": "{\"==\": [{\"var\": \"subscription_status\"}, \"active\"]}",
+      "expected": true
+    },
+    {
+      "id": "status/is/active/active_store_sandbox_only",
+      "field": "status",
+      "operator": "is",
+      "profile": "active_store_sandbox_only",
+      "predicate": "{\"==\": [{\"var\": \"subscription_status\"}, \"active\"]}",
+      "expected": false
+    },
+    {
+      "id": "status/is/active/active_store_grace_period",
+      "field": "status",
+      "operator": "is",
+      "profile": "active_store_grace_period",
+      "predicate": "{\"==\": [{\"var\": \"subscription_status\"}, \"active\"]}",
+      "expected": false
+    },
+    {
+      "id": "status/is/expired/new",
+      "field": "status",
+      "operator": "is",
+      "profile": "new",
+      "predicate": "{\"==\": [{\"var\": \"subscription_status\"}, \"expired\"]}",
+      "expected": false
+    },
+    {
+      "id": "status/is/expired/renewed",
+      "field": "status",
+      "operator": "is",
+      "profile": "renewed",
+      "predicate": "{\"==\": [{\"var\": \"subscription_status\"}, \"expired\"]}",
+      "expected": true
+    },
+    {
+      "id": "status/is/expired/first_purchase",
+      "field": "status",
+      "operator": "is",
+      "profile": "first_purchase",
+      "predicate": "{\"==\": [{\"var\": \"subscription_status\"}, \"expired\"]}",
+      "expected": true
+    },
+    {
+      "id": "status/is/expired/unavailable",
+      "field": "status",
+      "operator": "is",
+      "profile": "unavailable",
+      "predicate": "{\"==\": [{\"var\": \"subscription_status\"}, \"expired\"]}",
+      "expected": false
+    },
+    {
+      "id": "status/is/expired/active_store_app_store",
+      "field": "status",
+      "operator": "is",
+      "profile": "active_store_app_store",
+      "predicate": "{\"==\": [{\"var\": \"subscription_status\"}, \"expired\"]}",
+      "expected": false
+    },
+    {
+      "id": "status/is/expired/active_store_sandbox_only",
+      "field": "status",
+      "operator": "is",
+      "profile": "active_store_sandbox_only",
+      "predicate": "{\"==\": [{\"var\": \"subscription_status\"}, \"expired\"]}",
+      "expected": false
+    },
+    {
+      "id": "status/is/expired/active_store_grace_period",
+      "field": "status",
+      "operator": "is",
+      "profile": "active_store_grace_period",
+      "predicate": "{\"==\": [{\"var\": \"subscription_status\"}, \"expired\"]}",
+      "expected": false
+    },
+    {
+      "id": "status/is/in_grace_period/new",
+      "field": "status",
+      "operator": "is",
+      "profile": "new",
+      "predicate": "{\"==\": [{\"var\": \"subscription_status\"}, \"in_grace_period\"]}",
+      "expected": false
+    },
+    {
+      "id": "status/is/in_grace_period/renewed",
+      "field": "status",
+      "operator": "is",
+      "profile": "renewed",
+      "predicate": "{\"==\": [{\"var\": \"subscription_status\"}, \"in_grace_period\"]}",
+      "expected": false
+    },
+    {
+      "id": "status/is/in_grace_period/first_purchase",
+      "field": "status",
+      "operator": "is",
+      "profile": "first_purchase",
+      "predicate": "{\"==\": [{\"var\": \"subscription_status\"}, \"in_grace_period\"]}",
+      "expected": false
+    },
+    {
+      "id": "status/is/in_grace_period/unavailable",
+      "field": "status",
+      "operator": "is",
+      "profile": "unavailable",
+      "predicate": "{\"==\": [{\"var\": \"subscription_status\"}, \"in_grace_period\"]}",
+      "expected": false
+    },
+    {
+      "id": "status/is/in_grace_period/active_store_app_store",
+      "field": "status",
+      "operator": "is",
+      "profile": "active_store_app_store",
+      "predicate": "{\"==\": [{\"var\": \"subscription_status\"}, \"in_grace_period\"]}",
+      "expected": false
+    },
+    {
+      "id": "status/is/in_grace_period/active_store_sandbox_only",
+      "field": "status",
+      "operator": "is",
+      "profile": "active_store_sandbox_only",
+      "predicate": "{\"==\": [{\"var\": \"subscription_status\"}, \"in_grace_period\"]}",
+      "expected": false
+    },
+    {
+      "id": "status/is/in_grace_period/active_store_grace_period",
+      "field": "status",
+      "operator": "is",
+      "profile": "active_store_grace_period",
+      "predicate": "{\"==\": [{\"var\": \"subscription_status\"}, \"in_grace_period\"]}",
+      "expected": true
+    },
+    {
+      "id": "status/isNot/active/new",
+      "field": "status",
+      "operator": "isNot",
+      "profile": "new",
+      "predicate": "{\"!=\": [{\"var\": [\"subscription_status\", null]}, \"active\"]}",
+      "expected": true
+    },
+    {
+      "id": "status/isNot/active/renewed",
+      "field": "status",
+      "operator": "isNot",
+      "profile": "renewed",
+      "predicate": "{\"!=\": [{\"var\": [\"subscription_status\", null]}, \"active\"]}",
+      "expected": true
+    },
+    {
+      "id": "status/isNot/active/first_purchase",
+      "field": "status",
+      "operator": "isNot",
+      "profile": "first_purchase",
+      "predicate": "{\"!=\": [{\"var\": [\"subscription_status\", null]}, \"active\"]}",
+      "expected": true
+    },
+    {
+      "id": "status/isNot/active/unavailable",
+      "field": "status",
+      "operator": "isNot",
+      "profile": "unavailable",
+      "predicate": "{\"!=\": [{\"var\": [\"subscription_status\", null]}, \"active\"]}",
+      "expected": true
+    },
+    {
+      "id": "status/isNot/active/active_store_app_store",
+      "field": "status",
+      "operator": "isNot",
+      "profile": "active_store_app_store",
+      "predicate": "{\"!=\": [{\"var\": [\"subscription_status\", null]}, \"active\"]}",
+      "expected": false
+    },
+    {
+      "id": "status/isNot/active/active_store_sandbox_only",
+      "field": "status",
+      "operator": "isNot",
+      "profile": "active_store_sandbox_only",
+      "predicate": "{\"!=\": [{\"var\": [\"subscription_status\", null]}, \"active\"]}",
+      "expected": true
+    },
+    {
+      "id": "status/isNot/active/active_store_grace_period",
+      "field": "status",
+      "operator": "isNot",
+      "profile": "active_store_grace_period",
+      "predicate": "{\"!=\": [{\"var\": [\"subscription_status\", null]}, \"active\"]}",
+      "expected": true
+    },
+    {
+      "id": "status/isNot/expired/new",
+      "field": "status",
+      "operator": "isNot",
+      "profile": "new",
+      "predicate": "{\"!=\": [{\"var\": [\"subscription_status\", null]}, \"expired\"]}",
+      "expected": true
+    },
+    {
+      "id": "status/isNot/expired/renewed",
+      "field": "status",
+      "operator": "isNot",
+      "profile": "renewed",
+      "predicate": "{\"!=\": [{\"var\": [\"subscription_status\", null]}, \"expired\"]}",
+      "expected": false
+    },
+    {
+      "id": "status/isNot/expired/first_purchase",
+      "field": "status",
+      "operator": "isNot",
+      "profile": "first_purchase",
+      "predicate": "{\"!=\": [{\"var\": [\"subscription_status\", null]}, \"expired\"]}",
+      "expected": false
+    },
+    {
+      "id": "status/isNot/expired/unavailable",
+      "field": "status",
+      "operator": "isNot",
+      "profile": "unavailable",
+      "predicate": "{\"!=\": [{\"var\": [\"subscription_status\", null]}, \"expired\"]}",
+      "expected": true
+    },
+    {
+      "id": "status/isNot/expired/active_store_app_store",
+      "field": "status",
+      "operator": "isNot",
+      "profile": "active_store_app_store",
+      "predicate": "{\"!=\": [{\"var\": [\"subscription_status\", null]}, \"expired\"]}",
+      "expected": true
+    },
+    {
+      "id": "status/isNot/expired/active_store_sandbox_only",
+      "field": "status",
+      "operator": "isNot",
+      "profile": "active_store_sandbox_only",
+      "predicate": "{\"!=\": [{\"var\": [\"subscription_status\", null]}, \"expired\"]}",
+      "expected": true
+    },
+    {
+      "id": "status/isNot/expired/active_store_grace_period",
+      "field": "status",
+      "operator": "isNot",
+      "profile": "active_store_grace_period",
+      "predicate": "{\"!=\": [{\"var\": [\"subscription_status\", null]}, \"expired\"]}",
+      "expected": true
+    },
+    {
+      "id": "status/isNot/in_grace_period/new",
+      "field": "status",
+      "operator": "isNot",
+      "profile": "new",
+      "predicate": "{\"!=\": [{\"var\": [\"subscription_status\", null]}, \"in_grace_period\"]}",
+      "expected": true
+    },
+    {
+      "id": "status/isNot/in_grace_period/renewed",
+      "field": "status",
+      "operator": "isNot",
+      "profile": "renewed",
+      "predicate": "{\"!=\": [{\"var\": [\"subscription_status\", null]}, \"in_grace_period\"]}",
+      "expected": true
+    },
+    {
+      "id": "status/isNot/in_grace_period/first_purchase",
+      "field": "status",
+      "operator": "isNot",
+      "profile": "first_purchase",
+      "predicate": "{\"!=\": [{\"var\": [\"subscription_status\", null]}, \"in_grace_period\"]}",
+      "expected": true
+    },
+    {
+      "id": "status/isNot/in_grace_period/unavailable",
+      "field": "status",
+      "operator": "isNot",
+      "profile": "unavailable",
+      "predicate": "{\"!=\": [{\"var\": [\"subscription_status\", null]}, \"in_grace_period\"]}",
+      "expected": true
+    },
+    {
+      "id": "status/isNot/in_grace_period/active_store_app_store",
+      "field": "status",
+      "operator": "isNot",
+      "profile": "active_store_app_store",
+      "predicate": "{\"!=\": [{\"var\": [\"subscription_status\", null]}, \"in_grace_period\"]}",
+      "expected": true
+    },
+    {
+      "id": "status/isNot/in_grace_period/active_store_sandbox_only",
+      "field": "status",
+      "operator": "isNot",
+      "profile": "active_store_sandbox_only",
+      "predicate": "{\"!=\": [{\"var\": [\"subscription_status\", null]}, \"in_grace_period\"]}",
+      "expected": true
+    },
+    {
+      "id": "status/isNot/in_grace_period/active_store_grace_period",
+      "field": "status",
+      "operator": "isNot",
+      "profile": "active_store_grace_period",
+      "predicate": "{\"!=\": [{\"var\": [\"subscription_status\", null]}, \"in_grace_period\"]}",
+      "expected": false
+    },
+    {
+      "id": "status/isAnyOf/active/new",
+      "field": "status",
+      "operator": "isAnyOf",
+      "profile": "new",
+      "predicate": "{\"in\": [{\"var\": \"subscription_status\"}, [\"active\"]]}",
+      "expected": false
+    },
+    {
+      "id": "status/isAnyOf/active/renewed",
+      "field": "status",
+      "operator": "isAnyOf",
+      "profile": "renewed",
+      "predicate": "{\"in\": [{\"var\": \"subscription_status\"}, [\"active\"]]}",
+      "expected": false
+    },
+    {
+      "id": "status/isAnyOf/active/first_purchase",
+      "field": "status",
+      "operator": "isAnyOf",
+      "profile": "first_purchase",
+      "predicate": "{\"in\": [{\"var\": \"subscription_status\"}, [\"active\"]]}",
+      "expected": false
+    },
+    {
+      "id": "status/isAnyOf/active/unavailable",
+      "field": "status",
+      "operator": "isAnyOf",
+      "profile": "unavailable",
+      "predicate": "{\"in\": [{\"var\": \"subscription_status\"}, [\"active\"]]}",
+      "expected": false
+    },
+    {
+      "id": "status/isAnyOf/active/active_store_app_store",
+      "field": "status",
+      "operator": "isAnyOf",
+      "profile": "active_store_app_store",
+      "predicate": "{\"in\": [{\"var\": \"subscription_status\"}, [\"active\"]]}",
+      "expected": true
+    },
+    {
+      "id": "status/isAnyOf/active/active_store_sandbox_only",
+      "field": "status",
+      "operator": "isAnyOf",
+      "profile": "active_store_sandbox_only",
+      "predicate": "{\"in\": [{\"var\": \"subscription_status\"}, [\"active\"]]}",
+      "expected": false
+    },
+    {
+      "id": "status/isAnyOf/active/active_store_grace_period",
+      "field": "status",
+      "operator": "isAnyOf",
+      "profile": "active_store_grace_period",
+      "predicate": "{\"in\": [{\"var\": \"subscription_status\"}, [\"active\"]]}",
+      "expected": false
+    },
+    {
+      "id": "status/isAnyOf/expired/new",
+      "field": "status",
+      "operator": "isAnyOf",
+      "profile": "new",
+      "predicate": "{\"in\": [{\"var\": \"subscription_status\"}, [\"expired\"]]}",
+      "expected": false
+    },
+    {
+      "id": "status/isAnyOf/expired/renewed",
+      "field": "status",
+      "operator": "isAnyOf",
+      "profile": "renewed",
+      "predicate": "{\"in\": [{\"var\": \"subscription_status\"}, [\"expired\"]]}",
+      "expected": true
+    },
+    {
+      "id": "status/isAnyOf/expired/first_purchase",
+      "field": "status",
+      "operator": "isAnyOf",
+      "profile": "first_purchase",
+      "predicate": "{\"in\": [{\"var\": \"subscription_status\"}, [\"expired\"]]}",
+      "expected": true
+    },
+    {
+      "id": "status/isAnyOf/expired/unavailable",
+      "field": "status",
+      "operator": "isAnyOf",
+      "profile": "unavailable",
+      "predicate": "{\"in\": [{\"var\": \"subscription_status\"}, [\"expired\"]]}",
+      "expected": false
+    },
+    {
+      "id": "status/isAnyOf/expired/active_store_app_store",
+      "field": "status",
+      "operator": "isAnyOf",
+      "profile": "active_store_app_store",
+      "predicate": "{\"in\": [{\"var\": \"subscription_status\"}, [\"expired\"]]}",
+      "expected": false
+    },
+    {
+      "id": "status/isAnyOf/expired/active_store_sandbox_only",
+      "field": "status",
+      "operator": "isAnyOf",
+      "profile": "active_store_sandbox_only",
+      "predicate": "{\"in\": [{\"var\": \"subscription_status\"}, [\"expired\"]]}",
+      "expected": false
+    },
+    {
+      "id": "status/isAnyOf/expired/active_store_grace_period",
+      "field": "status",
+      "operator": "isAnyOf",
+      "profile": "active_store_grace_period",
+      "predicate": "{\"in\": [{\"var\": \"subscription_status\"}, [\"expired\"]]}",
+      "expected": false
+    },
+    {
+      "id": "status/isAnyOf/in_grace_period/new",
+      "field": "status",
+      "operator": "isAnyOf",
+      "profile": "new",
+      "predicate": "{\"in\": [{\"var\": \"subscription_status\"}, [\"in_grace_period\"]]}",
+      "expected": false
+    },
+    {
+      "id": "status/isAnyOf/in_grace_period/renewed",
+      "field": "status",
+      "operator": "isAnyOf",
+      "profile": "renewed",
+      "predicate": "{\"in\": [{\"var\": \"subscription_status\"}, [\"in_grace_period\"]]}",
+      "expected": false
+    },
+    {
+      "id": "status/isAnyOf/in_grace_period/first_purchase",
+      "field": "status",
+      "operator": "isAnyOf",
+      "profile": "first_purchase",
+      "predicate": "{\"in\": [{\"var\": \"subscription_status\"}, [\"in_grace_period\"]]}",
+      "expected": false
+    },
+    {
+      "id": "status/isAnyOf/in_grace_period/unavailable",
+      "field": "status",
+      "operator": "isAnyOf",
+      "profile": "unavailable",
+      "predicate": "{\"in\": [{\"var\": \"subscription_status\"}, [\"in_grace_period\"]]}",
+      "expected": false
+    },
+    {
+      "id": "status/isAnyOf/in_grace_period/active_store_app_store",
+      "field": "status",
+      "operator": "isAnyOf",
+      "profile": "active_store_app_store",
+      "predicate": "{\"in\": [{\"var\": \"subscription_status\"}, [\"in_grace_period\"]]}",
+      "expected": false
+    },
+    {
+      "id": "status/isAnyOf/in_grace_period/active_store_sandbox_only",
+      "field": "status",
+      "operator": "isAnyOf",
+      "profile": "active_store_sandbox_only",
+      "predicate": "{\"in\": [{\"var\": \"subscription_status\"}, [\"in_grace_period\"]]}",
+      "expected": false
+    },
+    {
+      "id": "status/isAnyOf/in_grace_period/active_store_grace_period",
+      "field": "status",
+      "operator": "isAnyOf",
+      "profile": "active_store_grace_period",
+      "predicate": "{\"in\": [{\"var\": \"subscription_status\"}, [\"in_grace_period\"]]}",
+      "expected": true
+    },
+    {
+      "id": "status/isAnyOf/active,expired/new",
+      "field": "status",
+      "operator": "isAnyOf",
+      "profile": "new",
+      "predicate": "{\"in\": [{\"var\": \"subscription_status\"}, [\"active\", \"expired\"]]}",
+      "expected": false
+    },
+    {
+      "id": "status/isAnyOf/active,expired/renewed",
+      "field": "status",
+      "operator": "isAnyOf",
+      "profile": "renewed",
+      "predicate": "{\"in\": [{\"var\": \"subscription_status\"}, [\"active\", \"expired\"]]}",
+      "expected": true
+    },
+    {
+      "id": "status/isAnyOf/active,expired/first_purchase",
+      "field": "status",
+      "operator": "isAnyOf",
+      "profile": "first_purchase",
+      "predicate": "{\"in\": [{\"var\": \"subscription_status\"}, [\"active\", \"expired\"]]}",
+      "expected": true
+    },
+    {
+      "id": "status/isAnyOf/active,expired/unavailable",
+      "field": "status",
+      "operator": "isAnyOf",
+      "profile": "unavailable",
+      "predicate": "{\"in\": [{\"var\": \"subscription_status\"}, [\"active\", \"expired\"]]}",
+      "expected": false
+    },
+    {
+      "id": "status/isAnyOf/active,expired/active_store_app_store",
+      "field": "status",
+      "operator": "isAnyOf",
+      "profile": "active_store_app_store",
+      "predicate": "{\"in\": [{\"var\": \"subscription_status\"}, [\"active\", \"expired\"]]}",
+      "expected": true
+    },
+    {
+      "id": "status/isAnyOf/active,expired/active_store_sandbox_only",
+      "field": "status",
+      "operator": "isAnyOf",
+      "profile": "active_store_sandbox_only",
+      "predicate": "{\"in\": [{\"var\": \"subscription_status\"}, [\"active\", \"expired\"]]}",
+      "expected": false
+    },
+    {
+      "id": "status/isAnyOf/active,expired/active_store_grace_period",
+      "field": "status",
+      "operator": "isAnyOf",
+      "profile": "active_store_grace_period",
+      "predicate": "{\"in\": [{\"var\": \"subscription_status\"}, [\"active\", \"expired\"]]}",
+      "expected": false
+    },
+    {
+      "id": "status/isNotAnyOf/active/new",
+      "field": "status",
+      "operator": "isNotAnyOf",
+      "profile": "new",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"subscription_status\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"subscription_status\"}, [\"active\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "status/isNotAnyOf/active/renewed",
+      "field": "status",
+      "operator": "isNotAnyOf",
+      "profile": "renewed",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"subscription_status\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"subscription_status\"}, [\"active\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "status/isNotAnyOf/active/first_purchase",
+      "field": "status",
+      "operator": "isNotAnyOf",
+      "profile": "first_purchase",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"subscription_status\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"subscription_status\"}, [\"active\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "status/isNotAnyOf/active/unavailable",
+      "field": "status",
+      "operator": "isNotAnyOf",
+      "profile": "unavailable",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"subscription_status\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"subscription_status\"}, [\"active\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "status/isNotAnyOf/active/active_store_app_store",
+      "field": "status",
+      "operator": "isNotAnyOf",
+      "profile": "active_store_app_store",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"subscription_status\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"subscription_status\"}, [\"active\"]]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "status/isNotAnyOf/active/active_store_sandbox_only",
+      "field": "status",
+      "operator": "isNotAnyOf",
+      "profile": "active_store_sandbox_only",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"subscription_status\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"subscription_status\"}, [\"active\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "status/isNotAnyOf/active/active_store_grace_period",
+      "field": "status",
+      "operator": "isNotAnyOf",
+      "profile": "active_store_grace_period",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"subscription_status\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"subscription_status\"}, [\"active\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "status/isNotAnyOf/expired/new",
+      "field": "status",
+      "operator": "isNotAnyOf",
+      "profile": "new",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"subscription_status\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"subscription_status\"}, [\"expired\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "status/isNotAnyOf/expired/renewed",
+      "field": "status",
+      "operator": "isNotAnyOf",
+      "profile": "renewed",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"subscription_status\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"subscription_status\"}, [\"expired\"]]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "status/isNotAnyOf/expired/first_purchase",
+      "field": "status",
+      "operator": "isNotAnyOf",
+      "profile": "first_purchase",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"subscription_status\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"subscription_status\"}, [\"expired\"]]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "status/isNotAnyOf/expired/unavailable",
+      "field": "status",
+      "operator": "isNotAnyOf",
+      "profile": "unavailable",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"subscription_status\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"subscription_status\"}, [\"expired\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "status/isNotAnyOf/expired/active_store_app_store",
+      "field": "status",
+      "operator": "isNotAnyOf",
+      "profile": "active_store_app_store",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"subscription_status\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"subscription_status\"}, [\"expired\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "status/isNotAnyOf/expired/active_store_sandbox_only",
+      "field": "status",
+      "operator": "isNotAnyOf",
+      "profile": "active_store_sandbox_only",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"subscription_status\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"subscription_status\"}, [\"expired\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "status/isNotAnyOf/expired/active_store_grace_period",
+      "field": "status",
+      "operator": "isNotAnyOf",
+      "profile": "active_store_grace_period",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"subscription_status\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"subscription_status\"}, [\"expired\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "status/isNotAnyOf/in_grace_period/new",
+      "field": "status",
+      "operator": "isNotAnyOf",
+      "profile": "new",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"subscription_status\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"subscription_status\"}, [\"in_grace_period\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "status/isNotAnyOf/in_grace_period/renewed",
+      "field": "status",
+      "operator": "isNotAnyOf",
+      "profile": "renewed",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"subscription_status\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"subscription_status\"}, [\"in_grace_period\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "status/isNotAnyOf/in_grace_period/first_purchase",
+      "field": "status",
+      "operator": "isNotAnyOf",
+      "profile": "first_purchase",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"subscription_status\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"subscription_status\"}, [\"in_grace_period\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "status/isNotAnyOf/in_grace_period/unavailable",
+      "field": "status",
+      "operator": "isNotAnyOf",
+      "profile": "unavailable",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"subscription_status\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"subscription_status\"}, [\"in_grace_period\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "status/isNotAnyOf/in_grace_period/active_store_app_store",
+      "field": "status",
+      "operator": "isNotAnyOf",
+      "profile": "active_store_app_store",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"subscription_status\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"subscription_status\"}, [\"in_grace_period\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "status/isNotAnyOf/in_grace_period/active_store_sandbox_only",
+      "field": "status",
+      "operator": "isNotAnyOf",
+      "profile": "active_store_sandbox_only",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"subscription_status\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"subscription_status\"}, [\"in_grace_period\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "status/isNotAnyOf/in_grace_period/active_store_grace_period",
+      "field": "status",
+      "operator": "isNotAnyOf",
+      "profile": "active_store_grace_period",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"subscription_status\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"subscription_status\"}, [\"in_grace_period\"]]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "status/isNotAnyOf/active,expired/new",
+      "field": "status",
+      "operator": "isNotAnyOf",
+      "profile": "new",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"subscription_status\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"subscription_status\"}, [\"active\", \"expired\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "status/isNotAnyOf/active,expired/renewed",
+      "field": "status",
+      "operator": "isNotAnyOf",
+      "profile": "renewed",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"subscription_status\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"subscription_status\"}, [\"active\", \"expired\"]]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "status/isNotAnyOf/active,expired/first_purchase",
+      "field": "status",
+      "operator": "isNotAnyOf",
+      "profile": "first_purchase",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"subscription_status\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"subscription_status\"}, [\"active\", \"expired\"]]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "status/isNotAnyOf/active,expired/unavailable",
+      "field": "status",
+      "operator": "isNotAnyOf",
+      "profile": "unavailable",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"subscription_status\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"subscription_status\"}, [\"active\", \"expired\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "status/isNotAnyOf/active,expired/active_store_app_store",
+      "field": "status",
+      "operator": "isNotAnyOf",
+      "profile": "active_store_app_store",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"subscription_status\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"subscription_status\"}, [\"active\", \"expired\"]]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "status/isNotAnyOf/active,expired/active_store_sandbox_only",
+      "field": "status",
+      "operator": "isNotAnyOf",
+      "profile": "active_store_sandbox_only",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"subscription_status\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"subscription_status\"}, [\"active\", \"expired\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "status/isNotAnyOf/active,expired/active_store_grace_period",
+      "field": "status",
+      "operator": "isNotAnyOf",
+      "profile": "active_store_grace_period",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"subscription_status\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"subscription_status\"}, [\"active\", \"expired\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "status/isEmpty//new",
+      "field": "status",
+      "operator": "isEmpty",
+      "profile": "new",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"subscription_status\", null]}, null]}, {\"==\": [{\"var\": \"subscription_status\"}, \"\"]}]}",
+      "expected": true
+    },
+    {
+      "id": "status/isEmpty//renewed",
+      "field": "status",
+      "operator": "isEmpty",
+      "profile": "renewed",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"subscription_status\", null]}, null]}, {\"==\": [{\"var\": \"subscription_status\"}, \"\"]}]}",
+      "expected": false
+    },
+    {
+      "id": "status/isEmpty//first_purchase",
+      "field": "status",
+      "operator": "isEmpty",
+      "profile": "first_purchase",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"subscription_status\", null]}, null]}, {\"==\": [{\"var\": \"subscription_status\"}, \"\"]}]}",
+      "expected": false
+    },
+    {
+      "id": "status/isEmpty//unavailable",
+      "field": "status",
+      "operator": "isEmpty",
+      "profile": "unavailable",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"subscription_status\", null]}, null]}, {\"==\": [{\"var\": \"subscription_status\"}, \"\"]}]}",
+      "expected": true
+    },
+    {
+      "id": "status/isEmpty//active_store_app_store",
+      "field": "status",
+      "operator": "isEmpty",
+      "profile": "active_store_app_store",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"subscription_status\", null]}, null]}, {\"==\": [{\"var\": \"subscription_status\"}, \"\"]}]}",
+      "expected": false
+    },
+    {
+      "id": "status/isEmpty//active_store_sandbox_only",
+      "field": "status",
+      "operator": "isEmpty",
+      "profile": "active_store_sandbox_only",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"subscription_status\", null]}, null]}, {\"==\": [{\"var\": \"subscription_status\"}, \"\"]}]}",
+      "expected": true
+    },
+    {
+      "id": "status/isEmpty//active_store_grace_period",
+      "field": "status",
+      "operator": "isEmpty",
+      "profile": "active_store_grace_period",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"subscription_status\", null]}, null]}, {\"==\": [{\"var\": \"subscription_status\"}, \"\"]}]}",
+      "expected": false
+    },
+    {
+      "id": "status/isNotEmpty//new",
+      "field": "status",
+      "operator": "isNotEmpty",
+      "profile": "new",
+      "predicate": "{\"!\": [{\"or\": [{\"==\": [{\"var\": [\"subscription_status\", null]}, null]}, {\"==\": [{\"var\": \"subscription_status\"}, \"\"]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "status/isNotEmpty//renewed",
+      "field": "status",
+      "operator": "isNotEmpty",
+      "profile": "renewed",
+      "predicate": "{\"!\": [{\"or\": [{\"==\": [{\"var\": [\"subscription_status\", null]}, null]}, {\"==\": [{\"var\": \"subscription_status\"}, \"\"]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "status/isNotEmpty//first_purchase",
+      "field": "status",
+      "operator": "isNotEmpty",
+      "profile": "first_purchase",
+      "predicate": "{\"!\": [{\"or\": [{\"==\": [{\"var\": [\"subscription_status\", null]}, null]}, {\"==\": [{\"var\": \"subscription_status\"}, \"\"]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "status/isNotEmpty//unavailable",
+      "field": "status",
+      "operator": "isNotEmpty",
+      "profile": "unavailable",
+      "predicate": "{\"!\": [{\"or\": [{\"==\": [{\"var\": [\"subscription_status\", null]}, null]}, {\"==\": [{\"var\": \"subscription_status\"}, \"\"]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "status/isNotEmpty//active_store_app_store",
+      "field": "status",
+      "operator": "isNotEmpty",
+      "profile": "active_store_app_store",
+      "predicate": "{\"!\": [{\"or\": [{\"==\": [{\"var\": [\"subscription_status\", null]}, null]}, {\"==\": [{\"var\": \"subscription_status\"}, \"\"]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "status/isNotEmpty//active_store_sandbox_only",
+      "field": "status",
+      "operator": "isNotEmpty",
+      "profile": "active_store_sandbox_only",
+      "predicate": "{\"!\": [{\"or\": [{\"==\": [{\"var\": [\"subscription_status\", null]}, null]}, {\"==\": [{\"var\": \"subscription_status\"}, \"\"]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "status/isNotEmpty//active_store_grace_period",
+      "field": "status",
+      "operator": "isNotEmpty",
+      "profile": "active_store_grace_period",
+      "predicate": "{\"!\": [{\"or\": [{\"==\": [{\"var\": [\"subscription_status\", null]}, null]}, {\"==\": [{\"var\": \"subscription_status\"}, \"\"]}]}]}",
+      "expected": true
+    }
+  ]
+}

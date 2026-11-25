@@ -198,7 +198,7 @@
       "field": "locale",
       "operator": "contains",
       "profile": "new",
-      "predicate": "{\"in\": [{\"rc.lower\": \"en_us\"}, {\"rc.lower\": {\"var\": \"locale\"}}]}",
+      "predicate": "{\"in\": [{\"rc.lower\": \"en_us\"}, {\"rc.lower\": {\"if\": [{\"==\": [{\"var\": [\"locale\", null]}, null]}, \"\", {\"var\": [\"locale\", null]}]}}]}",
       "expected": false
     },
     {
@@ -206,7 +206,7 @@
       "field": "locale",
       "operator": "contains",
       "profile": "renewed",
-      "predicate": "{\"in\": [{\"rc.lower\": \"en_us\"}, {\"rc.lower\": {\"var\": \"locale\"}}]}",
+      "predicate": "{\"in\": [{\"rc.lower\": \"en_us\"}, {\"rc.lower\": {\"if\": [{\"==\": [{\"var\": [\"locale\", null]}, null]}, \"\", {\"var\": [\"locale\", null]}]}}]}",
       "expected": true
     },
     {
@@ -214,7 +214,7 @@
       "field": "locale",
       "operator": "contains",
       "profile": "first_purchase",
-      "predicate": "{\"in\": [{\"rc.lower\": \"en_us\"}, {\"rc.lower\": {\"var\": \"locale\"}}]}",
+      "predicate": "{\"in\": [{\"rc.lower\": \"en_us\"}, {\"rc.lower\": {\"if\": [{\"==\": [{\"var\": [\"locale\", null]}, null]}, \"\", {\"var\": [\"locale\", null]}]}}]}",
       "expected": true
     },
     {
@@ -222,7 +222,7 @@
       "field": "locale",
       "operator": "contains",
       "profile": "unavailable",
-      "predicate": "{\"in\": [{\"rc.lower\": \"en_us\"}, {\"rc.lower\": {\"var\": \"locale\"}}]}",
+      "predicate": "{\"in\": [{\"rc.lower\": \"en_us\"}, {\"rc.lower\": {\"if\": [{\"==\": [{\"var\": [\"locale\", null]}, null]}, \"\", {\"var\": [\"locale\", null]}]}}]}",
       "expected": false
     },
     {
@@ -230,7 +230,7 @@
       "field": "locale",
       "operator": "contains",
       "profile": "new",
-      "predicate": "{\"in\": [{\"rc.lower\": \"fr_fr\"}, {\"rc.lower\": {\"var\": \"locale\"}}]}",
+      "predicate": "{\"in\": [{\"rc.lower\": \"fr_fr\"}, {\"rc.lower\": {\"if\": [{\"==\": [{\"var\": [\"locale\", null]}, null]}, \"\", {\"var\": [\"locale\", null]}]}}]}",
       "expected": true
     },
     {
@@ -238,7 +238,7 @@
       "field": "locale",
       "operator": "contains",
       "profile": "renewed",
-      "predicate": "{\"in\": [{\"rc.lower\": \"fr_fr\"}, {\"rc.lower\": {\"var\": \"locale\"}}]}",
+      "predicate": "{\"in\": [{\"rc.lower\": \"fr_fr\"}, {\"rc.lower\": {\"if\": [{\"==\": [{\"var\": [\"locale\", null]}, null]}, \"\", {\"var\": [\"locale\", null]}]}}]}",
       "expected": false
     },
     {
@@ -246,7 +246,7 @@
       "field": "locale",
       "operator": "contains",
       "profile": "first_purchase",
-      "predicate": "{\"in\": [{\"rc.lower\": \"fr_fr\"}, {\"rc.lower\": {\"var\": \"locale\"}}]}",
+      "predicate": "{\"in\": [{\"rc.lower\": \"fr_fr\"}, {\"rc.lower\": {\"if\": [{\"==\": [{\"var\": [\"locale\", null]}, null]}, \"\", {\"var\": [\"locale\", null]}]}}]}",
       "expected": false
     },
     {
@@ -254,7 +254,7 @@
       "field": "locale",
       "operator": "contains",
       "profile": "unavailable",
-      "predicate": "{\"in\": [{\"rc.lower\": \"fr_fr\"}, {\"rc.lower\": {\"var\": \"locale\"}}]}",
+      "predicate": "{\"in\": [{\"rc.lower\": \"fr_fr\"}, {\"rc.lower\": {\"if\": [{\"==\": [{\"var\": [\"locale\", null]}, null]}, \"\", {\"var\": [\"locale\", null]}]}}]}",
       "expected": false
     },
     {
@@ -262,7 +262,7 @@
       "field": "locale",
       "operator": "contains",
       "profile": "new",
-      "predicate": "{\"in\": [{\"rc.lower\": \"de_de\"}, {\"rc.lower\": {\"var\": \"locale\"}}]}",
+      "predicate": "{\"in\": [{\"rc.lower\": \"de_de\"}, {\"rc.lower\": {\"if\": [{\"==\": [{\"var\": [\"locale\", null]}, null]}, \"\", {\"var\": [\"locale\", null]}]}}]}",
       "expected": false
     },
     {
@@ -270,7 +270,7 @@
       "field": "locale",
       "operator": "contains",
       "profile": "renewed",
-      "predicate": "{\"in\": [{\"rc.lower\": \"de_de\"}, {\"rc.lower\": {\"var\": \"locale\"}}]}",
+      "predicate": "{\"in\": [{\"rc.lower\": \"de_de\"}, {\"rc.lower\": {\"if\": [{\"==\": [{\"var\": [\"locale\", null]}, null]}, \"\", {\"var\": [\"locale\", null]}]}}]}",
       "expected": false
     },
     {
@@ -278,7 +278,7 @@
       "field": "locale",
       "operator": "contains",
       "profile": "first_purchase",
-      "predicate": "{\"in\": [{\"rc.lower\": \"de_de\"}, {\"rc.lower\": {\"var\": \"locale\"}}]}",
+      "predicate": "{\"in\": [{\"rc.lower\": \"de_de\"}, {\"rc.lower\": {\"if\": [{\"==\": [{\"var\": [\"locale\", null]}, null]}, \"\", {\"var\": [\"locale\", null]}]}}]}",
       "expected": false
     },
     {
@@ -286,7 +286,7 @@
       "field": "locale",
       "operator": "contains",
       "profile": "unavailable",
-      "predicate": "{\"in\": [{\"rc.lower\": \"de_de\"}, {\"rc.lower\": {\"var\": \"locale\"}}]}",
+      "predicate": "{\"in\": [{\"rc.lower\": \"de_de\"}, {\"rc.lower\": {\"if\": [{\"==\": [{\"var\": [\"locale\", null]}, null]}, \"\", {\"var\": [\"locale\", null]}]}}]}",
       "expected": false
     },
     {
@@ -294,7 +294,7 @@
       "field": "locale",
       "operator": "doesNotContain",
       "profile": "new",
-      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"locale\", null]}, null]}, {\"!\": [{\"in\": [{\"rc.lower\": \"en_us\"}, {\"rc.lower\": {\"var\": \"locale\"}}]}]}]}",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"locale\", null]}, null]}, {\"!\": [{\"in\": [{\"rc.lower\": \"en_us\"}, {\"rc.lower\": {\"if\": [{\"==\": [{\"var\": [\"locale\", null]}, null]}, \"\", {\"var\": [\"locale\", null]}]}}]}]}]}",
       "expected": true
     },
     {
@@ -302,7 +302,7 @@
       "field": "locale",
       "operator": "doesNotContain",
       "profile": "renewed",
-      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"locale\", null]}, null]}, {\"!\": [{\"in\": [{\"rc.lower\": \"en_us\"}, {\"rc.lower\": {\"var\": \"locale\"}}]}]}]}",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"locale\", null]}, null]}, {\"!\": [{\"in\": [{\"rc.lower\": \"en_us\"}, {\"rc.lower\": {\"if\": [{\"==\": [{\"var\": [\"locale\", null]}, null]}, \"\", {\"var\": [\"locale\", null]}]}}]}]}]}",
       "expected": false
     },
     {
@@ -310,7 +310,7 @@
       "field": "locale",
       "operator": "doesNotContain",
       "profile": "first_purchase",
-      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"locale\", null]}, null]}, {\"!\": [{\"in\": [{\"rc.lower\": \"en_us\"}, {\"rc.lower\": {\"var\": \"locale\"}}]}]}]}",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"locale\", null]}, null]}, {\"!\": [{\"in\": [{\"rc.lower\": \"en_us\"}, {\"rc.lower\": {\"if\": [{\"==\": [{\"var\": [\"locale\", null]}, null]}, \"\", {\"var\": [\"locale\", null]}]}}]}]}]}",
       "expected": false
     },
     {
@@ -318,7 +318,7 @@
       "field": "locale",
       "operator": "doesNotContain",
       "profile": "unavailable",
-      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"locale\", null]}, null]}, {\"!\": [{\"in\": [{\"rc.lower\": \"en_us\"}, {\"rc.lower\": {\"var\": \"locale\"}}]}]}]}",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"locale\", null]}, null]}, {\"!\": [{\"in\": [{\"rc.lower\": \"en_us\"}, {\"rc.lower\": {\"if\": [{\"==\": [{\"var\": [\"locale\", null]}, null]}, \"\", {\"var\": [\"locale\", null]}]}}]}]}]}",
       "expected": true
     },
     {
@@ -326,7 +326,7 @@
       "field": "locale",
       "operator": "doesNotContain",
       "profile": "new",
-      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"locale\", null]}, null]}, {\"!\": [{\"in\": [{\"rc.lower\": \"fr_fr\"}, {\"rc.lower\": {\"var\": \"locale\"}}]}]}]}",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"locale\", null]}, null]}, {\"!\": [{\"in\": [{\"rc.lower\": \"fr_fr\"}, {\"rc.lower\": {\"if\": [{\"==\": [{\"var\": [\"locale\", null]}, null]}, \"\", {\"var\": [\"locale\", null]}]}}]}]}]}",
       "expected": false
     },
     {
@@ -334,7 +334,7 @@
       "field": "locale",
       "operator": "doesNotContain",
       "profile": "renewed",
-      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"locale\", null]}, null]}, {\"!\": [{\"in\": [{\"rc.lower\": \"fr_fr\"}, {\"rc.lower\": {\"var\": \"locale\"}}]}]}]}",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"locale\", null]}, null]}, {\"!\": [{\"in\": [{\"rc.lower\": \"fr_fr\"}, {\"rc.lower\": {\"if\": [{\"==\": [{\"var\": [\"locale\", null]}, null]}, \"\", {\"var\": [\"locale\", null]}]}}]}]}]}",
       "expected": true
     },
     {
@@ -342,7 +342,7 @@
       "field": "locale",
       "operator": "doesNotContain",
       "profile": "first_purchase",
-      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"locale\", null]}, null]}, {\"!\": [{\"in\": [{\"rc.lower\": \"fr_fr\"}, {\"rc.lower\": {\"var\": \"locale\"}}]}]}]}",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"locale\", null]}, null]}, {\"!\": [{\"in\": [{\"rc.lower\": \"fr_fr\"}, {\"rc.lower\": {\"if\": [{\"==\": [{\"var\": [\"locale\", null]}, null]}, \"\", {\"var\": [\"locale\", null]}]}}]}]}]}",
       "expected": true
     },
     {
@@ -350,7 +350,7 @@
       "field": "locale",
       "operator": "doesNotContain",
       "profile": "unavailable",
-      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"locale\", null]}, null]}, {\"!\": [{\"in\": [{\"rc.lower\": \"fr_fr\"}, {\"rc.lower\": {\"var\": \"locale\"}}]}]}]}",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"locale\", null]}, null]}, {\"!\": [{\"in\": [{\"rc.lower\": \"fr_fr\"}, {\"rc.lower\": {\"if\": [{\"==\": [{\"var\": [\"locale\", null]}, null]}, \"\", {\"var\": [\"locale\", null]}]}}]}]}]}",
       "expected": true
     },
     {
@@ -358,7 +358,7 @@
       "field": "locale",
       "operator": "doesNotContain",
       "profile": "new",
-      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"locale\", null]}, null]}, {\"!\": [{\"in\": [{\"rc.lower\": \"de_de\"}, {\"rc.lower\": {\"var\": \"locale\"}}]}]}]}",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"locale\", null]}, null]}, {\"!\": [{\"in\": [{\"rc.lower\": \"de_de\"}, {\"rc.lower\": {\"if\": [{\"==\": [{\"var\": [\"locale\", null]}, null]}, \"\", {\"var\": [\"locale\", null]}]}}]}]}]}",
       "expected": true
     },
     {
@@ -366,7 +366,7 @@
       "field": "locale",
       "operator": "doesNotContain",
       "profile": "renewed",
-      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"locale\", null]}, null]}, {\"!\": [{\"in\": [{\"rc.lower\": \"de_de\"}, {\"rc.lower\": {\"var\": \"locale\"}}]}]}]}",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"locale\", null]}, null]}, {\"!\": [{\"in\": [{\"rc.lower\": \"de_de\"}, {\"rc.lower\": {\"if\": [{\"==\": [{\"var\": [\"locale\", null]}, null]}, \"\", {\"var\": [\"locale\", null]}]}}]}]}]}",
       "expected": true
     },
     {
@@ -374,7 +374,7 @@
       "field": "locale",
       "operator": "doesNotContain",
       "profile": "first_purchase",
-      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"locale\", null]}, null]}, {\"!\": [{\"in\": [{\"rc.lower\": \"de_de\"}, {\"rc.lower\": {\"var\": \"locale\"}}]}]}]}",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"locale\", null]}, null]}, {\"!\": [{\"in\": [{\"rc.lower\": \"de_de\"}, {\"rc.lower\": {\"if\": [{\"==\": [{\"var\": [\"locale\", null]}, null]}, \"\", {\"var\": [\"locale\", null]}]}}]}]}]}",
       "expected": true
     },
     {
@@ -382,7 +382,7 @@
       "field": "locale",
       "operator": "doesNotContain",
       "profile": "unavailable",
-      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"locale\", null]}, null]}, {\"!\": [{\"in\": [{\"rc.lower\": \"de_de\"}, {\"rc.lower\": {\"var\": \"locale\"}}]}]}]}",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"locale\", null]}, null]}, {\"!\": [{\"in\": [{\"rc.lower\": \"de_de\"}, {\"rc.lower\": {\"if\": [{\"==\": [{\"var\": [\"locale\", null]}, null]}, \"\", {\"var\": [\"locale\", null]}]}}]}]}]}",
       "expected": true
     },
     {
