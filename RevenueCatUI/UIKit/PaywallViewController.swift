@@ -53,9 +53,8 @@ public class PaywallViewController: UIViewController {
     ///
     /// Variables are defined in the RevenueCat dashboard using the `{{ custom.key }}` syntax.
     ///
-    /// - Important: Set this property before presenting the view controller.
-    ///   Changes made after presentation will not be reflected in the paywall.
-    ///   Invalid keys are ignored.
+    /// Changes made after presentation update the displayed paywall in place.
+    /// Invalid keys are ignored.
     ///
     /// ### Example
     /// ```swift
@@ -67,8 +66,10 @@ public class PaywallViewController: UIViewController {
     /// ```
     public var customVariables: [String: CustomVariableValue] = [:] {
         didSet {
-            assert(hostingController == nil, "Custom variables can only be set before presenting the paywall")
             self.customVariables = RevenueCat.CustomVariableKeyValidator.validateAndFilter(self.customVariables)
+            if let hostingController = self.hostingController {
+                hostingController.rootView.customVariables = self.customVariables
+            }
         }
     }
 
@@ -135,6 +136,12 @@ public class PaywallViewController: UIViewController {
     var exitOfferOfferingForTesting: Offering? { self.exitOfferOffering }
 
     var workflowContextForTesting: WorkflowContext? { self.configuration.workflowContext }
+
+    var hostingControllerForTesting: UIViewController? { self.hostingController }
+
+    var displayedCustomVariablesForTesting: [String: CustomVariableValue]? {
+        return self.hostingController?.rootView.customVariables
+    }
 
     var presentationBridgeForTesting: PaywallPresentationBridge {
         return self.configuration.presentationBridge

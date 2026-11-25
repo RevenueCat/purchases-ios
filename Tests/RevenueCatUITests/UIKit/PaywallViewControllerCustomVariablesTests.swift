@@ -73,6 +73,36 @@ final class PaywallCustomVariablesTests: TestCase {
         ]))
     }
 
+    func testCustomVariablesSetAfterLoadingUpdateDisplayedPaywall() {
+        let controller = PaywallViewController(offering: Self.offering)
+        controller.setCustomVariable("100", forKey: "coin_balance")
+        controller.loadViewIfNeeded()
+
+        let hostingController = controller.hostingControllerForTesting
+        expect(hostingController).notTo(beNil(), description: "precondition")
+
+        controller.setCustomVariable("250", forKey: "coin_balance")
+
+        expect(controller.displayedCustomVariablesForTesting).to(equal([
+            "coin_balance": .string("250")
+        ]))
+        expect(controller.hostingControllerForTesting).to(beIdenticalTo(hostingController))
+    }
+
+    func testCustomVariablesPropertySetAfterLoadingFiltersInvalidKeys() {
+        let controller = PaywallViewController(offering: Self.offering)
+        controller.loadViewIfNeeded()
+
+        controller.customVariables = [
+            "valid_key": "kept",
+            "invalid-key": "dropped"
+        ]
+
+        expect(controller.displayedCustomVariablesForTesting).to(equal([
+            "valid_key": "kept"
+        ]))
+    }
+
     private static let offering = Offering(
         identifier: "main",
         serverDescription: "Main offering",
