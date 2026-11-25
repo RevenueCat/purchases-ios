@@ -253,6 +253,7 @@ class SystemInfoTests: TestCase {
             finishTransactions: true,
             sandboxEnvironmentDetector: MockSandboxEnvironmentDetector(isSandbox: true),
             apiKey: "api_key",
+            deviceIdentifierCollectionMode: .automatic,
             preferredLocalesProvider: .mock()
         )
 
@@ -265,6 +266,7 @@ class SystemInfoTests: TestCase {
             finishTransactions: true,
             sandboxEnvironmentDetector: MockSandboxEnvironmentDetector(isSandbox: false),
             apiKey: "api_key",
+            deviceIdentifierCollectionMode: .automatic,
             preferredLocalesProvider: .mock()
         )
 

@@ -90,7 +90,8 @@ class BaseBackendIntegrationTests: TestCase {
                             dangerousSettings: self.dangerousSettings,
                             showStoreMessagesAutomatically: true,
                             diagnosticsEnabled: false,
-                            preferredLocale: nil)
+                            preferredLocale: nil,
+                            deviceIdentifierCollectionMode: .automatic)
     }
 
     // MARK: -
