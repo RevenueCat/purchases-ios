@@ -23,6 +23,7 @@ import RevenueCat
 #endif
 @_spi(InviteOnlyCheckpointsApi) import RevenueCatUI
 import SwiftUI
+import UIKit
 
 struct CheckpointsView: View {
 
@@ -33,6 +34,7 @@ struct CheckpointsView: View {
     @State private var variables = [CheckpointVariable()]
     @State private var result: CheckpointDisplayResult?
     @State private var isSubscriberAttributeEditorPresented = false
+    @State private var windowScene: UIWindowScene?
 
     init() {
         self._recentIdentifiers = .init(initialValue: RecentCheckpointIdentifiers.load())
@@ -79,6 +81,12 @@ struct CheckpointsView: View {
             }
             .sheet(isPresented: self.$isSubscriberAttributeEditorPresented) {
                 SubscriberAttributeEditor()
+            }
+            .background {
+                CheckpointWindowSceneReader { windowScene in
+                    self.windowScene = windowScene
+                }
+                .frame(width: 0, height: 0)
             }
         }
     }
@@ -210,6 +218,10 @@ struct CheckpointsView: View {
     @MainActor
     private func triggerCheckpoint(_ identifier: String, presentationMode: FlowPresentationMode = .default) {
         guard !identifier.isEmpty else { return }
+        guard let windowScene = self.windowScene else {
+            assertionFailure("Checkpoint presentation requires a window scene")
+            return
+        }
 
         self.isIdentifierFocused = false
         self.recordRecentIdentifier(identifier)
@@ -217,6 +229,7 @@ struct CheckpointsView: View {
 
         Purchases.shared.checkpoint(
             identifier,
+            in: windowScene,
             customVariables: self.customVariables,
             presentationMode: presentationMode,
             errorPresenter: { params, completion in
@@ -237,6 +250,39 @@ struct CheckpointsView: View {
             identifier,
             currentIdentifiers: self.recentIdentifiers
         )
+    }
+
+}
+
+private struct CheckpointWindowSceneReader: UIViewRepresentable {
+
+    let onWindowSceneChange: @MainActor (UIWindowScene?) -> Void
+
+    func makeUIView(context: Context) -> WindowReaderView {
+        let view = WindowReaderView()
+        view.onWindowSceneChange = self.onWindowSceneChange
+        return view
+    }
+
+    func updateUIView(_ view: WindowReaderView, context: Context) {
+        view.onWindowSceneChange = self.onWindowSceneChange
+        view.notifyWindowSceneChange()
+    }
+
+    @MainActor
+    final class WindowReaderView: UIView {
+
+        var onWindowSceneChange: (@MainActor (UIWindowScene?) -> Void)?
+
+        override func didMoveToWindow() {
+            super.didMoveToWindow()
+            self.notifyWindowSceneChange()
+        }
+
+        func notifyWindowSceneChange() {
+            self.onWindowSceneChange?(self.window?.windowScene)
+        }
+
     }
 
 }

@@ -134,7 +134,7 @@ enum OfferingFlowPresenter {
 
     private static let presenter = DefaultPaywallPresenter()
     // Checkpoints always pass an error presenter, so purchase and restore errors are shown.
-    private static let errorPresenter = DefaultErrorPresenter()
+    private static let errorPresenter = DefaultErrorPresenter(presentationContext: nil)
 
     static func present(_ offering: Offering, customVariables: [String: CustomVariableValue]) {
         self.presenter.present(
@@ -144,7 +144,8 @@ enum OfferingFlowPresenter {
                 offering: offering,
                 errorPresentationHandler: { params, completion in
                     self.errorPresenter.present(params: params, completion: completion)
-                }
+                },
+                presentationContext: nil
             )
         ) { _ in }
     }

@@ -112,17 +112,12 @@ final class CheckpointsManager {
 
         switch resolution {
         case let .matchedWorkflow(workflow):
-            let presentation = WorkflowPresentationRequest(
-                checkpointIdentifier: identifier,
-                workflow: workflow,
-                customVariables: params.customVariables,
-                presentationMode: params.presentationMode,
-                initialActiveEntitlementIdentifiers: customerInfoBefore.activeEntitlementIdentifiers,
+            return try await self.presentWorkflow(
+                workflow,
+                identifier: identifier,
+                params: params,
+                customerInfoBefore: customerInfoBefore,
                 errorPresentationHandler: errorPresentationHandler
-            )
-            return .init(
-                outcome: try await self.checkpointPresenter.presentWorkflow(presentation),
-                availableProducts: workflow.presentedOfferings.flatMap(\.availablePackages).map(\.storeProduct)
             )
         case let .matchedOffering(offering, _):
             return .init(
@@ -132,7 +127,8 @@ final class CheckpointsManager {
                         customVariables: params.customVariables,
                         presentationMode: params.presentationMode,
                         offering: offering,
-                        errorPresentationHandler: errorPresentationHandler
+                        errorPresentationHandler: errorPresentationHandler,
+                        presentationContext: params.presentationContext
                     ),
                     globalPaywallPresenter: globalPaywallPresenter,
                     localPaywallPresentationHandler: params.localPaywallPresentationHandler
@@ -150,7 +146,8 @@ final class CheckpointsManager {
                     adIdentifier: adStep.adIdentifier,
                     mediator: adStep.mediator,
                     adFormat: adStep.adFormat,
-                    rewardVerificationEnabled: adStep.rewardVerificationEnabled
+                    rewardVerificationEnabled: adStep.rewardVerificationEnabled,
+                    presentationContext: params.presentationContext
                 ),
                 customVariables: params.customVariables,
                 errorPresentationHandler: errorPresentationHandler
@@ -159,6 +156,28 @@ final class CheckpointsManager {
         case .noAction:
             return .init(outcome: .nothingPresented)
         }
+    }
+
+    private func presentWorkflow(
+        _ workflow: ResolvedCheckpointWorkflow,
+        identifier: String,
+        params: CheckpointCallParams,
+        customerInfoBefore: CustomerInfo,
+        errorPresentationHandler: @escaping ErrorPresentationHandler
+    ) async throws -> CheckpointExecutionResult {
+        let presentation = WorkflowPresentationRequest(
+            checkpointIdentifier: identifier,
+            workflow: workflow,
+            customVariables: params.customVariables,
+            presentationMode: params.presentationMode,
+            initialActiveEntitlementIdentifiers: customerInfoBefore.activeEntitlementIdentifiers,
+            errorPresentationHandler: errorPresentationHandler,
+            presentationContext: params.presentationContext
+        )
+        return .init(
+            outcome: try await self.checkpointPresenter.presentWorkflow(presentation),
+            availableProducts: workflow.presentedOfferings.flatMap(\.availablePackages).map(\.storeProduct)
+        )
     }
 
     func checkpointForCallback(
@@ -343,7 +362,11 @@ extension CheckpointsManager {
 
         if let factory = params.localErrorDialogFactory {
             let makePresenter = dialogPresenterFactory ?? { [preferredUILocaleProvider] dialog in
-                DefaultErrorPresenter.makePresenter(for: dialog, preferredUILocaleProvider: preferredUILocaleProvider)
+                DefaultErrorPresenter.makePresenter(
+                    for: dialog,
+                    presentationContext: params.presentationContext,
+                    preferredUILocaleProvider: preferredUILocaleProvider
+                )
             }
             let handler = makeErrorDialogFactoryHandler(factory: factory, makePresenter: makePresenter)
             return { [errorPresentationQueue] params, completion in
@@ -386,7 +409,8 @@ extension CheckpointsManager {
                     checkpointIdentifier: identifier,
                     error: error,
                     customVariables: params.customVariables,
-                    kind: kind
+                    kind: kind,
+                    presentationContext: params.presentationContext
                 ),
                 .init { continuation.resume() }
             )
@@ -398,7 +422,10 @@ extension CheckpointsManager {
             for: params,
             defaultHandler: {
                 let preferredUILocaleProvider = self.preferredUILocaleProvider
-                let presenter = DefaultErrorPresenter(preferredUILocaleProvider: preferredUILocaleProvider)
+                let presenter = DefaultErrorPresenter(
+                    presentationContext: params.presentationContext,
+                    preferredUILocaleProvider: preferredUILocaleProvider
+                )
                 return { params, completion in
                     presenter.present(params: params, completion: completion)
                 }

@@ -112,7 +112,8 @@ final class AdMobPresenterTests: AdapterTestCase {
             adIdentifier: "ad-unit",
             mediator: mediator,
             adFormat: adFormat,
-            rewardVerificationEnabled: true
+            rewardVerificationEnabled: true,
+            presentationContext: nil
         )
     }
 

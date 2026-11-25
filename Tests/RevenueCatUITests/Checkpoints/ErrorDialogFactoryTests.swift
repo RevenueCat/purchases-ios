@@ -147,7 +147,8 @@ final class ErrorDialogFactoryTests: TestCase {
             errorDialogFactory: { _, completion in
                 factoryCalled = true
                 completion.complete(with: .useDefault)
-            }
+            },
+            presentationContext: nil
         )
 
         XCTAssertNotNil(params.localErrorDialogFactory)
@@ -157,7 +158,7 @@ final class ErrorDialogFactoryTests: TestCase {
     }
 
     func testCheckpointCallParamsWithNoFactoryHasNilFactory() {
-        let params = CheckpointCallParams(errorDialogFactory: nil)
+        let params = CheckpointCallParams(errorDialogFactory: nil, presentationContext: nil)
         XCTAssertNil(params.localErrorDialogFactory)
     }
 
@@ -172,7 +173,7 @@ final class ErrorDialogFactoryTests: TestCase {
             for: .init(errorDialogFactory: { _, completion in
                 factoryCallCount += 1
                 completion.complete(with: .useDefault)
-            }),
+            }, presentationContext: nil),
             defaultHandler: {
                 return { _, _ in defaultCallCount += 1 }
             },
@@ -192,7 +193,8 @@ final class ErrorDialogFactoryTests: TestCase {
         let handler = manager.errorPresentationHandler(
             for: .init(
                 errorPresenter: { _, _ in presenterCallCount += 1 },
-                errorDialogFactory: { _, _ in factoryCallCount += 1 }
+                errorDialogFactory: { _, _ in factoryCallCount += 1 },
+                presentationContext: nil
             ),
             defaultHandler: { return { _, _ in } },
             dialogPresenterFactory: { _ in MockErrorPresenter() }
@@ -214,7 +216,7 @@ final class ErrorDialogFactoryTests: TestCase {
             for: .init(errorDialogFactory: { _, completion in
                 factoryCallCount += 1
                 completion.complete(with: .useDefault)
-            }),
+            }, presentationContext: nil),
             defaultHandler: { return { _, _ in } },
             dialogPresenterFactory: { _ in MockErrorPresenter() }
         )
@@ -251,7 +253,7 @@ final class ErrorDialogFactoryTests: TestCase {
             for: .init(errorDialogFactory: { params, completion in
                 presentationOrder.append("factory-\(params.checkpointIdentifier)")
                 firstFactoryCompletion = completion
-            }),
+            }, presentationContext: nil),
             defaultHandler: { XCTFail("Default not expected"); return { _, _ in } },
             dialogPresenterFactory: { _ in
                 let presenter = DeferredErrorPresenter()
@@ -264,7 +266,7 @@ final class ErrorDialogFactoryTests: TestCase {
                 presentationOrder.append("factory-\(params.checkpointIdentifier)")
                 completion.complete(with: .useDefault)
                 secondStarted.fulfill()
-            }),
+            }, presentationContext: nil),
             defaultHandler: { XCTFail("Default not expected"); return { _, _ in } },
             dialogPresenterFactory: { _ in MockErrorPresenter() }
         )
@@ -273,13 +275,15 @@ final class ErrorDialogFactoryTests: TestCase {
             checkpointIdentifier: "first",
             error: NSError(domain: "test", code: 1),
             customVariables: [:],
-            kind: .flowActionFailed
+            kind: .flowActionFailed,
+            presentationContext: nil
         )
         let secondParams = ErrorPresentationParams(
             checkpointIdentifier: "second",
             error: NSError(domain: "test", code: 2),
             customVariables: [:],
-            kind: .flowCouldNotBeShown
+            kind: .flowCouldNotBeShown,
+            presentationContext: nil
         )
 
         firstHandler(firstParams, Self.errorPresentationCompletion)
@@ -303,7 +307,7 @@ final class ErrorDialogFactoryTests: TestCase {
         var defaultCallCount = 0
 
         let handler = manager.errorPresentationHandler(
-            for: .init(errorDialogFactory: nil),
+            for: .init(errorDialogFactory: nil, presentationContext: nil),
             defaultHandler: { return { _, _ in defaultCallCount += 1 } },
             dialogPresenterFactory: nil
         )
@@ -333,7 +337,8 @@ private extension ErrorDialogFactoryTests {
             checkpointIdentifier: "test_checkpoint",
             error: NSError(domain: "test", code: 1),
             customVariables: [:],
-            kind: .flowActionFailed
+            kind: .flowActionFailed,
+            presentationContext: nil
         )
     }
 

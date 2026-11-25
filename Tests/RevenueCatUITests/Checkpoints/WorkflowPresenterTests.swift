@@ -1149,7 +1149,11 @@ final class WorkflowPresenterTests: TestCase {
                 productEntitlementMappingProvider: { restoreProductEntitlementMapping }
             )
             presenter.prepareForPresentation(
-                params: .init(checkpointIdentifier: "test_checkpoint", offering: makeRestoreOffering()),
+                params: .init(
+                    checkpointIdentifier: "test_checkpoint",
+                    offering: makeRestoreOffering(),
+                    presentationContext: nil
+                ),
                 completion: { result in
                     guard case .continued = result else { return XCTFail("Expected restored access") }
                     reported.fulfill()
@@ -1282,7 +1286,9 @@ final class WorkflowPresenterTests: TestCase {
                 productEntitlementMappingProvider: { restoreProductEntitlementMapping }
             )
             presenter.prepareForPresentation(params: .init(
-                checkpointIdentifier: "test_checkpoint", offering: makeRestoreOffering()
+                checkpointIdentifier: "test_checkpoint",
+                offering: makeRestoreOffering(),
+                presentationContext: nil
             ))
             return presenter
         }
@@ -1336,7 +1342,8 @@ final class WorkflowPresenterTests: TestCase {
             customVariables: customVariables,
             presentationMode: .modalSheet,
             initialActiveEntitlementIdentifiers: initialActiveEntitlementIdentifiers,
-            errorPresentationHandler: errorPresentationHandler
+            errorPresentationHandler: errorPresentationHandler,
+            presentationContext: nil
         )
     }
 
@@ -1374,7 +1381,8 @@ final class WorkflowPresenterTests: TestCase {
             customVariables: customVariables,
             presentationMode: .modalSheet,
             initialActiveEntitlementIdentifiers: [],
-            errorPresentationHandler: errorPresentationHandler
+            errorPresentationHandler: errorPresentationHandler,
+            presentationContext: nil
         )
     }
 
@@ -1439,12 +1447,44 @@ final class WorkflowPresenterTests: TestCase {
 @MainActor
 final class DefaultPaywallPresenterTests: TestCase {
 
+    func testExplicitPresentationContextDoesNotFallBackToAnotherScene() throws {
+        let sceneClass = try XCTUnwrap(NSClassFromString("UIWindowScene") as? NSObject.Type)
+        let scene = try XCTUnwrap(sceneClass.init() as? UIWindowScene)
+        var fallbackCallCount = 0
+        var receivedError: ErrorPresentationParams?
+        let presenter = DefaultPaywallPresenter(presentationViewControllerProvider: {
+            fallbackCallCount += 1
+            return UIViewController()
+        })
+
+        presenter.present(
+            params: .init(
+                checkpointIdentifier: "test_checkpoint",
+                offering: Self.offering(),
+                errorPresentationHandler: { params, completion in
+                    receivedError = params
+                    completion.complete()
+                },
+                presentationContext: .init(scene: scene)
+            ),
+            completion: { _ in }
+        )
+
+        XCTAssertEqual(fallbackCallCount, 0)
+        guard case .noPresentationContext? = receivedError?.error as? CheckpointError else {
+            return XCTFail("Expected noPresentationContext")
+        }
+        #if os(iOS) && !targetEnvironment(macCatalyst)
+        XCTAssertTrue(receivedError?.windowScene === scene)
+        #endif
+    }
+
     // Missing presentation context: route the startup error before reporting presentation failure.
     func testMissingPresentationContextRoutesErrorBeforeReportingFailure() throws {
         var receivedParams: ErrorPresentationParams?
         var errorCompletion: ErrorPresentationCompletion?
         var presentationResult: PaywallPresentationResult?
-        let presenter = DefaultPaywallPresenter(presentationContextProvider: { nil })
+        let presenter = DefaultPaywallPresenter(presentationViewControllerProvider: { nil })
 
         presenter.present(
             params: .init(
@@ -1454,7 +1494,8 @@ final class DefaultPaywallPresenterTests: TestCase {
                 errorPresentationHandler: { params, completion in
                     receivedParams = params
                     errorCompletion = completion
-                }
+                },
+                presentationContext: nil
             ),
             completion: { presentationResult = $0 }
         )
@@ -1482,7 +1523,8 @@ final class DefaultPaywallPresenterTests: TestCase {
             checkpointIdentifier: "test_checkpoint",
             customVariables: ["source": "test"],
             offering: Self.offering(),
-            errorPresentationHandler: { params, _ in receivedParams = params }
+            errorPresentationHandler: { params, _ in receivedParams = params },
+            presentationContext: nil
         )
 
         presenter.prepareForPresentation(params: params)
@@ -1501,7 +1543,8 @@ final class DefaultPaywallPresenterTests: TestCase {
         presenter.prepareForPresentation(params: .init(
             checkpointIdentifier: "test_checkpoint",
             offering: Self.offering(),
-            errorPresentationHandler: { _, _ in presentationCount += 1 }
+            errorPresentationHandler: { _, _ in presentationCount += 1 },
+            presentationContext: nil
         ))
 
         presenter.paywallViewController(
@@ -1522,7 +1565,8 @@ final class DefaultPaywallPresenterTests: TestCase {
         presenter.prepareForPresentation(params: .init(
             checkpointIdentifier: "test_checkpoint",
             offering: Self.offering(),
-            errorPresentationHandler: { _, value in completion = value }
+            errorPresentationHandler: { _, value in completion = value },
+            presentationContext: nil
         ))
 
         presenter.paywallViewController(
@@ -1547,7 +1591,8 @@ final class DefaultPaywallPresenterTests: TestCase {
                 errorPresentationHandler: { params, completion in
                     receivedParams = params
                     errorCompletion = completion
-                }
+                },
+                presentationContext: nil
             ),
             completion: { presentationResult = $0 }
         )
@@ -1567,7 +1612,8 @@ final class DefaultPaywallPresenterTests: TestCase {
         presenter.prepareForPresentation(params: .init(
             checkpointIdentifier: "test_checkpoint",
             offering: Self.offering(),
-            errorPresentationHandler: { _, value in completion = value }
+            errorPresentationHandler: { _, value in completion = value },
+            presentationContext: nil
         ))
 
         presenter.paywallViewController(
@@ -1587,7 +1633,8 @@ final class DefaultPaywallPresenterTests: TestCase {
         presenter.prepareForPresentation(params: .init(
             checkpointIdentifier: "test_checkpoint",
             offering: Self.offering(),
-            errorPresentationHandler: { _, completion in completions.append(completion) }
+            errorPresentationHandler: { _, completion in completions.append(completion) },
+            presentationContext: nil
         ))
         let error = NSError(domain: ErrorCode.errorDomain, code: ErrorCode.purchaseInvalidError.rawValue)
 
@@ -1616,7 +1663,8 @@ final class DefaultPaywallPresenterTests: TestCase {
                 errorPresentationHandler: { params, completion in
                     XCTAssertEqual(params.kind, .flowCouldNotBeShown)
                     errorCompletion = completion
-                }
+                },
+                presentationContext: nil
             ),
             completion: { result = $0 },
             presentedViewController: controller
@@ -1646,7 +1694,8 @@ final class DefaultPaywallPresenterTests: TestCase {
             params: .init(
                 checkpointIdentifier: "test_checkpoint",
                 offering: Self.offering(),
-                errorPresentationHandler: { _, completion in errorCompletion = completion }
+                errorPresentationHandler: { _, completion in errorCompletion = completion },
+                presentationContext: nil
             ),
             completion: { result = $0 },
             presentedViewController: controller
@@ -1680,7 +1729,8 @@ final class DefaultPaywallPresenterTests: TestCase {
             params: .init(
                 checkpointIdentifier: "test_checkpoint",
                 offering: Self.offering(),
-                errorPresentationHandler: { _, completion in errorCompletion = completion }
+                errorPresentationHandler: { _, completion in errorCompletion = completion },
+                presentationContext: nil
             ),
             completion: { result = $0 },
             presentedViewController: controller
@@ -1760,7 +1810,11 @@ final class DefaultPaywallPresenterTests: TestCase {
             productEntitlementMappingProvider: { ["annual:monthly": ["pro"], "annual": ["other"]] }
         )
         let controller = DismissRecordingPaywallViewController(offering: offering)
-        presenter.prepareForPresentation(params: .init(checkpointIdentifier: "test_checkpoint", offering: offering))
+        presenter.prepareForPresentation(params: .init(
+            checkpointIdentifier: "test_checkpoint",
+            offering: offering,
+            presentationContext: nil
+        ))
 
         presenter.paywallViewController(
             controller, didFinishRestoringWith: try Self.customerInfo(activeEntitlements: ["pro"])
@@ -1780,7 +1834,9 @@ final class DefaultPaywallPresenterTests: TestCase {
                 offering: makeRestoreOfferingWithMultipleProducts()
             )
             presenter.prepareForPresentation(params: .init(
-                checkpointIdentifier: "test_checkpoint", offering: makeRestoreOfferingWithMultipleProducts()
+                checkpointIdentifier: "test_checkpoint",
+                offering: makeRestoreOfferingWithMultipleProducts(),
+                presentationContext: nil
             ))
 
             presenter.paywallViewController(
@@ -1980,7 +2036,12 @@ final class DefaultPaywallPresenterTests: TestCase {
             webCheckoutUrl: nil
         )
         let controller = makeDefaultCheckpointPaywallViewController(
-            params: .init(checkpointIdentifier: "checkpoint", customVariables: [:], offering: offering)
+            params: .init(
+                checkpointIdentifier: "checkpoint",
+                customVariables: [:],
+                offering: offering,
+                presentationContext: nil
+            )
         )
         controller.remoteConfigEnabledForTesting = true
 
@@ -2006,7 +2067,11 @@ final class DefaultPaywallPresenterTests: TestCase {
     }
 
     private static var presentationParams: PaywallPresentationParams {
-        return .init(checkpointIdentifier: "test_checkpoint", offering: Self.offering())
+        return .init(
+            checkpointIdentifier: "test_checkpoint",
+            offering: Self.offering(),
+            presentationContext: nil
+        )
     }
 
     private static func customerInfo(activeEntitlements: [String]) throws -> CustomerInfo {

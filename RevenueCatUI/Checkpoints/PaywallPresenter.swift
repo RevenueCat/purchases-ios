@@ -14,6 +14,9 @@
 
 import Foundation
 @_spi(Internal) import RevenueCat
+#if os(iOS) && !targetEnvironment(macCatalyst)
+import UIKit
+#endif
 
 /// Reports how a custom paywall presentation ended.
 ///
@@ -80,8 +83,18 @@ public struct PaywallPresentationParams {
     /// The offering for which to present the paywall.
     public let offering: Offering
 
+    #if os(iOS) && !targetEnvironment(macCatalyst)
+    /// The window scene passed to the checkpoint call, if any.
+    public var windowScene: UIWindowScene? {
+        return self.presentationContext?.windowScene
+    }
+    #endif
+
     /// The handler used to present errors from this paywall's checkpoint flow.
     let errorPresentationHandler: ErrorPresentationHandler?
+
+    /// The presentation context in which the SDK presents this paywall.
+    let presentationContext: PresentationContext?
 
     /// Creates presentation context for an offering selected by a checkpoint.
     ///
@@ -94,13 +107,15 @@ public struct PaywallPresentationParams {
         customVariables: [String: CustomVariableValue] = [:],
         presentationMode: FlowPresentationMode = .modalSheet,
         offering: Offering,
-        errorPresentationHandler: ErrorPresentationHandler? = nil
+        errorPresentationHandler: ErrorPresentationHandler? = nil,
+        presentationContext: PresentationContext?
     ) {
         self.checkpointIdentifier = checkpointIdentifier
         self.customVariables = customVariables
         self.presentationMode = presentationMode
         self.offering = offering
         self.errorPresentationHandler = errorPresentationHandler
+        self.presentationContext = presentationContext
     }
 
 }
