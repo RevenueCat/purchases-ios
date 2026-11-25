@@ -106,4 +106,14 @@ class DiagnosticsEventEncodingTests: TestCase {
         expect(decoded.expirationDate).to(beNil())
     }
 
+    func testPurchaseRetryReasonEncoding() throws {
+        let properties = DiagnosticsEvent.Properties(
+            purchaseRetryReason: .presentationContextFallback
+        )
+        let data = try JSONEncoder.default.encode(properties)
+        let json = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
+
+        expect(json["purchase_retry_reason"] as? String) == "PRESENTATION_CONTEXT_FALLBACK"
+    }
+
 }

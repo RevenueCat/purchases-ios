@@ -577,6 +577,7 @@ class DiagnosticsTrackerTests: TestCase {
                                           promotionalOfferId: nil,
                                           winBackOfferApplied: false,
                                           purchaseResult: .verified,
+                                          purchaseRetryReason: .presentationContextFallback,
                                           responseTime: 75)
 
         let emptyErrorMessage: String? = nil
@@ -597,6 +598,7 @@ class DiagnosticsTrackerTests: TestCase {
                     promotionalOfferId: emptyPromotionalOfferId,
                     winBackOfferApplied: false,
                     purchaseResult: .verified,
+                    purchaseRetryReason: .presentationContextFallback,
                     storefront: "USA"
                   ),
                   timestamp: Self.eventTimestamp1,
@@ -615,6 +617,7 @@ class DiagnosticsTrackerTests: TestCase {
                                           promotionalOfferId: "summer_discount_2023",
                                           winBackOfferApplied: true,
                                           purchaseResult: .userCancelled,
+                                          purchaseRetryReason: nil,
                                           responseTime: 120)
 
         let entries = await self.handler.getEntries()

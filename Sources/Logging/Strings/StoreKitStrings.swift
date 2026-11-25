@@ -127,6 +127,8 @@ enum StoreKitStrings {
 
     case sk2_user_not_eligible_for_billing_plan_at_purchase_time(billingPlanType: String)
 
+    case sk2_invalid_presentation_context_retrying_without_context
+
     case cannot_request_product_with_more_than_one_colon(productIdentifier: String)
 }
 
@@ -325,6 +327,9 @@ extension StoreKitStrings: LogMessage {
         case .sk2_user_not_eligible_for_billing_plan_at_purchase_time(let billingPlanType):
             return "The user is not eligible for the \(billingPlanType) billing plan and thus " +
             "is not eligible to make this purchase."
+
+        case .sk2_invalid_presentation_context_retrying_without_context:
+            return "StoreKit rejected the purchase presentation context; retrying with automatic presentation."
 
         case .cannot_request_product_with_more_than_one_colon(let productIdentifier):
             return "Cannot resolve product ID \(productIdentifier) since it contains more " +

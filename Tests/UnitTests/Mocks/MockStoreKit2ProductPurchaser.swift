@@ -19,6 +19,8 @@ class MockStoreKit2ProductPurchaser: StoreKit2ProductPurchaserType {
 
     private(set) var invokedPurchaseCount = 0
     private(set) var receivedPresentationContext: PresentationContext?
+    private(set) var receivedPresentationContexts: [PresentationContext?] = []
+    var purchaseWithPresentationContextError: Error?
 
     // This mock is also constructed by tests that support OS versions before StoreKit 2.
     private var _stubbedPurchaseResult: Any?
@@ -42,6 +44,10 @@ class MockStoreKit2ProductPurchaser: StoreKit2ProductPurchaserType {
     ) async throws -> StoreKit.Product.PurchaseResult {
         self.invokedPurchaseCount += 1
         self.receivedPresentationContext = presentationContext
+        self.receivedPresentationContexts.append(presentationContext)
+        if presentationContext != nil, let purchaseWithPresentationContextError {
+            throw purchaseWithPresentationContextError
+        }
         return try self.stubbedPurchaseResult.value.get()
     }
 }

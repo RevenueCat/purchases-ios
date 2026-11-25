@@ -62,6 +62,7 @@ protocol DiagnosticsTrackerType: Sendable {
                               promotionalOfferId: String?,
                               winBackOfferApplied: Bool,
                               purchaseResult: DiagnosticsEvent.PurchaseResult?,
+                              purchaseRetryReason: DiagnosticsEvent.PurchaseRetryReason?,
                               responseTime: TimeInterval)
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
@@ -326,6 +327,7 @@ final class DiagnosticsTracker: DiagnosticsTrackerType, Sendable {
                               promotionalOfferId: String?,
                               winBackOfferApplied: Bool,
                               purchaseResult: DiagnosticsEvent.PurchaseResult?,
+                              purchaseRetryReason: DiagnosticsEvent.PurchaseRetryReason?,
                               responseTime: TimeInterval) {
         self.trackEvent(name: .applePurchaseAttempt,
                         properties: DiagnosticsEvent.Properties(
@@ -339,6 +341,7 @@ final class DiagnosticsTracker: DiagnosticsTrackerType, Sendable {
                             promotionalOfferId: promotionalOfferId,
                             winBackOfferApplied: winBackOfferApplied,
                             purchaseResult: purchaseResult,
+                            purchaseRetryReason: purchaseRetryReason,
                             storefront: storefront
                         ))
     }

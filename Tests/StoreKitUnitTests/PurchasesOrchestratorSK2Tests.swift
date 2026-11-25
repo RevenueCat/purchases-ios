@@ -3043,11 +3043,184 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         expect(params.promotionalOfferId).to(beNil())
         expect(params.winBackOfferApplied) == false
         expect(params.purchaseResult) == .verified
+        expect(params.purchaseRetryReason).to(beNil())
         expect(params.storefront) == "USA"
 
         expect(self.mockDateProvider.invokedNowCount) == 3
         expect(params.responseTime) == Self.eventTimestamp2.timeIntervalSince(Self.eventTimestamp1)
     }
+
+    #if compiler(>=6.4) && !os(watchOS)
+    func testPresentationContextFallbackFailureIncludesPurchaseRetryReason() async throws {
+        guard #available(iOS 27.0, macOS 27.0, macCatalyst 27.0, tvOS 27.0, visionOS 27.0, *) else {
+            throw XCTSkip("Requires StoreKitError.invalidPresentationContext")
+        }
+
+        let productPurchaser = MockStoreKit2ProductPurchaser()
+        productPurchaser.purchaseWithPresentationContextError = StoreKitError.invalidPresentationContext
+        productPurchaser.stubbedPurchaseResult = .init(.failure(StoreKitError.unknown))
+        let diagnosticsTracker = MockDiagnosticsTracker()
+        self.setUpPresentationContextFallbackOrchestrator(productPurchaser, diagnosticsTracker)
+
+        let product = try await self.fetchSk2Product()
+        let presentationContext = try await self.makePresentationContext(allowsDefaultPresentationFallback: true)
+
+        do {
+            _ = try await self.purchase(product, presentationContext: presentationContext)
+            XCTFail("Expected error")
+        } catch {
+            try await asyncWait(
+                description: "Diagnostics tracker should have been called",
+                timeout: .seconds(4),
+                pollInterval: .milliseconds(100)
+            ) {
+                diagnosticsTracker.trackedPurchaseRequestParams.value.count == 1
+            }
+
+            let params = try XCTUnwrap(diagnosticsTracker.trackedPurchaseRequestParams.value.first)
+            expect(params.purchaseRetryReason) == .presentationContextFallback
+            expect(diagnosticsTracker.trackedPurchaseRequestParams.value.count) == 1
+            expect(productPurchaser.invokedPurchaseCount) == 2
+            expect(productPurchaser.receivedPresentationContexts.count) == 2
+            expect(productPurchaser.receivedPresentationContexts[0]).toNot(beNil())
+            expect(productPurchaser.receivedPresentationContexts[1]).to(beNil())
+            self.logger.verifyMessageWasLogged(
+                StoreKitStrings.sk2_invalid_presentation_context_retrying_without_context,
+                level: .warn
+            )
+        }
+    }
+
+    func testPresentationContextFallbackSuccessIncludesPurchaseRetryReason() async throws {
+        guard #available(iOS 27.0, macOS 27.0, macCatalyst 27.0, tvOS 27.0, visionOS 27.0, *) else {
+            throw XCTSkip("Requires StoreKitError.invalidPresentationContext")
+        }
+
+        let productPurchaser = MockStoreKit2ProductPurchaser()
+        productPurchaser.purchaseWithPresentationContextError = StoreKitError.invalidPresentationContext
+        let diagnosticsTracker = MockDiagnosticsTracker()
+        let transactionListener = self.setUpPresentationContextFallbackOrchestrator(
+            productPurchaser,
+            diagnosticsTracker
+        )
+
+        self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
+        let mockTransaction = try await self.simulateAnyPurchase()
+        let underlyingTransaction = mockTransaction.underlyingTransaction
+        transactionListener.mockTransaction = .init(underlyingTransaction)
+        productPurchaser.stubbedPurchaseResult = .init(.success(.success(.verified(underlyingTransaction))))
+
+        let product = try await self.fetchSk2Product()
+        let presentationContext = try await self.makePresentationContext(allowsDefaultPresentationFallback: true)
+        let result = try await self.purchase(product, presentationContext: presentationContext)
+
+        expect(result.transaction).toNot(beNil())
+        try await asyncWait(
+            description: "Diagnostics tracker should have been called",
+            timeout: .seconds(4),
+            pollInterval: .milliseconds(100)
+        ) {
+            diagnosticsTracker.trackedPurchaseRequestParams.value.count == 1
+        }
+
+        let params = try XCTUnwrap(diagnosticsTracker.trackedPurchaseRequestParams.value.first)
+        expect(params.wasSuccessful) == true
+        expect(params.purchaseResult) == .verified
+        expect(params.purchaseRetryReason) == .presentationContextFallback
+        expect(productPurchaser.invokedPurchaseCount) == 2
+        expect(productPurchaser.receivedPresentationContexts.count) == 2
+        expect(productPurchaser.receivedPresentationContexts[0]).toNot(beNil())
+        expect(productPurchaser.receivedPresentationContexts[1]).to(beNil())
+    }
+
+    func testExplicitPresentationContextDoesNotRetryInvalidPresentationContext() async throws {
+        guard #available(iOS 27.0, macOS 27.0, macCatalyst 27.0, tvOS 27.0, visionOS 27.0, *) else {
+            throw XCTSkip("Requires StoreKitError.invalidPresentationContext")
+        }
+
+        let productPurchaser = MockStoreKit2ProductPurchaser()
+        productPurchaser.purchaseWithPresentationContextError = StoreKitError.invalidPresentationContext
+        let diagnosticsTracker = MockDiagnosticsTracker()
+        self.setUpPresentationContextFallbackOrchestrator(productPurchaser, diagnosticsTracker)
+
+        let product = try await self.fetchSk2Product()
+        let presentationContext = try await self.makePresentationContext(allowsDefaultPresentationFallback: false)
+
+        do {
+            _ = try await self.purchase(product, presentationContext: presentationContext)
+            XCTFail("Expected error")
+        } catch {
+            try await asyncWait(
+                description: "Diagnostics tracker should have been called",
+                timeout: .seconds(4),
+                pollInterval: .milliseconds(100)
+            ) {
+                diagnosticsTracker.trackedPurchaseRequestParams.value.count == 1
+            }
+
+            let params = try XCTUnwrap(diagnosticsTracker.trackedPurchaseRequestParams.value.first)
+            expect(params.purchaseRetryReason).to(beNil())
+            expect(productPurchaser.invokedPurchaseCount) == 1
+            expect(productPurchaser.receivedPresentationContexts.count) == 1
+            expect(productPurchaser.receivedPresentationContexts[0]).toNot(beNil())
+            self.logger.verifyMessageWasNotLogged(
+                StoreKitStrings.sk2_invalid_presentation_context_retrying_without_context,
+                level: .warn
+            )
+        }
+    }
+
+    private func setUpPresentationContextFallbackOrchestrator(
+        _ productPurchaser: MockStoreKit2ProductPurchaser,
+        _ diagnosticsTracker: MockDiagnosticsTracker
+    ) -> MockStoreKit2TransactionListener {
+        let transactionListener = MockStoreKit2TransactionListener()
+        self.setUpOrchestrator(
+            storeKit2TransactionListener: transactionListener,
+            storeKit2StorefrontListener: StoreKit2StorefrontListener(delegate: nil, userDefaults: nil),
+            storeKit2ObserverModePurchaseDetector: MockStoreKit2ObserverModePurchaseDetector(),
+            storeKit2ProductPurchaser: productPurchaser,
+            diagnosticsTracker: diagnosticsTracker
+        )
+        return transactionListener
+    }
+
+    private func makePresentationContext(
+        allowsDefaultPresentationFallback: Bool
+    ) async throws -> PresentationContext {
+        #if canImport(UIKit)
+        let mockScene = await UIScene.mock()
+        let scene = try XCTUnwrap(mockScene)
+        return PresentationContext(
+            scene: scene,
+            allowsDefaultPresentationFallback: allowsDefaultPresentationFallback
+        )
+        #elseif canImport(AppKit)
+        let mockWindow = await NSWindow.mock()
+        let window = try XCTUnwrap(mockWindow)
+        return PresentationContext(
+            window: window,
+            allowsDefaultPresentationFallback: allowsDefaultPresentationFallback
+        )
+        #endif
+    }
+
+    private func purchase(
+        _ product: SK2Product,
+        presentationContext: PresentationContext
+    ) async throws -> PurchaseResultData {
+        return try await self.orchestrator.purchase(
+            sk2Product: product,
+            package: nil,
+            promotionalOffer: nil,
+            winBackOffer: nil,
+            introductoryOfferEligibilityJWS: nil,
+            billingPlanType: nil,
+            promotionalOfferOptions: nil,
+            presentationContext: presentationContext
+        )
+    }
+    #endif
 
     func testPurchaseWithInvalidPromotionalOfferSignatureTracksError() async throws {
         try AvailabilityChecks.iOS16APIAvailableOrSkipTest()

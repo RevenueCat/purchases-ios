@@ -40,6 +40,7 @@ final class MockPurchasableSK2Product: PurchasableSK2Product, @unchecked Sendabl
     var calledPurchaseConfirmInSceneWithOptions = false
     var calledPurchaseConfirmInSceneWithOptionsScene: UIScene?
     var calledPurchaseConfirmInSceneWithOptionsOptions: Set<Product.PurchaseOption>?
+    var purchaseConfirmInSceneError: Error?
     func purchase(
         confirmIn scene: some UIScene,
         options: Set<Product.PurchaseOption>
@@ -47,6 +48,9 @@ final class MockPurchasableSK2Product: PurchasableSK2Product, @unchecked Sendabl
         self.calledPurchaseConfirmInSceneWithOptions = true
         self.calledPurchaseConfirmInSceneWithOptionsScene = scene
         self.calledPurchaseConfirmInSceneWithOptionsOptions = options
+        if let purchaseConfirmInSceneError {
+            throw purchaseConfirmInSceneError
+        }
         return .pending
     }
     #endif
@@ -55,6 +59,7 @@ final class MockPurchasableSK2Product: PurchasableSK2Product, @unchecked Sendabl
     var calledPurchaseConfirmInWindowWithOptions = false
     var calledPurchaseConfirmInWindowWithOptionsWindow: NSWindow?
     var calledPurchaseConfirmInWindowWithOptionsOptions: Set<Product.PurchaseOption>?
+    var purchaseConfirmInWindowError: Error?
     func purchase(
         confirmIn window: NSWindow,
         options: Set<Product.PurchaseOption>
@@ -62,6 +67,9 @@ final class MockPurchasableSK2Product: PurchasableSK2Product, @unchecked Sendabl
         self.calledPurchaseConfirmInWindowWithOptions = true
         self.calledPurchaseConfirmInWindowWithOptionsWindow = window
         self.calledPurchaseConfirmInWindowWithOptionsOptions = options
+        if let purchaseConfirmInWindowError {
+            throw purchaseConfirmInWindowError
+        }
         return .pending
     }
     #endif

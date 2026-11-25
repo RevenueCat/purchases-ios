@@ -84,6 +84,7 @@ final class MockDiagnosticsTracker: DiagnosticsTrackerType, Sendable {
          promotionalOfferId: String?,
          winBackOfferApplied: Bool,
          purchaseResult: DiagnosticsEvent.PurchaseResult?,
+         purchaseRetryReason: DiagnosticsEvent.PurchaseRetryReason?,
          responseTime: TimeInterval)
     ]> = .init([])
     // swiftlint:disable:next function_parameter_count
@@ -97,6 +98,7 @@ final class MockDiagnosticsTracker: DiagnosticsTrackerType, Sendable {
                               promotionalOfferId: String?,
                               winBackOfferApplied: Bool,
                               purchaseResult: DiagnosticsEvent.PurchaseResult?,
+                              purchaseRetryReason: DiagnosticsEvent.PurchaseRetryReason?,
                               responseTime: TimeInterval) {
         self.trackedPurchaseRequestParams.modify {
             $0.append(
@@ -110,6 +112,7 @@ final class MockDiagnosticsTracker: DiagnosticsTrackerType, Sendable {
                  promotionalOfferId,
                  winBackOfferApplied,
                  purchaseResult,
+                 purchaseRetryReason,
                  responseTime)
             )
         }

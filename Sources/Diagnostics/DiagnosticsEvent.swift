@@ -83,6 +83,10 @@ struct DiagnosticsEvent: Codable, Equatable {
         case pending = "PENDING"
     }
 
+    enum PurchaseRetryReason: String, Codable, Equatable {
+        case presentationContextFallback = "PRESENTATION_CONTEXT_FALLBACK"
+    }
+
     enum OfflineEntitlementsModeErrorReason: String, Codable, Equatable {
         case oneTimePurchaseFound = "ONE_TIME_PURCHASE_FOUND"
         case noEntitlementMappingAvailable = "NO_ENTITLEMENT_MAPPING_AVAILABLE"
@@ -118,6 +122,7 @@ struct DiagnosticsEvent: Codable, Equatable {
         let fetchPolicy: String?
         let hadUnsyncedPurchasesBefore: Bool?
         let isRetry: Bool?
+        let purchaseRetryReason: PurchaseRetryReason?
         let eligibilityUnknownCount: Int?
         let eligibilityIneligibleCount: Int?
         let eligibilityEligibleCount: Int?
@@ -160,6 +165,7 @@ struct DiagnosticsEvent: Codable, Equatable {
              cacheFetchPolicy: CacheFetchPolicy? = nil,
              hadUnsyncedPurchasesBefore: Bool? = nil,
              isRetry: Bool? = nil,
+             purchaseRetryReason: PurchaseRetryReason? = nil,
              eligibilityUnknownCount: Int? = nil,
              eligibilityIneligibleCount: Int? = nil,
              eligibilityEligibleCount: Int? = nil,
@@ -201,6 +207,7 @@ struct DiagnosticsEvent: Codable, Equatable {
             self.fetchPolicy = cacheFetchPolicy.map { $0.diagnosticsName }
             self.hadUnsyncedPurchasesBefore = hadUnsyncedPurchasesBefore
             self.isRetry = isRetry
+            self.purchaseRetryReason = purchaseRetryReason
             self.eligibilityUnknownCount = eligibilityUnknownCount
             self.eligibilityIneligibleCount = eligibilityIneligibleCount
             self.eligibilityEligibleCount = eligibilityEligibleCount

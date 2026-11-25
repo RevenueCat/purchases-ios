@@ -693,7 +693,8 @@ final class PurchasesOrchestrator {
                                                        winBackOfferApplied: false, // SK2 only
                                                        storeKitVersion: .storeKit1,
                                                        purchaseResult: nil, // SK2 only
-                                                       error: error)
+                                                       error: error,
+                                                       purchaseRetryReason: nil)
                 if cancelled || error != nil {
                     self.clearCachedPurchaseData(productIdentifier: productIdentifier)
                 }
@@ -861,6 +862,7 @@ final class PurchasesOrchestrator {
 
         let startTime = self.dateProvider.now()
         var winBackOfferApplied: Bool = false
+        var purchaseRetryReason: DiagnosticsEvent.PurchaseRetryReason?
 
         do {
             if let signedData = promotionalOffer {
@@ -941,12 +943,40 @@ final class PurchasesOrchestrator {
             #endif
 
             let presentedOfferingContext = package?.presentedOfferingContext
-
-            result = try await self.storeKit2ProductPurchaser.purchase(
-                product: sk2Product,
-                options: options,
-                presentationContext: presentationContext
-            )
+            do {
+                result = try await self.storeKit2ProductPurchaser.purchase(
+                    product: sk2Product,
+                    options: options,
+                    presentationContext: presentationContext
+                )
+            } catch {
+                #if compiler(>=6.4) && !os(watchOS)
+                if #available(iOS 27.0,
+                              iOSApplicationExtension 27.0,
+                              macOS 27.0,
+                              macCatalyst 27.0,
+                              tvOS 27.0,
+                              visionOS 27.0,
+                              *),
+                   let storeKitError = error as? StoreKitError,
+                   case .invalidPresentationContext = storeKitError,
+                   presentationContext?.allowsDefaultPresentationFallback == true {
+                    // If the context derived from previously presented SDK UI is invalid for any reason,
+                    // defensively retry without an explicit context and let StoreKit discover one automatically.
+                    Logger.warn(StoreKitStrings.sk2_invalid_presentation_context_retrying_without_context)
+                    purchaseRetryReason = .presentationContextFallback
+                    result = try await self.storeKit2ProductPurchaser.purchase(
+                        product: sk2Product,
+                        options: options,
+                        presentationContext: nil
+                    )
+                } else {
+                    throw error
+                }
+                #else
+                throw error
+                #endif
+            }
 
             // The `purchase(sk2Product)` call can throw a `StoreKitError.userCancelled` error.
             // This detects if `Product.PurchaseResult.userCancelled` is true.
@@ -1003,24 +1033,28 @@ final class PurchasesOrchestrator {
                                                    winBackOfferApplied: winBackOfferApplied,
                                                    storeKitVersion: .storeKit2,
                                                    purchaseResult: .init(purchaseResult: result),
-                                                   error: nil)
+                                                   error: nil,
+                                                   purchaseRetryReason: purchaseRetryReason)
             return (transaction, customerInfo, userCancelled)
         } catch {
             return try await self.handleSK2ProductPurchaseError(error,
                                                                 startTime: startTime,
                                                                 productId: sk2Product.id,
                                                                 promotionalOfferId: promotionalOffer?.identifier,
-                                                                winBackOfferApplied: winBackOfferApplied)
+                                                                winBackOfferApplied: winBackOfferApplied,
+                                                                purchaseRetryReason: purchaseRetryReason)
         }
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    // swiftlint:disable:next function_parameter_count
     private func handleSK2ProductPurchaseError(
         _ error: Error,
         startTime: Date,
         productId: String,
         promotionalOfferId: String?,
-        winBackOfferApplied: Bool
+        winBackOfferApplied: Bool,
+        purchaseRetryReason: DiagnosticsEvent.PurchaseRetryReason?
     ) async throws -> PurchaseResultData {
         if case StoreKitError.userCancelled = error {
             guard !self.systemInfo.dangerousSettings.customEntitlementComputation else {
@@ -1034,7 +1068,8 @@ final class PurchasesOrchestrator {
                                                    winBackOfferApplied: winBackOfferApplied,
                                                    storeKitVersion: .storeKit2,
                                                    purchaseResult: .userCancelled,
-                                                   error: StoreKitError.userCancelled.asPublicError)
+                                                   error: StoreKitError.userCancelled.asPublicError,
+                                                   purchaseRetryReason: purchaseRetryReason)
 
             let customerInfo = try await self.customerInfoManager.customerInfo(appUserID: self.appUserID,
                                                                                fetchPolicy: .cachedOrFetched)
@@ -1064,7 +1099,8 @@ final class PurchasesOrchestrator {
                                                    winBackOfferApplied: winBackOfferApplied,
                                                    storeKitVersion: .storeKit2,
                                                    purchaseResult: nil,
-                                                   error: purchasesError.asPublicError)
+                                                   error: purchasesError.asPublicError,
+                                                   purchaseRetryReason: purchaseRetryReason)
 
             throw purchasesError
         }
@@ -1471,7 +1507,8 @@ private extension PurchasesOrchestrator {
                                            winBackOfferApplied: Bool,
                                            storeKitVersion: StoreKitVersion,
                                            purchaseResult: DiagnosticsEvent.PurchaseResult?,
-                                           error: PublicError?) {
+                                           error: PublicError?,
+                                           purchaseRetryReason: DiagnosticsEvent.PurchaseRetryReason?) {
         if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *),
         let diagnosticsTracker = self.diagnosticsTracker {
             let responseTime = self.dateProvider.now().timeIntervalSince(startTime)
@@ -1489,6 +1526,7 @@ private extension PurchasesOrchestrator {
                                                     promotionalOfferId: promotionalOfferId,
                                                     winBackOfferApplied: winBackOfferApplied,
                                                     purchaseResult: purchaseResult,
+                                                    purchaseRetryReason: purchaseRetryReason,
                                                     responseTime: responseTime)
         }
     }
