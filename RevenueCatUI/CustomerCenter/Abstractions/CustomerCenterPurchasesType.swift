@@ -15,6 +15,9 @@ import Foundation
 @_spi(Internal) import RevenueCat
 import StoreKit
 import SwiftUI
+#if canImport(UIKit) && !os(watchOS)
+import UIKit
+#endif
 
 // swiftlint:disable missing_docs
 
@@ -58,12 +61,19 @@ import SwiftUI
 ///   - promotionalOffer: An optional `PromotionalOffer` to apply
 /// - Returns: A `PurchaseResultData` object containing the result of the purchase.
 /// - Throws: An error if the purchase flow fails or is cancelled.
+    @MainActor
     func purchase(
         product: StoreProduct,
         promotionalOffer: PromotionalOffer?
     ) async throws -> PurchaseResultData
 
+    @MainActor
     func purchase(package: Package) async throws -> PurchaseResultData
+
+    #if canImport(UIKit) && !os(watchOS)
+    @MainActor
+    func updatePresentationWindow(_ window: UIWindow?, reportedBy owner: AnyObject)
+    #endif
 
     func track(customerCenterEvent: any CustomerCenterEventType)
 

@@ -88,6 +88,10 @@ extension CustomerCenterViewModel {
             await loadScreen()
         }
     }
+
+    func updatePresentationWindow(_ window: PurchasePresentationWindow?, reportedBy owner: AnyObject) {
+        self.purchasesProvider.updatePresentationWindow(window, reportedBy: owner)
+    }
 }
 
 private extension VirtualCurrencies {

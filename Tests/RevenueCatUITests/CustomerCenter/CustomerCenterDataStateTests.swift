@@ -248,6 +248,9 @@ class CustomerCenterStateTestProvider: CustomerCenterPurchasesType, @unchecked S
         if let purchaseError { throw purchaseError }
         return try await mock.purchase(package: package)
     }
+    func updatePresentationWindow(_ window: PurchasePresentationWindow?, reportedBy owner: AnyObject) {
+        mock.updatePresentationWindow(window, reportedBy: owner)
+    }
     func track(customerCenterEvent: any CustomerCenterEventType) {}
     func loadCustomerCenter() async throws -> CustomerCenterConfigData { try await mock.loadCustomerCenter() }
     func restorePurchases() async throws -> CustomerInfo { try await mock.restorePurchases() }

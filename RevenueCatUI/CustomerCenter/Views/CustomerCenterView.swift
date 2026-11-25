@@ -120,6 +120,9 @@ public struct CustomerCenterView: View {
     // swiftlint:disable:next missing_docs
     public var body: some View {
         navigationContent
+            .modifier(PresentationContextModifier { window, owner in
+                self.viewModel.updatePresentationWindow(window, reportedBy: owner)
+            })
             .task {
                 await loadInformationIfNeeded()
                 await viewModel.observePreviewCustomerInfoUpdates()

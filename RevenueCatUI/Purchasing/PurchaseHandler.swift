@@ -23,12 +23,6 @@ import UIKit
 import AppKit
 #endif
 
-#if canImport(UIKit) && !os(watchOS)
-typealias PurchasePresentationWindow = UIWindow
-#elseif canImport(AppKit)
-typealias PurchasePresentationWindow = NSWindow
-#endif
-
 // swiftlint:disable file_length
 
 private struct TerminalOfferingWorkflowError: Error {}
@@ -59,11 +53,8 @@ final class PurchaseHandler: ObservableObject {
     private let paywallEventTracker: PaywallEventTracker
     private let keyWindowFocusResigner: KeyWindowFocusResigning
 
-    // Keep the host weak because its view hierarchy owns this handler. A strong
-    // PresentationContext here would retain that hierarchy through its scene or window.
     #if (canImport(UIKit) && !os(watchOS)) || canImport(AppKit)
-    private(set) weak var presentationWindow: PurchasePresentationWindow?
-    private weak var presentationWindowOwner: AnyObject?
+    private let presentationWindowStore = PresentationWindowStore()
     #endif
 
     /// Side-by-side paywalls should use separate `PurchaseHandler` instances so each keeps its own session.
@@ -389,14 +380,13 @@ final class PurchaseHandler: ObservableObject {
 extension PurchaseHandler {
 
     @MainActor
+    var presentationWindow: PurchasePresentationWindow? {
+        return self.presentationWindowStore.window
+    }
+
+    @MainActor
     func updatePresentationWindow(_ window: PurchasePresentationWindow?, reportedBy owner: AnyObject) {
-        if let window {
-            self.presentationWindow = window
-            self.presentationWindowOwner = owner
-        } else if self.presentationWindowOwner === owner {
-            self.presentationWindow = nil
-            self.presentationWindowOwner = nil
-        }
+        self.presentationWindowStore.update(window, reportedBy: owner)
     }
 
 }
@@ -1412,14 +1402,8 @@ private extension PurchaseHandler {
 
     @MainActor
     var presentationContext: PresentationContext? {
-        #if canImport(UIKit) && !os(watchOS)
-        return self.presentationWindow.flatMap {
-            PresentationContext(window: $0, allowsDefaultPresentationFallback: true)
-        }
-        #elseif canImport(AppKit)
-        return self.presentationWindow.map {
-            PresentationContext(window: $0, allowsDefaultPresentationFallback: true)
-        }
+        #if (canImport(UIKit) && !os(watchOS)) || canImport(AppKit)
+        return self.presentationWindowStore.presentationContext
         #else
         return nil
         #endif

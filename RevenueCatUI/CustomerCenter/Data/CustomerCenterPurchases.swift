@@ -20,6 +20,24 @@ import Foundation
 @available(watchOS, unavailable)
 final class CustomerCenterPurchases: CustomerCenterPurchasesType {
 
+    typealias PurchaseAction = @Sendable (PurchaseParams) async throws -> PurchaseResultData
+
+    private let purchaseAction: PurchaseAction
+
+    #if canImport(UIKit) && !os(watchOS)
+    private let presentationWindowStore = PresentationWindowStore()
+    #endif
+
+    init() {
+        self.purchaseAction = { params in
+            try await Purchases.shared.purchase(params)
+        }
+    }
+
+    init(purchaseAction: @escaping PurchaseAction) {
+        self.purchaseAction = purchaseAction
+    }
+
     var isSandbox: Bool {
         return Purchases.shared.isSandbox
     }
@@ -56,23 +74,31 @@ final class CustomerCenterPurchases: CustomerCenterPurchasesType {
                                                     product: product)
     }
 
+    @MainActor
     func purchase(
         product: StoreProduct,
         promotionalOffer: PromotionalOffer?
     ) async throws -> PurchaseResultData {
-        if let promotionalOffer = promotionalOffer {
-            return try await Purchases.shared.purchase(
-                product: product,
-                promotionalOffer: promotionalOffer
-            )
-        } else {
-            return try await Purchases.shared.purchase(product: product)
+        let builder = PurchaseParams.Builder(product: product)
+        if let promotionalOffer {
+            _ = builder.with(promotionalOffer: promotionalOffer)
         }
+
+        return try await self.purchaseAction(self.purchaseParams(from: builder))
     }
 
+    @MainActor
     func purchase(package: Package) async throws -> PurchaseResultData {
-        return try await Purchases.shared.purchase(package: package)
+        let builder = PurchaseParams.Builder(package: package)
+        return try await self.purchaseAction(self.purchaseParams(from: builder))
     }
+
+    #if canImport(UIKit) && !os(watchOS)
+    @MainActor
+    func updatePresentationWindow(_ window: PurchasePresentationWindow?, reportedBy owner: AnyObject) {
+        self.presentationWindowStore.update(window, reportedBy: owner)
+    }
+    #endif
 
     func track(customerCenterEvent: any CustomerCenterEventType) {
         Purchases.shared.track(customerCenterEvent: customerCenterEvent)
@@ -114,4 +140,17 @@ final class CustomerCenterPurchases: CustomerCenterPurchasesType {
         try await Purchases.shared.beginRefundRequest(forProduct: productID)
     }
     #endif
+
+    /// Builds purchase parameters anchored to the Customer Center's current presentation window.
+    @MainActor
+    private func purchaseParams(from builder: PurchaseParams.Builder) -> PurchaseParams {
+        #if canImport(UIKit) && !os(watchOS)
+        if let presentationContext = self.presentationWindowStore.presentationContext {
+            _ = builder.with(presentationContext: presentationContext)
+        }
+        #endif
+
+        return builder.build()
+    }
+
 }

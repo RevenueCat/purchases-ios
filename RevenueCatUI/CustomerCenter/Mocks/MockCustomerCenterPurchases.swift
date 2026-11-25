@@ -103,6 +103,15 @@ final class MockCustomerCenterPurchases: @unchecked Sendable, CustomerCenterPurc
         return try (purchasePackageResult ?? purchaseResult).get()
     }
 
+    #if canImport(UIKit) && !os(watchOS)
+    private(set) var presentationWindow: PurchasePresentationWindow?
+    private(set) var presentationWindowOwner: AnyObject?
+    func updatePresentationWindow(_ window: PurchasePresentationWindow?, reportedBy owner: AnyObject) {
+        self.presentationWindow = window
+        self.presentationWindowOwner = owner
+    }
+    #endif
+
     var trackCallCount = 0
     var trackError: Error?
     var trackedEvents: [CustomerCenterEventType] = []

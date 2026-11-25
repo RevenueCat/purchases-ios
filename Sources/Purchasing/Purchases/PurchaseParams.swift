@@ -133,6 +133,12 @@ import AppKit
             return self
         }
 
+        /// Sets the internal presentation context for purchase-related UI.
+        @_spi(Internal) public func with(presentationContext: PresentationContext) -> Self {
+            self.presentationContext = presentationContext
+            return self
+        }
+
         /**
          * Set `quantity`.
          * - Parameter quantity: The number of items to purchase. Must be between 1 and 10 (inclusive).

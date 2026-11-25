@@ -21,6 +21,7 @@ import Nimble
 import XCTest
 
 #if os(iOS)
+import UIKit
 
 // swiftlint:disable file_length
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -48,6 +49,21 @@ final class CustomerCenterViewModelTests: TestCase {
         expect(viewModel.nonSubscriptionsSection).to(beEmpty())
         expect(viewModel.state) == .notLoaded
         expect(viewModel.virtualCurrencies).to(beNil())
+    }
+
+    func testUpdatePresentationWindowForwardsToPurchasesProvider() {
+        let purchases = MockCustomerCenterPurchases()
+        let viewModel = CustomerCenterViewModel(
+            actionWrapper: CustomerCenterActionWrapper(),
+            purchasesProvider: purchases
+        )
+        let window = UIWindow()
+        let owner = NSObject()
+
+        viewModel.updatePresentationWindow(window, reportedBy: owner)
+
+        expect(purchases.presentationWindow).to(beIdenticalTo(window))
+        expect(purchases.presentationWindowOwner).to(beIdenticalTo(owner))
     }
 
     func testStateChangeToError() {

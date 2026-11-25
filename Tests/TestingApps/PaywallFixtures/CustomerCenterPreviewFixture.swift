@@ -4,6 +4,9 @@ import Foundation
 @_spi(Internal) import RevenueCat
 @_spi(Internal) import RevenueCatUI
 import SwiftUI
+#if canImport(UIKit) && !os(watchOS)
+import UIKit
+#endif
 
 /// Exercises the mobile app's SPI entry point, including the sheet it owns, without test-only SDK hooks.
 struct CustomerCenterPreviewFixture: View {
@@ -80,6 +83,9 @@ private final class CustomerCenterPreviewFixtureProvider: ObservableObject, Cust
         events.append("purchase")
         return (nil, info, false)
     }
+    #if canImport(UIKit) && !os(watchOS)
+    func updatePresentationWindow(_ window: UIWindow?, reportedBy owner: AnyObject) {}
+    #endif
     func promotionalOffer(forProductDiscount discount: StoreProductDiscount,
                           product: StoreProduct) async throws -> PromotionalOffer { throw ErrorCode.configurationError }
     func createTicket(customerEmail: String, ticketDescription: String) async throws -> Bool { true }
