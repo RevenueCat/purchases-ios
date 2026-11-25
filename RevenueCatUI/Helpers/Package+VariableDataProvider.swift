@@ -136,6 +136,8 @@ extension Package: VariableDataProvider {
         }
 
         copy.locale = deviceLocale
+        // Setting `locale` resets the currency to the locale's default, so keep the storefront's currency.
+        copy.currencyCode = formatter.currencyCode
         return copy.string(from: fullPrice) == displayedPrice ? copy : formatter
     }
 
