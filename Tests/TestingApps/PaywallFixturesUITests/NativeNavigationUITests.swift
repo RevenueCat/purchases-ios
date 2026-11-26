@@ -52,25 +52,31 @@ final class NativeNavigationUITests: XCTestCase {
         self.assertNativeControls(in: app, back: true, close: true)
         let detailBodyTop = app.staticTexts["Workflow detail"].frame.minY
         app.buttons["Open inline sheet"].tap()
-        self.assertVisible(app.buttons["Designed sheet Close"], in: app)
-        let suspended = XCTNSPredicateExpectation(predicate: NSPredicate { _, _ in
+        let sheetClose = app.buttons["Designed sheet Close"]
+        self.assertVisible(sheetClose, in: app)
+        let suspended = NSPredicate { _, _ in
             let back = app.buttons[self.backIdentifier]
             let close = app.buttons[self.closeIdentifier]
             return back.exists && !back.isEnabled && close.exists && !close.isEnabled
                 && !app.buttons["BackButton"].exists
-        }, object: nil)
-        XCTAssertEqual(XCTWaiter.wait(for: [suspended], timeout: 10), .completed, app.debugDescription)
+        }
+        if !suspended.evaluate(with: nil) {
+            let expectation = XCTNSPredicateExpectation(predicate: suspended, object: nil)
+            _ = XCTWaiter.wait(for: [expectation], timeout: 10)
+        }
+        XCTAssertTrue(suspended.evaluate(with: nil), app.debugDescription)
         let start = app.coordinate(withNormalizedOffset: CGVector(dx: 0.01, dy: 0.5))
         let end = app.coordinate(withNormalizedOffset: CGVector(dx: 0.9, dy: 0.5))
         start.press(forDuration: 0.1, thenDragTo: end)
-        self.assertVisible(app.buttons["Designed sheet Close"], in: app)
-        app.buttons["Designed sheet Close"].tap()
+        self.assertVisible(sheetClose, in: app)
+        sheetClose.tap()
         self.assertVisible(app.staticTexts["Workflow detail"], in: app)
         self.assertNativeControls(in: app, back: true, close: true)
         XCTAssertEqual(app.staticTexts["Workflow detail"].frame.minY, detailBodyTop,
                        accuracy: 1, app.debugDescription)
         app.buttons[self.backIdentifier].tap()
         self.assertVisible(app.staticTexts["Workflow root"], in: app)
+        self.assertNativeControls(in: app, back: false, close: true)
         app.buttons[self.closeIdentifier].tap()
         XCTAssertTrue(app.staticTexts["Paywall dismissed"].waitForExistence(timeout: 10), app.debugDescription)
     }
@@ -319,6 +325,7 @@ final class NativeNavigationUITests: XCTestCase {
         if element.exists && element.isHittable { return }
         let visible = XCTNSPredicateExpectation(predicate: NSPredicate(format: "exists == true AND hittable == true"),
                                                object: element)
-        XCTAssertEqual(XCTWaiter.wait(for: [visible], timeout: 10), .completed, app.debugDescription)
+        let result = XCTWaiter.wait(for: [visible], timeout: 10)
+        XCTAssertTrue(result == .completed || (element.exists && element.isHittable), app.debugDescription)
     }
 }
