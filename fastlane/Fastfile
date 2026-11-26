@@ -12,6 +12,7 @@
 
 require_relative 'api_diff_helper'
 require_relative 'performance_baseline_helper'
+require_relative 'workflow_trace'
 require 'rexml/document'
 require 'json'
 require 'open3'
@@ -1794,6 +1795,51 @@ platform :ios do
     workflow_url = "https://app.circleci.com/pipelines/github/RevenueCat/#{INTERNAL_REPO_NAME}/#{number}"
 
     UI.important "Workflow: #{workflow_url}"
+  end
+
+  desc "Record and compare workflow CPU traces"
+  lane :workflow_trace do |options|
+    UI.user_error!("Pass output:DIRECTORY.") unless options[:output]
+    root = File.expand_path('..', __dir__)
+    output = File.expand_path(options[:output], root)
+    UI.user_error!("Use a new output directory to preserve previous results.") if File.exist?(output)
+    baseline = File.expand_path(options[:baseline], root) if options[:baseline] && !options[:record_baseline]
+    if baseline && !File.file?(File.join(baseline, 'summary.json'))
+      UI.user_error!("Missing #{baseline}/summary.json. Record a baseline before the comparison.")
+    end
+
+    device = options[:device]
+    unless device
+      devices = JSON.parse(sh('xcrun', 'simctl', 'list', 'devices', 'available', '-j', log: false)).fetch('devices')
+      runtime_devices = devices.fetch('com.apple.CoreSimulator.SimRuntime.iOS-27-0', [])
+      matches = runtime_devices.select { |entry| entry['name'] == 'iPhone 17' }
+      UI.user_error!("Expected one iPhone 17 simulator with iOS 27.0. Found #{matches.size}.") unless matches.one?
+      device = matches.first.fetch('udid')
+    end
+    derived_data = File.expand_path(ENV.fetch('WORKFLOW_TRACE_DERIVED_DATA', '.build/workflow-trace'), root)
+
+    xcodebuild(
+      build: true,
+      workspace: File.join(root, 'RevenueCat-Tuist.xcworkspace'),
+      scheme: 'AutomatedSDKTestsApp',
+      configuration: 'Release',
+      destination: "platform=iOS Simulator,id=#{device}",
+      derivedDataPath: derived_data,
+      buildlog_path: derived_data,
+      build_settings: {
+        'ENABLE_TESTABILITY' => 'YES', 'CODE_SIGNING_ALLOWED' => 'NO', 'ONLY_ACTIVE_ARCH' => 'YES',
+        'SWIFT_ACTIVE_COMPILATION_CONDITIONS' => '$(inherited) DEBUG',
+        'SWIFT_OPTIMIZATION_LEVEL' => '-O', 'DEBUG_INFORMATION_FORMAT' => 'dwarf-with-dsym'
+      }
+    )
+
+    code = WorkflowTrace.new(
+      device: device, output: output,
+      app: File.join(derived_data, 'Build/Products/Release-iphonesimulator/AutomatedSDKTestsApp.app'),
+      baseline: baseline,
+      iterations: options[:iterations] || WorkflowMetrics::MIN_ITERATIONS
+    ).run
+    UI.user_error!("Workflow benchmark failed. See #{output}/comparison.txt.") unless code.zero?
   end
 
   desc "Push updated performance baselines to the PR branch"

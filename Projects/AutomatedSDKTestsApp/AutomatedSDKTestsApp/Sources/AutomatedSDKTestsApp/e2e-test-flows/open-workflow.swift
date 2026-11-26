@@ -44,12 +44,18 @@ extension E2ETestFlowView {
         enum GetOfferingsState {
             case loading
             case loaded(Offering)
-            case loadedWorkflow(WorkflowContext)
+            case loadedWorkflow(@MainActor () throws -> WorkflowContext)
             case failed(Error)
+        }
+
+        private struct PresentedWorkflow: Identifiable {
+            let id = UUID()
+            let context: WorkflowContext
         }
 
         @State private var offeringsState: GetOfferingsState = .loading
         @State private var presentPaywall = false
+        @State private var presentedWorkflow: PresentedWorkflow?
         @State private var loggedInAppUserID: String?
 
         var body: some View {
@@ -69,13 +75,18 @@ extension E2ETestFlowView {
                         PaywallView(offering: offering)
                             .customPaywallVariables(Self.customVariableOverrides)
                     }
-                case .loadedWorkflow(let context):
+                case .loadedWorkflow(let makeContext):
                     Button("Present Paywall") {
-                        presentPaywall = true
+                        WorkflowProfile.present()
+                        do {
+                            presentedWorkflow = try PresentedWorkflow(context: makeContext())
+                        } catch {
+                            offeringsState = .failed(error)
+                        }
                     }
                     .buttonStyle(.borderedProminent)
-                    .sheet(isPresented: $presentPaywall) {
-                        PaywallView(workflowContext: context)
+                    .sheet(item: $presentedWorkflow) { workflow in
+                        PaywallView(workflowContext: workflow.context)
                             .customPaywallVariables(Self.customVariableOverrides)
                     }
                 case .failed(let error):
@@ -110,16 +121,21 @@ extension E2ETestFlowView {
                 let offerings = try await Purchases.shared.offerings()
                 if let workflowId = Self.workflowIdentifier {
                     let result = try await Purchases.shared.workflow(forWorkflowIdentifier: workflowId)
-                    offeringsState = .loadedWorkflow(
-                        try WorkflowPreview.makeContext(
-                            workflow: result.workflow,
-                            offerings: offerings,
-                            uiConfig: result.uiConfig,
-                            workflowBlobRef: result.workflowBlobRef
-                        )
+                    let context = try WorkflowPreview.makeContext(
+                        workflow: result.workflow,
+                        offerings: offerings,
+                        uiConfig: result.uiConfig,
+                        workflowBlobRef: result.workflowBlobRef
                     )
+                    offeringsState = .loadedWorkflow { context }
                 } else if let offering = offerings.offering(identifier: Self.offeringIdentifier) {
-                    offeringsState = .loaded(offering)
+                    if WorkflowProfile.isEnabled {
+                        offeringsState = .loadedWorkflow(try await WorkflowProfile.prepare(
+                            offering: offering, offerings: offerings
+                        ))
+                    } else {
+                        offeringsState = .loaded(offering)
+                    }
                 } else {
                     offeringsState = .failed(OfferingError.notFound)
                 }

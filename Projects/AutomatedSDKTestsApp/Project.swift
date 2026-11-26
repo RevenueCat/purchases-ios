@@ -20,6 +20,8 @@ let project = Project(
                         "UIColorName": "",
                         "UIImageName": "",
                     ],
+                    "WorkflowProfileBuild":
+                        "$(CONFIGURATION):$(SWIFT_OPTIMIZATION_LEVEL):$(SWIFT_ACTIVE_COMPILATION_CONDITIONS)",
                     "REVENUECAT_API_KEY": "$(REVENUECAT_API_KEY)",
                     "REVENUECAT_PROXY_URL_SCHEME": "$(REVENUECAT_PROXY_URL_SCHEME)",
                     "REVENUECAT_PROXY_URL_HOST": "$(REVENUECAT_PROXY_URL_HOST)",

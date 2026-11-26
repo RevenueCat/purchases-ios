@@ -2,6 +2,7 @@ danger.import_dangerfile(github: 'RevenueCat/Dangerfile')
 
 require 'pathname'
 require 'set'
+require_relative '.circleci/workflow_benchmark_runner'
 
 EXCLUDED_SWIFT_PATH_PREFIXES = [
   'Tests/APITesters/',
@@ -188,6 +189,13 @@ all_warnings.concat(w)
 f, w = pr_size_messages
 all_failures.concat(f)
 all_warnings.concat(w)
+
+config_path = '.circleci/default_config.yml'
+if git.modified_files.include?(config_path)
+  diff = git.diff_for_file(config_path)
+  warning = WorkflowBenchmarkRunner.warning(diff.blob(:src).contents, diff.blob(:dst).contents)
+  all_warnings << warning if warning
+end
 
 # Manage a single sticky comment — edit it on each run, delete it when all checks pass
 repo = github.pr_json["base"]["repo"]["full_name"]

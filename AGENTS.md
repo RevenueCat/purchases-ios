@@ -178,6 +178,10 @@ To record a candidate baseline, start a CircleCI pipeline with `action=record_pe
 
 For local record mode, prefix the command with `TEST_RUNNER_RECORD_PERFORMANCE_BASELINES=1`. Use the same test selection for record and comparison runs. CI runs the full `PerformanceTests` target. Disable record mode before you compare results.
 
+### Workflow trace fixture
+
+The `default_workflows` fixture in `AutomatedSDKTestsApp` measures workflow CPU use. See the [workflow benchmark guide](Contributing/TESTING.md#workflow-cpu-benchmark) for local commands, CI results, and baseline updates.
+
 ## Development Workflow
 
 For environment setup, see **`Contributing/CONTRIBUTING.md`**. For code style, see **`Contributing/SwiftStyleGuide.swift`**.

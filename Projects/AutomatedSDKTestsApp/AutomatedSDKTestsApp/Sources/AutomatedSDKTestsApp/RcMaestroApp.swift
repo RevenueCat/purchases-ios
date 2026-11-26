@@ -32,7 +32,7 @@ struct RcMaestroApp: App {
         }
         #endif
 
-        Purchases.logLevel = .verbose
+        Purchases.logLevel = WorkflowProfile.isEnabled ? .error : .verbose
         Purchases.proxyURL = Constants.proxyURL.flatMap { URL(string: $0) }
 
         // Set API base URL if provided (used in E2E tests)
@@ -81,11 +81,24 @@ struct RcMaestroApp: App {
             if Self.isStoreKitWarmup {
                 StoreKitWarmupView()
             } else {
-                appContent
+                profileContent
             }
             #else
-            appContent
+            profileContent
             #endif
+        }
+    }
+
+    @ViewBuilder
+    private var profileContent: some View {
+        if WorkflowProfile.isEnabled {
+            appContent
+                .preferredColorScheme(.light)
+                .dynamicTypeSize(.large)
+                .environment(\.locale, Locale(identifier: "en_US"))
+                .environment(\.layoutDirection, .leftToRight)
+        } else {
+            appContent
         }
     }
 
