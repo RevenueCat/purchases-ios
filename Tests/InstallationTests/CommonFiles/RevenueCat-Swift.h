@@ -465,6 +465,7 @@ SWIFT_AVAILABILITY(watchos,unavailable) SWIFT_AVAILABILITY(tvos,unavailable) SWI
 ///     <code>$ip</code>
 ///   </li>
 /// </ul>
+/// This collects them regardless of the configured <code>DeviceIdentifierCollectionMode</code>.
 - (void)collectDeviceIdentifiers;
 /// Subscriber attributes are useful for storing additional, structured information on a user.
 /// Since attributes are writable using a public key they should not be used for
@@ -945,6 +946,7 @@ enum RCStoreKitVersion : NSInteger;
 @class RCDangerousSettings;
 @class RCPlatformInfo;
 enum RCEntitlementVerificationMode : NSInteger;
+@class RCDeviceIdentifierCollectionMode;
 @class RCConfiguration;
 /// The Builder for <code>Configuration</code>.
 SWIFT_CLASS_NAMED("Builder")
@@ -1048,17 +1050,12 @@ SWIFT_CLASS_NAMED("Builder")
 ///   </li>
 /// </ul>
 - (RCConfigurationBuilder * _Nonnull)withStoreKitVersion:(enum RCStoreKitVersion)version SWIFT_WARN_UNUSED_RESULT;
+/// Set how the SDK collects device identifiers. <code>DeviceIdentifierCollectionMode/automatic</code> by default.
+- (RCConfigurationBuilder * _Nonnull)withDeviceIdentifierCollectionMode:(RCDeviceIdentifierCollectionMode * _Nonnull)deviceIdentifierCollectionMode SWIFT_WARN_UNUSED_RESULT;
 /// Set <code>automaticDeviceIdentifierCollectionEnabled</code>. This is enabled by default.
-/// Enable this setting to allow the collection of identifiers when setting the identifier for an
-/// attribution network. For example, when calling<code>Purchases/setAdjustID(_:)</code>
-/// or <code>Purchases/setAppsflyerID(_:)</code>, the SDK would collect the device identifiers like
-/// IDFA, IDFV or IP, if available, and send them to RevenueCat.
-/// This is required by some attribution networks to attribute installs and re-installs.
-/// Enabling this setting does NOT mean we will always collect the identifiers. We will only do so when
-/// setting an attribution network ID and the user has not limited tracking on their device.
-/// With this option disabled you can still collect device identifiers
-/// by calling <code>Purchases/collectDeviceIdentifiers()</code>
-- (RCConfigurationBuilder * _Nonnull)withAutomaticDeviceIdentifierCollectionEnabled:(BOOL)automaticDeviceIdentifierCollectionEnabled SWIFT_WARN_UNUSED_RESULT;
+/// <code>true</code> is equivalent to <code>DeviceIdentifierCollectionMode/automatic</code> and <code>false</code> to
+/// <code>DeviceIdentifierCollectionMode/functional</code>.
+- (RCConfigurationBuilder * _Nonnull)withAutomaticDeviceIdentifierCollectionEnabled:(BOOL)automaticDeviceIdentifierCollectionEnabled SWIFT_WARN_UNUSED_RESULT SWIFT_DEPRECATED_MSG("Use with(deviceIdentifierCollectionMode:): .automatic for true, .functional for false");
 /// Set <code>iamEnabled</code>. This is <em>disabled</em> by default.
 /// Enabling tells the SDK to prefer using token-based user sessions for communicating with the server.
 /// seealso:
@@ -1080,11 +1077,11 @@ SWIFT_CLASS_NAMED("Builder")
 @end
 
 @interface RCConfigurationBuilder (SWIFT_EXTENSION(RevenueCat))
-- (RCConfigurationBuilder * _Nonnull)withObserverMode:(BOOL)observerMode SWIFT_WARN_UNUSED_RESULT SWIFT_AVAILABILITY(macos,obsoleted=1,message="'with' has been renamed to 'withPurchasesAreCompletedBy:storeKitVersion:': Observer Mode is now named PurchasesAreCompletedBy.") SWIFT_AVAILABILITY(watchos,obsoleted=1,message="'with' has been renamed to 'withPurchasesAreCompletedBy:storeKitVersion:': Observer Mode is now named PurchasesAreCompletedBy.") SWIFT_AVAILABILITY(tvos,obsoleted=1,message="'with' has been renamed to 'withPurchasesAreCompletedBy:storeKitVersion:': Observer Mode is now named PurchasesAreCompletedBy.") SWIFT_AVAILABILITY(ios,obsoleted=1,message="'with' has been renamed to 'withPurchasesAreCompletedBy:storeKitVersion:': Observer Mode is now named PurchasesAreCompletedBy.");
+- (RCConfigurationBuilder * _Nonnull)withUsesStoreKit2IfAvailable:(BOOL)usesStoreKit2IfAvailable SWIFT_WARN_UNUSED_RESULT SWIFT_DEPRECATED_MSG("Use .with(storeKitVersion:) to enable StoreKit 2");
 @end
 
 @interface RCConfigurationBuilder (SWIFT_EXTENSION(RevenueCat))
-- (RCConfigurationBuilder * _Nonnull)withUsesStoreKit2IfAvailable:(BOOL)usesStoreKit2IfAvailable SWIFT_WARN_UNUSED_RESULT SWIFT_DEPRECATED_MSG("Use .with(storeKitVersion:) to enable StoreKit 2");
+- (RCConfigurationBuilder * _Nonnull)withObserverMode:(BOOL)observerMode SWIFT_WARN_UNUSED_RESULT SWIFT_AVAILABILITY(macos,obsoleted=1,message="'with' has been renamed to 'withPurchasesAreCompletedBy:storeKitVersion:': Observer Mode is now named PurchasesAreCompletedBy.") SWIFT_AVAILABILITY(watchos,obsoleted=1,message="'with' has been renamed to 'withPurchasesAreCompletedBy:storeKitVersion:': Observer Mode is now named PurchasesAreCompletedBy.") SWIFT_AVAILABILITY(tvos,obsoleted=1,message="'with' has been renamed to 'withPurchasesAreCompletedBy:storeKitVersion:': Observer Mode is now named PurchasesAreCompletedBy.") SWIFT_AVAILABILITY(ios,obsoleted=1,message="'with' has been renamed to 'withPurchasesAreCompletedBy:storeKitVersion:': Observer Mode is now named PurchasesAreCompletedBy.");
 @end
 
 /// Specifies the behavior for a caching API.
@@ -1428,6 +1425,43 @@ SWIFT_CLASS_NAMED("DangerousSettings")
 - (nonnull instancetype)initWithAutoSyncPurchases:(BOOL)autoSyncPurchases customEntitlementComputation:(BOOL)customEntitlementComputation;
 - (BOOL)isEqual:(id _Nullable)object SWIFT_WARN_UNUSED_RESULT;
 @property (nonatomic, readonly) NSUInteger hash;
+@end
+
+/// Defines which device identifiers the SDK sends to RevenueCat without an explicit call.
+/// <code>Purchases/collectDeviceIdentifiers()</code> collects them in every mode.
+/// <h3>Related Symbols</h3>
+/// <ul>
+///   <li>
+///     <code>Configuration/Builder/with(deviceIdentifierCollectionMode:)</code>
+///   </li>
+/// </ul>
+SWIFT_CLASS_NAMED("DeviceIdentifierCollectionMode")
+@interface RCDeviceIdentifierCollectionMode : NSObject
+/// The SDK sends the device’s <code>identifierForVendor</code> in the <code>X-Apple-Device-Identifier</code> header of
+/// its requests, and collects device identifiers like IDFA, IDFV or IP, if available, when setting
+/// the identifier for an attribution network. For example, when calling
+/// <code>Purchases/setAdjustID(_:)</code> or <code>Purchases/setAppsflyerID(_:)</code>.
+/// This is required by some attribution networks to attribute installs and re-installs.
+/// The IDFA is all zeros unless the user has authorized tracking. The IDFV and IP are collected
+/// regardless.
+SWIFT_CLASS_PROPERTY(@property (nonatomic, class, readonly, strong) RCDeviceIdentifierCollectionMode * _Nonnull automatic;)
++ (RCDeviceIdentifierCollectionMode * _Nonnull)automatic SWIFT_WARN_UNUSED_RESULT;
+/// The SDK only sends the device’s <code>identifierForVendor</code> in the <code>X-Apple-Device-Identifier</code> header
+/// of its requests. RevenueCat needs it to validate StoreKit 1 receipts created with a StoreKit
+/// Configuration file in Xcode. In macOS and Mac Catalyst sandbox builds, the header carries an
+/// identifier derived from the device’s MAC address instead.
+SWIFT_CLASS_PROPERTY(@property (nonatomic, class, readonly, strong) RCDeviceIdentifierCollectionMode * _Nonnull functional;)
++ (RCDeviceIdentifierCollectionMode * _Nonnull)functional SWIFT_WARN_UNUSED_RESULT;
+/// The SDK does not send the <code>X-Apple-Device-Identifier</code> header and only collects device
+/// identifiers when <code>Purchases/collectDeviceIdentifiers()</code> is called.
+/// warning:
+/// RevenueCat needs the <code>X-Apple-Device-Identifier</code> header to validate StoreKit 1
+/// receipts created with a StoreKit Configuration file in Xcode. In this mode, those test
+/// purchases fail.
+SWIFT_CLASS_PROPERTY(@property (nonatomic, class, readonly, strong) RCDeviceIdentifierCollectionMode * _Nonnull manualOnly;)
++ (RCDeviceIdentifierCollectionMode * _Nonnull)manualOnly SWIFT_WARN_UNUSED_RESULT;
+- (nonnull instancetype)init SWIFT_UNAVAILABLE;
++ (nonnull instancetype)new SWIFT_UNAVAILABLE_MSG("-init is unavailable");
 @end
 
 SWIFT_CLASS("_TtC10RevenueCat24DiagnosticsPostOperation")
@@ -3905,7 +3939,9 @@ SWIFT_PROTOCOL_NAMED("PurchasesDelegate")
 /// objc: purchases:receivedUpdatedCustomerInfo:
 - (void)purchases:(RCPurchases * _Nonnull)purchases didReceiveUpdatedPurchaserInfo:(RCCustomerInfo * _Nonnull)purchaserInfo SWIFT_AVAILABILITY(watchos,obsoleted=1) SWIFT_AVAILABILITY(tvos,obsoleted=1) SWIFT_AVAILABILITY(macos,obsoleted=1) SWIFT_AVAILABILITY(ios,obsoleted=1);
 /// Called whenever <code>Purchases</code> receives updated customer info. This may happen periodically
-/// throughout the life of the app if new information becomes available (e.g. UIApplicationDidBecomeActive).*
+/// throughout the life of the app if new information becomes available (e.g. UIApplicationDidBecomeActive).
+/// It is also called when a promotional entitlement expires according to the device clock, with the
+/// cached <code>CustomerInfo</code> re-evaluated so that the entitlement is no longer active.
 /// \param purchases Related <code>Purchases</code> object
 ///
 /// \param customerInfo Updated <code>CustomerInfo</code>
@@ -4097,6 +4133,10 @@ typedef SWIFT_ENUM_NAMED(NSInteger, RCStore, "Store", open) {
   RCTestStore SWIFT_COMPILE_NAME("testStore") = 10,
 /// For entitlements granted via the Galaxy Store.
   RCGalaxy SWIFT_COMPILE_NAME("galaxy") = 11,
+/// For entitlements granted via Roku.
+  RCRoku SWIFT_COMPILE_NAME("roku") = 12,
+/// For entitlements granted via PayPal.
+  RCPayPal SWIFT_COMPILE_NAME("payPal") = 13,
 };
 
 SWIFT_CLASS("_TtC10RevenueCat16StoreKit1Wrapper")
