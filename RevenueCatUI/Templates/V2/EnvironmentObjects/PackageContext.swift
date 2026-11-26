@@ -121,6 +121,7 @@ class PackageContext: ObservableObject {
     var isPresentingSheet: Bool { self.presentedSheetContext != nil }
 
     private var presentedSheetIDs: Set<String> = []
+    private var hasOwnSheetPackages = false
 
     @MainActor
     func activateSheet(
@@ -150,6 +151,7 @@ class PackageContext: ObservableObject {
                 showZeroDecimalPlacePrices: self.variableContext.showZeroDecimalPlacePrices
             )
         )
+        context.hasOwnSheetPackages = !packages.isEmpty
         self.retainedSheetSelection = nil
         self.presentedSheetContext = context
         self.update(package: context.package, variableContext: context.variableContext, isReconcile: true)
@@ -161,8 +163,17 @@ class PackageContext: ObservableObject {
     private var retainedSheetSelection: (package: Package, wasManuallySelected: Bool)?
 
     func dismissSheet(retainingSelection: Bool) {
-        if retainingSelection, let sheet = self.presentedSheetContext, let package = sheet.package {
+        if retainingSelection,
+           let sheet = self.presentedSheetContext,
+           sheet.hasOwnSheetPackages,
+           let package = sheet.package {
             self.retainedSheetSelection = (package, sheet.manuallySelectedPackage?.identifier == package.identifier)
+            // Tabs without packages restore the parent's selection when they become active.
+            // Dismissal can keep the same package, so their cache won't see a package change.
+            for state in self.tabsStatesByIdentifier.values {
+                state.parentOwnedPackage = package
+                state.parentOwnedVariableContext = self.variableContext
+            }
         } else {
             self.retainedSheetSelection = nil
         }

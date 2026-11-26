@@ -24,10 +24,11 @@ struct PaywallFixturesApp: App {
     /// deliberately not a real one: offerings and customer info come from the fixture, purchases are
     /// stubbed, so no request needs to succeed and no secret belongs in this app.
     init() {
-        if ProcessInfo.processInfo.environment["PAYWALL_FIXTURE"] != CustomerCenterPreviewFixture.name
+        let fixtureName = ProcessInfo.processInfo.environment["PAYWALL_FIXTURE"]
+        if fixtureName != CustomerCenterPreviewFixture.name
             || ProcessInfo.processInfo.environment["PREVIEW_CONFIGURE_SDK"] == "1" {
             let configuration = Configuration.builder(withAPIKey: "appl_paywallFixtures")
-            if ProcessInfo.processInfo.environment["PAYWALL_FIXTURE"] == PaywallFixture.competingSheetDefaults.rawValue {
+            if let fixtureName, PaywallFixture(rawValue: fixtureName)?.showsPurchasedPackage == true {
                 _ = configuration.with(purchasesAreCompletedBy: .myApp, storeKitVersion: .storeKit2)
             }
             Purchases.configure(with: configuration)

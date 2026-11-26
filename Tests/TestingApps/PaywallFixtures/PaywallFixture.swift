@@ -60,6 +60,10 @@ enum PaywallFixture: String, CaseIterable {
     case competingSheetDefaults = "competing_sheet_defaults"
     case manualRootSelectionVisibility = "manual_root_selection_visibility"
 
+    var showsPurchasedPackage: Bool {
+        self == .competingSheetDefaults || self == .tabsAndSharedSheets
+    }
+
     var title: String {
         switch self {
         case .nestedBillingTabs:

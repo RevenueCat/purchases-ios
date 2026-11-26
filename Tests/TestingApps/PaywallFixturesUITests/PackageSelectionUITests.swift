@@ -127,10 +127,46 @@ final class PackageSelectionUITests: XCTestCase {
         app.buttons["Overview"].tap()
         XCTAssertTrue(app.staticTexts["Selected package: Annual"].waitForExistence(timeout: 5))
         XCTAssertEqual(purchaseButton.label, annualPurchaseLabel)
+        self.assertPurchase("$rc_annual", using: purchaseButton, in: app)
 
         app.buttons["Annual plans"].tap()
         XCTAssertTrue(app.staticTexts["Selected package: Annual"].waitForExistence(timeout: 5))
         XCTAssertEqual(purchaseButton.label, annualPurchaseLabel)
+    }
+
+    func testClosingInfoSheetKeepsOverviewPurchaseSelection() {
+        let app = XCUIApplication()
+        app.launchEnvironment["PAYWALL_FIXTURE"] = "tabs_and_shared_sheets"
+        app.launch()
+        XCTAssertTrue(app.staticTexts["Selected package: Monthly"].waitForExistence(timeout: 10))
+        let purchaseButton = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Purchase selected"))
+            .firstMatch
+        let monthlyPurchaseLabel = purchaseButton.label
+
+        app.buttons["Annual plans"].tap()
+        XCTAssertTrue(app.staticTexts["Selected package: Annual"].waitForExistence(timeout: 5))
+        app.buttons["Plan details"].tap()
+        XCTAssertTrue(app.staticTexts["Annual plan details"].waitForExistence(timeout: 5))
+        app.buttons["Close details"].tap()
+        app.buttons["Overview"].tap()
+
+        XCTAssertTrue(app.staticTexts["Selected package: Monthly"].waitForExistence(timeout: 5), app.debugDescription)
+        XCTAssertEqual(purchaseButton.label, monthlyPurchaseLabel)
+        self.assertPurchase("$rc_monthly", using: purchaseButton, in: app)
+    }
+
+    private func assertPurchase(
+        _ packageIdentifier: String,
+        using button: XCUIElement,
+        in app: XCUIApplication,
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) {
+        button.tap()
+        let result = app.alerts["Purchase callback"]
+        XCTAssertTrue(result.waitForExistence(timeout: 5), app.debugDescription, file: file, line: line)
+        XCTAssertTrue(result.staticTexts[packageIdentifier].exists, result.debugDescription, file: file, line: line)
+        result.buttons["OK"].tap()
     }
 
     private func launchMixedTabs() -> XCUIApplication {

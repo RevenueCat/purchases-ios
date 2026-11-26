@@ -57,6 +57,12 @@ extension PaywallFixture {
 
         let sharedSheet = sheet("Shared plans", defaultPackageID: "$rc_monthly")
         let annualSheet = sheet("Annual plans", defaultPackageID: "$rc_annual")
+        let infoSheet = PaywallComponent.ButtonComponent.Sheet(
+            id: "info", name: "Plan details",
+            stack: .init(components: [text("Annual plan details"), button("Close details", action: .navigateBack)],
+                         padding: .init(top: 24, bottom: 24, leading: 16, trailing: 16)),
+            backgroundBlur: false, size: .init(width: .fill, height: .fit(nil))
+        )
         let tabs = PaywallComponent.tabs(.init(
             control: .init(type: .buttons, stack: .init(components: [
                 .tabControlButton(.init(tabId: "overview", stack: .init(components: [text("Overview")]))),
@@ -66,7 +72,8 @@ extension PaywallFixture {
                 .init(id: "overview", stack: .init(components: [.tabControl(.init())])),
                 .init(id: "annual", stack: .init(components: [
                     .tabControl(.init()),
-                    button("View annual plans", action: .navigateTo(destination: .sheet(sheet: annualSheet)))
+                    button("View annual plans", action: .navigateTo(destination: .sheet(sheet: annualSheet))),
+                    button("Plan details", action: .navigateTo(destination: .sheet(sheet: infoSheet)))
                 ]))
             ],
             defaultTabId: "overview"
