@@ -1226,9 +1226,16 @@ extension PurchaseHandler {
         self.urlOpenedSubject.send(url)
     }
 
-    func trackPaywallImpression(_ eventData: PaywallEvent.Data) {
+    func trackPaywallImpression(
+        _ eventData: PaywallEvent.Data,
+        flowEventNames: FlowEvent.PaywallNames? = nil
+    ) {
         self.activePaywallSessionID = eventData.sessionIdentifier
-        self.paywallEventTracker.trackPaywallImpression(eventData, flowEventNotifier: self.flowEventNotifier)
+        self.paywallEventTracker.trackPaywallImpression(
+            eventData,
+            flowEventNotifier: self.flowEventNotifier,
+            flowEventNames: flowEventNames
+        )
     }
 
     /// Clears the active paywall session (without discarding its tracked events) so subsequent purchase

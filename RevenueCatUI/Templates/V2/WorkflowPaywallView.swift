@@ -745,6 +745,7 @@ struct WorkflowPaywallView: View {
             stepId: page.stepId,
             workflowStepType: page.stepType,
             traceId: self.stepEventCoordinator.traceId,
+            flowEventNames: .init(flowName: self.context.workflow.displayName, screenName: page.screenName),
             isWorkflowSingleStepFallback: page.isSingleStepFallback
         )
         .environment(\.workflowPackageContext, page.effectiveWorkflowPackageContext)
@@ -1162,6 +1163,7 @@ struct WorkflowPaywallView: View {
             ),
             stepType: step.type,
             screenType: step.stepScreenType,
+            screenName: screen.name,
             isSingleStepFallback: stepId == context.workflow.singleStepFallbackId,
             headerComponent: screen.componentsConfig.base.header,
             showCloseButton: showCloseButton,
@@ -1445,6 +1447,7 @@ private struct RenderedPage: Identifiable {
     /// The step's `screen_type` classification (`nil` when the backend did not tag it). Drives whether
     /// this page reports paywall events. See `PaywallsV2View.shouldTrackPaywallEvents`.
     let screenType: [String]?
+    let screenName: String?
     /// Whether this step is the workflow's `singleStepFallbackId`. Only used to gate paywall events on
     /// untagged steps (`nil` `screenType`), restoring the structural fallback-step-only rule.
     let isSingleStepFallback: Bool

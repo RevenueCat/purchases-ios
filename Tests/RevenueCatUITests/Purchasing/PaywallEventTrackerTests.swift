@@ -157,6 +157,73 @@ class PaywallEventTrackerTests: TestCase {
         expect(impression.property(for: FlowEvent.Keys.traceId)) == "trace_1"
     }
 
+    func testPaywallCallbacksKeepNamesWithTheirSessionAndLeaveAnalyticsUnchanged() async {
+        let (tracker, trackedEvents) = Self.makeTracker()
+        let received: Atomic<[FlowEvent]> = .init([])
+        let notifier = FlowEventNotifier { event in received.modify { $0.append(event) } }
+        let workflowPaywall = Self.makeEventData()
+        let standalonePaywall = Self.makeEventData()
+        let names = FlowEvent.PaywallNames(flowName: "Onboarding", screenName: "Offer")
+
+        tracker.trackPaywallImpression(workflowPaywall, flowEventNotifier: notifier, flowEventNames: names)
+        tracker.trackPaywallImpression(standalonePaywall, flowEventNotifier: notifier)
+        tracker.trackPaywallClose(sessionID: workflowPaywall.sessionIdentifier, flowEventNotifier: notifier)
+        tracker.trackPaywallClose(sessionID: standalonePaywall.sessionIdentifier, flowEventNotifier: notifier)
+
+        await expect(received.value).toEventually(haveCount(4), timeout: .seconds(2))
+        let workflowCallbacks = received.value.filter {
+            $0.property(for: FlowEvent.Keys.sessionId) == workflowPaywall.sessionIdentifier.uuidString
+        }
+        let standaloneCallbacks = received.value.filter {
+            $0.property(for: FlowEvent.Keys.sessionId) == standalonePaywall.sessionIdentifier.uuidString
+        }
+        let expectedTypes = [FlowEvent.EventTypes.paywallImpression, FlowEvent.EventTypes.paywallClose]
+
+        expect(workflowCallbacks.compactMap { $0.property(for: FlowEvent.Keys.eventType) }) == expectedTypes
+        expect(workflowCallbacks.compactMap { $0.property(for: FlowEvent.Keys.flowName) }) == [
+            "Onboarding", "Onboarding"
+        ]
+        expect(workflowCallbacks.compactMap { $0.property(for: FlowEvent.Keys.screenName) }) == ["Offer", "Offer"]
+        expect(standaloneCallbacks.compactMap { $0.property(for: FlowEvent.Keys.eventType) }) == expectedTypes
+        expect(standaloneCallbacks.compactMap { $0.property(for: FlowEvent.Keys.flowName) }).to(beEmpty())
+        expect(standaloneCallbacks.compactMap { $0.property(for: FlowEvent.Keys.screenName) }).to(beEmpty())
+
+        await expect(trackedEvents.value).toEventually(haveCount(4), timeout: .seconds(2))
+        let analyticsPayloads = trackedEvents.value.map { $0.paywallMap() }
+        expect(analyticsPayloads.compactMap { $0["type"] as? String }) == [
+            "paywall_impression", "paywall_impression", "paywall_close", "paywall_close"
+        ]
+        expect(analyticsPayloads.allSatisfy { $0["flow_name"] == nil && $0["screen_name"] == nil }) == true
+    }
+
+    func testReplacingAnImpressionClosesItWithItsOriginalNames() async {
+        let (tracker, _) = Self.makeTracker()
+        let received: Atomic<[FlowEvent]> = .init([])
+        let notifier = FlowEventNotifier { event in received.modify { $0.append(event) } }
+        let eventData = Self.makeEventData()
+
+        tracker.trackPaywallImpression(
+            eventData,
+            flowEventNotifier: notifier,
+            flowEventNames: .init(flowName: "Onboarding", screenName: "First offer")
+        )
+        tracker.trackPaywallImpression(
+            eventData,
+            flowEventNotifier: notifier,
+            flowEventNames: .init(flowName: "Onboarding", screenName: nil)
+        )
+        tracker.trackPaywallClose(sessionID: eventData.sessionIdentifier, flowEventNotifier: notifier)
+
+        await expect(received.value).toEventually(haveCount(4), timeout: .seconds(2))
+        expect(received.value.compactMap { $0.property(for: FlowEvent.Keys.eventType) }) == [
+            FlowEvent.EventTypes.paywallImpression, FlowEvent.EventTypes.paywallClose,
+            FlowEvent.EventTypes.paywallImpression, FlowEvent.EventTypes.paywallClose
+        ]
+        expect(received.value.map { $0.property(for: FlowEvent.Keys.screenName) }) == [
+            "First offer", "First offer", nil, nil
+        ]
+    }
+
     func testFlowEventsMirrorTrackedWorkflowEventsWithFlowNaming() async throws {
         let (tracker, _) = Self.makeTracker()
         let received: Atomic<[FlowEvent]> = .init([])

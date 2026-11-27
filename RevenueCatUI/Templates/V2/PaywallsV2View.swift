@@ -107,6 +107,7 @@ struct PaywallsV2View: View {
     private let stepId: String?
     private let workflowStepType: String?
     private let traceId: String?
+    private let flowEventNames: FlowEvent.PaywallNames?
     /// Whether this workflow step is the workflow's `singleStepFallbackId`. Only consulted for untagged
     /// steps (`nil` `screen_type`), where it restores the structural rule of reporting on the fallback
     /// step alone. Irrelevant for standalone paywalls and tagged steps.
@@ -160,6 +161,7 @@ struct PaywallsV2View: View {
         stepId: String? = nil,
         workflowStepType: String? = nil,
         traceId: String? = nil,
+        flowEventNames: FlowEvent.PaywallNames? = nil,
         isWorkflowSingleStepFallback: Bool = false
     ) {
         let uiConfigProvider = UIConfigProvider(
@@ -185,6 +187,7 @@ struct PaywallsV2View: View {
         self.stepId = stepId
         self.workflowStepType = workflowStepType
         self.traceId = traceId
+        self.flowEventNames = flowEventNames
         self.isWorkflowSingleStepFallback = isWorkflowSingleStepFallback
         self._paywallPromoOfferCache = .init(wrappedValue: promoOfferCache ?? PaywallPromoOfferCache(
             subscriptionHistoryTracker: purchaseHandler.subscriptionHistoryTracker
@@ -580,7 +583,8 @@ struct PaywallsV2View: View {
             }
         }
         self.purchaseHandler.trackPaywallImpression(
-            self.createEventData(forDefaultPaywall: forDefaultPaywall, sessionID: sessionID)
+            self.createEventData(forDefaultPaywall: forDefaultPaywall, sessionID: sessionID),
+            flowEventNames: self.flowEventNames
         )
     }
 

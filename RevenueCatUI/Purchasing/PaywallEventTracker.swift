@@ -50,7 +50,11 @@ final class PaywallEventTracker: @unchecked Sendable {
         return PaywallEventTracker(purchases: purchases, eventDispatcher: self.eventDispatcher)
     }
 
-    func trackPaywallImpression(_ eventData: PaywallEvent.Data, flowEventNotifier: FlowEventNotifier = .init()) {
+    func trackPaywallImpression(
+        _ eventData: PaywallEvent.Data,
+        flowEventNotifier: FlowEventNotifier = .init(),
+        flowEventNames: FlowEvent.PaywallNames? = nil
+    ) {
         let sessionID = eventData.sessionIdentifier
         self.stateLock.withLock {
             self.removeSessionsWhere { $0.hasTrackedClose }
@@ -61,8 +65,10 @@ final class PaywallEventTracker: @unchecked Sendable {
                 _ = self.trackPaywallCloseWhileLocked(sessionID: sessionID, flowEventNotifier: flowEventNotifier)
             }
 
-            self.sessions[sessionID] = SessionState(eventData: eventData, hasTrackedClose: false)
-            self.track(.impression(.init(), eventData), flowEventNotifier: flowEventNotifier)
+            self.sessions[sessionID] = SessionState(eventData: eventData, flowEventNames: flowEventNames)
+            self.track(.impression(.init(), eventData),
+                       flowEventNotifier: flowEventNotifier,
+                       flowEventNames: flowEventNames)
         }
     }
 
@@ -181,11 +187,15 @@ final class PaywallEventTracker: @unchecked Sendable {
         return event
     }
 
-    func track(_ event: PaywallEvent, flowEventNotifier: FlowEventNotifier = .init()) {
+    func track(
+        _ event: PaywallEvent,
+        flowEventNotifier: FlowEventNotifier = .init(),
+        flowEventNames: FlowEvent.PaywallNames? = nil
+    ) {
         self.eventDispatcher { [purchases = self.purchases] in
             await purchases.track(paywallEvent: event)
         }
-        Self.notify(flowEventNotifier) { FlowEvent(event) }
+        Self.notify(flowEventNotifier) { FlowEvent(event, names: flowEventNames) }
     }
 
     func track(_ event: WorkflowEvent, flowEventNotifier: FlowEventNotifier = .init()) {
@@ -232,7 +242,9 @@ final class PaywallEventTracker: @unchecked Sendable {
             return false
         }
 
-        self.track(.close(.init(), data), flowEventNotifier: flowEventNotifier)
+        self.track(.close(.init(), data),
+                   flowEventNotifier: flowEventNotifier,
+                   flowEventNames: entry.flowEventNames)
         entry.hasTrackedClose = true
         self.sessions[sessionID] = entry
         return true
@@ -240,6 +252,7 @@ final class PaywallEventTracker: @unchecked Sendable {
 
     private struct SessionState {
         var eventData: PaywallEvent.Data?
+        let flowEventNames: FlowEvent.PaywallNames?
         var hasTrackedClose: Bool = false
     }
 

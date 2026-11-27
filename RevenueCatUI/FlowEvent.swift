@@ -27,6 +27,12 @@ public final class FlowEvent: NSObject, @unchecked Sendable {
     /// The event as snake-case keys (``Key/name``) for analytics SDKs; keys that do not apply are absent.
     @objc public let rawProperties: [String: Any]
 
+    /// Names for the app callback, kept separately from the analytics event.
+    struct PaywallNames: Sendable {
+        let flowName: String?
+        let screenName: String?
+    }
+
     init(rawProperties: [String: Any]) {
         self.rawProperties = rawProperties
         super.init()
@@ -63,7 +69,7 @@ public final class FlowEvent: NSObject, @unchecked Sendable {
         self.init(rawProperties: properties)
     }
 
-    convenience init?(_ event: PaywallEvent) {
+    convenience init?(_ event: PaywallEvent, names: PaywallNames?) {
         let eventType: String
         switch event {
         case .impression: eventType = EventTypes.paywallImpression
@@ -76,6 +82,8 @@ public final class FlowEvent: NSObject, @unchecked Sendable {
         properties[Keys.flowId.name] = data.workflowId
         properties[Keys.stepId.name] = data.stepId
         properties[Keys.traceId.name] = data.traceId
+        properties[Keys.flowName.name] = names?.flowName
+        properties[Keys.screenName.name] = names?.screenName
         self.init(rawProperties: properties)
     }
 
