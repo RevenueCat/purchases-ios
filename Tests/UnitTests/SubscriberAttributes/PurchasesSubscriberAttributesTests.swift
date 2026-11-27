@@ -288,7 +288,8 @@ class PurchasesSubscriberAttributesTests: TestCase {
                               healthManager: healthManager,
                               transactionMetadataSyncHelper: transactionMetadataSyncHelper,
                               currentConfiguration: nil,
-                              webBundleEventBus: .init()
+                              webBundleEventBus: .init(),
+                              multiSeatSheetsHelper: MultiSeatSheetsHelper(systemInfo: self.systemInfo)
         )
         purchasesOrchestrator.delegate = purchases
         purchases!.delegate = purchasesDelegate
