@@ -63,6 +63,8 @@
   "testTargets" : [
     {
       "skippedTests" : [
+        "AdEventsIntegrationTests",
+        "ATTConsentStatusIntegrationTests",
         "APISourceOutageStoreKit1IntegrationTests",
         "APISourceOutageStoreKit2IntegrationTests",
         "APISourceServerErrorIntegrationTests",
@@ -82,10 +84,16 @@
         "BaseSignatureVerificationIntegrationTests",
         "BaseStoreKitIntegrationTests",
         "BaseStoreKitObserverModeIntegrationTests",
+        "CachedOfferingsUsageIntegrationTest",
         "DisabledSignatureVerificationIntegrationTests",
         "DynamicModeSignatureVerificationIntegrationTests",
+        "EnforcedProductionRemoteConfigIntegrationTests",
         "EnforcedSignatureVerificationIntegrationTests",
         "EventsManagerIntegrationTests",
+        "FallbackURLSignedBackendStoreKit1IntegrationTests",
+        "FallbackURLSignedBackendStoreKit2IntegrationTests",
+        "FallbackURLUnsignedBackendStoreKit1IntegrationTests",
+        "FallbackURLUnsignedBackendStoreKit2IntegrationTests",
         "InformationalSignatureVerificationIntegrationTests",
         "LoadShedderSignatureVerificationWithoutHeaderHashIntegrationTests",
         "LoadShedderStoreKit1IntegrationTests",
@@ -125,6 +133,9 @@
         "LoadShedderStoreKit2JWSIntegrationTests",
         "OtherIntegrationTests",
         "PaywallEventsIntegrationTests",
+        "ProductionRemoteConfigIntegrationTests",
+        "PurchasesFallbackURLBackendStoreKit1IntegrationTests",
+        "PurchasesFallbackURLBackendStoreKit2IntegrationTests",
         "SignatureVerificationWithoutHeaderHashIntegrationTests",
         "StoreKit1IntegrationTests",
         "StoreKit1ObserverModeIntegrationTests",
@@ -139,7 +150,8 @@
         "SubscriberAttributesManagerIntegrationTests",
         "TestCase",
         "VirtualCurrencyStoreKit1IntegrationTests",
-        "VirtualCurrencyStoreKit2IntegrationTests"
+        "VirtualCurrencyStoreKit2IntegrationTests",
+        "WorkflowComponentsIntegrationTests"
       ],
       "target" : {
         "containerPath" : "container:RevenueCatTests.xcodeproj",

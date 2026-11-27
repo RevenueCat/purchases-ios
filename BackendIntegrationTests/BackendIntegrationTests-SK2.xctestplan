@@ -63,6 +63,8 @@
   "testTargets" : [
     {
       "skippedTests" : [
+        "AdEventsIntegrationTests",
+        "ATTConsentStatusIntegrationTests",
         "APISourceOutageStoreKit1IntegrationTests",
         "APISourceOutageStoreKit2IntegrationTests",
         "APISourceServerErrorIntegrationTests",
@@ -83,8 +85,10 @@
         "BaseSignatureVerificationIntegrationTests",
         "BaseStoreKitIntegrationTests",
         "BaseStoreKitObserverModeIntegrationTests",
+        "CachedOfferingsUsageIntegrationTest",
         "DisabledSignatureVerificationIntegrationTests",
         "DynamicModeSignatureVerificationIntegrationTests",
+        "EnforcedProductionRemoteConfigIntegrationTests",
         "EnforcedSignatureVerificationIntegrationTests",
         "FallbackURLSignedBackendStoreKit1IntegrationTests",
         "FallbackURLUnsignedBackendStoreKit1IntegrationTests",
@@ -120,6 +124,7 @@
         "OfflineWithNoMappingStoreKitIntegrationTests",
         "OtherIntegrationTests",
         "PaywallEventsIntegrationTests",
+        "ProductionRemoteConfigIntegrationTests",
         "PurchasesFallbackURLBackendStoreKit1IntegrationTests",
         "SignatureVerificationWithoutHeaderHashIntegrationTests",
         "StoreKit1IntegrationTests",
@@ -130,7 +135,8 @@
         "StoreKit2JWSObserverModeWithExistingPurchasesTests",
         "SubscriberAttributesManagerIntegrationTests",
         "TestCase",
-        "VirtualCurrencyStoreKit1IntegrationTests"
+        "VirtualCurrencyStoreKit1IntegrationTests",
+        "WorkflowComponentsIntegrationTests"
       ],
       "target" : {
         "containerPath" : "container:RevenueCatTests.xcodeproj",

@@ -349,8 +349,7 @@ let project = Project(
                     .relativeToRoot("BackendIntegrationTests/BackendIntegrationTests-SK2.xctestplan"),
                     .relativeToRoot("BackendIntegrationTests/BackendIntegrationTests-Offline.xctestplan"),
                     .relativeToRoot("BackendIntegrationTests/BackendIntegrationTests-Other.xctestplan"),
-                    .relativeToRoot("BackendIntegrationTests/BackendIntegrationTests-CustomEntitlements.xctestplan"),
-                    .relativeToRoot("BackendIntegrationTests/BackendIntegrationTests-LoadShedder.xctestplan")
+                    .relativeToRoot("BackendIntegrationTests/BackendIntegrationTests-CustomEntitlements.xctestplan")
                 ]
             ),
             runAction: .runAction(
