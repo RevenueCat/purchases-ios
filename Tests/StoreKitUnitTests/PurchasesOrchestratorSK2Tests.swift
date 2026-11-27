@@ -1884,10 +1884,10 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
         self.mockStoreKit2TransactionListener?.mockResult = .init(nil)
 
-        let product = try await self.fetchSk2Product()
+        let product = try await self.fetchSk2Product(Self.consumableProductId)
         let package = Package(
             identifier: "package",
-            packageType: .monthly,
+            packageType: .custom,
             storeProduct: StoreProduct(sk2Product: product),
             offeringIdentifier: "offering",
             webCheckoutUrl: nil
@@ -1952,10 +1952,10 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
         self.mockStoreKit2TransactionListener?.mockResult = .init(nil)
 
-        let product = try await self.fetchSk2Product()
+        let product = try await self.fetchSk2Product(Self.consumableProductId)
         let package = Package(
             identifier: "package",
-            packageType: .monthly,
+            packageType: .custom,
             storeProduct: StoreProduct(sk2Product: product),
             offeringIdentifier: "offering",
             webCheckoutUrl: nil
@@ -1981,7 +1981,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
 
         // A queue transaction for a different product isn't held back by the in-flight purchase.
         let queueTransaction = MockStoreTransaction(
-            productIdentifier: Self.consumableProductId,
+            productIdentifier: Self.testProductId,
             reason: .purchase
         )
         let queueTask = Task {
@@ -2011,10 +2011,10 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
         self.mockStoreKit2TransactionListener?.mockResult = .init(nil)
 
-        let product = try await self.fetchSk2Product()
+        let product = try await self.fetchSk2Product(Self.consumableProductId)
         let package = Package(
             identifier: "package",
-            packageType: .monthly,
+            packageType: .custom,
             storeProduct: StoreProduct(sk2Product: product),
             offeringIdentifier: "offering",
             webCheckoutUrl: nil
@@ -2067,10 +2067,10 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
         self.mockStoreKit2TransactionListener?.mockResult = .init(nil)
 
-        let product = try await self.fetchSk2Product()
+        let product = try await self.fetchSk2Product(Self.consumableProductId)
         let package = Package(
             identifier: "package",
-            packageType: .monthly,
+            packageType: .custom,
             storeProduct: StoreProduct(sk2Product: product),
             offeringIdentifier: "offering",
             webCheckoutUrl: nil
@@ -2131,10 +2131,10 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         )
         self.backend.stubbedPostReceiptResult = .failure(stubbedError)
 
-        let product = try await self.fetchSk2Product()
+        let product = try await self.fetchSk2Product(Self.consumableProductId)
         let package = Package(
             identifier: "package",
-            packageType: .monthly,
+            packageType: .custom,
             storeProduct: StoreProduct(sk2Product: product),
             offeringIdentifier: "offering",
             webCheckoutUrl: nil
@@ -2208,10 +2208,10 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
         self.mockStoreKit2TransactionListener?.mockResult = .init(nil)
 
-        let product = try await self.fetchSk2Product()
+        let product = try await self.fetchSk2Product(Self.consumableProductId)
         let package = Package(
             identifier: "package",
-            packageType: .monthly,
+            packageType: .custom,
             storeProduct: StoreProduct(sk2Product: product),
             offeringIdentifier: "offering",
             webCheckoutUrl: nil
@@ -2269,10 +2269,10 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
         self.mockStoreKit2TransactionListener?.mockResult = .init(nil)
 
-        let product = try await self.fetchSk2Product()
+        let product = try await self.fetchSk2Product(Self.consumableProductId)
         let package = Package(
             identifier: "package",
-            packageType: .monthly,
+            packageType: .custom,
             storeProduct: StoreProduct(sk2Product: product),
             offeringIdentifier: "offering",
             webCheckoutUrl: nil
