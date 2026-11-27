@@ -698,6 +698,11 @@ private extension RemoteConfigManager {
         guard self.isCurrent(requestContext.epoch) else { return }
         defer { self.finishRefresh(requestContext: requestContext) }
 
+        guard !fetchResult.verificationResult.isFailed else {
+            Logger.error(Strings.remoteConfig.failedSignatureVerification)
+            return
+        }
+
         guard let container = fetchResult.container else {
             Logger.debug(Strings.remoteConfig.notModified)
             self.markRefreshedIfCurrent(
@@ -810,6 +815,11 @@ private extension RemoteConfigManager {
     ) {
         guard self.isCurrent(requestContext.epoch) else { return }
         defer { self.finishRefresh(requestContext: requestContext) }
+
+        guard !fallbackResult.verificationResult.isFailed else {
+            Logger.error(Strings.remoteConfig.failedSignatureVerification)
+            return
+        }
 
         let committedGeneration = self.lock.perform { () -> Int? in
             guard self.epoch == requestContext.epoch else { return nil }

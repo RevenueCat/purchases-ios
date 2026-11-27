@@ -1607,6 +1607,40 @@ final class RemoteConfigManagerTests: TestCase {
         expect(self.diskCache.invokedWriteParameter?.lastRefreshTimeMilliseconds) == 456_000
     }
 
+    func testContainerResponseWithFailedSignatureLeavesCacheUntouched() throws {
+        self.diskCache.stubbedRead = Self.persisted(
+            manifest: "v1.1710000100.sources:etag1",
+            topics: .init(entries: [
+                "sources": ["api": .init(content: ["url": .string("https://api.revenuecat.com")])]
+            ])
+        )
+        let response = """
+        {
+          "domain": "app",
+          "manifest": "v1.1710000100.sources:etag2",
+          "active_topics": ["sources"],
+          "topics": {
+            "sources": {
+              "api": { "url": "https://attacker.invalid" }
+            }
+          }
+        }
+        """
+
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
+        self.remoteConfigAPI.complete(
+            with: .success(.test(
+                container: try Self.container(config: response),
+                verificationResult: .failed(.payloadSignatureMismatch)
+            ))
+        )
+
+        expect(self.diskCache.invokedWriteCount) == 0
+        expect(self.blobStore.invokedWriteCount) == 0
+        expect(self.blobStore.invokedRetainOnlyCount) == 0
+        expect(self.blobFetcher.invokedPrefetchCount) == 0
+    }
+
     func testContainerResponseWithoutServerRequestTimeCarriesPreviousRefreshTimeForward() throws {
         self.diskCache.stubbedRead = Self.persisted(
             manifest: "v1.1710000100.sources:etag1",
@@ -2023,6 +2057,30 @@ final class RemoteConfigManagerTests: TestCase {
         expect(self.blobStore.invokedWriteCount) == 0
         expect(self.blobStore.invokedRetainOnlyParameters) == Set([prefetchedRef, retainedRef])
         expect(self.blobFetcher.invokedPrefetchRefs) == [prefetchedRef]
+    }
+
+    func testFallbackConfigWithFailedSignatureLeavesCacheUntouched() {
+        let configuration = RemoteConfiguration(
+            domain: "app",
+            manifest: "v1.1710000100.sources:etag2",
+            activeTopics: ["sources"],
+            prefetchBlobs: [],
+            topics: .init(entries: [
+                "sources": ["api": .init(content: ["url": .string("https://attacker.invalid")])]
+            ])
+        )
+
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
+        self.remoteConfigAPI.complete(with: .failure(Self.backendError(statusCode: .internalServerError)))
+        self.remoteConfigAPI.completeFallback(with: .success(.test(
+            configuration: configuration,
+            verificationResult: .failed(.payloadSignatureMismatch)
+        )))
+
+        expect(self.diskCache.invokedWriteCount) == 0
+        expect(self.blobStore.invokedWriteCount) == 0
+        expect(self.blobStore.invokedRetainOnlyCount) == 0
+        expect(self.blobFetcher.invokedPrefetchCount) == 0
     }
 
     func testFallbackConfigFailureLeavesCacheUntouchedAndDoesNotMarkRefreshFresh() {
