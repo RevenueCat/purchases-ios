@@ -69,23 +69,38 @@ class PerformanceBaselineHelperTest < Minitest::Test
     assert_equal remote_head, command('git', '--git-dir', @remote, 'rev-parse', 'test-pr')
   end
 
-  def test_pr_merge_gate_requires_the_memory_benchmark
+  def workflow_jobs(workflow)
     config = YAML.safe_load(File.read(File.join(ROOT, '.circleci/default_config.yml')), aliases: true)
-    jobs = config.fetch('workflows').fetch('run-all-tests').fetch('jobs')
-    gate = jobs.find { |job| job.is_a?(Hash) && job.values.first['name'] == 'full-suite-not-requested' }
-    assert_includes gate.values.first.fetch('requires'), 'performance-tests'
+    config.fetch('workflows').fetch(workflow).fetch('jobs').to_h do |job|
+      job.is_a?(Hash) ? [job.values.first['name'] || job.keys.first, job.values.first || {}] : [job, {}]
+    end
   end
 
-  def test_merge_gate_posts_pending_after_the_default_success_and_success_last
-    config = YAML.safe_load(File.read(File.join(ROOT, '.circleci/default_config.yml')), aliases: true)
-    jobs = config.fetch('workflows').fetch('run-all-tests').fetch('jobs')
-    gates = jobs.select { |job| job.is_a?(Hash) && job.key?('post-gate-status') }.to_h { |job| [job['post-gate-status']['name'], job['post-gate-status']] }
-    assert_equal 'success', gates.fetch('full-suite-not-requested').fetch('state')
-    assert_equal true, gates.fetch('full-suite-not-requested').fetch('unless_full_suite_approved')
-    assert_equal 'pending', gates.fetch('full-suite-started').fetch('state')
-    assert_equal %w[approve-full-tests full-suite-not-requested], gates.fetch('full-suite-started').fetch('requires').sort
-    assert_equal 'success', gates.fetch('all-tasks-passed').fetch('state')
-    assert_includes gates.fetch('all-tasks-passed').fetch('requires'), 'full-suite-started'
+  def pr_workflow_jobs
+    workflow_jobs('run-all-tests')
+  end
+
+  def test_merge_gates_require_danger
+    assert_includes pr_workflow_jobs.fetch('all-tasks-succeeded').fetch('requires'), 'danger'
+    assert_includes workflow_jobs('release-or-main').fetch('revenuecat/tag-current-branch').fetch('requires'), 'danger'
+  end
+
+  def test_release_pr_merge_gate_waits_for_the_release
+    refute_includes workflow_jobs('release-or-main').keys, 'all-tasks-succeeded'
+    deploy_jobs = workflow_jobs('deploy-tag')
+    assert_includes deploy_jobs.fetch('all-tasks-succeeded').fetch('requires'), 'make-release'
+    assert_equal %w[all-tasks-succeeded], deploy_jobs.fetch('revenuecat/merge-release-pr').fetch('requires')
+  end
+
+  def test_pr_merge_gate_requires_the_memory_benchmark
+    assert_includes pr_workflow_jobs.fetch('all-tasks-succeeded').fetch('requires'), 'performance-tests'
+  end
+
+  def test_pr_merge_gate_does_not_wait_for_the_full_suite
+    jobs = pr_workflow_jobs
+    jobs.fetch('all-tasks-succeeded').fetch('requires').each do |required|
+      refute_includes jobs.fetch(required).fetch('requires', []), 'approve-full-tests', "#{required} only runs after approve-full-tests"
+    end
   end
 
   def test_requested_job_enables_record_and_push_with_boolean_parameters
