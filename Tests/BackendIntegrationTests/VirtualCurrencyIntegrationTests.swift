@@ -17,7 +17,7 @@ import Nimble
 import StoreKit
 import XCTest
 
-class VirtualCurrencyStoreKit2IntegrationTests: BaseStoreKitIntegrationTests {
+class VirtualCurrencyStoreKit2IntegrationTests: VirtualCurrencyStoreKit1IntegrationTests {
     override class var storeKitVersion: StoreKitVersion { .storeKit2 }
 }
 
@@ -40,7 +40,9 @@ class VirtualCurrencyStoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         let resultData = try await self.purchaseConsumablePackage()
         let transaction = try XCTUnwrap(resultData.transaction)
         try await self.verifyTransactionWasFinished(transaction)
-        await self.verifyTransactionIsEventuallyRemovedFromSK1Queue(transaction)
+        if Self.storeKitVersion == .storeKit1 {
+            await self.verifyTransactionIsEventuallyRemovedFromSK1Queue(transaction)
+        }
 
         try self.purchases.invalidateVirtualCurrenciesCache()
 
@@ -74,7 +76,9 @@ class VirtualCurrencyStoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         let resultData = try await self.purchaseNonConsumablePackage()
         let transaction = try XCTUnwrap(resultData.transaction)
         try await self.verifyTransactionWasFinished(transaction)
-        await self.verifyTransactionIsEventuallyRemovedFromSK1Queue(transaction)
+        if Self.storeKitVersion == .storeKit1 {
+            await self.verifyTransactionIsEventuallyRemovedFromSK1Queue(transaction)
+        }
 
         try self.purchases.invalidateVirtualCurrenciesCache()
 
