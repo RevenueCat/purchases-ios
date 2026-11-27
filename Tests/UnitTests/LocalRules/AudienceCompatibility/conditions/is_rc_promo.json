@@ -1,0 +1,197 @@
+{
+  "schema_version": 1,
+  "cases": [
+    {
+      "id": "isRcPromo/is/true/new",
+      "field": "isRcPromo",
+      "operator": "is",
+      "profile": "new",
+      "predicate": "{\"==\": [{\"var\": \"is_rc_promo\"}, true]}",
+      "expected": false
+    },
+    {
+      "id": "isRcPromo/is/true/renewed",
+      "field": "isRcPromo",
+      "operator": "is",
+      "profile": "renewed",
+      "predicate": "{\"==\": [{\"var\": \"is_rc_promo\"}, true]}",
+      "expected": false
+    },
+    {
+      "id": "isRcPromo/is/true/first_purchase",
+      "field": "isRcPromo",
+      "operator": "is",
+      "profile": "first_purchase",
+      "predicate": "{\"==\": [{\"var\": \"is_rc_promo\"}, true]}",
+      "expected": false
+    },
+    {
+      "id": "isRcPromo/is/true/unavailable",
+      "field": "isRcPromo",
+      "operator": "is",
+      "profile": "unavailable",
+      "predicate": "{\"==\": [{\"var\": \"is_rc_promo\"}, true]}",
+      "expected": false
+    },
+    {
+      "id": "isRcPromo/is/true/subscription_then_product",
+      "field": "isRcPromo",
+      "operator": "is",
+      "profile": "subscription_then_product",
+      "predicate": "{\"==\": [{\"var\": \"is_rc_promo\"}, true]}",
+      "expected": false
+    },
+    {
+      "id": "isRcPromo/is/true/promotional_subscription",
+      "field": "isRcPromo",
+      "operator": "is",
+      "profile": "promotional_subscription",
+      "predicate": "{\"==\": [{\"var\": \"is_rc_promo\"}, true]}",
+      "expected": true
+    },
+    {
+      "id": "isRcPromo/is/false/new",
+      "field": "isRcPromo",
+      "operator": "is",
+      "profile": "new",
+      "predicate": "{\"==\": [{\"var\": \"is_rc_promo\"}, false]}",
+      "expected": true
+    },
+    {
+      "id": "isRcPromo/is/false/renewed",
+      "field": "isRcPromo",
+      "operator": "is",
+      "profile": "renewed",
+      "predicate": "{\"==\": [{\"var\": \"is_rc_promo\"}, false]}",
+      "expected": true
+    },
+    {
+      "id": "isRcPromo/is/false/first_purchase",
+      "field": "isRcPromo",
+      "operator": "is",
+      "profile": "first_purchase",
+      "predicate": "{\"==\": [{\"var\": \"is_rc_promo\"}, false]}",
+      "expected": true
+    },
+    {
+      "id": "isRcPromo/is/false/unavailable",
+      "field": "isRcPromo",
+      "operator": "is",
+      "profile": "unavailable",
+      "predicate": "{\"==\": [{\"var\": \"is_rc_promo\"}, false]}",
+      "expected": true
+    },
+    {
+      "id": "isRcPromo/is/false/subscription_then_product",
+      "field": "isRcPromo",
+      "operator": "is",
+      "profile": "subscription_then_product",
+      "predicate": "{\"==\": [{\"var\": \"is_rc_promo\"}, false]}",
+      "expected": true
+    },
+    {
+      "id": "isRcPromo/is/false/promotional_subscription",
+      "field": "isRcPromo",
+      "operator": "is",
+      "profile": "promotional_subscription",
+      "predicate": "{\"==\": [{\"var\": \"is_rc_promo\"}, false]}",
+      "expected": false
+    },
+    {
+      "id": "isRcPromo/isNot/true/new",
+      "field": "isRcPromo",
+      "operator": "isNot",
+      "profile": "new",
+      "predicate": "{\"!\": [{\"==\": [{\"var\": \"is_rc_promo\"}, true]}]}",
+      "expected": true
+    },
+    {
+      "id": "isRcPromo/isNot/true/renewed",
+      "field": "isRcPromo",
+      "operator": "isNot",
+      "profile": "renewed",
+      "predicate": "{\"!\": [{\"==\": [{\"var\": \"is_rc_promo\"}, true]}]}",
+      "expected": true
+    },
+    {
+      "id": "isRcPromo/isNot/true/first_purchase",
+      "field": "isRcPromo",
+      "operator": "isNot",
+      "profile": "first_purchase",
+      "predicate": "{\"!\": [{\"==\": [{\"var\": \"is_rc_promo\"}, true]}]}",
+      "expected": true
+    },
+    {
+      "id": "isRcPromo/isNot/true/unavailable",
+      "field": "isRcPromo",
+      "operator": "isNot",
+      "profile": "unavailable",
+      "predicate": "{\"!\": [{\"==\": [{\"var\": \"is_rc_promo\"}, true]}]}",
+      "expected": true
+    },
+    {
+      "id": "isRcPromo/isNot/true/subscription_then_product",
+      "field": "isRcPromo",
+      "operator": "isNot",
+      "profile": "subscription_then_product",
+      "predicate": "{\"!\": [{\"==\": [{\"var\": \"is_rc_promo\"}, true]}]}",
+      "expected": true
+    },
+    {
+      "id": "isRcPromo/isNot/true/promotional_subscription",
+      "field": "isRcPromo",
+      "operator": "isNot",
+      "profile": "promotional_subscription",
+      "predicate": "{\"!\": [{\"==\": [{\"var\": \"is_rc_promo\"}, true]}]}",
+      "expected": false
+    },
+    {
+      "id": "isRcPromo/isNot/false/new",
+      "field": "isRcPromo",
+      "operator": "isNot",
+      "profile": "new",
+      "predicate": "{\"!\": [{\"==\": [{\"var\": \"is_rc_promo\"}, false]}]}",
+      "expected": false
+    },
+    {
+      "id": "isRcPromo/isNot/false/renewed",
+      "field": "isRcPromo",
+      "operator": "isNot",
+      "profile": "renewed",
+      "predicate": "{\"!\": [{\"==\": [{\"var\": \"is_rc_promo\"}, false]}]}",
+      "expected": false
+    },
+    {
+      "id": "isRcPromo/isNot/false/first_purchase",
+      "field": "isRcPromo",
+      "operator": "isNot",
+      "profile": "first_purchase",
+      "predicate": "{\"!\": [{\"==\": [{\"var\": \"is_rc_promo\"}, false]}]}",
+      "expected": false
+    },
+    {
+      "id": "isRcPromo/isNot/false/unavailable",
+      "field": "isRcPromo",
+      "operator": "isNot",
+      "profile": "unavailable",
+      "predicate": "{\"!\": [{\"==\": [{\"var\": \"is_rc_promo\"}, false]}]}",
+      "expected": false
+    },
+    {
+      "id": "isRcPromo/isNot/false/subscription_then_product",
+      "field": "isRcPromo",
+      "operator": "isNot",
+      "profile": "subscription_then_product",
+      "predicate": "{\"!\": [{\"==\": [{\"var\": \"is_rc_promo\"}, false]}]}",
+      "expected": false
+    },
+    {
+      "id": "isRcPromo/isNot/false/promotional_subscription",
+      "field": "isRcPromo",
+      "operator": "isNot",
+      "profile": "promotional_subscription",
+      "predicate": "{\"!\": [{\"==\": [{\"var\": \"is_rc_promo\"}, false]}]}",
+      "expected": true
+    }
+  ]
+}

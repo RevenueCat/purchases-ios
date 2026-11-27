@@ -1,0 +1,293 @@
+{
+  "schema_version": 1,
+  "cases": [
+    {
+      "id": "latestProduct/isEmpty//new",
+      "field": "latestProduct",
+      "operator": "isEmpty",
+      "profile": "new",
+      "predicate": "{\"==\": [{\"var\": [\"latest_product_identifier\", null]}, null]}",
+      "expected": true
+    },
+    {
+      "id": "latestProduct/isEmpty//renewed",
+      "field": "latestProduct",
+      "operator": "isEmpty",
+      "profile": "renewed",
+      "predicate": "{\"==\": [{\"var\": [\"latest_product_identifier\", null]}, null]}",
+      "expected": false
+    },
+    {
+      "id": "latestProduct/isEmpty//first_purchase",
+      "field": "latestProduct",
+      "operator": "isEmpty",
+      "profile": "first_purchase",
+      "predicate": "{\"==\": [{\"var\": [\"latest_product_identifier\", null]}, null]}",
+      "expected": false
+    },
+    {
+      "id": "latestProduct/isEmpty//unavailable",
+      "field": "latestProduct",
+      "operator": "isEmpty",
+      "profile": "unavailable",
+      "predicate": "{\"==\": [{\"var\": [\"latest_product_identifier\", null]}, null]}",
+      "expected": true
+    },
+    {
+      "id": "latestProduct/isEmpty//subscription_then_product",
+      "field": "latestProduct",
+      "operator": "isEmpty",
+      "profile": "subscription_then_product",
+      "predicate": "{\"==\": [{\"var\": [\"latest_product_identifier\", null]}, null]}",
+      "expected": false
+    },
+    {
+      "id": "latestProduct/isEmpty//promotional_subscription",
+      "field": "latestProduct",
+      "operator": "isEmpty",
+      "profile": "promotional_subscription",
+      "predicate": "{\"==\": [{\"var\": [\"latest_product_identifier\", null]}, null]}",
+      "expected": false
+    },
+    {
+      "id": "latestProduct/isNotEmpty//new",
+      "field": "latestProduct",
+      "operator": "isNotEmpty",
+      "profile": "new",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_product_identifier\", null]}, null]}",
+      "expected": false
+    },
+    {
+      "id": "latestProduct/isNotEmpty//renewed",
+      "field": "latestProduct",
+      "operator": "isNotEmpty",
+      "profile": "renewed",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_product_identifier\", null]}, null]}",
+      "expected": true
+    },
+    {
+      "id": "latestProduct/isNotEmpty//first_purchase",
+      "field": "latestProduct",
+      "operator": "isNotEmpty",
+      "profile": "first_purchase",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_product_identifier\", null]}, null]}",
+      "expected": true
+    },
+    {
+      "id": "latestProduct/isNotEmpty//unavailable",
+      "field": "latestProduct",
+      "operator": "isNotEmpty",
+      "profile": "unavailable",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_product_identifier\", null]}, null]}",
+      "expected": false
+    },
+    {
+      "id": "latestProduct/isNotEmpty//subscription_then_product",
+      "field": "latestProduct",
+      "operator": "isNotEmpty",
+      "profile": "subscription_then_product",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_product_identifier\", null]}, null]}",
+      "expected": true
+    },
+    {
+      "id": "latestProduct/isNotEmpty//promotional_subscription",
+      "field": "latestProduct",
+      "operator": "isNotEmpty",
+      "profile": "promotional_subscription",
+      "predicate": "{\"!=\": [{\"var\": [\"latest_product_identifier\", null]}, null]}",
+      "expected": true
+    },
+    {
+      "id": "latestProduct/contains/premium/new",
+      "field": "latestProduct",
+      "operator": "contains",
+      "profile": "new",
+      "predicate": "{\"in\": [{\"rc.lower\": \"premium\"}, {\"rc.lower\": {\"if\": [{\"==\": [{\"var\": [\"latest_product_identifier\", null]}, null]}, \"\", {\"var\": [\"latest_product_identifier\", null]}]}}]}",
+      "expected": false
+    },
+    {
+      "id": "latestProduct/contains/premium/renewed",
+      "field": "latestProduct",
+      "operator": "contains",
+      "profile": "renewed",
+      "predicate": "{\"in\": [{\"rc.lower\": \"premium\"}, {\"rc.lower\": {\"if\": [{\"==\": [{\"var\": [\"latest_product_identifier\", null]}, null]}, \"\", {\"var\": [\"latest_product_identifier\", null]}]}}]}",
+      "expected": true
+    },
+    {
+      "id": "latestProduct/contains/premium/first_purchase",
+      "field": "latestProduct",
+      "operator": "contains",
+      "profile": "first_purchase",
+      "predicate": "{\"in\": [{\"rc.lower\": \"premium\"}, {\"rc.lower\": {\"if\": [{\"==\": [{\"var\": [\"latest_product_identifier\", null]}, null]}, \"\", {\"var\": [\"latest_product_identifier\", null]}]}}]}",
+      "expected": true
+    },
+    {
+      "id": "latestProduct/contains/premium/unavailable",
+      "field": "latestProduct",
+      "operator": "contains",
+      "profile": "unavailable",
+      "predicate": "{\"in\": [{\"rc.lower\": \"premium\"}, {\"rc.lower\": {\"if\": [{\"==\": [{\"var\": [\"latest_product_identifier\", null]}, null]}, \"\", {\"var\": [\"latest_product_identifier\", null]}]}}]}",
+      "expected": false
+    },
+    {
+      "id": "latestProduct/contains/premium/subscription_then_product",
+      "field": "latestProduct",
+      "operator": "contains",
+      "profile": "subscription_then_product",
+      "predicate": "{\"in\": [{\"rc.lower\": \"premium\"}, {\"rc.lower\": {\"if\": [{\"==\": [{\"var\": [\"latest_product_identifier\", null]}, null]}, \"\", {\"var\": [\"latest_product_identifier\", null]}]}}]}",
+      "expected": false
+    },
+    {
+      "id": "latestProduct/contains/premium/promotional_subscription",
+      "field": "latestProduct",
+      "operator": "contains",
+      "profile": "promotional_subscription",
+      "predicate": "{\"in\": [{\"rc.lower\": \"premium\"}, {\"rc.lower\": {\"if\": [{\"==\": [{\"var\": [\"latest_product_identifier\", null]}, null]}, \"\", {\"var\": [\"latest_product_identifier\", null]}]}}]}",
+      "expected": true
+    },
+    {
+      "id": "latestProduct/contains/life/new",
+      "field": "latestProduct",
+      "operator": "contains",
+      "profile": "new",
+      "predicate": "{\"in\": [{\"rc.lower\": \"life\"}, {\"rc.lower\": {\"if\": [{\"==\": [{\"var\": [\"latest_product_identifier\", null]}, null]}, \"\", {\"var\": [\"latest_product_identifier\", null]}]}}]}",
+      "expected": false
+    },
+    {
+      "id": "latestProduct/contains/life/renewed",
+      "field": "latestProduct",
+      "operator": "contains",
+      "profile": "renewed",
+      "predicate": "{\"in\": [{\"rc.lower\": \"life\"}, {\"rc.lower\": {\"if\": [{\"==\": [{\"var\": [\"latest_product_identifier\", null]}, null]}, \"\", {\"var\": [\"latest_product_identifier\", null]}]}}]}",
+      "expected": false
+    },
+    {
+      "id": "latestProduct/contains/life/first_purchase",
+      "field": "latestProduct",
+      "operator": "contains",
+      "profile": "first_purchase",
+      "predicate": "{\"in\": [{\"rc.lower\": \"life\"}, {\"rc.lower\": {\"if\": [{\"==\": [{\"var\": [\"latest_product_identifier\", null]}, null]}, \"\", {\"var\": [\"latest_product_identifier\", null]}]}}]}",
+      "expected": false
+    },
+    {
+      "id": "latestProduct/contains/life/unavailable",
+      "field": "latestProduct",
+      "operator": "contains",
+      "profile": "unavailable",
+      "predicate": "{\"in\": [{\"rc.lower\": \"life\"}, {\"rc.lower\": {\"if\": [{\"==\": [{\"var\": [\"latest_product_identifier\", null]}, null]}, \"\", {\"var\": [\"latest_product_identifier\", null]}]}}]}",
+      "expected": false
+    },
+    {
+      "id": "latestProduct/contains/life/subscription_then_product",
+      "field": "latestProduct",
+      "operator": "contains",
+      "profile": "subscription_then_product",
+      "predicate": "{\"in\": [{\"rc.lower\": \"life\"}, {\"rc.lower\": {\"if\": [{\"==\": [{\"var\": [\"latest_product_identifier\", null]}, null]}, \"\", {\"var\": [\"latest_product_identifier\", null]}]}}]}",
+      "expected": true
+    },
+    {
+      "id": "latestProduct/contains/life/promotional_subscription",
+      "field": "latestProduct",
+      "operator": "contains",
+      "profile": "promotional_subscription",
+      "predicate": "{\"in\": [{\"rc.lower\": \"life\"}, {\"rc.lower\": {\"if\": [{\"==\": [{\"var\": [\"latest_product_identifier\", null]}, null]}, \"\", {\"var\": [\"latest_product_identifier\", null]}]}}]}",
+      "expected": false
+    },
+    {
+      "id": "latestProduct/doesNotContain/premium/new",
+      "field": "latestProduct",
+      "operator": "doesNotContain",
+      "profile": "new",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_product_identifier\", null]}, null]}, {\"!\": [{\"in\": [{\"rc.lower\": \"premium\"}, {\"rc.lower\": {\"if\": [{\"==\": [{\"var\": [\"latest_product_identifier\", null]}, null]}, \"\", {\"var\": [\"latest_product_identifier\", null]}]}}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestProduct/doesNotContain/premium/renewed",
+      "field": "latestProduct",
+      "operator": "doesNotContain",
+      "profile": "renewed",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_product_identifier\", null]}, null]}, {\"!\": [{\"in\": [{\"rc.lower\": \"premium\"}, {\"rc.lower\": {\"if\": [{\"==\": [{\"var\": [\"latest_product_identifier\", null]}, null]}, \"\", {\"var\": [\"latest_product_identifier\", null]}]}}]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestProduct/doesNotContain/premium/first_purchase",
+      "field": "latestProduct",
+      "operator": "doesNotContain",
+      "profile": "first_purchase",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_product_identifier\", null]}, null]}, {\"!\": [{\"in\": [{\"rc.lower\": \"premium\"}, {\"rc.lower\": {\"if\": [{\"==\": [{\"var\": [\"latest_product_identifier\", null]}, null]}, \"\", {\"var\": [\"latest_product_identifier\", null]}]}}]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestProduct/doesNotContain/premium/unavailable",
+      "field": "latestProduct",
+      "operator": "doesNotContain",
+      "profile": "unavailable",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_product_identifier\", null]}, null]}, {\"!\": [{\"in\": [{\"rc.lower\": \"premium\"}, {\"rc.lower\": {\"if\": [{\"==\": [{\"var\": [\"latest_product_identifier\", null]}, null]}, \"\", {\"var\": [\"latest_product_identifier\", null]}]}}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestProduct/doesNotContain/premium/subscription_then_product",
+      "field": "latestProduct",
+      "operator": "doesNotContain",
+      "profile": "subscription_then_product",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_product_identifier\", null]}, null]}, {\"!\": [{\"in\": [{\"rc.lower\": \"premium\"}, {\"rc.lower\": {\"if\": [{\"==\": [{\"var\": [\"latest_product_identifier\", null]}, null]}, \"\", {\"var\": [\"latest_product_identifier\", null]}]}}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestProduct/doesNotContain/premium/promotional_subscription",
+      "field": "latestProduct",
+      "operator": "doesNotContain",
+      "profile": "promotional_subscription",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_product_identifier\", null]}, null]}, {\"!\": [{\"in\": [{\"rc.lower\": \"premium\"}, {\"rc.lower\": {\"if\": [{\"==\": [{\"var\": [\"latest_product_identifier\", null]}, null]}, \"\", {\"var\": [\"latest_product_identifier\", null]}]}}]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestProduct/doesNotContain/life/new",
+      "field": "latestProduct",
+      "operator": "doesNotContain",
+      "profile": "new",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_product_identifier\", null]}, null]}, {\"!\": [{\"in\": [{\"rc.lower\": \"life\"}, {\"rc.lower\": {\"if\": [{\"==\": [{\"var\": [\"latest_product_identifier\", null]}, null]}, \"\", {\"var\": [\"latest_product_identifier\", null]}]}}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestProduct/doesNotContain/life/renewed",
+      "field": "latestProduct",
+      "operator": "doesNotContain",
+      "profile": "renewed",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_product_identifier\", null]}, null]}, {\"!\": [{\"in\": [{\"rc.lower\": \"life\"}, {\"rc.lower\": {\"if\": [{\"==\": [{\"var\": [\"latest_product_identifier\", null]}, null]}, \"\", {\"var\": [\"latest_product_identifier\", null]}]}}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestProduct/doesNotContain/life/first_purchase",
+      "field": "latestProduct",
+      "operator": "doesNotContain",
+      "profile": "first_purchase",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_product_identifier\", null]}, null]}, {\"!\": [{\"in\": [{\"rc.lower\": \"life\"}, {\"rc.lower\": {\"if\": [{\"==\": [{\"var\": [\"latest_product_identifier\", null]}, null]}, \"\", {\"var\": [\"latest_product_identifier\", null]}]}}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestProduct/doesNotContain/life/unavailable",
+      "field": "latestProduct",
+      "operator": "doesNotContain",
+      "profile": "unavailable",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_product_identifier\", null]}, null]}, {\"!\": [{\"in\": [{\"rc.lower\": \"life\"}, {\"rc.lower\": {\"if\": [{\"==\": [{\"var\": [\"latest_product_identifier\", null]}, null]}, \"\", {\"var\": [\"latest_product_identifier\", null]}]}}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestProduct/doesNotContain/life/subscription_then_product",
+      "field": "latestProduct",
+      "operator": "doesNotContain",
+      "profile": "subscription_then_product",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_product_identifier\", null]}, null]}, {\"!\": [{\"in\": [{\"rc.lower\": \"life\"}, {\"rc.lower\": {\"if\": [{\"==\": [{\"var\": [\"latest_product_identifier\", null]}, null]}, \"\", {\"var\": [\"latest_product_identifier\", null]}]}}]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestProduct/doesNotContain/life/promotional_subscription",
+      "field": "latestProduct",
+      "operator": "doesNotContain",
+      "profile": "promotional_subscription",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"latest_product_identifier\", null]}, null]}, {\"!\": [{\"in\": [{\"rc.lower\": \"life\"}, {\"rc.lower\": {\"if\": [{\"==\": [{\"var\": [\"latest_product_identifier\", null]}, null]}, \"\", {\"var\": [\"latest_product_identifier\", null]}]}}]}]}]}",
+      "expected": true
+    }
+  ]
+}

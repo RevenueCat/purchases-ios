@@ -1,18 +1,21 @@
 {
   "schema_version": 1,
   "required_fields": [
+    "allPurchasedProductIds",
     "anyActiveStore",
     "appVersion",
     "country",
     "customerId",
     "firstPurchaseAt",
     "firstSeenAt",
+    "isRcPromo",
     "lastSeenAppConfigId",
     "latestAutoRenewIntent",
     "latestExpirationAt",
     "latestOffer",
     "latestOfferType",
     "latestOwnershipType",
+    "latestProduct",
     "latestPurchasedOffering",
     "latestStore",
     "locale",
@@ -28,18 +31,21 @@
     "trialStartAt"
   ],
   "condition_files": [
+    "conditions/all_purchased_product_ids.json",
     "conditions/any_active_store.json",
     "conditions/app_version.json",
     "conditions/country.json",
     "conditions/customer_id.json",
     "conditions/first_purchase_at.json",
     "conditions/first_seen_at.json",
+    "conditions/is_rc_promo.json",
     "conditions/last_seen_app_config_id.json",
     "conditions/latest_auto_renew_intent.json",
     "conditions/latest_expiration_at.json",
     "conditions/latest_offer.json",
     "conditions/latest_offer_type.json",
     "conditions/latest_ownership_type.json",
+    "conditions/latest_product.json",
     "conditions/latest_purchased_offering.json",
     "conditions/latest_store.json",
     "conditions/locale.json",
@@ -1606,49 +1612,61 @@
     {
       "field": "latestProduct",
       "operator": "is",
-      "status": "unverified",
-      "errors": []
+      "status": "unsupported",
+      "errors": [
+        "Path \"latest_product_id\" is not in the SDK facts contract",
+        "Path \"latest_product_id\" is not in the SDK facts contract"
+      ]
     },
     {
       "field": "latestProduct",
       "operator": "isNot",
-      "status": "unverified",
-      "errors": []
+      "status": "unsupported",
+      "errors": [
+        "Path \"latest_product_id\" is not in the SDK facts contract",
+        "Path \"latest_product_id\" is not in the SDK facts contract"
+      ]
     },
     {
       "field": "latestProduct",
       "operator": "isAnyOf",
-      "status": "unverified",
-      "errors": []
+      "status": "unsupported",
+      "errors": [
+        "Path \"latest_product_id\" is not in the SDK facts contract",
+        "Path \"latest_product_id\" is not in the SDK facts contract"
+      ]
     },
     {
       "field": "latestProduct",
       "operator": "isNotAnyOf",
-      "status": "unverified",
-      "errors": []
+      "status": "unsupported",
+      "errors": [
+        "Path \"latest_product_id\" is not in the SDK facts contract",
+        "Path \"latest_product_id\" is not in the SDK facts contract"
+      ]
     },
     {
       "field": "latestProduct",
       "operator": "isEmpty",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "latestProduct",
       "operator": "isNotEmpty",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "latestProduct",
       "operator": "contains",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "latestProduct",
       "operator": "doesNotContain",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
@@ -2392,13 +2410,13 @@
     {
       "field": "isRcPromo",
       "operator": "is",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "isRcPromo",
       "operator": "isNot",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
@@ -2650,43 +2668,43 @@
     {
       "field": "allPurchasedProductIds",
       "operator": "is",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "allPurchasedProductIds",
       "operator": "isNot",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "allPurchasedProductIds",
       "operator": "contains",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "allPurchasedProductIds",
       "operator": "doesNotContain",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "allPurchasedProductIds",
       "operator": "containsAnyOf",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "allPurchasedProductIds",
       "operator": "isEmpty",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "allPurchasedProductIds",
       "operator": "isNotEmpty",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {

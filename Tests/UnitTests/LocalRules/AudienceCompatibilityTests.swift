@@ -31,6 +31,8 @@ struct AudienceCompatibilityTests {
                 let cases = bundle.cases.filter { $0.field == row.field && $0.operator == row.operator }
                 #expect(row.status == "unverified", "\(condition)")
                 #expect(Set(cases.map(\.expected)) == [row.operator == "isNotEmpty"], "\(condition)")
+            } else if row.field == "latestProduct", ["is", "isNot", "isAnyOf", "isNotAnyOf"].contains(row.operator) {
+                #expect(row.status == "unsupported", "\(condition): \(row.status)")
             } else {
                 #expect(row.status == "covered", "\(condition): \(row.status)")
             }
