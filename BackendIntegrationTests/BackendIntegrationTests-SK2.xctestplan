@@ -90,6 +90,7 @@
         "DynamicModeSignatureVerificationIntegrationTests",
         "EnforcedProductionRemoteConfigIntegrationTests",
         "EnforcedSignatureVerificationIntegrationTests",
+        "EventsManagerIntegrationTests",
         "FallbackURLSignedBackendStoreKit1IntegrationTests",
         "FallbackURLUnsignedBackendStoreKit1IntegrationTests",
         "InformationalSignatureVerificationIntegrationTests",
