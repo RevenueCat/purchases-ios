@@ -49,23 +49,23 @@ public final class FlowEvent: NSObject, @unchecked Sendable {
         switch event {
         case .stepStarted:
             properties[Keys.eventType.name] = EventTypes.flowStepStarted
-            properties[Keys.fromStepId.name] = data.fromStepId
-            properties[Keys.entryReason.name] = data.entryReason
+            Self.insertIfPresent(data.fromStepId, for: Keys.fromStepId, into: &properties)
+            Self.insertIfPresent(data.entryReason, for: Keys.entryReason, into: &properties)
         case .stepCompleted:
             properties[Keys.eventType.name] = EventTypes.flowStepCompleted
-            properties[Keys.toStepId.name] = data.toStepId
+            Self.insertIfPresent(data.toStepId, for: Keys.toStepId, into: &properties)
         case .close:
             properties[Keys.eventType.name] = EventTypes.flowClose
         }
-        properties[Keys.traceId.name] = data.traceId
-        properties[Keys.flowName.name] = data.workflowName
-        properties[Keys.stepType.name] = data.stepType
-        properties[Keys.screenType.name] = data.screenType.isEmpty ? nil : data.screenType
-        properties[Keys.screenName.name] = data.screenName
-        properties[Keys.experimentId.name] = data.experiment?.experimentId
-        properties[Keys.experimentVariant.name] = data.experiment?.experimentVariant
-        properties[Keys.isFirstStep.name] = data.isFirstStep
-        properties[Keys.isLastStep.name] = data.isLastStep
+        Self.insertIfPresent(data.traceId, for: Keys.traceId, into: &properties)
+        Self.insertIfPresent(data.workflowName, for: Keys.flowName, into: &properties)
+        Self.insertIfPresent(data.stepType, for: Keys.stepType, into: &properties)
+        Self.insertIfPresent(data.screenType.isEmpty ? nil : data.screenType, for: Keys.screenType, into: &properties)
+        Self.insertIfPresent(data.screenName, for: Keys.screenName, into: &properties)
+        Self.insertIfPresent(data.experiment?.experimentId, for: Keys.experimentId, into: &properties)
+        Self.insertIfPresent(data.experiment?.experimentVariant, for: Keys.experimentVariant, into: &properties)
+        Self.insertIfPresent(data.isFirstStep, for: Keys.isFirstStep, into: &properties)
+        Self.insertIfPresent(data.isLastStep, for: Keys.isLastStep, into: &properties)
         self.init(rawProperties: properties)
     }
 
@@ -79,12 +79,18 @@ public final class FlowEvent: NSObject, @unchecked Sendable {
         let data = event.data
         var properties = event.paywallMap().filter { Keys.paywallEventKeys.contains($0.key) }
         properties[Keys.eventType.name] = eventType
-        properties[Keys.flowId.name] = data.workflowId
-        properties[Keys.stepId.name] = data.stepId
-        properties[Keys.traceId.name] = data.traceId
-        properties[Keys.flowName.name] = names?.flowName
-        properties[Keys.screenName.name] = names?.screenName
+        Self.insertIfPresent(data.workflowId, for: Keys.flowId, into: &properties)
+        Self.insertIfPresent(data.stepId, for: Keys.stepId, into: &properties)
+        Self.insertIfPresent(data.traceId, for: Keys.traceId, into: &properties)
+        Self.insertIfPresent(names?.flowName, for: Keys.flowName, into: &properties)
+        Self.insertIfPresent(names?.screenName, for: Keys.screenName, into: &properties)
         self.init(rawProperties: properties)
+    }
+
+    private static func insertIfPresent<Value>(_ value: Value?, for key: Key<Value>, into output: inout [String: Any]) {
+        if let value {
+            output[key.name] = value
+        }
     }
 
     /// The value for `key`, or `nil` when it does not apply to this event.
