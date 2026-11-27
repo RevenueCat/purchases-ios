@@ -1,0 +1,453 @@
+{
+  "schema_version": 1,
+  "cases": [
+    {
+      "id": "lastSeenAppConfigId/is/1/new",
+      "field": "lastSeenAppConfigId",
+      "operator": "is",
+      "profile": "new",
+      "predicate": "{\"==\": [{\"var\": \"app_config_public_id\"}, \"app_public_1\"]}",
+      "expected": true
+    },
+    {
+      "id": "lastSeenAppConfigId/is/1/renewed",
+      "field": "lastSeenAppConfigId",
+      "operator": "is",
+      "profile": "renewed",
+      "predicate": "{\"==\": [{\"var\": \"app_config_public_id\"}, \"app_public_1\"]}",
+      "expected": false
+    },
+    {
+      "id": "lastSeenAppConfigId/is/1/first_purchase",
+      "field": "lastSeenAppConfigId",
+      "operator": "is",
+      "profile": "first_purchase",
+      "predicate": "{\"==\": [{\"var\": \"app_config_public_id\"}, \"app_public_1\"]}",
+      "expected": false
+    },
+    {
+      "id": "lastSeenAppConfigId/is/1/unavailable",
+      "field": "lastSeenAppConfigId",
+      "operator": "is",
+      "profile": "unavailable",
+      "predicate": "{\"==\": [{\"var\": \"app_config_public_id\"}, \"app_public_1\"]}",
+      "expected": false
+    },
+    {
+      "id": "lastSeenAppConfigId/is/2/new",
+      "field": "lastSeenAppConfigId",
+      "operator": "is",
+      "profile": "new",
+      "predicate": "{\"==\": [{\"var\": \"app_config_public_id\"}, \"app_public_2\"]}",
+      "expected": false
+    },
+    {
+      "id": "lastSeenAppConfigId/is/2/renewed",
+      "field": "lastSeenAppConfigId",
+      "operator": "is",
+      "profile": "renewed",
+      "predicate": "{\"==\": [{\"var\": \"app_config_public_id\"}, \"app_public_2\"]}",
+      "expected": true
+    },
+    {
+      "id": "lastSeenAppConfigId/is/2/first_purchase",
+      "field": "lastSeenAppConfigId",
+      "operator": "is",
+      "profile": "first_purchase",
+      "predicate": "{\"==\": [{\"var\": \"app_config_public_id\"}, \"app_public_2\"]}",
+      "expected": false
+    },
+    {
+      "id": "lastSeenAppConfigId/is/2/unavailable",
+      "field": "lastSeenAppConfigId",
+      "operator": "is",
+      "profile": "unavailable",
+      "predicate": "{\"==\": [{\"var\": \"app_config_public_id\"}, \"app_public_2\"]}",
+      "expected": false
+    },
+    {
+      "id": "lastSeenAppConfigId/is/3/new",
+      "field": "lastSeenAppConfigId",
+      "operator": "is",
+      "profile": "new",
+      "predicate": "{\"==\": [{\"var\": \"app_config_public_id\"}, \"app_public_3\"]}",
+      "expected": false
+    },
+    {
+      "id": "lastSeenAppConfigId/is/3/renewed",
+      "field": "lastSeenAppConfigId",
+      "operator": "is",
+      "profile": "renewed",
+      "predicate": "{\"==\": [{\"var\": \"app_config_public_id\"}, \"app_public_3\"]}",
+      "expected": false
+    },
+    {
+      "id": "lastSeenAppConfigId/is/3/first_purchase",
+      "field": "lastSeenAppConfigId",
+      "operator": "is",
+      "profile": "first_purchase",
+      "predicate": "{\"==\": [{\"var\": \"app_config_public_id\"}, \"app_public_3\"]}",
+      "expected": false
+    },
+    {
+      "id": "lastSeenAppConfigId/is/3/unavailable",
+      "field": "lastSeenAppConfigId",
+      "operator": "is",
+      "profile": "unavailable",
+      "predicate": "{\"==\": [{\"var\": \"app_config_public_id\"}, \"app_public_3\"]}",
+      "expected": false
+    },
+    {
+      "id": "lastSeenAppConfigId/isNot/1/new",
+      "field": "lastSeenAppConfigId",
+      "operator": "isNot",
+      "profile": "new",
+      "predicate": "{\"!=\": [{\"var\": [\"app_config_public_id\", null]}, \"app_public_1\"]}",
+      "expected": false
+    },
+    {
+      "id": "lastSeenAppConfigId/isNot/1/renewed",
+      "field": "lastSeenAppConfigId",
+      "operator": "isNot",
+      "profile": "renewed",
+      "predicate": "{\"!=\": [{\"var\": [\"app_config_public_id\", null]}, \"app_public_1\"]}",
+      "expected": true
+    },
+    {
+      "id": "lastSeenAppConfigId/isNot/1/first_purchase",
+      "field": "lastSeenAppConfigId",
+      "operator": "isNot",
+      "profile": "first_purchase",
+      "predicate": "{\"!=\": [{\"var\": [\"app_config_public_id\", null]}, \"app_public_1\"]}",
+      "expected": true
+    },
+    {
+      "id": "lastSeenAppConfigId/isNot/1/unavailable",
+      "field": "lastSeenAppConfigId",
+      "operator": "isNot",
+      "profile": "unavailable",
+      "predicate": "{\"!=\": [{\"var\": [\"app_config_public_id\", null]}, \"app_public_1\"]}",
+      "expected": true
+    },
+    {
+      "id": "lastSeenAppConfigId/isNot/2/new",
+      "field": "lastSeenAppConfigId",
+      "operator": "isNot",
+      "profile": "new",
+      "predicate": "{\"!=\": [{\"var\": [\"app_config_public_id\", null]}, \"app_public_2\"]}",
+      "expected": true
+    },
+    {
+      "id": "lastSeenAppConfigId/isNot/2/renewed",
+      "field": "lastSeenAppConfigId",
+      "operator": "isNot",
+      "profile": "renewed",
+      "predicate": "{\"!=\": [{\"var\": [\"app_config_public_id\", null]}, \"app_public_2\"]}",
+      "expected": false
+    },
+    {
+      "id": "lastSeenAppConfigId/isNot/2/first_purchase",
+      "field": "lastSeenAppConfigId",
+      "operator": "isNot",
+      "profile": "first_purchase",
+      "predicate": "{\"!=\": [{\"var\": [\"app_config_public_id\", null]}, \"app_public_2\"]}",
+      "expected": true
+    },
+    {
+      "id": "lastSeenAppConfigId/isNot/2/unavailable",
+      "field": "lastSeenAppConfigId",
+      "operator": "isNot",
+      "profile": "unavailable",
+      "predicate": "{\"!=\": [{\"var\": [\"app_config_public_id\", null]}, \"app_public_2\"]}",
+      "expected": true
+    },
+    {
+      "id": "lastSeenAppConfigId/isNot/3/new",
+      "field": "lastSeenAppConfigId",
+      "operator": "isNot",
+      "profile": "new",
+      "predicate": "{\"!=\": [{\"var\": [\"app_config_public_id\", null]}, \"app_public_3\"]}",
+      "expected": true
+    },
+    {
+      "id": "lastSeenAppConfigId/isNot/3/renewed",
+      "field": "lastSeenAppConfigId",
+      "operator": "isNot",
+      "profile": "renewed",
+      "predicate": "{\"!=\": [{\"var\": [\"app_config_public_id\", null]}, \"app_public_3\"]}",
+      "expected": true
+    },
+    {
+      "id": "lastSeenAppConfigId/isNot/3/first_purchase",
+      "field": "lastSeenAppConfigId",
+      "operator": "isNot",
+      "profile": "first_purchase",
+      "predicate": "{\"!=\": [{\"var\": [\"app_config_public_id\", null]}, \"app_public_3\"]}",
+      "expected": true
+    },
+    {
+      "id": "lastSeenAppConfigId/isNot/3/unavailable",
+      "field": "lastSeenAppConfigId",
+      "operator": "isNot",
+      "profile": "unavailable",
+      "predicate": "{\"!=\": [{\"var\": [\"app_config_public_id\", null]}, \"app_public_3\"]}",
+      "expected": true
+    },
+    {
+      "id": "lastSeenAppConfigId/isAnyOf/1/new",
+      "field": "lastSeenAppConfigId",
+      "operator": "isAnyOf",
+      "profile": "new",
+      "predicate": "{\"in\": [{\"var\": \"app_config_public_id\"}, [\"app_public_1\"]]}",
+      "expected": true
+    },
+    {
+      "id": "lastSeenAppConfigId/isAnyOf/1/renewed",
+      "field": "lastSeenAppConfigId",
+      "operator": "isAnyOf",
+      "profile": "renewed",
+      "predicate": "{\"in\": [{\"var\": \"app_config_public_id\"}, [\"app_public_1\"]]}",
+      "expected": false
+    },
+    {
+      "id": "lastSeenAppConfigId/isAnyOf/1/first_purchase",
+      "field": "lastSeenAppConfigId",
+      "operator": "isAnyOf",
+      "profile": "first_purchase",
+      "predicate": "{\"in\": [{\"var\": \"app_config_public_id\"}, [\"app_public_1\"]]}",
+      "expected": false
+    },
+    {
+      "id": "lastSeenAppConfigId/isAnyOf/1/unavailable",
+      "field": "lastSeenAppConfigId",
+      "operator": "isAnyOf",
+      "profile": "unavailable",
+      "predicate": "{\"in\": [{\"var\": \"app_config_public_id\"}, [\"app_public_1\"]]}",
+      "expected": false
+    },
+    {
+      "id": "lastSeenAppConfigId/isAnyOf/2/new",
+      "field": "lastSeenAppConfigId",
+      "operator": "isAnyOf",
+      "profile": "new",
+      "predicate": "{\"in\": [{\"var\": \"app_config_public_id\"}, [\"app_public_2\"]]}",
+      "expected": false
+    },
+    {
+      "id": "lastSeenAppConfigId/isAnyOf/2/renewed",
+      "field": "lastSeenAppConfigId",
+      "operator": "isAnyOf",
+      "profile": "renewed",
+      "predicate": "{\"in\": [{\"var\": \"app_config_public_id\"}, [\"app_public_2\"]]}",
+      "expected": true
+    },
+    {
+      "id": "lastSeenAppConfigId/isAnyOf/2/first_purchase",
+      "field": "lastSeenAppConfigId",
+      "operator": "isAnyOf",
+      "profile": "first_purchase",
+      "predicate": "{\"in\": [{\"var\": \"app_config_public_id\"}, [\"app_public_2\"]]}",
+      "expected": false
+    },
+    {
+      "id": "lastSeenAppConfigId/isAnyOf/2/unavailable",
+      "field": "lastSeenAppConfigId",
+      "operator": "isAnyOf",
+      "profile": "unavailable",
+      "predicate": "{\"in\": [{\"var\": \"app_config_public_id\"}, [\"app_public_2\"]]}",
+      "expected": false
+    },
+    {
+      "id": "lastSeenAppConfigId/isAnyOf/3/new",
+      "field": "lastSeenAppConfigId",
+      "operator": "isAnyOf",
+      "profile": "new",
+      "predicate": "{\"in\": [{\"var\": \"app_config_public_id\"}, [\"app_public_3\"]]}",
+      "expected": false
+    },
+    {
+      "id": "lastSeenAppConfigId/isAnyOf/3/renewed",
+      "field": "lastSeenAppConfigId",
+      "operator": "isAnyOf",
+      "profile": "renewed",
+      "predicate": "{\"in\": [{\"var\": \"app_config_public_id\"}, [\"app_public_3\"]]}",
+      "expected": false
+    },
+    {
+      "id": "lastSeenAppConfigId/isAnyOf/3/first_purchase",
+      "field": "lastSeenAppConfigId",
+      "operator": "isAnyOf",
+      "profile": "first_purchase",
+      "predicate": "{\"in\": [{\"var\": \"app_config_public_id\"}, [\"app_public_3\"]]}",
+      "expected": false
+    },
+    {
+      "id": "lastSeenAppConfigId/isAnyOf/3/unavailable",
+      "field": "lastSeenAppConfigId",
+      "operator": "isAnyOf",
+      "profile": "unavailable",
+      "predicate": "{\"in\": [{\"var\": \"app_config_public_id\"}, [\"app_public_3\"]]}",
+      "expected": false
+    },
+    {
+      "id": "lastSeenAppConfigId/isNotAnyOf/1/new",
+      "field": "lastSeenAppConfigId",
+      "operator": "isNotAnyOf",
+      "profile": "new",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"app_config_public_id\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"app_config_public_id\"}, [\"app_public_1\"]]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "lastSeenAppConfigId/isNotAnyOf/1/renewed",
+      "field": "lastSeenAppConfigId",
+      "operator": "isNotAnyOf",
+      "profile": "renewed",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"app_config_public_id\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"app_config_public_id\"}, [\"app_public_1\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "lastSeenAppConfigId/isNotAnyOf/1/first_purchase",
+      "field": "lastSeenAppConfigId",
+      "operator": "isNotAnyOf",
+      "profile": "first_purchase",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"app_config_public_id\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"app_config_public_id\"}, [\"app_public_1\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "lastSeenAppConfigId/isNotAnyOf/1/unavailable",
+      "field": "lastSeenAppConfigId",
+      "operator": "isNotAnyOf",
+      "profile": "unavailable",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"app_config_public_id\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"app_config_public_id\"}, [\"app_public_1\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "lastSeenAppConfigId/isNotAnyOf/2/new",
+      "field": "lastSeenAppConfigId",
+      "operator": "isNotAnyOf",
+      "profile": "new",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"app_config_public_id\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"app_config_public_id\"}, [\"app_public_2\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "lastSeenAppConfigId/isNotAnyOf/2/renewed",
+      "field": "lastSeenAppConfigId",
+      "operator": "isNotAnyOf",
+      "profile": "renewed",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"app_config_public_id\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"app_config_public_id\"}, [\"app_public_2\"]]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "lastSeenAppConfigId/isNotAnyOf/2/first_purchase",
+      "field": "lastSeenAppConfigId",
+      "operator": "isNotAnyOf",
+      "profile": "first_purchase",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"app_config_public_id\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"app_config_public_id\"}, [\"app_public_2\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "lastSeenAppConfigId/isNotAnyOf/2/unavailable",
+      "field": "lastSeenAppConfigId",
+      "operator": "isNotAnyOf",
+      "profile": "unavailable",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"app_config_public_id\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"app_config_public_id\"}, [\"app_public_2\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "lastSeenAppConfigId/isNotAnyOf/3/new",
+      "field": "lastSeenAppConfigId",
+      "operator": "isNotAnyOf",
+      "profile": "new",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"app_config_public_id\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"app_config_public_id\"}, [\"app_public_3\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "lastSeenAppConfigId/isNotAnyOf/3/renewed",
+      "field": "lastSeenAppConfigId",
+      "operator": "isNotAnyOf",
+      "profile": "renewed",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"app_config_public_id\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"app_config_public_id\"}, [\"app_public_3\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "lastSeenAppConfigId/isNotAnyOf/3/first_purchase",
+      "field": "lastSeenAppConfigId",
+      "operator": "isNotAnyOf",
+      "profile": "first_purchase",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"app_config_public_id\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"app_config_public_id\"}, [\"app_public_3\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "lastSeenAppConfigId/isNotAnyOf/3/unavailable",
+      "field": "lastSeenAppConfigId",
+      "operator": "isNotAnyOf",
+      "profile": "unavailable",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"app_config_public_id\", null]}, null]}, {\"!\": [{\"in\": [{\"var\": \"app_config_public_id\"}, [\"app_public_3\"]]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "lastSeenAppConfigId/isEmpty//new",
+      "field": "lastSeenAppConfigId",
+      "operator": "isEmpty",
+      "profile": "new",
+      "predicate": "{\"==\": [{\"var\": [\"app_config_public_id\", null]}, null]}",
+      "expected": false
+    },
+    {
+      "id": "lastSeenAppConfigId/isEmpty//renewed",
+      "field": "lastSeenAppConfigId",
+      "operator": "isEmpty",
+      "profile": "renewed",
+      "predicate": "{\"==\": [{\"var\": [\"app_config_public_id\", null]}, null]}",
+      "expected": false
+    },
+    {
+      "id": "lastSeenAppConfigId/isEmpty//first_purchase",
+      "field": "lastSeenAppConfigId",
+      "operator": "isEmpty",
+      "profile": "first_purchase",
+      "predicate": "{\"==\": [{\"var\": [\"app_config_public_id\", null]}, null]}",
+      "expected": true
+    },
+    {
+      "id": "lastSeenAppConfigId/isEmpty//unavailable",
+      "field": "lastSeenAppConfigId",
+      "operator": "isEmpty",
+      "profile": "unavailable",
+      "predicate": "{\"==\": [{\"var\": [\"app_config_public_id\", null]}, null]}",
+      "expected": true
+    },
+    {
+      "id": "lastSeenAppConfigId/isNotEmpty//new",
+      "field": "lastSeenAppConfigId",
+      "operator": "isNotEmpty",
+      "profile": "new",
+      "predicate": "{\"!=\": [{\"var\": [\"app_config_public_id\", null]}, null]}",
+      "expected": true
+    },
+    {
+      "id": "lastSeenAppConfigId/isNotEmpty//renewed",
+      "field": "lastSeenAppConfigId",
+      "operator": "isNotEmpty",
+      "profile": "renewed",
+      "predicate": "{\"!=\": [{\"var\": [\"app_config_public_id\", null]}, null]}",
+      "expected": true
+    },
+    {
+      "id": "lastSeenAppConfigId/isNotEmpty//first_purchase",
+      "field": "lastSeenAppConfigId",
+      "operator": "isNotEmpty",
+      "profile": "first_purchase",
+      "predicate": "{\"!=\": [{\"var\": [\"app_config_public_id\", null]}, null]}",
+      "expected": false
+    },
+    {
+      "id": "lastSeenAppConfigId/isNotEmpty//unavailable",
+      "field": "lastSeenAppConfigId",
+      "operator": "isNotEmpty",
+      "profile": "unavailable",
+      "predicate": "{\"!=\": [{\"var\": [\"app_config_public_id\", null]}, null]}",
+      "expected": false
+    }
+  ]
+}

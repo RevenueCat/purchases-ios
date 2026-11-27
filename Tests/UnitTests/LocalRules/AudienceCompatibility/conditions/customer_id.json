@@ -1,0 +1,677 @@
+{
+  "schema_version": 1,
+  "cases": [
+    {
+      "id": "customerId/is/signed-in-user/before_first_customer_info",
+      "field": "customerId",
+      "operator": "is",
+      "profile": "before_first_customer_info",
+      "predicate": "{\"==\": [{\"var\": \"app_user_id\"}, \"signed-in-user\"]}",
+      "expected": false
+    },
+    {
+      "id": "customerId/is/signed-in-user/alias_without_customer_info",
+      "field": "customerId",
+      "operator": "is",
+      "profile": "alias_without_customer_info",
+      "predicate": "{\"==\": [{\"var\": \"app_user_id\"}, \"signed-in-user\"]}",
+      "expected": true
+    },
+    {
+      "id": "customerId/is/signed-in-user/identified_customer",
+      "field": "customerId",
+      "operator": "is",
+      "profile": "identified_customer",
+      "predicate": "{\"==\": [{\"var\": \"app_user_id\"}, \"signed-in-user\"]}",
+      "expected": false
+    },
+    {
+      "id": "customerId/is/signed-in-user/older_customer",
+      "field": "customerId",
+      "operator": "is",
+      "profile": "older_customer",
+      "predicate": "{\"==\": [{\"var\": \"app_user_id\"}, \"signed-in-user\"]}",
+      "expected": false
+    },
+    {
+      "id": "customerId/is/signed-in-user/two_identified_ids",
+      "field": "customerId",
+      "operator": "is",
+      "profile": "two_identified_ids",
+      "predicate": "{\"==\": [{\"var\": \"app_user_id\"}, \"signed-in-user\"]}",
+      "expected": true
+    },
+    {
+      "id": "customerId/is/signed-in-user/identified_after_install",
+      "field": "customerId",
+      "operator": "is",
+      "profile": "identified_after_install",
+      "predicate": "{\"==\": [{\"var\": \"app_user_id\"}, \"signed-in-user\"]}",
+      "expected": true
+    },
+    {
+      "id": "customerId/is/original-user/before_first_customer_info",
+      "field": "customerId",
+      "operator": "is",
+      "profile": "before_first_customer_info",
+      "predicate": "{\"==\": [{\"var\": \"app_user_id\"}, \"original-user\"]}",
+      "expected": false
+    },
+    {
+      "id": "customerId/is/original-user/alias_without_customer_info",
+      "field": "customerId",
+      "operator": "is",
+      "profile": "alias_without_customer_info",
+      "predicate": "{\"==\": [{\"var\": \"app_user_id\"}, \"original-user\"]}",
+      "expected": false
+    },
+    {
+      "id": "customerId/is/original-user/identified_customer",
+      "field": "customerId",
+      "operator": "is",
+      "profile": "identified_customer",
+      "predicate": "{\"==\": [{\"var\": \"app_user_id\"}, \"original-user\"]}",
+      "expected": true
+    },
+    {
+      "id": "customerId/is/original-user/older_customer",
+      "field": "customerId",
+      "operator": "is",
+      "profile": "older_customer",
+      "predicate": "{\"==\": [{\"var\": \"app_user_id\"}, \"original-user\"]}",
+      "expected": false
+    },
+    {
+      "id": "customerId/is/original-user/two_identified_ids",
+      "field": "customerId",
+      "operator": "is",
+      "profile": "two_identified_ids",
+      "predicate": "{\"==\": [{\"var\": \"app_user_id\"}, \"original-user\"]}",
+      "expected": false
+    },
+    {
+      "id": "customerId/is/original-user/identified_after_install",
+      "field": "customerId",
+      "operator": "is",
+      "profile": "identified_after_install",
+      "predicate": "{\"==\": [{\"var\": \"app_user_id\"}, \"original-user\"]}",
+      "expected": false
+    },
+    {
+      "id": "customerId/is/user/before_first_customer_info",
+      "field": "customerId",
+      "operator": "is",
+      "profile": "before_first_customer_info",
+      "predicate": "{\"==\": [{\"var\": \"app_user_id\"}, \"user\"]}",
+      "expected": false
+    },
+    {
+      "id": "customerId/is/user/alias_without_customer_info",
+      "field": "customerId",
+      "operator": "is",
+      "profile": "alias_without_customer_info",
+      "predicate": "{\"==\": [{\"var\": \"app_user_id\"}, \"user\"]}",
+      "expected": false
+    },
+    {
+      "id": "customerId/is/user/identified_customer",
+      "field": "customerId",
+      "operator": "is",
+      "profile": "identified_customer",
+      "predicate": "{\"==\": [{\"var\": \"app_user_id\"}, \"user\"]}",
+      "expected": false
+    },
+    {
+      "id": "customerId/is/user/older_customer",
+      "field": "customerId",
+      "operator": "is",
+      "profile": "older_customer",
+      "predicate": "{\"==\": [{\"var\": \"app_user_id\"}, \"user\"]}",
+      "expected": false
+    },
+    {
+      "id": "customerId/is/user/two_identified_ids",
+      "field": "customerId",
+      "operator": "is",
+      "profile": "two_identified_ids",
+      "predicate": "{\"==\": [{\"var\": \"app_user_id\"}, \"user\"]}",
+      "expected": false
+    },
+    {
+      "id": "customerId/is/user/identified_after_install",
+      "field": "customerId",
+      "operator": "is",
+      "profile": "identified_after_install",
+      "predicate": "{\"==\": [{\"var\": \"app_user_id\"}, \"user\"]}",
+      "expected": false
+    },
+    {
+      "id": "customerId/isNot/signed-in-user/before_first_customer_info",
+      "field": "customerId",
+      "operator": "isNot",
+      "profile": "before_first_customer_info",
+      "predicate": "{\"!=\": [{\"var\": [\"app_user_id\", null]}, \"signed-in-user\"]}",
+      "expected": true
+    },
+    {
+      "id": "customerId/isNot/signed-in-user/alias_without_customer_info",
+      "field": "customerId",
+      "operator": "isNot",
+      "profile": "alias_without_customer_info",
+      "predicate": "{\"!=\": [{\"var\": [\"app_user_id\", null]}, \"signed-in-user\"]}",
+      "expected": false
+    },
+    {
+      "id": "customerId/isNot/signed-in-user/identified_customer",
+      "field": "customerId",
+      "operator": "isNot",
+      "profile": "identified_customer",
+      "predicate": "{\"!=\": [{\"var\": [\"app_user_id\", null]}, \"signed-in-user\"]}",
+      "expected": true
+    },
+    {
+      "id": "customerId/isNot/signed-in-user/older_customer",
+      "field": "customerId",
+      "operator": "isNot",
+      "profile": "older_customer",
+      "predicate": "{\"!=\": [{\"var\": [\"app_user_id\", null]}, \"signed-in-user\"]}",
+      "expected": true
+    },
+    {
+      "id": "customerId/isNot/signed-in-user/two_identified_ids",
+      "field": "customerId",
+      "operator": "isNot",
+      "profile": "two_identified_ids",
+      "predicate": "{\"!=\": [{\"var\": [\"app_user_id\", null]}, \"signed-in-user\"]}",
+      "expected": false
+    },
+    {
+      "id": "customerId/isNot/signed-in-user/identified_after_install",
+      "field": "customerId",
+      "operator": "isNot",
+      "profile": "identified_after_install",
+      "predicate": "{\"!=\": [{\"var\": [\"app_user_id\", null]}, \"signed-in-user\"]}",
+      "expected": false
+    },
+    {
+      "id": "customerId/isNot/original-user/before_first_customer_info",
+      "field": "customerId",
+      "operator": "isNot",
+      "profile": "before_first_customer_info",
+      "predicate": "{\"!=\": [{\"var\": [\"app_user_id\", null]}, \"original-user\"]}",
+      "expected": true
+    },
+    {
+      "id": "customerId/isNot/original-user/alias_without_customer_info",
+      "field": "customerId",
+      "operator": "isNot",
+      "profile": "alias_without_customer_info",
+      "predicate": "{\"!=\": [{\"var\": [\"app_user_id\", null]}, \"original-user\"]}",
+      "expected": true
+    },
+    {
+      "id": "customerId/isNot/original-user/identified_customer",
+      "field": "customerId",
+      "operator": "isNot",
+      "profile": "identified_customer",
+      "predicate": "{\"!=\": [{\"var\": [\"app_user_id\", null]}, \"original-user\"]}",
+      "expected": false
+    },
+    {
+      "id": "customerId/isNot/original-user/older_customer",
+      "field": "customerId",
+      "operator": "isNot",
+      "profile": "older_customer",
+      "predicate": "{\"!=\": [{\"var\": [\"app_user_id\", null]}, \"original-user\"]}",
+      "expected": true
+    },
+    {
+      "id": "customerId/isNot/original-user/two_identified_ids",
+      "field": "customerId",
+      "operator": "isNot",
+      "profile": "two_identified_ids",
+      "predicate": "{\"!=\": [{\"var\": [\"app_user_id\", null]}, \"original-user\"]}",
+      "expected": true
+    },
+    {
+      "id": "customerId/isNot/original-user/identified_after_install",
+      "field": "customerId",
+      "operator": "isNot",
+      "profile": "identified_after_install",
+      "predicate": "{\"!=\": [{\"var\": [\"app_user_id\", null]}, \"original-user\"]}",
+      "expected": true
+    },
+    {
+      "id": "customerId/isNot/user/before_first_customer_info",
+      "field": "customerId",
+      "operator": "isNot",
+      "profile": "before_first_customer_info",
+      "predicate": "{\"!=\": [{\"var\": [\"app_user_id\", null]}, \"user\"]}",
+      "expected": true
+    },
+    {
+      "id": "customerId/isNot/user/alias_without_customer_info",
+      "field": "customerId",
+      "operator": "isNot",
+      "profile": "alias_without_customer_info",
+      "predicate": "{\"!=\": [{\"var\": [\"app_user_id\", null]}, \"user\"]}",
+      "expected": true
+    },
+    {
+      "id": "customerId/isNot/user/identified_customer",
+      "field": "customerId",
+      "operator": "isNot",
+      "profile": "identified_customer",
+      "predicate": "{\"!=\": [{\"var\": [\"app_user_id\", null]}, \"user\"]}",
+      "expected": true
+    },
+    {
+      "id": "customerId/isNot/user/older_customer",
+      "field": "customerId",
+      "operator": "isNot",
+      "profile": "older_customer",
+      "predicate": "{\"!=\": [{\"var\": [\"app_user_id\", null]}, \"user\"]}",
+      "expected": true
+    },
+    {
+      "id": "customerId/isNot/user/two_identified_ids",
+      "field": "customerId",
+      "operator": "isNot",
+      "profile": "two_identified_ids",
+      "predicate": "{\"!=\": [{\"var\": [\"app_user_id\", null]}, \"user\"]}",
+      "expected": true
+    },
+    {
+      "id": "customerId/isNot/user/identified_after_install",
+      "field": "customerId",
+      "operator": "isNot",
+      "profile": "identified_after_install",
+      "predicate": "{\"!=\": [{\"var\": [\"app_user_id\", null]}, \"user\"]}",
+      "expected": true
+    },
+    {
+      "id": "customerId/contains/signed-in-user/before_first_customer_info",
+      "field": "customerId",
+      "operator": "contains",
+      "profile": "before_first_customer_info",
+      "predicate": "{\"in\": [{\"rc.lower\": \"signed-in-user\"}, {\"rc.lower\": {\"if\": [{\"==\": [{\"var\": [\"app_user_id\", null]}, null]}, \"\", {\"var\": [\"app_user_id\", null]}]}}]}",
+      "expected": false
+    },
+    {
+      "id": "customerId/contains/signed-in-user/alias_without_customer_info",
+      "field": "customerId",
+      "operator": "contains",
+      "profile": "alias_without_customer_info",
+      "predicate": "{\"in\": [{\"rc.lower\": \"signed-in-user\"}, {\"rc.lower\": {\"if\": [{\"==\": [{\"var\": [\"app_user_id\", null]}, null]}, \"\", {\"var\": [\"app_user_id\", null]}]}}]}",
+      "expected": true
+    },
+    {
+      "id": "customerId/contains/signed-in-user/identified_customer",
+      "field": "customerId",
+      "operator": "contains",
+      "profile": "identified_customer",
+      "predicate": "{\"in\": [{\"rc.lower\": \"signed-in-user\"}, {\"rc.lower\": {\"if\": [{\"==\": [{\"var\": [\"app_user_id\", null]}, null]}, \"\", {\"var\": [\"app_user_id\", null]}]}}]}",
+      "expected": false
+    },
+    {
+      "id": "customerId/contains/signed-in-user/older_customer",
+      "field": "customerId",
+      "operator": "contains",
+      "profile": "older_customer",
+      "predicate": "{\"in\": [{\"rc.lower\": \"signed-in-user\"}, {\"rc.lower\": {\"if\": [{\"==\": [{\"var\": [\"app_user_id\", null]}, null]}, \"\", {\"var\": [\"app_user_id\", null]}]}}]}",
+      "expected": false
+    },
+    {
+      "id": "customerId/contains/signed-in-user/two_identified_ids",
+      "field": "customerId",
+      "operator": "contains",
+      "profile": "two_identified_ids",
+      "predicate": "{\"in\": [{\"rc.lower\": \"signed-in-user\"}, {\"rc.lower\": {\"if\": [{\"==\": [{\"var\": [\"app_user_id\", null]}, null]}, \"\", {\"var\": [\"app_user_id\", null]}]}}]}",
+      "expected": true
+    },
+    {
+      "id": "customerId/contains/signed-in-user/identified_after_install",
+      "field": "customerId",
+      "operator": "contains",
+      "profile": "identified_after_install",
+      "predicate": "{\"in\": [{\"rc.lower\": \"signed-in-user\"}, {\"rc.lower\": {\"if\": [{\"==\": [{\"var\": [\"app_user_id\", null]}, null]}, \"\", {\"var\": [\"app_user_id\", null]}]}}]}",
+      "expected": true
+    },
+    {
+      "id": "customerId/contains/original-user/before_first_customer_info",
+      "field": "customerId",
+      "operator": "contains",
+      "profile": "before_first_customer_info",
+      "predicate": "{\"in\": [{\"rc.lower\": \"original-user\"}, {\"rc.lower\": {\"if\": [{\"==\": [{\"var\": [\"app_user_id\", null]}, null]}, \"\", {\"var\": [\"app_user_id\", null]}]}}]}",
+      "expected": false
+    },
+    {
+      "id": "customerId/contains/original-user/alias_without_customer_info",
+      "field": "customerId",
+      "operator": "contains",
+      "profile": "alias_without_customer_info",
+      "predicate": "{\"in\": [{\"rc.lower\": \"original-user\"}, {\"rc.lower\": {\"if\": [{\"==\": [{\"var\": [\"app_user_id\", null]}, null]}, \"\", {\"var\": [\"app_user_id\", null]}]}}]}",
+      "expected": false
+    },
+    {
+      "id": "customerId/contains/original-user/identified_customer",
+      "field": "customerId",
+      "operator": "contains",
+      "profile": "identified_customer",
+      "predicate": "{\"in\": [{\"rc.lower\": \"original-user\"}, {\"rc.lower\": {\"if\": [{\"==\": [{\"var\": [\"app_user_id\", null]}, null]}, \"\", {\"var\": [\"app_user_id\", null]}]}}]}",
+      "expected": true
+    },
+    {
+      "id": "customerId/contains/original-user/older_customer",
+      "field": "customerId",
+      "operator": "contains",
+      "profile": "older_customer",
+      "predicate": "{\"in\": [{\"rc.lower\": \"original-user\"}, {\"rc.lower\": {\"if\": [{\"==\": [{\"var\": [\"app_user_id\", null]}, null]}, \"\", {\"var\": [\"app_user_id\", null]}]}}]}",
+      "expected": false
+    },
+    {
+      "id": "customerId/contains/original-user/two_identified_ids",
+      "field": "customerId",
+      "operator": "contains",
+      "profile": "two_identified_ids",
+      "predicate": "{\"in\": [{\"rc.lower\": \"original-user\"}, {\"rc.lower\": {\"if\": [{\"==\": [{\"var\": [\"app_user_id\", null]}, null]}, \"\", {\"var\": [\"app_user_id\", null]}]}}]}",
+      "expected": false
+    },
+    {
+      "id": "customerId/contains/original-user/identified_after_install",
+      "field": "customerId",
+      "operator": "contains",
+      "profile": "identified_after_install",
+      "predicate": "{\"in\": [{\"rc.lower\": \"original-user\"}, {\"rc.lower\": {\"if\": [{\"==\": [{\"var\": [\"app_user_id\", null]}, null]}, \"\", {\"var\": [\"app_user_id\", null]}]}}]}",
+      "expected": false
+    },
+    {
+      "id": "customerId/contains/user/before_first_customer_info",
+      "field": "customerId",
+      "operator": "contains",
+      "profile": "before_first_customer_info",
+      "predicate": "{\"in\": [{\"rc.lower\": \"user\"}, {\"rc.lower\": {\"if\": [{\"==\": [{\"var\": [\"app_user_id\", null]}, null]}, \"\", {\"var\": [\"app_user_id\", null]}]}}]}",
+      "expected": true
+    },
+    {
+      "id": "customerId/contains/user/alias_without_customer_info",
+      "field": "customerId",
+      "operator": "contains",
+      "profile": "alias_without_customer_info",
+      "predicate": "{\"in\": [{\"rc.lower\": \"user\"}, {\"rc.lower\": {\"if\": [{\"==\": [{\"var\": [\"app_user_id\", null]}, null]}, \"\", {\"var\": [\"app_user_id\", null]}]}}]}",
+      "expected": true
+    },
+    {
+      "id": "customerId/contains/user/identified_customer",
+      "field": "customerId",
+      "operator": "contains",
+      "profile": "identified_customer",
+      "predicate": "{\"in\": [{\"rc.lower\": \"user\"}, {\"rc.lower\": {\"if\": [{\"==\": [{\"var\": [\"app_user_id\", null]}, null]}, \"\", {\"var\": [\"app_user_id\", null]}]}}]}",
+      "expected": true
+    },
+    {
+      "id": "customerId/contains/user/older_customer",
+      "field": "customerId",
+      "operator": "contains",
+      "profile": "older_customer",
+      "predicate": "{\"in\": [{\"rc.lower\": \"user\"}, {\"rc.lower\": {\"if\": [{\"==\": [{\"var\": [\"app_user_id\", null]}, null]}, \"\", {\"var\": [\"app_user_id\", null]}]}}]}",
+      "expected": true
+    },
+    {
+      "id": "customerId/contains/user/two_identified_ids",
+      "field": "customerId",
+      "operator": "contains",
+      "profile": "two_identified_ids",
+      "predicate": "{\"in\": [{\"rc.lower\": \"user\"}, {\"rc.lower\": {\"if\": [{\"==\": [{\"var\": [\"app_user_id\", null]}, null]}, \"\", {\"var\": [\"app_user_id\", null]}]}}]}",
+      "expected": true
+    },
+    {
+      "id": "customerId/contains/user/identified_after_install",
+      "field": "customerId",
+      "operator": "contains",
+      "profile": "identified_after_install",
+      "predicate": "{\"in\": [{\"rc.lower\": \"user\"}, {\"rc.lower\": {\"if\": [{\"==\": [{\"var\": [\"app_user_id\", null]}, null]}, \"\", {\"var\": [\"app_user_id\", null]}]}}]}",
+      "expected": true
+    },
+    {
+      "id": "customerId/doesNotContain/signed-in-user/before_first_customer_info",
+      "field": "customerId",
+      "operator": "doesNotContain",
+      "profile": "before_first_customer_info",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"app_user_id\", null]}, null]}, {\"!\": [{\"in\": [{\"rc.lower\": \"signed-in-user\"}, {\"rc.lower\": {\"if\": [{\"==\": [{\"var\": [\"app_user_id\", null]}, null]}, \"\", {\"var\": [\"app_user_id\", null]}]}}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "customerId/doesNotContain/signed-in-user/alias_without_customer_info",
+      "field": "customerId",
+      "operator": "doesNotContain",
+      "profile": "alias_without_customer_info",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"app_user_id\", null]}, null]}, {\"!\": [{\"in\": [{\"rc.lower\": \"signed-in-user\"}, {\"rc.lower\": {\"if\": [{\"==\": [{\"var\": [\"app_user_id\", null]}, null]}, \"\", {\"var\": [\"app_user_id\", null]}]}}]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "customerId/doesNotContain/signed-in-user/identified_customer",
+      "field": "customerId",
+      "operator": "doesNotContain",
+      "profile": "identified_customer",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"app_user_id\", null]}, null]}, {\"!\": [{\"in\": [{\"rc.lower\": \"signed-in-user\"}, {\"rc.lower\": {\"if\": [{\"==\": [{\"var\": [\"app_user_id\", null]}, null]}, \"\", {\"var\": [\"app_user_id\", null]}]}}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "customerId/doesNotContain/signed-in-user/older_customer",
+      "field": "customerId",
+      "operator": "doesNotContain",
+      "profile": "older_customer",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"app_user_id\", null]}, null]}, {\"!\": [{\"in\": [{\"rc.lower\": \"signed-in-user\"}, {\"rc.lower\": {\"if\": [{\"==\": [{\"var\": [\"app_user_id\", null]}, null]}, \"\", {\"var\": [\"app_user_id\", null]}]}}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "customerId/doesNotContain/signed-in-user/two_identified_ids",
+      "field": "customerId",
+      "operator": "doesNotContain",
+      "profile": "two_identified_ids",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"app_user_id\", null]}, null]}, {\"!\": [{\"in\": [{\"rc.lower\": \"signed-in-user\"}, {\"rc.lower\": {\"if\": [{\"==\": [{\"var\": [\"app_user_id\", null]}, null]}, \"\", {\"var\": [\"app_user_id\", null]}]}}]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "customerId/doesNotContain/signed-in-user/identified_after_install",
+      "field": "customerId",
+      "operator": "doesNotContain",
+      "profile": "identified_after_install",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"app_user_id\", null]}, null]}, {\"!\": [{\"in\": [{\"rc.lower\": \"signed-in-user\"}, {\"rc.lower\": {\"if\": [{\"==\": [{\"var\": [\"app_user_id\", null]}, null]}, \"\", {\"var\": [\"app_user_id\", null]}]}}]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "customerId/doesNotContain/original-user/before_first_customer_info",
+      "field": "customerId",
+      "operator": "doesNotContain",
+      "profile": "before_first_customer_info",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"app_user_id\", null]}, null]}, {\"!\": [{\"in\": [{\"rc.lower\": \"original-user\"}, {\"rc.lower\": {\"if\": [{\"==\": [{\"var\": [\"app_user_id\", null]}, null]}, \"\", {\"var\": [\"app_user_id\", null]}]}}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "customerId/doesNotContain/original-user/alias_without_customer_info",
+      "field": "customerId",
+      "operator": "doesNotContain",
+      "profile": "alias_without_customer_info",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"app_user_id\", null]}, null]}, {\"!\": [{\"in\": [{\"rc.lower\": \"original-user\"}, {\"rc.lower\": {\"if\": [{\"==\": [{\"var\": [\"app_user_id\", null]}, null]}, \"\", {\"var\": [\"app_user_id\", null]}]}}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "customerId/doesNotContain/original-user/identified_customer",
+      "field": "customerId",
+      "operator": "doesNotContain",
+      "profile": "identified_customer",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"app_user_id\", null]}, null]}, {\"!\": [{\"in\": [{\"rc.lower\": \"original-user\"}, {\"rc.lower\": {\"if\": [{\"==\": [{\"var\": [\"app_user_id\", null]}, null]}, \"\", {\"var\": [\"app_user_id\", null]}]}}]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "customerId/doesNotContain/original-user/older_customer",
+      "field": "customerId",
+      "operator": "doesNotContain",
+      "profile": "older_customer",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"app_user_id\", null]}, null]}, {\"!\": [{\"in\": [{\"rc.lower\": \"original-user\"}, {\"rc.lower\": {\"if\": [{\"==\": [{\"var\": [\"app_user_id\", null]}, null]}, \"\", {\"var\": [\"app_user_id\", null]}]}}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "customerId/doesNotContain/original-user/two_identified_ids",
+      "field": "customerId",
+      "operator": "doesNotContain",
+      "profile": "two_identified_ids",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"app_user_id\", null]}, null]}, {\"!\": [{\"in\": [{\"rc.lower\": \"original-user\"}, {\"rc.lower\": {\"if\": [{\"==\": [{\"var\": [\"app_user_id\", null]}, null]}, \"\", {\"var\": [\"app_user_id\", null]}]}}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "customerId/doesNotContain/original-user/identified_after_install",
+      "field": "customerId",
+      "operator": "doesNotContain",
+      "profile": "identified_after_install",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"app_user_id\", null]}, null]}, {\"!\": [{\"in\": [{\"rc.lower\": \"original-user\"}, {\"rc.lower\": {\"if\": [{\"==\": [{\"var\": [\"app_user_id\", null]}, null]}, \"\", {\"var\": [\"app_user_id\", null]}]}}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "customerId/doesNotContain/user/before_first_customer_info",
+      "field": "customerId",
+      "operator": "doesNotContain",
+      "profile": "before_first_customer_info",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"app_user_id\", null]}, null]}, {\"!\": [{\"in\": [{\"rc.lower\": \"user\"}, {\"rc.lower\": {\"if\": [{\"==\": [{\"var\": [\"app_user_id\", null]}, null]}, \"\", {\"var\": [\"app_user_id\", null]}]}}]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "customerId/doesNotContain/user/alias_without_customer_info",
+      "field": "customerId",
+      "operator": "doesNotContain",
+      "profile": "alias_without_customer_info",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"app_user_id\", null]}, null]}, {\"!\": [{\"in\": [{\"rc.lower\": \"user\"}, {\"rc.lower\": {\"if\": [{\"==\": [{\"var\": [\"app_user_id\", null]}, null]}, \"\", {\"var\": [\"app_user_id\", null]}]}}]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "customerId/doesNotContain/user/identified_customer",
+      "field": "customerId",
+      "operator": "doesNotContain",
+      "profile": "identified_customer",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"app_user_id\", null]}, null]}, {\"!\": [{\"in\": [{\"rc.lower\": \"user\"}, {\"rc.lower\": {\"if\": [{\"==\": [{\"var\": [\"app_user_id\", null]}, null]}, \"\", {\"var\": [\"app_user_id\", null]}]}}]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "customerId/doesNotContain/user/older_customer",
+      "field": "customerId",
+      "operator": "doesNotContain",
+      "profile": "older_customer",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"app_user_id\", null]}, null]}, {\"!\": [{\"in\": [{\"rc.lower\": \"user\"}, {\"rc.lower\": {\"if\": [{\"==\": [{\"var\": [\"app_user_id\", null]}, null]}, \"\", {\"var\": [\"app_user_id\", null]}]}}]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "customerId/doesNotContain/user/two_identified_ids",
+      "field": "customerId",
+      "operator": "doesNotContain",
+      "profile": "two_identified_ids",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"app_user_id\", null]}, null]}, {\"!\": [{\"in\": [{\"rc.lower\": \"user\"}, {\"rc.lower\": {\"if\": [{\"==\": [{\"var\": [\"app_user_id\", null]}, null]}, \"\", {\"var\": [\"app_user_id\", null]}]}}]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "customerId/doesNotContain/user/identified_after_install",
+      "field": "customerId",
+      "operator": "doesNotContain",
+      "profile": "identified_after_install",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"app_user_id\", null]}, null]}, {\"!\": [{\"in\": [{\"rc.lower\": \"user\"}, {\"rc.lower\": {\"if\": [{\"==\": [{\"var\": [\"app_user_id\", null]}, null]}, \"\", {\"var\": [\"app_user_id\", null]}]}}]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "customerId/isEmpty//before_first_customer_info",
+      "field": "customerId",
+      "operator": "isEmpty",
+      "profile": "before_first_customer_info",
+      "predicate": "{\"==\": [{\"var\": [\"app_user_id\", null]}, null]}",
+      "expected": false
+    },
+    {
+      "id": "customerId/isEmpty//alias_without_customer_info",
+      "field": "customerId",
+      "operator": "isEmpty",
+      "profile": "alias_without_customer_info",
+      "predicate": "{\"==\": [{\"var\": [\"app_user_id\", null]}, null]}",
+      "expected": false
+    },
+    {
+      "id": "customerId/isEmpty//identified_customer",
+      "field": "customerId",
+      "operator": "isEmpty",
+      "profile": "identified_customer",
+      "predicate": "{\"==\": [{\"var\": [\"app_user_id\", null]}, null]}",
+      "expected": false
+    },
+    {
+      "id": "customerId/isEmpty//older_customer",
+      "field": "customerId",
+      "operator": "isEmpty",
+      "profile": "older_customer",
+      "predicate": "{\"==\": [{\"var\": [\"app_user_id\", null]}, null]}",
+      "expected": false
+    },
+    {
+      "id": "customerId/isEmpty//two_identified_ids",
+      "field": "customerId",
+      "operator": "isEmpty",
+      "profile": "two_identified_ids",
+      "predicate": "{\"==\": [{\"var\": [\"app_user_id\", null]}, null]}",
+      "expected": false
+    },
+    {
+      "id": "customerId/isEmpty//identified_after_install",
+      "field": "customerId",
+      "operator": "isEmpty",
+      "profile": "identified_after_install",
+      "predicate": "{\"==\": [{\"var\": [\"app_user_id\", null]}, null]}",
+      "expected": false
+    },
+    {
+      "id": "customerId/isNotEmpty//before_first_customer_info",
+      "field": "customerId",
+      "operator": "isNotEmpty",
+      "profile": "before_first_customer_info",
+      "predicate": "{\"!=\": [{\"var\": [\"app_user_id\", null]}, null]}",
+      "expected": true
+    },
+    {
+      "id": "customerId/isNotEmpty//alias_without_customer_info",
+      "field": "customerId",
+      "operator": "isNotEmpty",
+      "profile": "alias_without_customer_info",
+      "predicate": "{\"!=\": [{\"var\": [\"app_user_id\", null]}, null]}",
+      "expected": true
+    },
+    {
+      "id": "customerId/isNotEmpty//identified_customer",
+      "field": "customerId",
+      "operator": "isNotEmpty",
+      "profile": "identified_customer",
+      "predicate": "{\"!=\": [{\"var\": [\"app_user_id\", null]}, null]}",
+      "expected": true
+    },
+    {
+      "id": "customerId/isNotEmpty//older_customer",
+      "field": "customerId",
+      "operator": "isNotEmpty",
+      "profile": "older_customer",
+      "predicate": "{\"!=\": [{\"var\": [\"app_user_id\", null]}, null]}",
+      "expected": true
+    },
+    {
+      "id": "customerId/isNotEmpty//two_identified_ids",
+      "field": "customerId",
+      "operator": "isNotEmpty",
+      "profile": "two_identified_ids",
+      "predicate": "{\"!=\": [{\"var\": [\"app_user_id\", null]}, null]}",
+      "expected": true
+    },
+    {
+      "id": "customerId/isNotEmpty//identified_after_install",
+      "field": "customerId",
+      "operator": "isNotEmpty",
+      "profile": "identified_after_install",
+      "predicate": "{\"!=\": [{\"var\": [\"app_user_id\", null]}, null]}",
+      "expected": true
+    }
+  ]
+}

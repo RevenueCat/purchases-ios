@@ -4,7 +4,12 @@
     "anyActiveStore",
     "appVersion",
     "country",
+    "customerId",
     "firstPurchaseAt",
+    "firstSeenAt",
+    "lastSeenAppConfigId",
+    "latestAutoRenewIntent",
+    "latestExpirationAt",
     "latestOffer",
     "latestOfferType",
     "latestOwnershipType",
@@ -13,8 +18,10 @@
     "locale",
     "mostRecentPurchaseAt",
     "mostRecentRenewalAt",
+    "originalAppUserId",
     "status",
     "storefront",
+    "subscriptionOptOutAt",
     "totalRenewals",
     "trialEndAt",
     "trialOptOutAt",
@@ -24,7 +31,12 @@
     "conditions/any_active_store.json",
     "conditions/app_version.json",
     "conditions/country.json",
+    "conditions/customer_id.json",
     "conditions/first_purchase_at.json",
+    "conditions/first_seen_at.json",
+    "conditions/last_seen_app_config_id.json",
+    "conditions/latest_auto_renew_intent.json",
+    "conditions/latest_expiration_at.json",
     "conditions/latest_offer.json",
     "conditions/latest_offer_type.json",
     "conditions/latest_ownership_type.json",
@@ -33,8 +45,10 @@
     "conditions/locale.json",
     "conditions/most_recent_purchase_at.json",
     "conditions/most_recent_renewal_at.json",
+    "conditions/original_app_user_id.json",
     "conditions/status.json",
     "conditions/storefront.json",
+    "conditions/subscription_opt_out_at.json",
     "conditions/total_renewals.json",
     "conditions/trial_end_at.json",
     "conditions/trial_opt_out_at.json",
@@ -80,25 +94,25 @@
     {
       "field": "customerId",
       "operator": "is",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "customerId",
       "operator": "isNot",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "customerId",
       "operator": "contains",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "customerId",
       "operator": "doesNotContain",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
@@ -188,37 +202,37 @@
     {
       "field": "originalAppUserId",
       "operator": "is",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "originalAppUserId",
       "operator": "isNot",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "originalAppUserId",
       "operator": "contains",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "originalAppUserId",
       "operator": "doesNotContain",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "originalAppUserId",
       "operator": "isEmpty",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "originalAppUserId",
       "operator": "isNotEmpty",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
@@ -626,67 +640,67 @@
     {
       "field": "firstSeenAt",
       "operator": "before",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "firstSeenAt",
       "operator": "beforeOrOn",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "firstSeenAt",
       "operator": "on",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "firstSeenAt",
       "operator": "after",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "firstSeenAt",
       "operator": "afterOrOn",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "firstSeenAt",
       "operator": "within",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "firstSeenAt",
       "operator": "notWithin",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "firstSeenAt",
       "operator": "between",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "firstSeenAt",
       "operator": "notBetween",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "firstSeenAt",
       "operator": "isEmpty",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "firstSeenAt",
       "operator": "isNotEmpty",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
@@ -890,67 +904,67 @@
     {
       "field": "latestExpirationAt",
       "operator": "before",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "latestExpirationAt",
       "operator": "beforeOrOn",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "latestExpirationAt",
       "operator": "on",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "latestExpirationAt",
       "operator": "after",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "latestExpirationAt",
       "operator": "afterOrOn",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "latestExpirationAt",
       "operator": "within",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "latestExpirationAt",
       "operator": "notWithin",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "latestExpirationAt",
       "operator": "between",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "latestExpirationAt",
       "operator": "notBetween",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "latestExpirationAt",
       "operator": "isEmpty",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "latestExpirationAt",
       "operator": "isNotEmpty",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
@@ -1088,67 +1102,67 @@
     {
       "field": "subscriptionOptOutAt",
       "operator": "before",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "subscriptionOptOutAt",
       "operator": "beforeOrOn",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "subscriptionOptOutAt",
       "operator": "on",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "subscriptionOptOutAt",
       "operator": "after",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "subscriptionOptOutAt",
       "operator": "afterOrOn",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "subscriptionOptOutAt",
       "operator": "within",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "subscriptionOptOutAt",
       "operator": "notWithin",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "subscriptionOptOutAt",
       "operator": "between",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "subscriptionOptOutAt",
       "operator": "notBetween",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "subscriptionOptOutAt",
       "operator": "isEmpty",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "subscriptionOptOutAt",
       "operator": "isNotEmpty",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
@@ -2570,13 +2584,13 @@
     {
       "field": "latestAutoRenewIntent",
       "operator": "is",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "latestAutoRenewIntent",
       "operator": "isNot",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
@@ -2786,37 +2800,37 @@
     {
       "field": "lastSeenAppConfigId",
       "operator": "is",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "lastSeenAppConfigId",
       "operator": "isNot",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "lastSeenAppConfigId",
       "operator": "isAnyOf",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "lastSeenAppConfigId",
       "operator": "isNotAnyOf",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "lastSeenAppConfigId",
       "operator": "isEmpty",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {
       "field": "lastSeenAppConfigId",
       "operator": "isNotEmpty",
-      "status": "unverified",
+      "status": "covered",
       "errors": []
     },
     {

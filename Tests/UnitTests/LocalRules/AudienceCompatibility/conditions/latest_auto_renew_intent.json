@@ -1,0 +1,261 @@
+{
+  "schema_version": 1,
+  "cases": [
+    {
+      "id": "latestAutoRenewIntent/is/true/new",
+      "field": "latestAutoRenewIntent",
+      "operator": "is",
+      "profile": "new",
+      "predicate": "{\"==\": [{\"var\": \"latest_auto_renew_intent\"}, true]}",
+      "expected": false
+    },
+    {
+      "id": "latestAutoRenewIntent/is/true/renewed",
+      "field": "latestAutoRenewIntent",
+      "operator": "is",
+      "profile": "renewed",
+      "predicate": "{\"==\": [{\"var\": \"latest_auto_renew_intent\"}, true]}",
+      "expected": false
+    },
+    {
+      "id": "latestAutoRenewIntent/is/true/first_purchase",
+      "field": "latestAutoRenewIntent",
+      "operator": "is",
+      "profile": "first_purchase",
+      "predicate": "{\"==\": [{\"var\": \"latest_auto_renew_intent\"}, true]}",
+      "expected": false
+    },
+    {
+      "id": "latestAutoRenewIntent/is/true/unavailable",
+      "field": "latestAutoRenewIntent",
+      "operator": "is",
+      "profile": "unavailable",
+      "predicate": "{\"==\": [{\"var\": \"latest_auto_renew_intent\"}, true]}",
+      "expected": false
+    },
+    {
+      "id": "latestAutoRenewIntent/is/true/renewing_subscription",
+      "field": "latestAutoRenewIntent",
+      "operator": "is",
+      "profile": "renewing_subscription",
+      "predicate": "{\"==\": [{\"var\": \"latest_auto_renew_intent\"}, true]}",
+      "expected": true
+    },
+    {
+      "id": "latestAutoRenewIntent/is/true/older_trial",
+      "field": "latestAutoRenewIntent",
+      "operator": "is",
+      "profile": "older_trial",
+      "predicate": "{\"==\": [{\"var\": \"latest_auto_renew_intent\"}, true]}",
+      "expected": false
+    },
+    {
+      "id": "latestAutoRenewIntent/is/true/latest_trial_cancelled",
+      "field": "latestAutoRenewIntent",
+      "operator": "is",
+      "profile": "latest_trial_cancelled",
+      "predicate": "{\"==\": [{\"var\": \"latest_auto_renew_intent\"}, true]}",
+      "expected": false
+    },
+    {
+      "id": "latestAutoRenewIntent/is/true/cancelled_after_latest_trial",
+      "field": "latestAutoRenewIntent",
+      "operator": "is",
+      "profile": "cancelled_after_latest_trial",
+      "predicate": "{\"==\": [{\"var\": \"latest_auto_renew_intent\"}, true]}",
+      "expected": false
+    },
+    {
+      "id": "latestAutoRenewIntent/is/false/new",
+      "field": "latestAutoRenewIntent",
+      "operator": "is",
+      "profile": "new",
+      "predicate": "{\"==\": [{\"var\": \"latest_auto_renew_intent\"}, false]}",
+      "expected": true
+    },
+    {
+      "id": "latestAutoRenewIntent/is/false/renewed",
+      "field": "latestAutoRenewIntent",
+      "operator": "is",
+      "profile": "renewed",
+      "predicate": "{\"==\": [{\"var\": \"latest_auto_renew_intent\"}, false]}",
+      "expected": true
+    },
+    {
+      "id": "latestAutoRenewIntent/is/false/first_purchase",
+      "field": "latestAutoRenewIntent",
+      "operator": "is",
+      "profile": "first_purchase",
+      "predicate": "{\"==\": [{\"var\": \"latest_auto_renew_intent\"}, false]}",
+      "expected": true
+    },
+    {
+      "id": "latestAutoRenewIntent/is/false/unavailable",
+      "field": "latestAutoRenewIntent",
+      "operator": "is",
+      "profile": "unavailable",
+      "predicate": "{\"==\": [{\"var\": \"latest_auto_renew_intent\"}, false]}",
+      "expected": true
+    },
+    {
+      "id": "latestAutoRenewIntent/is/false/renewing_subscription",
+      "field": "latestAutoRenewIntent",
+      "operator": "is",
+      "profile": "renewing_subscription",
+      "predicate": "{\"==\": [{\"var\": \"latest_auto_renew_intent\"}, false]}",
+      "expected": false
+    },
+    {
+      "id": "latestAutoRenewIntent/is/false/older_trial",
+      "field": "latestAutoRenewIntent",
+      "operator": "is",
+      "profile": "older_trial",
+      "predicate": "{\"==\": [{\"var\": \"latest_auto_renew_intent\"}, false]}",
+      "expected": true
+    },
+    {
+      "id": "latestAutoRenewIntent/is/false/latest_trial_cancelled",
+      "field": "latestAutoRenewIntent",
+      "operator": "is",
+      "profile": "latest_trial_cancelled",
+      "predicate": "{\"==\": [{\"var\": \"latest_auto_renew_intent\"}, false]}",
+      "expected": true
+    },
+    {
+      "id": "latestAutoRenewIntent/is/false/cancelled_after_latest_trial",
+      "field": "latestAutoRenewIntent",
+      "operator": "is",
+      "profile": "cancelled_after_latest_trial",
+      "predicate": "{\"==\": [{\"var\": \"latest_auto_renew_intent\"}, false]}",
+      "expected": true
+    },
+    {
+      "id": "latestAutoRenewIntent/isNot/true/new",
+      "field": "latestAutoRenewIntent",
+      "operator": "isNot",
+      "profile": "new",
+      "predicate": "{\"!\": [{\"==\": [{\"var\": \"latest_auto_renew_intent\"}, true]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestAutoRenewIntent/isNot/true/renewed",
+      "field": "latestAutoRenewIntent",
+      "operator": "isNot",
+      "profile": "renewed",
+      "predicate": "{\"!\": [{\"==\": [{\"var\": \"latest_auto_renew_intent\"}, true]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestAutoRenewIntent/isNot/true/first_purchase",
+      "field": "latestAutoRenewIntent",
+      "operator": "isNot",
+      "profile": "first_purchase",
+      "predicate": "{\"!\": [{\"==\": [{\"var\": \"latest_auto_renew_intent\"}, true]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestAutoRenewIntent/isNot/true/unavailable",
+      "field": "latestAutoRenewIntent",
+      "operator": "isNot",
+      "profile": "unavailable",
+      "predicate": "{\"!\": [{\"==\": [{\"var\": \"latest_auto_renew_intent\"}, true]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestAutoRenewIntent/isNot/true/renewing_subscription",
+      "field": "latestAutoRenewIntent",
+      "operator": "isNot",
+      "profile": "renewing_subscription",
+      "predicate": "{\"!\": [{\"==\": [{\"var\": \"latest_auto_renew_intent\"}, true]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestAutoRenewIntent/isNot/true/older_trial",
+      "field": "latestAutoRenewIntent",
+      "operator": "isNot",
+      "profile": "older_trial",
+      "predicate": "{\"!\": [{\"==\": [{\"var\": \"latest_auto_renew_intent\"}, true]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestAutoRenewIntent/isNot/true/latest_trial_cancelled",
+      "field": "latestAutoRenewIntent",
+      "operator": "isNot",
+      "profile": "latest_trial_cancelled",
+      "predicate": "{\"!\": [{\"==\": [{\"var\": \"latest_auto_renew_intent\"}, true]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestAutoRenewIntent/isNot/true/cancelled_after_latest_trial",
+      "field": "latestAutoRenewIntent",
+      "operator": "isNot",
+      "profile": "cancelled_after_latest_trial",
+      "predicate": "{\"!\": [{\"==\": [{\"var\": \"latest_auto_renew_intent\"}, true]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestAutoRenewIntent/isNot/false/new",
+      "field": "latestAutoRenewIntent",
+      "operator": "isNot",
+      "profile": "new",
+      "predicate": "{\"!\": [{\"==\": [{\"var\": \"latest_auto_renew_intent\"}, false]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestAutoRenewIntent/isNot/false/renewed",
+      "field": "latestAutoRenewIntent",
+      "operator": "isNot",
+      "profile": "renewed",
+      "predicate": "{\"!\": [{\"==\": [{\"var\": \"latest_auto_renew_intent\"}, false]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestAutoRenewIntent/isNot/false/first_purchase",
+      "field": "latestAutoRenewIntent",
+      "operator": "isNot",
+      "profile": "first_purchase",
+      "predicate": "{\"!\": [{\"==\": [{\"var\": \"latest_auto_renew_intent\"}, false]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestAutoRenewIntent/isNot/false/unavailable",
+      "field": "latestAutoRenewIntent",
+      "operator": "isNot",
+      "profile": "unavailable",
+      "predicate": "{\"!\": [{\"==\": [{\"var\": \"latest_auto_renew_intent\"}, false]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestAutoRenewIntent/isNot/false/renewing_subscription",
+      "field": "latestAutoRenewIntent",
+      "operator": "isNot",
+      "profile": "renewing_subscription",
+      "predicate": "{\"!\": [{\"==\": [{\"var\": \"latest_auto_renew_intent\"}, false]}]}",
+      "expected": true
+    },
+    {
+      "id": "latestAutoRenewIntent/isNot/false/older_trial",
+      "field": "latestAutoRenewIntent",
+      "operator": "isNot",
+      "profile": "older_trial",
+      "predicate": "{\"!\": [{\"==\": [{\"var\": \"latest_auto_renew_intent\"}, false]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestAutoRenewIntent/isNot/false/latest_trial_cancelled",
+      "field": "latestAutoRenewIntent",
+      "operator": "isNot",
+      "profile": "latest_trial_cancelled",
+      "predicate": "{\"!\": [{\"==\": [{\"var\": \"latest_auto_renew_intent\"}, false]}]}",
+      "expected": false
+    },
+    {
+      "id": "latestAutoRenewIntent/isNot/false/cancelled_after_latest_trial",
+      "field": "latestAutoRenewIntent",
+      "operator": "isNot",
+      "profile": "cancelled_after_latest_trial",
+      "predicate": "{\"!\": [{\"==\": [{\"var\": \"latest_auto_renew_intent\"}, false]}]}",
+      "expected": false
+    }
+  ]
+}

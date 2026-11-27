@@ -1,0 +1,1013 @@
+{
+  "schema_version": 1,
+  "cases": [
+    {
+      "id": "firstSeenAt/before/2024-05-18/before_first_customer_info",
+      "field": "firstSeenAt",
+      "operator": "before",
+      "profile": "before_first_customer_info",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\"<\": [{\"var\": \"first_seen_at\"}, 1715990400000]}]}",
+      "expected": false
+    },
+    {
+      "id": "firstSeenAt/before/2024-05-18/alias_without_customer_info",
+      "field": "firstSeenAt",
+      "operator": "before",
+      "profile": "alias_without_customer_info",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\"<\": [{\"var\": \"first_seen_at\"}, 1715990400000]}]}",
+      "expected": false
+    },
+    {
+      "id": "firstSeenAt/before/2024-05-18/identified_customer",
+      "field": "firstSeenAt",
+      "operator": "before",
+      "profile": "identified_customer",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\"<\": [{\"var\": \"first_seen_at\"}, 1715990400000]}]}",
+      "expected": false
+    },
+    {
+      "id": "firstSeenAt/before/2024-05-18/older_customer",
+      "field": "firstSeenAt",
+      "operator": "before",
+      "profile": "older_customer",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\"<\": [{\"var\": \"first_seen_at\"}, 1715990400000]}]}",
+      "expected": true
+    },
+    {
+      "id": "firstSeenAt/before/2024-05-18/two_identified_ids",
+      "field": "firstSeenAt",
+      "operator": "before",
+      "profile": "two_identified_ids",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\"<\": [{\"var\": \"first_seen_at\"}, 1715990400000]}]}",
+      "expected": false
+    },
+    {
+      "id": "firstSeenAt/before/2024-05-18/identified_after_install",
+      "field": "firstSeenAt",
+      "operator": "before",
+      "profile": "identified_after_install",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\"<\": [{\"var\": \"first_seen_at\"}, 1715990400000]}]}",
+      "expected": false
+    },
+    {
+      "id": "firstSeenAt/before/2024-05-25/before_first_customer_info",
+      "field": "firstSeenAt",
+      "operator": "before",
+      "profile": "before_first_customer_info",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\"<\": [{\"var\": \"first_seen_at\"}, 1716595200000]}]}",
+      "expected": false
+    },
+    {
+      "id": "firstSeenAt/before/2024-05-25/alias_without_customer_info",
+      "field": "firstSeenAt",
+      "operator": "before",
+      "profile": "alias_without_customer_info",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\"<\": [{\"var\": \"first_seen_at\"}, 1716595200000]}]}",
+      "expected": false
+    },
+    {
+      "id": "firstSeenAt/before/2024-05-25/identified_customer",
+      "field": "firstSeenAt",
+      "operator": "before",
+      "profile": "identified_customer",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\"<\": [{\"var\": \"first_seen_at\"}, 1716595200000]}]}",
+      "expected": true
+    },
+    {
+      "id": "firstSeenAt/before/2024-05-25/older_customer",
+      "field": "firstSeenAt",
+      "operator": "before",
+      "profile": "older_customer",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\"<\": [{\"var\": \"first_seen_at\"}, 1716595200000]}]}",
+      "expected": true
+    },
+    {
+      "id": "firstSeenAt/before/2024-05-25/two_identified_ids",
+      "field": "firstSeenAt",
+      "operator": "before",
+      "profile": "two_identified_ids",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\"<\": [{\"var\": \"first_seen_at\"}, 1716595200000]}]}",
+      "expected": false
+    },
+    {
+      "id": "firstSeenAt/before/2024-05-25/identified_after_install",
+      "field": "firstSeenAt",
+      "operator": "before",
+      "profile": "identified_after_install",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\"<\": [{\"var\": \"first_seen_at\"}, 1716595200000]}]}",
+      "expected": false
+    },
+    {
+      "id": "firstSeenAt/before/2024-05-30/before_first_customer_info",
+      "field": "firstSeenAt",
+      "operator": "before",
+      "profile": "before_first_customer_info",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\"<\": [{\"var\": \"first_seen_at\"}, 1717027200000]}]}",
+      "expected": false
+    },
+    {
+      "id": "firstSeenAt/before/2024-05-30/alias_without_customer_info",
+      "field": "firstSeenAt",
+      "operator": "before",
+      "profile": "alias_without_customer_info",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\"<\": [{\"var\": \"first_seen_at\"}, 1717027200000]}]}",
+      "expected": false
+    },
+    {
+      "id": "firstSeenAt/before/2024-05-30/identified_customer",
+      "field": "firstSeenAt",
+      "operator": "before",
+      "profile": "identified_customer",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\"<\": [{\"var\": \"first_seen_at\"}, 1717027200000]}]}",
+      "expected": true
+    },
+    {
+      "id": "firstSeenAt/before/2024-05-30/older_customer",
+      "field": "firstSeenAt",
+      "operator": "before",
+      "profile": "older_customer",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\"<\": [{\"var\": \"first_seen_at\"}, 1717027200000]}]}",
+      "expected": true
+    },
+    {
+      "id": "firstSeenAt/before/2024-05-30/two_identified_ids",
+      "field": "firstSeenAt",
+      "operator": "before",
+      "profile": "two_identified_ids",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\"<\": [{\"var\": \"first_seen_at\"}, 1717027200000]}]}",
+      "expected": true
+    },
+    {
+      "id": "firstSeenAt/before/2024-05-30/identified_after_install",
+      "field": "firstSeenAt",
+      "operator": "before",
+      "profile": "identified_after_install",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\"<\": [{\"var\": \"first_seen_at\"}, 1717027200000]}]}",
+      "expected": true
+    },
+    {
+      "id": "firstSeenAt/beforeOrOn/2024-05-18/before_first_customer_info",
+      "field": "firstSeenAt",
+      "operator": "beforeOrOn",
+      "profile": "before_first_customer_info",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\"<\": [{\"var\": \"first_seen_at\"}, 1716076800000]}]}",
+      "expected": false
+    },
+    {
+      "id": "firstSeenAt/beforeOrOn/2024-05-18/alias_without_customer_info",
+      "field": "firstSeenAt",
+      "operator": "beforeOrOn",
+      "profile": "alias_without_customer_info",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\"<\": [{\"var\": \"first_seen_at\"}, 1716076800000]}]}",
+      "expected": false
+    },
+    {
+      "id": "firstSeenAt/beforeOrOn/2024-05-18/identified_customer",
+      "field": "firstSeenAt",
+      "operator": "beforeOrOn",
+      "profile": "identified_customer",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\"<\": [{\"var\": \"first_seen_at\"}, 1716076800000]}]}",
+      "expected": true
+    },
+    {
+      "id": "firstSeenAt/beforeOrOn/2024-05-18/older_customer",
+      "field": "firstSeenAt",
+      "operator": "beforeOrOn",
+      "profile": "older_customer",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\"<\": [{\"var\": \"first_seen_at\"}, 1716076800000]}]}",
+      "expected": true
+    },
+    {
+      "id": "firstSeenAt/beforeOrOn/2024-05-18/two_identified_ids",
+      "field": "firstSeenAt",
+      "operator": "beforeOrOn",
+      "profile": "two_identified_ids",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\"<\": [{\"var\": \"first_seen_at\"}, 1716076800000]}]}",
+      "expected": false
+    },
+    {
+      "id": "firstSeenAt/beforeOrOn/2024-05-18/identified_after_install",
+      "field": "firstSeenAt",
+      "operator": "beforeOrOn",
+      "profile": "identified_after_install",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\"<\": [{\"var\": \"first_seen_at\"}, 1716076800000]}]}",
+      "expected": false
+    },
+    {
+      "id": "firstSeenAt/beforeOrOn/2024-05-25/before_first_customer_info",
+      "field": "firstSeenAt",
+      "operator": "beforeOrOn",
+      "profile": "before_first_customer_info",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\"<\": [{\"var\": \"first_seen_at\"}, 1716681600000]}]}",
+      "expected": false
+    },
+    {
+      "id": "firstSeenAt/beforeOrOn/2024-05-25/alias_without_customer_info",
+      "field": "firstSeenAt",
+      "operator": "beforeOrOn",
+      "profile": "alias_without_customer_info",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\"<\": [{\"var\": \"first_seen_at\"}, 1716681600000]}]}",
+      "expected": false
+    },
+    {
+      "id": "firstSeenAt/beforeOrOn/2024-05-25/identified_customer",
+      "field": "firstSeenAt",
+      "operator": "beforeOrOn",
+      "profile": "identified_customer",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\"<\": [{\"var\": \"first_seen_at\"}, 1716681600000]}]}",
+      "expected": true
+    },
+    {
+      "id": "firstSeenAt/beforeOrOn/2024-05-25/older_customer",
+      "field": "firstSeenAt",
+      "operator": "beforeOrOn",
+      "profile": "older_customer",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\"<\": [{\"var\": \"first_seen_at\"}, 1716681600000]}]}",
+      "expected": true
+    },
+    {
+      "id": "firstSeenAt/beforeOrOn/2024-05-25/two_identified_ids",
+      "field": "firstSeenAt",
+      "operator": "beforeOrOn",
+      "profile": "two_identified_ids",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\"<\": [{\"var\": \"first_seen_at\"}, 1716681600000]}]}",
+      "expected": true
+    },
+    {
+      "id": "firstSeenAt/beforeOrOn/2024-05-25/identified_after_install",
+      "field": "firstSeenAt",
+      "operator": "beforeOrOn",
+      "profile": "identified_after_install",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\"<\": [{\"var\": \"first_seen_at\"}, 1716681600000]}]}",
+      "expected": true
+    },
+    {
+      "id": "firstSeenAt/beforeOrOn/2024-05-30/before_first_customer_info",
+      "field": "firstSeenAt",
+      "operator": "beforeOrOn",
+      "profile": "before_first_customer_info",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\"<\": [{\"var\": \"first_seen_at\"}, 1717113600000]}]}",
+      "expected": false
+    },
+    {
+      "id": "firstSeenAt/beforeOrOn/2024-05-30/alias_without_customer_info",
+      "field": "firstSeenAt",
+      "operator": "beforeOrOn",
+      "profile": "alias_without_customer_info",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\"<\": [{\"var\": \"first_seen_at\"}, 1717113600000]}]}",
+      "expected": false
+    },
+    {
+      "id": "firstSeenAt/beforeOrOn/2024-05-30/identified_customer",
+      "field": "firstSeenAt",
+      "operator": "beforeOrOn",
+      "profile": "identified_customer",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\"<\": [{\"var\": \"first_seen_at\"}, 1717113600000]}]}",
+      "expected": true
+    },
+    {
+      "id": "firstSeenAt/beforeOrOn/2024-05-30/older_customer",
+      "field": "firstSeenAt",
+      "operator": "beforeOrOn",
+      "profile": "older_customer",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\"<\": [{\"var\": \"first_seen_at\"}, 1717113600000]}]}",
+      "expected": true
+    },
+    {
+      "id": "firstSeenAt/beforeOrOn/2024-05-30/two_identified_ids",
+      "field": "firstSeenAt",
+      "operator": "beforeOrOn",
+      "profile": "two_identified_ids",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\"<\": [{\"var\": \"first_seen_at\"}, 1717113600000]}]}",
+      "expected": true
+    },
+    {
+      "id": "firstSeenAt/beforeOrOn/2024-05-30/identified_after_install",
+      "field": "firstSeenAt",
+      "operator": "beforeOrOn",
+      "profile": "identified_after_install",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\"<\": [{\"var\": \"first_seen_at\"}, 1717113600000]}]}",
+      "expected": true
+    },
+    {
+      "id": "firstSeenAt/on/2024-05-18/before_first_customer_info",
+      "field": "firstSeenAt",
+      "operator": "on",
+      "profile": "before_first_customer_info",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\">=\": [{\"var\": \"first_seen_at\"}, 1715990400000]}]}, {\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\"<\": [{\"var\": \"first_seen_at\"}, 1716076800000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "firstSeenAt/on/2024-05-18/alias_without_customer_info",
+      "field": "firstSeenAt",
+      "operator": "on",
+      "profile": "alias_without_customer_info",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\">=\": [{\"var\": \"first_seen_at\"}, 1715990400000]}]}, {\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\"<\": [{\"var\": \"first_seen_at\"}, 1716076800000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "firstSeenAt/on/2024-05-18/identified_customer",
+      "field": "firstSeenAt",
+      "operator": "on",
+      "profile": "identified_customer",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\">=\": [{\"var\": \"first_seen_at\"}, 1715990400000]}]}, {\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\"<\": [{\"var\": \"first_seen_at\"}, 1716076800000]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "firstSeenAt/on/2024-05-18/older_customer",
+      "field": "firstSeenAt",
+      "operator": "on",
+      "profile": "older_customer",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\">=\": [{\"var\": \"first_seen_at\"}, 1715990400000]}]}, {\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\"<\": [{\"var\": \"first_seen_at\"}, 1716076800000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "firstSeenAt/on/2024-05-18/two_identified_ids",
+      "field": "firstSeenAt",
+      "operator": "on",
+      "profile": "two_identified_ids",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\">=\": [{\"var\": \"first_seen_at\"}, 1715990400000]}]}, {\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\"<\": [{\"var\": \"first_seen_at\"}, 1716076800000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "firstSeenAt/on/2024-05-18/identified_after_install",
+      "field": "firstSeenAt",
+      "operator": "on",
+      "profile": "identified_after_install",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\">=\": [{\"var\": \"first_seen_at\"}, 1715990400000]}]}, {\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\"<\": [{\"var\": \"first_seen_at\"}, 1716076800000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "firstSeenAt/on/2024-05-25/before_first_customer_info",
+      "field": "firstSeenAt",
+      "operator": "on",
+      "profile": "before_first_customer_info",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\">=\": [{\"var\": \"first_seen_at\"}, 1716595200000]}]}, {\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\"<\": [{\"var\": \"first_seen_at\"}, 1716681600000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "firstSeenAt/on/2024-05-25/alias_without_customer_info",
+      "field": "firstSeenAt",
+      "operator": "on",
+      "profile": "alias_without_customer_info",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\">=\": [{\"var\": \"first_seen_at\"}, 1716595200000]}]}, {\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\"<\": [{\"var\": \"first_seen_at\"}, 1716681600000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "firstSeenAt/on/2024-05-25/identified_customer",
+      "field": "firstSeenAt",
+      "operator": "on",
+      "profile": "identified_customer",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\">=\": [{\"var\": \"first_seen_at\"}, 1716595200000]}]}, {\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\"<\": [{\"var\": \"first_seen_at\"}, 1716681600000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "firstSeenAt/on/2024-05-25/older_customer",
+      "field": "firstSeenAt",
+      "operator": "on",
+      "profile": "older_customer",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\">=\": [{\"var\": \"first_seen_at\"}, 1716595200000]}]}, {\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\"<\": [{\"var\": \"first_seen_at\"}, 1716681600000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "firstSeenAt/on/2024-05-25/two_identified_ids",
+      "field": "firstSeenAt",
+      "operator": "on",
+      "profile": "two_identified_ids",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\">=\": [{\"var\": \"first_seen_at\"}, 1716595200000]}]}, {\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\"<\": [{\"var\": \"first_seen_at\"}, 1716681600000]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "firstSeenAt/on/2024-05-25/identified_after_install",
+      "field": "firstSeenAt",
+      "operator": "on",
+      "profile": "identified_after_install",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\">=\": [{\"var\": \"first_seen_at\"}, 1716595200000]}]}, {\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\"<\": [{\"var\": \"first_seen_at\"}, 1716681600000]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "firstSeenAt/on/2024-05-30/before_first_customer_info",
+      "field": "firstSeenAt",
+      "operator": "on",
+      "profile": "before_first_customer_info",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\">=\": [{\"var\": \"first_seen_at\"}, 1717027200000]}]}, {\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\"<\": [{\"var\": \"first_seen_at\"}, 1717113600000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "firstSeenAt/on/2024-05-30/alias_without_customer_info",
+      "field": "firstSeenAt",
+      "operator": "on",
+      "profile": "alias_without_customer_info",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\">=\": [{\"var\": \"first_seen_at\"}, 1717027200000]}]}, {\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\"<\": [{\"var\": \"first_seen_at\"}, 1717113600000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "firstSeenAt/on/2024-05-30/identified_customer",
+      "field": "firstSeenAt",
+      "operator": "on",
+      "profile": "identified_customer",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\">=\": [{\"var\": \"first_seen_at\"}, 1717027200000]}]}, {\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\"<\": [{\"var\": \"first_seen_at\"}, 1717113600000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "firstSeenAt/on/2024-05-30/older_customer",
+      "field": "firstSeenAt",
+      "operator": "on",
+      "profile": "older_customer",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\">=\": [{\"var\": \"first_seen_at\"}, 1717027200000]}]}, {\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\"<\": [{\"var\": \"first_seen_at\"}, 1717113600000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "firstSeenAt/on/2024-05-30/two_identified_ids",
+      "field": "firstSeenAt",
+      "operator": "on",
+      "profile": "two_identified_ids",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\">=\": [{\"var\": \"first_seen_at\"}, 1717027200000]}]}, {\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\"<\": [{\"var\": \"first_seen_at\"}, 1717113600000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "firstSeenAt/on/2024-05-30/identified_after_install",
+      "field": "firstSeenAt",
+      "operator": "on",
+      "profile": "identified_after_install",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\">=\": [{\"var\": \"first_seen_at\"}, 1717027200000]}]}, {\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\"<\": [{\"var\": \"first_seen_at\"}, 1717113600000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "firstSeenAt/after/2024-05-18/before_first_customer_info",
+      "field": "firstSeenAt",
+      "operator": "after",
+      "profile": "before_first_customer_info",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\">=\": [{\"var\": \"first_seen_at\"}, 1716076800000]}]}",
+      "expected": false
+    },
+    {
+      "id": "firstSeenAt/after/2024-05-18/alias_without_customer_info",
+      "field": "firstSeenAt",
+      "operator": "after",
+      "profile": "alias_without_customer_info",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\">=\": [{\"var\": \"first_seen_at\"}, 1716076800000]}]}",
+      "expected": false
+    },
+    {
+      "id": "firstSeenAt/after/2024-05-18/identified_customer",
+      "field": "firstSeenAt",
+      "operator": "after",
+      "profile": "identified_customer",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\">=\": [{\"var\": \"first_seen_at\"}, 1716076800000]}]}",
+      "expected": false
+    },
+    {
+      "id": "firstSeenAt/after/2024-05-18/older_customer",
+      "field": "firstSeenAt",
+      "operator": "after",
+      "profile": "older_customer",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\">=\": [{\"var\": \"first_seen_at\"}, 1716076800000]}]}",
+      "expected": false
+    },
+    {
+      "id": "firstSeenAt/after/2024-05-18/two_identified_ids",
+      "field": "firstSeenAt",
+      "operator": "after",
+      "profile": "two_identified_ids",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\">=\": [{\"var\": \"first_seen_at\"}, 1716076800000]}]}",
+      "expected": true
+    },
+    {
+      "id": "firstSeenAt/after/2024-05-18/identified_after_install",
+      "field": "firstSeenAt",
+      "operator": "after",
+      "profile": "identified_after_install",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\">=\": [{\"var\": \"first_seen_at\"}, 1716076800000]}]}",
+      "expected": true
+    },
+    {
+      "id": "firstSeenAt/after/2024-05-25/before_first_customer_info",
+      "field": "firstSeenAt",
+      "operator": "after",
+      "profile": "before_first_customer_info",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\">=\": [{\"var\": \"first_seen_at\"}, 1716681600000]}]}",
+      "expected": false
+    },
+    {
+      "id": "firstSeenAt/after/2024-05-25/alias_without_customer_info",
+      "field": "firstSeenAt",
+      "operator": "after",
+      "profile": "alias_without_customer_info",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\">=\": [{\"var\": \"first_seen_at\"}, 1716681600000]}]}",
+      "expected": false
+    },
+    {
+      "id": "firstSeenAt/after/2024-05-25/identified_customer",
+      "field": "firstSeenAt",
+      "operator": "after",
+      "profile": "identified_customer",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\">=\": [{\"var\": \"first_seen_at\"}, 1716681600000]}]}",
+      "expected": false
+    },
+    {
+      "id": "firstSeenAt/after/2024-05-25/older_customer",
+      "field": "firstSeenAt",
+      "operator": "after",
+      "profile": "older_customer",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\">=\": [{\"var\": \"first_seen_at\"}, 1716681600000]}]}",
+      "expected": false
+    },
+    {
+      "id": "firstSeenAt/after/2024-05-25/two_identified_ids",
+      "field": "firstSeenAt",
+      "operator": "after",
+      "profile": "two_identified_ids",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\">=\": [{\"var\": \"first_seen_at\"}, 1716681600000]}]}",
+      "expected": false
+    },
+    {
+      "id": "firstSeenAt/after/2024-05-25/identified_after_install",
+      "field": "firstSeenAt",
+      "operator": "after",
+      "profile": "identified_after_install",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\">=\": [{\"var\": \"first_seen_at\"}, 1716681600000]}]}",
+      "expected": false
+    },
+    {
+      "id": "firstSeenAt/after/2024-05-30/before_first_customer_info",
+      "field": "firstSeenAt",
+      "operator": "after",
+      "profile": "before_first_customer_info",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\">=\": [{\"var\": \"first_seen_at\"}, 1717113600000]}]}",
+      "expected": false
+    },
+    {
+      "id": "firstSeenAt/after/2024-05-30/alias_without_customer_info",
+      "field": "firstSeenAt",
+      "operator": "after",
+      "profile": "alias_without_customer_info",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\">=\": [{\"var\": \"first_seen_at\"}, 1717113600000]}]}",
+      "expected": false
+    },
+    {
+      "id": "firstSeenAt/after/2024-05-30/identified_customer",
+      "field": "firstSeenAt",
+      "operator": "after",
+      "profile": "identified_customer",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\">=\": [{\"var\": \"first_seen_at\"}, 1717113600000]}]}",
+      "expected": false
+    },
+    {
+      "id": "firstSeenAt/after/2024-05-30/older_customer",
+      "field": "firstSeenAt",
+      "operator": "after",
+      "profile": "older_customer",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\">=\": [{\"var\": \"first_seen_at\"}, 1717113600000]}]}",
+      "expected": false
+    },
+    {
+      "id": "firstSeenAt/after/2024-05-30/two_identified_ids",
+      "field": "firstSeenAt",
+      "operator": "after",
+      "profile": "two_identified_ids",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\">=\": [{\"var\": \"first_seen_at\"}, 1717113600000]}]}",
+      "expected": false
+    },
+    {
+      "id": "firstSeenAt/after/2024-05-30/identified_after_install",
+      "field": "firstSeenAt",
+      "operator": "after",
+      "profile": "identified_after_install",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\">=\": [{\"var\": \"first_seen_at\"}, 1717113600000]}]}",
+      "expected": false
+    },
+    {
+      "id": "firstSeenAt/afterOrOn/2024-05-18/before_first_customer_info",
+      "field": "firstSeenAt",
+      "operator": "afterOrOn",
+      "profile": "before_first_customer_info",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\">=\": [{\"var\": \"first_seen_at\"}, 1715990400000]}]}",
+      "expected": false
+    },
+    {
+      "id": "firstSeenAt/afterOrOn/2024-05-18/alias_without_customer_info",
+      "field": "firstSeenAt",
+      "operator": "afterOrOn",
+      "profile": "alias_without_customer_info",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\">=\": [{\"var\": \"first_seen_at\"}, 1715990400000]}]}",
+      "expected": false
+    },
+    {
+      "id": "firstSeenAt/afterOrOn/2024-05-18/identified_customer",
+      "field": "firstSeenAt",
+      "operator": "afterOrOn",
+      "profile": "identified_customer",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\">=\": [{\"var\": \"first_seen_at\"}, 1715990400000]}]}",
+      "expected": true
+    },
+    {
+      "id": "firstSeenAt/afterOrOn/2024-05-18/older_customer",
+      "field": "firstSeenAt",
+      "operator": "afterOrOn",
+      "profile": "older_customer",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\">=\": [{\"var\": \"first_seen_at\"}, 1715990400000]}]}",
+      "expected": false
+    },
+    {
+      "id": "firstSeenAt/afterOrOn/2024-05-18/two_identified_ids",
+      "field": "firstSeenAt",
+      "operator": "afterOrOn",
+      "profile": "two_identified_ids",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\">=\": [{\"var\": \"first_seen_at\"}, 1715990400000]}]}",
+      "expected": true
+    },
+    {
+      "id": "firstSeenAt/afterOrOn/2024-05-18/identified_after_install",
+      "field": "firstSeenAt",
+      "operator": "afterOrOn",
+      "profile": "identified_after_install",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\">=\": [{\"var\": \"first_seen_at\"}, 1715990400000]}]}",
+      "expected": true
+    },
+    {
+      "id": "firstSeenAt/afterOrOn/2024-05-25/before_first_customer_info",
+      "field": "firstSeenAt",
+      "operator": "afterOrOn",
+      "profile": "before_first_customer_info",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\">=\": [{\"var\": \"first_seen_at\"}, 1716595200000]}]}",
+      "expected": false
+    },
+    {
+      "id": "firstSeenAt/afterOrOn/2024-05-25/alias_without_customer_info",
+      "field": "firstSeenAt",
+      "operator": "afterOrOn",
+      "profile": "alias_without_customer_info",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\">=\": [{\"var\": \"first_seen_at\"}, 1716595200000]}]}",
+      "expected": false
+    },
+    {
+      "id": "firstSeenAt/afterOrOn/2024-05-25/identified_customer",
+      "field": "firstSeenAt",
+      "operator": "afterOrOn",
+      "profile": "identified_customer",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\">=\": [{\"var\": \"first_seen_at\"}, 1716595200000]}]}",
+      "expected": false
+    },
+    {
+      "id": "firstSeenAt/afterOrOn/2024-05-25/older_customer",
+      "field": "firstSeenAt",
+      "operator": "afterOrOn",
+      "profile": "older_customer",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\">=\": [{\"var\": \"first_seen_at\"}, 1716595200000]}]}",
+      "expected": false
+    },
+    {
+      "id": "firstSeenAt/afterOrOn/2024-05-25/two_identified_ids",
+      "field": "firstSeenAt",
+      "operator": "afterOrOn",
+      "profile": "two_identified_ids",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\">=\": [{\"var\": \"first_seen_at\"}, 1716595200000]}]}",
+      "expected": true
+    },
+    {
+      "id": "firstSeenAt/afterOrOn/2024-05-25/identified_after_install",
+      "field": "firstSeenAt",
+      "operator": "afterOrOn",
+      "profile": "identified_after_install",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\">=\": [{\"var\": \"first_seen_at\"}, 1716595200000]}]}",
+      "expected": true
+    },
+    {
+      "id": "firstSeenAt/afterOrOn/2024-05-30/before_first_customer_info",
+      "field": "firstSeenAt",
+      "operator": "afterOrOn",
+      "profile": "before_first_customer_info",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\">=\": [{\"var\": \"first_seen_at\"}, 1717027200000]}]}",
+      "expected": false
+    },
+    {
+      "id": "firstSeenAt/afterOrOn/2024-05-30/alias_without_customer_info",
+      "field": "firstSeenAt",
+      "operator": "afterOrOn",
+      "profile": "alias_without_customer_info",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\">=\": [{\"var\": \"first_seen_at\"}, 1717027200000]}]}",
+      "expected": false
+    },
+    {
+      "id": "firstSeenAt/afterOrOn/2024-05-30/identified_customer",
+      "field": "firstSeenAt",
+      "operator": "afterOrOn",
+      "profile": "identified_customer",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\">=\": [{\"var\": \"first_seen_at\"}, 1717027200000]}]}",
+      "expected": false
+    },
+    {
+      "id": "firstSeenAt/afterOrOn/2024-05-30/older_customer",
+      "field": "firstSeenAt",
+      "operator": "afterOrOn",
+      "profile": "older_customer",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\">=\": [{\"var\": \"first_seen_at\"}, 1717027200000]}]}",
+      "expected": false
+    },
+    {
+      "id": "firstSeenAt/afterOrOn/2024-05-30/two_identified_ids",
+      "field": "firstSeenAt",
+      "operator": "afterOrOn",
+      "profile": "two_identified_ids",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\">=\": [{\"var\": \"first_seen_at\"}, 1717027200000]}]}",
+      "expected": false
+    },
+    {
+      "id": "firstSeenAt/afterOrOn/2024-05-30/identified_after_install",
+      "field": "firstSeenAt",
+      "operator": "afterOrOn",
+      "profile": "identified_after_install",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\">=\": [{\"var\": \"first_seen_at\"}, 1717027200000]}]}",
+      "expected": false
+    },
+    {
+      "id": "firstSeenAt/within/{\"direction\": \"last\", \"value\": 14, \"unit\": \"days\"}/before_first_customer_info",
+      "field": "firstSeenAt",
+      "operator": "within",
+      "profile": "before_first_customer_info",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\">=\": [{\"var\": \"first_seen_at\"}, {\"-\": [{\"rc.rootVar\": \"evaluated_at\"}, 1209600000]}]}, {\"<=\": [{\"var\": \"first_seen_at\"}, {\"rc.rootVar\": \"evaluated_at\"}]}]}",
+      "expected": false
+    },
+    {
+      "id": "firstSeenAt/within/{\"direction\": \"last\", \"value\": 14, \"unit\": \"days\"}/alias_without_customer_info",
+      "field": "firstSeenAt",
+      "operator": "within",
+      "profile": "alias_without_customer_info",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\">=\": [{\"var\": \"first_seen_at\"}, {\"-\": [{\"rc.rootVar\": \"evaluated_at\"}, 1209600000]}]}, {\"<=\": [{\"var\": \"first_seen_at\"}, {\"rc.rootVar\": \"evaluated_at\"}]}]}",
+      "expected": false
+    },
+    {
+      "id": "firstSeenAt/within/{\"direction\": \"last\", \"value\": 14, \"unit\": \"days\"}/identified_customer",
+      "field": "firstSeenAt",
+      "operator": "within",
+      "profile": "identified_customer",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\">=\": [{\"var\": \"first_seen_at\"}, {\"-\": [{\"rc.rootVar\": \"evaluated_at\"}, 1209600000]}]}, {\"<=\": [{\"var\": \"first_seen_at\"}, {\"rc.rootVar\": \"evaluated_at\"}]}]}",
+      "expected": true
+    },
+    {
+      "id": "firstSeenAt/within/{\"direction\": \"last\", \"value\": 14, \"unit\": \"days\"}/older_customer",
+      "field": "firstSeenAt",
+      "operator": "within",
+      "profile": "older_customer",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\">=\": [{\"var\": \"first_seen_at\"}, {\"-\": [{\"rc.rootVar\": \"evaluated_at\"}, 1209600000]}]}, {\"<=\": [{\"var\": \"first_seen_at\"}, {\"rc.rootVar\": \"evaluated_at\"}]}]}",
+      "expected": false
+    },
+    {
+      "id": "firstSeenAt/within/{\"direction\": \"last\", \"value\": 14, \"unit\": \"days\"}/two_identified_ids",
+      "field": "firstSeenAt",
+      "operator": "within",
+      "profile": "two_identified_ids",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\">=\": [{\"var\": \"first_seen_at\"}, {\"-\": [{\"rc.rootVar\": \"evaluated_at\"}, 1209600000]}]}, {\"<=\": [{\"var\": \"first_seen_at\"}, {\"rc.rootVar\": \"evaluated_at\"}]}]}",
+      "expected": true
+    },
+    {
+      "id": "firstSeenAt/within/{\"direction\": \"last\", \"value\": 14, \"unit\": \"days\"}/identified_after_install",
+      "field": "firstSeenAt",
+      "operator": "within",
+      "profile": "identified_after_install",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\">=\": [{\"var\": \"first_seen_at\"}, {\"-\": [{\"rc.rootVar\": \"evaluated_at\"}, 1209600000]}]}, {\"<=\": [{\"var\": \"first_seen_at\"}, {\"rc.rootVar\": \"evaluated_at\"}]}]}",
+      "expected": true
+    },
+    {
+      "id": "firstSeenAt/notWithin/{\"direction\": \"last\", \"value\": 14, \"unit\": \"days\"}/before_first_customer_info",
+      "field": "firstSeenAt",
+      "operator": "notWithin",
+      "profile": "before_first_customer_info",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"first_seen_at\", null]}, null]}, {\"!\": [{\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\">=\": [{\"var\": \"first_seen_at\"}, {\"-\": [{\"rc.rootVar\": \"evaluated_at\"}, 1209600000]}]}, {\"<=\": [{\"var\": \"first_seen_at\"}, {\"rc.rootVar\": \"evaluated_at\"}]}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "firstSeenAt/notWithin/{\"direction\": \"last\", \"value\": 14, \"unit\": \"days\"}/alias_without_customer_info",
+      "field": "firstSeenAt",
+      "operator": "notWithin",
+      "profile": "alias_without_customer_info",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"first_seen_at\", null]}, null]}, {\"!\": [{\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\">=\": [{\"var\": \"first_seen_at\"}, {\"-\": [{\"rc.rootVar\": \"evaluated_at\"}, 1209600000]}]}, {\"<=\": [{\"var\": \"first_seen_at\"}, {\"rc.rootVar\": \"evaluated_at\"}]}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "firstSeenAt/notWithin/{\"direction\": \"last\", \"value\": 14, \"unit\": \"days\"}/identified_customer",
+      "field": "firstSeenAt",
+      "operator": "notWithin",
+      "profile": "identified_customer",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"first_seen_at\", null]}, null]}, {\"!\": [{\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\">=\": [{\"var\": \"first_seen_at\"}, {\"-\": [{\"rc.rootVar\": \"evaluated_at\"}, 1209600000]}]}, {\"<=\": [{\"var\": \"first_seen_at\"}, {\"rc.rootVar\": \"evaluated_at\"}]}]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "firstSeenAt/notWithin/{\"direction\": \"last\", \"value\": 14, \"unit\": \"days\"}/older_customer",
+      "field": "firstSeenAt",
+      "operator": "notWithin",
+      "profile": "older_customer",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"first_seen_at\", null]}, null]}, {\"!\": [{\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\">=\": [{\"var\": \"first_seen_at\"}, {\"-\": [{\"rc.rootVar\": \"evaluated_at\"}, 1209600000]}]}, {\"<=\": [{\"var\": \"first_seen_at\"}, {\"rc.rootVar\": \"evaluated_at\"}]}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "firstSeenAt/notWithin/{\"direction\": \"last\", \"value\": 14, \"unit\": \"days\"}/two_identified_ids",
+      "field": "firstSeenAt",
+      "operator": "notWithin",
+      "profile": "two_identified_ids",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"first_seen_at\", null]}, null]}, {\"!\": [{\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\">=\": [{\"var\": \"first_seen_at\"}, {\"-\": [{\"rc.rootVar\": \"evaluated_at\"}, 1209600000]}]}, {\"<=\": [{\"var\": \"first_seen_at\"}, {\"rc.rootVar\": \"evaluated_at\"}]}]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "firstSeenAt/notWithin/{\"direction\": \"last\", \"value\": 14, \"unit\": \"days\"}/identified_after_install",
+      "field": "firstSeenAt",
+      "operator": "notWithin",
+      "profile": "identified_after_install",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"first_seen_at\", null]}, null]}, {\"!\": [{\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\">=\": [{\"var\": \"first_seen_at\"}, {\"-\": [{\"rc.rootVar\": \"evaluated_at\"}, 1209600000]}]}, {\"<=\": [{\"var\": \"first_seen_at\"}, {\"rc.rootVar\": \"evaluated_at\"}]}]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "firstSeenAt/between/{\"from\": \"2024-05-18\", \"to\": \"2024-05-25\"}/before_first_customer_info",
+      "field": "firstSeenAt",
+      "operator": "between",
+      "profile": "before_first_customer_info",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\">=\": [{\"var\": \"first_seen_at\"}, 1715990400000]}]}, {\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\"<\": [{\"var\": \"first_seen_at\"}, 1716681600000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "firstSeenAt/between/{\"from\": \"2024-05-18\", \"to\": \"2024-05-25\"}/alias_without_customer_info",
+      "field": "firstSeenAt",
+      "operator": "between",
+      "profile": "alias_without_customer_info",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\">=\": [{\"var\": \"first_seen_at\"}, 1715990400000]}]}, {\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\"<\": [{\"var\": \"first_seen_at\"}, 1716681600000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "firstSeenAt/between/{\"from\": \"2024-05-18\", \"to\": \"2024-05-25\"}/identified_customer",
+      "field": "firstSeenAt",
+      "operator": "between",
+      "profile": "identified_customer",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\">=\": [{\"var\": \"first_seen_at\"}, 1715990400000]}]}, {\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\"<\": [{\"var\": \"first_seen_at\"}, 1716681600000]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "firstSeenAt/between/{\"from\": \"2024-05-18\", \"to\": \"2024-05-25\"}/older_customer",
+      "field": "firstSeenAt",
+      "operator": "between",
+      "profile": "older_customer",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\">=\": [{\"var\": \"first_seen_at\"}, 1715990400000]}]}, {\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\"<\": [{\"var\": \"first_seen_at\"}, 1716681600000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "firstSeenAt/between/{\"from\": \"2024-05-18\", \"to\": \"2024-05-25\"}/two_identified_ids",
+      "field": "firstSeenAt",
+      "operator": "between",
+      "profile": "two_identified_ids",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\">=\": [{\"var\": \"first_seen_at\"}, 1715990400000]}]}, {\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\"<\": [{\"var\": \"first_seen_at\"}, 1716681600000]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "firstSeenAt/between/{\"from\": \"2024-05-18\", \"to\": \"2024-05-25\"}/identified_after_install",
+      "field": "firstSeenAt",
+      "operator": "between",
+      "profile": "identified_after_install",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\">=\": [{\"var\": \"first_seen_at\"}, 1715990400000]}]}, {\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\"<\": [{\"var\": \"first_seen_at\"}, 1716681600000]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "firstSeenAt/notBetween/{\"from\": \"2024-05-18\", \"to\": \"2024-05-25\"}/before_first_customer_info",
+      "field": "firstSeenAt",
+      "operator": "notBetween",
+      "profile": "before_first_customer_info",
+      "predicate": "{\"or\": [{\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\"<\": [{\"var\": \"first_seen_at\"}, 1715990400000]}]}, {\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\">=\": [{\"var\": \"first_seen_at\"}, 1716681600000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "firstSeenAt/notBetween/{\"from\": \"2024-05-18\", \"to\": \"2024-05-25\"}/alias_without_customer_info",
+      "field": "firstSeenAt",
+      "operator": "notBetween",
+      "profile": "alias_without_customer_info",
+      "predicate": "{\"or\": [{\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\"<\": [{\"var\": \"first_seen_at\"}, 1715990400000]}]}, {\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\">=\": [{\"var\": \"first_seen_at\"}, 1716681600000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "firstSeenAt/notBetween/{\"from\": \"2024-05-18\", \"to\": \"2024-05-25\"}/identified_customer",
+      "field": "firstSeenAt",
+      "operator": "notBetween",
+      "profile": "identified_customer",
+      "predicate": "{\"or\": [{\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\"<\": [{\"var\": \"first_seen_at\"}, 1715990400000]}]}, {\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\">=\": [{\"var\": \"first_seen_at\"}, 1716681600000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "firstSeenAt/notBetween/{\"from\": \"2024-05-18\", \"to\": \"2024-05-25\"}/older_customer",
+      "field": "firstSeenAt",
+      "operator": "notBetween",
+      "profile": "older_customer",
+      "predicate": "{\"or\": [{\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\"<\": [{\"var\": \"first_seen_at\"}, 1715990400000]}]}, {\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\">=\": [{\"var\": \"first_seen_at\"}, 1716681600000]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "firstSeenAt/notBetween/{\"from\": \"2024-05-18\", \"to\": \"2024-05-25\"}/two_identified_ids",
+      "field": "firstSeenAt",
+      "operator": "notBetween",
+      "profile": "two_identified_ids",
+      "predicate": "{\"or\": [{\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\"<\": [{\"var\": \"first_seen_at\"}, 1715990400000]}]}, {\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\">=\": [{\"var\": \"first_seen_at\"}, 1716681600000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "firstSeenAt/notBetween/{\"from\": \"2024-05-18\", \"to\": \"2024-05-25\"}/identified_after_install",
+      "field": "firstSeenAt",
+      "operator": "notBetween",
+      "profile": "identified_after_install",
+      "predicate": "{\"or\": [{\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\"<\": [{\"var\": \"first_seen_at\"}, 1715990400000]}]}, {\"and\": [{\"!=\": [{\"var\": \"first_seen_at\"}, null]}, {\">=\": [{\"var\": \"first_seen_at\"}, 1716681600000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "firstSeenAt/isEmpty//before_first_customer_info",
+      "field": "firstSeenAt",
+      "operator": "isEmpty",
+      "profile": "before_first_customer_info",
+      "predicate": "{\"==\": [{\"var\": [\"first_seen_at\", null]}, null]}",
+      "expected": true
+    },
+    {
+      "id": "firstSeenAt/isEmpty//alias_without_customer_info",
+      "field": "firstSeenAt",
+      "operator": "isEmpty",
+      "profile": "alias_without_customer_info",
+      "predicate": "{\"==\": [{\"var\": [\"first_seen_at\", null]}, null]}",
+      "expected": true
+    },
+    {
+      "id": "firstSeenAt/isEmpty//identified_customer",
+      "field": "firstSeenAt",
+      "operator": "isEmpty",
+      "profile": "identified_customer",
+      "predicate": "{\"==\": [{\"var\": [\"first_seen_at\", null]}, null]}",
+      "expected": false
+    },
+    {
+      "id": "firstSeenAt/isEmpty//older_customer",
+      "field": "firstSeenAt",
+      "operator": "isEmpty",
+      "profile": "older_customer",
+      "predicate": "{\"==\": [{\"var\": [\"first_seen_at\", null]}, null]}",
+      "expected": false
+    },
+    {
+      "id": "firstSeenAt/isEmpty//two_identified_ids",
+      "field": "firstSeenAt",
+      "operator": "isEmpty",
+      "profile": "two_identified_ids",
+      "predicate": "{\"==\": [{\"var\": [\"first_seen_at\", null]}, null]}",
+      "expected": false
+    },
+    {
+      "id": "firstSeenAt/isEmpty//identified_after_install",
+      "field": "firstSeenAt",
+      "operator": "isEmpty",
+      "profile": "identified_after_install",
+      "predicate": "{\"==\": [{\"var\": [\"first_seen_at\", null]}, null]}",
+      "expected": false
+    },
+    {
+      "id": "firstSeenAt/isNotEmpty//before_first_customer_info",
+      "field": "firstSeenAt",
+      "operator": "isNotEmpty",
+      "profile": "before_first_customer_info",
+      "predicate": "{\"!=\": [{\"var\": [\"first_seen_at\", null]}, null]}",
+      "expected": false
+    },
+    {
+      "id": "firstSeenAt/isNotEmpty//alias_without_customer_info",
+      "field": "firstSeenAt",
+      "operator": "isNotEmpty",
+      "profile": "alias_without_customer_info",
+      "predicate": "{\"!=\": [{\"var\": [\"first_seen_at\", null]}, null]}",
+      "expected": false
+    },
+    {
+      "id": "firstSeenAt/isNotEmpty//identified_customer",
+      "field": "firstSeenAt",
+      "operator": "isNotEmpty",
+      "profile": "identified_customer",
+      "predicate": "{\"!=\": [{\"var\": [\"first_seen_at\", null]}, null]}",
+      "expected": true
+    },
+    {
+      "id": "firstSeenAt/isNotEmpty//older_customer",
+      "field": "firstSeenAt",
+      "operator": "isNotEmpty",
+      "profile": "older_customer",
+      "predicate": "{\"!=\": [{\"var\": [\"first_seen_at\", null]}, null]}",
+      "expected": true
+    },
+    {
+      "id": "firstSeenAt/isNotEmpty//two_identified_ids",
+      "field": "firstSeenAt",
+      "operator": "isNotEmpty",
+      "profile": "two_identified_ids",
+      "predicate": "{\"!=\": [{\"var\": [\"first_seen_at\", null]}, null]}",
+      "expected": true
+    },
+    {
+      "id": "firstSeenAt/isNotEmpty//identified_after_install",
+      "field": "firstSeenAt",
+      "operator": "isNotEmpty",
+      "profile": "identified_after_install",
+      "predicate": "{\"!=\": [{\"var\": [\"first_seen_at\", null]}, null]}",
+      "expected": true
+    }
+  ]
+}

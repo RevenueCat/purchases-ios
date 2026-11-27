@@ -1,0 +1,485 @@
+{
+  "schema_version": 1,
+  "cases": [
+    {
+      "id": "originalAppUserId/is/original-user/before_first_customer_info",
+      "field": "originalAppUserId",
+      "operator": "is",
+      "profile": "before_first_customer_info",
+      "predicate": "{\"==\": [{\"var\": \"original_app_user_id\"}, \"original-user\"]}",
+      "expected": false
+    },
+    {
+      "id": "originalAppUserId/is/original-user/alias_without_customer_info",
+      "field": "originalAppUserId",
+      "operator": "is",
+      "profile": "alias_without_customer_info",
+      "predicate": "{\"==\": [{\"var\": \"original_app_user_id\"}, \"original-user\"]}",
+      "expected": false
+    },
+    {
+      "id": "originalAppUserId/is/original-user/identified_customer",
+      "field": "originalAppUserId",
+      "operator": "is",
+      "profile": "identified_customer",
+      "predicate": "{\"==\": [{\"var\": \"original_app_user_id\"}, \"original-user\"]}",
+      "expected": true
+    },
+    {
+      "id": "originalAppUserId/is/original-user/older_customer",
+      "field": "originalAppUserId",
+      "operator": "is",
+      "profile": "older_customer",
+      "predicate": "{\"==\": [{\"var\": \"original_app_user_id\"}, \"original-user\"]}",
+      "expected": false
+    },
+    {
+      "id": "originalAppUserId/is/original-user/two_identified_ids",
+      "field": "originalAppUserId",
+      "operator": "is",
+      "profile": "two_identified_ids",
+      "predicate": "{\"==\": [{\"var\": \"original_app_user_id\"}, \"original-user\"]}",
+      "expected": true
+    },
+    {
+      "id": "originalAppUserId/is/original-user/identified_after_install",
+      "field": "originalAppUserId",
+      "operator": "is",
+      "profile": "identified_after_install",
+      "predicate": "{\"==\": [{\"var\": \"original_app_user_id\"}, \"original-user\"]}",
+      "expected": false
+    },
+    {
+      "id": "originalAppUserId/is/user/before_first_customer_info",
+      "field": "originalAppUserId",
+      "operator": "is",
+      "profile": "before_first_customer_info",
+      "predicate": "{\"==\": [{\"var\": \"original_app_user_id\"}, \"user\"]}",
+      "expected": false
+    },
+    {
+      "id": "originalAppUserId/is/user/alias_without_customer_info",
+      "field": "originalAppUserId",
+      "operator": "is",
+      "profile": "alias_without_customer_info",
+      "predicate": "{\"==\": [{\"var\": \"original_app_user_id\"}, \"user\"]}",
+      "expected": false
+    },
+    {
+      "id": "originalAppUserId/is/user/identified_customer",
+      "field": "originalAppUserId",
+      "operator": "is",
+      "profile": "identified_customer",
+      "predicate": "{\"==\": [{\"var\": \"original_app_user_id\"}, \"user\"]}",
+      "expected": false
+    },
+    {
+      "id": "originalAppUserId/is/user/older_customer",
+      "field": "originalAppUserId",
+      "operator": "is",
+      "profile": "older_customer",
+      "predicate": "{\"==\": [{\"var\": \"original_app_user_id\"}, \"user\"]}",
+      "expected": false
+    },
+    {
+      "id": "originalAppUserId/is/user/two_identified_ids",
+      "field": "originalAppUserId",
+      "operator": "is",
+      "profile": "two_identified_ids",
+      "predicate": "{\"==\": [{\"var\": \"original_app_user_id\"}, \"user\"]}",
+      "expected": false
+    },
+    {
+      "id": "originalAppUserId/is/user/identified_after_install",
+      "field": "originalAppUserId",
+      "operator": "is",
+      "profile": "identified_after_install",
+      "predicate": "{\"==\": [{\"var\": \"original_app_user_id\"}, \"user\"]}",
+      "expected": false
+    },
+    {
+      "id": "originalAppUserId/isNot/original-user/before_first_customer_info",
+      "field": "originalAppUserId",
+      "operator": "isNot",
+      "profile": "before_first_customer_info",
+      "predicate": "{\"!=\": [{\"var\": [\"original_app_user_id\", null]}, \"original-user\"]}",
+      "expected": true
+    },
+    {
+      "id": "originalAppUserId/isNot/original-user/alias_without_customer_info",
+      "field": "originalAppUserId",
+      "operator": "isNot",
+      "profile": "alias_without_customer_info",
+      "predicate": "{\"!=\": [{\"var\": [\"original_app_user_id\", null]}, \"original-user\"]}",
+      "expected": true
+    },
+    {
+      "id": "originalAppUserId/isNot/original-user/identified_customer",
+      "field": "originalAppUserId",
+      "operator": "isNot",
+      "profile": "identified_customer",
+      "predicate": "{\"!=\": [{\"var\": [\"original_app_user_id\", null]}, \"original-user\"]}",
+      "expected": false
+    },
+    {
+      "id": "originalAppUserId/isNot/original-user/older_customer",
+      "field": "originalAppUserId",
+      "operator": "isNot",
+      "profile": "older_customer",
+      "predicate": "{\"!=\": [{\"var\": [\"original_app_user_id\", null]}, \"original-user\"]}",
+      "expected": true
+    },
+    {
+      "id": "originalAppUserId/isNot/original-user/two_identified_ids",
+      "field": "originalAppUserId",
+      "operator": "isNot",
+      "profile": "two_identified_ids",
+      "predicate": "{\"!=\": [{\"var\": [\"original_app_user_id\", null]}, \"original-user\"]}",
+      "expected": false
+    },
+    {
+      "id": "originalAppUserId/isNot/original-user/identified_after_install",
+      "field": "originalAppUserId",
+      "operator": "isNot",
+      "profile": "identified_after_install",
+      "predicate": "{\"!=\": [{\"var\": [\"original_app_user_id\", null]}, \"original-user\"]}",
+      "expected": true
+    },
+    {
+      "id": "originalAppUserId/isNot/user/before_first_customer_info",
+      "field": "originalAppUserId",
+      "operator": "isNot",
+      "profile": "before_first_customer_info",
+      "predicate": "{\"!=\": [{\"var\": [\"original_app_user_id\", null]}, \"user\"]}",
+      "expected": true
+    },
+    {
+      "id": "originalAppUserId/isNot/user/alias_without_customer_info",
+      "field": "originalAppUserId",
+      "operator": "isNot",
+      "profile": "alias_without_customer_info",
+      "predicate": "{\"!=\": [{\"var\": [\"original_app_user_id\", null]}, \"user\"]}",
+      "expected": true
+    },
+    {
+      "id": "originalAppUserId/isNot/user/identified_customer",
+      "field": "originalAppUserId",
+      "operator": "isNot",
+      "profile": "identified_customer",
+      "predicate": "{\"!=\": [{\"var\": [\"original_app_user_id\", null]}, \"user\"]}",
+      "expected": true
+    },
+    {
+      "id": "originalAppUserId/isNot/user/older_customer",
+      "field": "originalAppUserId",
+      "operator": "isNot",
+      "profile": "older_customer",
+      "predicate": "{\"!=\": [{\"var\": [\"original_app_user_id\", null]}, \"user\"]}",
+      "expected": true
+    },
+    {
+      "id": "originalAppUserId/isNot/user/two_identified_ids",
+      "field": "originalAppUserId",
+      "operator": "isNot",
+      "profile": "two_identified_ids",
+      "predicate": "{\"!=\": [{\"var\": [\"original_app_user_id\", null]}, \"user\"]}",
+      "expected": true
+    },
+    {
+      "id": "originalAppUserId/isNot/user/identified_after_install",
+      "field": "originalAppUserId",
+      "operator": "isNot",
+      "profile": "identified_after_install",
+      "predicate": "{\"!=\": [{\"var\": [\"original_app_user_id\", null]}, \"user\"]}",
+      "expected": true
+    },
+    {
+      "id": "originalAppUserId/contains/original-user/before_first_customer_info",
+      "field": "originalAppUserId",
+      "operator": "contains",
+      "profile": "before_first_customer_info",
+      "predicate": "{\"in\": [{\"rc.lower\": \"original-user\"}, {\"rc.lower\": {\"if\": [{\"==\": [{\"var\": [\"original_app_user_id\", null]}, null]}, \"\", {\"var\": [\"original_app_user_id\", null]}]}}]}",
+      "expected": false
+    },
+    {
+      "id": "originalAppUserId/contains/original-user/alias_without_customer_info",
+      "field": "originalAppUserId",
+      "operator": "contains",
+      "profile": "alias_without_customer_info",
+      "predicate": "{\"in\": [{\"rc.lower\": \"original-user\"}, {\"rc.lower\": {\"if\": [{\"==\": [{\"var\": [\"original_app_user_id\", null]}, null]}, \"\", {\"var\": [\"original_app_user_id\", null]}]}}]}",
+      "expected": false
+    },
+    {
+      "id": "originalAppUserId/contains/original-user/identified_customer",
+      "field": "originalAppUserId",
+      "operator": "contains",
+      "profile": "identified_customer",
+      "predicate": "{\"in\": [{\"rc.lower\": \"original-user\"}, {\"rc.lower\": {\"if\": [{\"==\": [{\"var\": [\"original_app_user_id\", null]}, null]}, \"\", {\"var\": [\"original_app_user_id\", null]}]}}]}",
+      "expected": true
+    },
+    {
+      "id": "originalAppUserId/contains/original-user/older_customer",
+      "field": "originalAppUserId",
+      "operator": "contains",
+      "profile": "older_customer",
+      "predicate": "{\"in\": [{\"rc.lower\": \"original-user\"}, {\"rc.lower\": {\"if\": [{\"==\": [{\"var\": [\"original_app_user_id\", null]}, null]}, \"\", {\"var\": [\"original_app_user_id\", null]}]}}]}",
+      "expected": false
+    },
+    {
+      "id": "originalAppUserId/contains/original-user/two_identified_ids",
+      "field": "originalAppUserId",
+      "operator": "contains",
+      "profile": "two_identified_ids",
+      "predicate": "{\"in\": [{\"rc.lower\": \"original-user\"}, {\"rc.lower\": {\"if\": [{\"==\": [{\"var\": [\"original_app_user_id\", null]}, null]}, \"\", {\"var\": [\"original_app_user_id\", null]}]}}]}",
+      "expected": true
+    },
+    {
+      "id": "originalAppUserId/contains/original-user/identified_after_install",
+      "field": "originalAppUserId",
+      "operator": "contains",
+      "profile": "identified_after_install",
+      "predicate": "{\"in\": [{\"rc.lower\": \"original-user\"}, {\"rc.lower\": {\"if\": [{\"==\": [{\"var\": [\"original_app_user_id\", null]}, null]}, \"\", {\"var\": [\"original_app_user_id\", null]}]}}]}",
+      "expected": false
+    },
+    {
+      "id": "originalAppUserId/contains/user/before_first_customer_info",
+      "field": "originalAppUserId",
+      "operator": "contains",
+      "profile": "before_first_customer_info",
+      "predicate": "{\"in\": [{\"rc.lower\": \"user\"}, {\"rc.lower\": {\"if\": [{\"==\": [{\"var\": [\"original_app_user_id\", null]}, null]}, \"\", {\"var\": [\"original_app_user_id\", null]}]}}]}",
+      "expected": false
+    },
+    {
+      "id": "originalAppUserId/contains/user/alias_without_customer_info",
+      "field": "originalAppUserId",
+      "operator": "contains",
+      "profile": "alias_without_customer_info",
+      "predicate": "{\"in\": [{\"rc.lower\": \"user\"}, {\"rc.lower\": {\"if\": [{\"==\": [{\"var\": [\"original_app_user_id\", null]}, null]}, \"\", {\"var\": [\"original_app_user_id\", null]}]}}]}",
+      "expected": false
+    },
+    {
+      "id": "originalAppUserId/contains/user/identified_customer",
+      "field": "originalAppUserId",
+      "operator": "contains",
+      "profile": "identified_customer",
+      "predicate": "{\"in\": [{\"rc.lower\": \"user\"}, {\"rc.lower\": {\"if\": [{\"==\": [{\"var\": [\"original_app_user_id\", null]}, null]}, \"\", {\"var\": [\"original_app_user_id\", null]}]}}]}",
+      "expected": true
+    },
+    {
+      "id": "originalAppUserId/contains/user/older_customer",
+      "field": "originalAppUserId",
+      "operator": "contains",
+      "profile": "older_customer",
+      "predicate": "{\"in\": [{\"rc.lower\": \"user\"}, {\"rc.lower\": {\"if\": [{\"==\": [{\"var\": [\"original_app_user_id\", null]}, null]}, \"\", {\"var\": [\"original_app_user_id\", null]}]}}]}",
+      "expected": true
+    },
+    {
+      "id": "originalAppUserId/contains/user/two_identified_ids",
+      "field": "originalAppUserId",
+      "operator": "contains",
+      "profile": "two_identified_ids",
+      "predicate": "{\"in\": [{\"rc.lower\": \"user\"}, {\"rc.lower\": {\"if\": [{\"==\": [{\"var\": [\"original_app_user_id\", null]}, null]}, \"\", {\"var\": [\"original_app_user_id\", null]}]}}]}",
+      "expected": true
+    },
+    {
+      "id": "originalAppUserId/contains/user/identified_after_install",
+      "field": "originalAppUserId",
+      "operator": "contains",
+      "profile": "identified_after_install",
+      "predicate": "{\"in\": [{\"rc.lower\": \"user\"}, {\"rc.lower\": {\"if\": [{\"==\": [{\"var\": [\"original_app_user_id\", null]}, null]}, \"\", {\"var\": [\"original_app_user_id\", null]}]}}]}",
+      "expected": false
+    },
+    {
+      "id": "originalAppUserId/doesNotContain/original-user/before_first_customer_info",
+      "field": "originalAppUserId",
+      "operator": "doesNotContain",
+      "profile": "before_first_customer_info",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"original_app_user_id\", null]}, null]}, {\"!\": [{\"in\": [{\"rc.lower\": \"original-user\"}, {\"rc.lower\": {\"if\": [{\"==\": [{\"var\": [\"original_app_user_id\", null]}, null]}, \"\", {\"var\": [\"original_app_user_id\", null]}]}}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "originalAppUserId/doesNotContain/original-user/alias_without_customer_info",
+      "field": "originalAppUserId",
+      "operator": "doesNotContain",
+      "profile": "alias_without_customer_info",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"original_app_user_id\", null]}, null]}, {\"!\": [{\"in\": [{\"rc.lower\": \"original-user\"}, {\"rc.lower\": {\"if\": [{\"==\": [{\"var\": [\"original_app_user_id\", null]}, null]}, \"\", {\"var\": [\"original_app_user_id\", null]}]}}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "originalAppUserId/doesNotContain/original-user/identified_customer",
+      "field": "originalAppUserId",
+      "operator": "doesNotContain",
+      "profile": "identified_customer",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"original_app_user_id\", null]}, null]}, {\"!\": [{\"in\": [{\"rc.lower\": \"original-user\"}, {\"rc.lower\": {\"if\": [{\"==\": [{\"var\": [\"original_app_user_id\", null]}, null]}, \"\", {\"var\": [\"original_app_user_id\", null]}]}}]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "originalAppUserId/doesNotContain/original-user/older_customer",
+      "field": "originalAppUserId",
+      "operator": "doesNotContain",
+      "profile": "older_customer",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"original_app_user_id\", null]}, null]}, {\"!\": [{\"in\": [{\"rc.lower\": \"original-user\"}, {\"rc.lower\": {\"if\": [{\"==\": [{\"var\": [\"original_app_user_id\", null]}, null]}, \"\", {\"var\": [\"original_app_user_id\", null]}]}}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "originalAppUserId/doesNotContain/original-user/two_identified_ids",
+      "field": "originalAppUserId",
+      "operator": "doesNotContain",
+      "profile": "two_identified_ids",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"original_app_user_id\", null]}, null]}, {\"!\": [{\"in\": [{\"rc.lower\": \"original-user\"}, {\"rc.lower\": {\"if\": [{\"==\": [{\"var\": [\"original_app_user_id\", null]}, null]}, \"\", {\"var\": [\"original_app_user_id\", null]}]}}]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "originalAppUserId/doesNotContain/original-user/identified_after_install",
+      "field": "originalAppUserId",
+      "operator": "doesNotContain",
+      "profile": "identified_after_install",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"original_app_user_id\", null]}, null]}, {\"!\": [{\"in\": [{\"rc.lower\": \"original-user\"}, {\"rc.lower\": {\"if\": [{\"==\": [{\"var\": [\"original_app_user_id\", null]}, null]}, \"\", {\"var\": [\"original_app_user_id\", null]}]}}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "originalAppUserId/doesNotContain/user/before_first_customer_info",
+      "field": "originalAppUserId",
+      "operator": "doesNotContain",
+      "profile": "before_first_customer_info",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"original_app_user_id\", null]}, null]}, {\"!\": [{\"in\": [{\"rc.lower\": \"user\"}, {\"rc.lower\": {\"if\": [{\"==\": [{\"var\": [\"original_app_user_id\", null]}, null]}, \"\", {\"var\": [\"original_app_user_id\", null]}]}}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "originalAppUserId/doesNotContain/user/alias_without_customer_info",
+      "field": "originalAppUserId",
+      "operator": "doesNotContain",
+      "profile": "alias_without_customer_info",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"original_app_user_id\", null]}, null]}, {\"!\": [{\"in\": [{\"rc.lower\": \"user\"}, {\"rc.lower\": {\"if\": [{\"==\": [{\"var\": [\"original_app_user_id\", null]}, null]}, \"\", {\"var\": [\"original_app_user_id\", null]}]}}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "originalAppUserId/doesNotContain/user/identified_customer",
+      "field": "originalAppUserId",
+      "operator": "doesNotContain",
+      "profile": "identified_customer",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"original_app_user_id\", null]}, null]}, {\"!\": [{\"in\": [{\"rc.lower\": \"user\"}, {\"rc.lower\": {\"if\": [{\"==\": [{\"var\": [\"original_app_user_id\", null]}, null]}, \"\", {\"var\": [\"original_app_user_id\", null]}]}}]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "originalAppUserId/doesNotContain/user/older_customer",
+      "field": "originalAppUserId",
+      "operator": "doesNotContain",
+      "profile": "older_customer",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"original_app_user_id\", null]}, null]}, {\"!\": [{\"in\": [{\"rc.lower\": \"user\"}, {\"rc.lower\": {\"if\": [{\"==\": [{\"var\": [\"original_app_user_id\", null]}, null]}, \"\", {\"var\": [\"original_app_user_id\", null]}]}}]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "originalAppUserId/doesNotContain/user/two_identified_ids",
+      "field": "originalAppUserId",
+      "operator": "doesNotContain",
+      "profile": "two_identified_ids",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"original_app_user_id\", null]}, null]}, {\"!\": [{\"in\": [{\"rc.lower\": \"user\"}, {\"rc.lower\": {\"if\": [{\"==\": [{\"var\": [\"original_app_user_id\", null]}, null]}, \"\", {\"var\": [\"original_app_user_id\", null]}]}}]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "originalAppUserId/doesNotContain/user/identified_after_install",
+      "field": "originalAppUserId",
+      "operator": "doesNotContain",
+      "profile": "identified_after_install",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"original_app_user_id\", null]}, null]}, {\"!\": [{\"in\": [{\"rc.lower\": \"user\"}, {\"rc.lower\": {\"if\": [{\"==\": [{\"var\": [\"original_app_user_id\", null]}, null]}, \"\", {\"var\": [\"original_app_user_id\", null]}]}}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "originalAppUserId/isEmpty//before_first_customer_info",
+      "field": "originalAppUserId",
+      "operator": "isEmpty",
+      "profile": "before_first_customer_info",
+      "predicate": "{\"==\": [{\"var\": [\"original_app_user_id\", null]}, null]}",
+      "expected": true
+    },
+    {
+      "id": "originalAppUserId/isEmpty//alias_without_customer_info",
+      "field": "originalAppUserId",
+      "operator": "isEmpty",
+      "profile": "alias_without_customer_info",
+      "predicate": "{\"==\": [{\"var\": [\"original_app_user_id\", null]}, null]}",
+      "expected": true
+    },
+    {
+      "id": "originalAppUserId/isEmpty//identified_customer",
+      "field": "originalAppUserId",
+      "operator": "isEmpty",
+      "profile": "identified_customer",
+      "predicate": "{\"==\": [{\"var\": [\"original_app_user_id\", null]}, null]}",
+      "expected": false
+    },
+    {
+      "id": "originalAppUserId/isEmpty//older_customer",
+      "field": "originalAppUserId",
+      "operator": "isEmpty",
+      "profile": "older_customer",
+      "predicate": "{\"==\": [{\"var\": [\"original_app_user_id\", null]}, null]}",
+      "expected": false
+    },
+    {
+      "id": "originalAppUserId/isEmpty//two_identified_ids",
+      "field": "originalAppUserId",
+      "operator": "isEmpty",
+      "profile": "two_identified_ids",
+      "predicate": "{\"==\": [{\"var\": [\"original_app_user_id\", null]}, null]}",
+      "expected": false
+    },
+    {
+      "id": "originalAppUserId/isEmpty//identified_after_install",
+      "field": "originalAppUserId",
+      "operator": "isEmpty",
+      "profile": "identified_after_install",
+      "predicate": "{\"==\": [{\"var\": [\"original_app_user_id\", null]}, null]}",
+      "expected": false
+    },
+    {
+      "id": "originalAppUserId/isNotEmpty//before_first_customer_info",
+      "field": "originalAppUserId",
+      "operator": "isNotEmpty",
+      "profile": "before_first_customer_info",
+      "predicate": "{\"!=\": [{\"var\": [\"original_app_user_id\", null]}, null]}",
+      "expected": false
+    },
+    {
+      "id": "originalAppUserId/isNotEmpty//alias_without_customer_info",
+      "field": "originalAppUserId",
+      "operator": "isNotEmpty",
+      "profile": "alias_without_customer_info",
+      "predicate": "{\"!=\": [{\"var\": [\"original_app_user_id\", null]}, null]}",
+      "expected": false
+    },
+    {
+      "id": "originalAppUserId/isNotEmpty//identified_customer",
+      "field": "originalAppUserId",
+      "operator": "isNotEmpty",
+      "profile": "identified_customer",
+      "predicate": "{\"!=\": [{\"var\": [\"original_app_user_id\", null]}, null]}",
+      "expected": true
+    },
+    {
+      "id": "originalAppUserId/isNotEmpty//older_customer",
+      "field": "originalAppUserId",
+      "operator": "isNotEmpty",
+      "profile": "older_customer",
+      "predicate": "{\"!=\": [{\"var\": [\"original_app_user_id\", null]}, null]}",
+      "expected": true
+    },
+    {
+      "id": "originalAppUserId/isNotEmpty//two_identified_ids",
+      "field": "originalAppUserId",
+      "operator": "isNotEmpty",
+      "profile": "two_identified_ids",
+      "predicate": "{\"!=\": [{\"var\": [\"original_app_user_id\", null]}, null]}",
+      "expected": true
+    },
+    {
+      "id": "originalAppUserId/isNotEmpty//identified_after_install",
+      "field": "originalAppUserId",
+      "operator": "isNotEmpty",
+      "profile": "identified_after_install",
+      "predicate": "{\"!=\": [{\"var\": [\"original_app_user_id\", null]}, null]}",
+      "expected": true
+    }
+  ]
+}

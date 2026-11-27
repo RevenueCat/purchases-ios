@@ -1,0 +1,1349 @@
+{
+  "schema_version": 1,
+  "cases": [
+    {
+      "id": "subscriptionOptOutAt/before/2024-05-18/new",
+      "field": "subscriptionOptOutAt",
+      "operator": "before",
+      "profile": "new",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"subscription_opt_out_at\"}, 1715990400000]}]}",
+      "expected": false
+    },
+    {
+      "id": "subscriptionOptOutAt/before/2024-05-18/renewed",
+      "field": "subscriptionOptOutAt",
+      "operator": "before",
+      "profile": "renewed",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"subscription_opt_out_at\"}, 1715990400000]}]}",
+      "expected": false
+    },
+    {
+      "id": "subscriptionOptOutAt/before/2024-05-18/first_purchase",
+      "field": "subscriptionOptOutAt",
+      "operator": "before",
+      "profile": "first_purchase",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"subscription_opt_out_at\"}, 1715990400000]}]}",
+      "expected": false
+    },
+    {
+      "id": "subscriptionOptOutAt/before/2024-05-18/unavailable",
+      "field": "subscriptionOptOutAt",
+      "operator": "before",
+      "profile": "unavailable",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"subscription_opt_out_at\"}, 1715990400000]}]}",
+      "expected": false
+    },
+    {
+      "id": "subscriptionOptOutAt/before/2024-05-18/renewing_subscription",
+      "field": "subscriptionOptOutAt",
+      "operator": "before",
+      "profile": "renewing_subscription",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"subscription_opt_out_at\"}, 1715990400000]}]}",
+      "expected": false
+    },
+    {
+      "id": "subscriptionOptOutAt/before/2024-05-18/older_trial",
+      "field": "subscriptionOptOutAt",
+      "operator": "before",
+      "profile": "older_trial",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"subscription_opt_out_at\"}, 1715990400000]}]}",
+      "expected": true
+    },
+    {
+      "id": "subscriptionOptOutAt/before/2024-05-18/latest_trial_cancelled",
+      "field": "subscriptionOptOutAt",
+      "operator": "before",
+      "profile": "latest_trial_cancelled",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"subscription_opt_out_at\"}, 1715990400000]}]}",
+      "expected": false
+    },
+    {
+      "id": "subscriptionOptOutAt/before/2024-05-18/cancelled_after_latest_trial",
+      "field": "subscriptionOptOutAt",
+      "operator": "before",
+      "profile": "cancelled_after_latest_trial",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"subscription_opt_out_at\"}, 1715990400000]}]}",
+      "expected": false
+    },
+    {
+      "id": "subscriptionOptOutAt/before/2024-05-25/new",
+      "field": "subscriptionOptOutAt",
+      "operator": "before",
+      "profile": "new",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"subscription_opt_out_at\"}, 1716595200000]}]}",
+      "expected": false
+    },
+    {
+      "id": "subscriptionOptOutAt/before/2024-05-25/renewed",
+      "field": "subscriptionOptOutAt",
+      "operator": "before",
+      "profile": "renewed",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"subscription_opt_out_at\"}, 1716595200000]}]}",
+      "expected": false
+    },
+    {
+      "id": "subscriptionOptOutAt/before/2024-05-25/first_purchase",
+      "field": "subscriptionOptOutAt",
+      "operator": "before",
+      "profile": "first_purchase",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"subscription_opt_out_at\"}, 1716595200000]}]}",
+      "expected": false
+    },
+    {
+      "id": "subscriptionOptOutAt/before/2024-05-25/unavailable",
+      "field": "subscriptionOptOutAt",
+      "operator": "before",
+      "profile": "unavailable",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"subscription_opt_out_at\"}, 1716595200000]}]}",
+      "expected": false
+    },
+    {
+      "id": "subscriptionOptOutAt/before/2024-05-25/renewing_subscription",
+      "field": "subscriptionOptOutAt",
+      "operator": "before",
+      "profile": "renewing_subscription",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"subscription_opt_out_at\"}, 1716595200000]}]}",
+      "expected": false
+    },
+    {
+      "id": "subscriptionOptOutAt/before/2024-05-25/older_trial",
+      "field": "subscriptionOptOutAt",
+      "operator": "before",
+      "profile": "older_trial",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"subscription_opt_out_at\"}, 1716595200000]}]}",
+      "expected": true
+    },
+    {
+      "id": "subscriptionOptOutAt/before/2024-05-25/latest_trial_cancelled",
+      "field": "subscriptionOptOutAt",
+      "operator": "before",
+      "profile": "latest_trial_cancelled",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"subscription_opt_out_at\"}, 1716595200000]}]}",
+      "expected": false
+    },
+    {
+      "id": "subscriptionOptOutAt/before/2024-05-25/cancelled_after_latest_trial",
+      "field": "subscriptionOptOutAt",
+      "operator": "before",
+      "profile": "cancelled_after_latest_trial",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"subscription_opt_out_at\"}, 1716595200000]}]}",
+      "expected": false
+    },
+    {
+      "id": "subscriptionOptOutAt/before/2024-05-30/new",
+      "field": "subscriptionOptOutAt",
+      "operator": "before",
+      "profile": "new",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"subscription_opt_out_at\"}, 1717027200000]}]}",
+      "expected": false
+    },
+    {
+      "id": "subscriptionOptOutAt/before/2024-05-30/renewed",
+      "field": "subscriptionOptOutAt",
+      "operator": "before",
+      "profile": "renewed",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"subscription_opt_out_at\"}, 1717027200000]}]}",
+      "expected": false
+    },
+    {
+      "id": "subscriptionOptOutAt/before/2024-05-30/first_purchase",
+      "field": "subscriptionOptOutAt",
+      "operator": "before",
+      "profile": "first_purchase",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"subscription_opt_out_at\"}, 1717027200000]}]}",
+      "expected": false
+    },
+    {
+      "id": "subscriptionOptOutAt/before/2024-05-30/unavailable",
+      "field": "subscriptionOptOutAt",
+      "operator": "before",
+      "profile": "unavailable",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"subscription_opt_out_at\"}, 1717027200000]}]}",
+      "expected": false
+    },
+    {
+      "id": "subscriptionOptOutAt/before/2024-05-30/renewing_subscription",
+      "field": "subscriptionOptOutAt",
+      "operator": "before",
+      "profile": "renewing_subscription",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"subscription_opt_out_at\"}, 1717027200000]}]}",
+      "expected": false
+    },
+    {
+      "id": "subscriptionOptOutAt/before/2024-05-30/older_trial",
+      "field": "subscriptionOptOutAt",
+      "operator": "before",
+      "profile": "older_trial",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"subscription_opt_out_at\"}, 1717027200000]}]}",
+      "expected": true
+    },
+    {
+      "id": "subscriptionOptOutAt/before/2024-05-30/latest_trial_cancelled",
+      "field": "subscriptionOptOutAt",
+      "operator": "before",
+      "profile": "latest_trial_cancelled",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"subscription_opt_out_at\"}, 1717027200000]}]}",
+      "expected": true
+    },
+    {
+      "id": "subscriptionOptOutAt/before/2024-05-30/cancelled_after_latest_trial",
+      "field": "subscriptionOptOutAt",
+      "operator": "before",
+      "profile": "cancelled_after_latest_trial",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"subscription_opt_out_at\"}, 1717027200000]}]}",
+      "expected": false
+    },
+    {
+      "id": "subscriptionOptOutAt/beforeOrOn/2024-05-18/new",
+      "field": "subscriptionOptOutAt",
+      "operator": "beforeOrOn",
+      "profile": "new",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"subscription_opt_out_at\"}, 1716076800000]}]}",
+      "expected": false
+    },
+    {
+      "id": "subscriptionOptOutAt/beforeOrOn/2024-05-18/renewed",
+      "field": "subscriptionOptOutAt",
+      "operator": "beforeOrOn",
+      "profile": "renewed",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"subscription_opt_out_at\"}, 1716076800000]}]}",
+      "expected": false
+    },
+    {
+      "id": "subscriptionOptOutAt/beforeOrOn/2024-05-18/first_purchase",
+      "field": "subscriptionOptOutAt",
+      "operator": "beforeOrOn",
+      "profile": "first_purchase",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"subscription_opt_out_at\"}, 1716076800000]}]}",
+      "expected": false
+    },
+    {
+      "id": "subscriptionOptOutAt/beforeOrOn/2024-05-18/unavailable",
+      "field": "subscriptionOptOutAt",
+      "operator": "beforeOrOn",
+      "profile": "unavailable",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"subscription_opt_out_at\"}, 1716076800000]}]}",
+      "expected": false
+    },
+    {
+      "id": "subscriptionOptOutAt/beforeOrOn/2024-05-18/renewing_subscription",
+      "field": "subscriptionOptOutAt",
+      "operator": "beforeOrOn",
+      "profile": "renewing_subscription",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"subscription_opt_out_at\"}, 1716076800000]}]}",
+      "expected": false
+    },
+    {
+      "id": "subscriptionOptOutAt/beforeOrOn/2024-05-18/older_trial",
+      "field": "subscriptionOptOutAt",
+      "operator": "beforeOrOn",
+      "profile": "older_trial",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"subscription_opt_out_at\"}, 1716076800000]}]}",
+      "expected": true
+    },
+    {
+      "id": "subscriptionOptOutAt/beforeOrOn/2024-05-18/latest_trial_cancelled",
+      "field": "subscriptionOptOutAt",
+      "operator": "beforeOrOn",
+      "profile": "latest_trial_cancelled",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"subscription_opt_out_at\"}, 1716076800000]}]}",
+      "expected": false
+    },
+    {
+      "id": "subscriptionOptOutAt/beforeOrOn/2024-05-18/cancelled_after_latest_trial",
+      "field": "subscriptionOptOutAt",
+      "operator": "beforeOrOn",
+      "profile": "cancelled_after_latest_trial",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"subscription_opt_out_at\"}, 1716076800000]}]}",
+      "expected": false
+    },
+    {
+      "id": "subscriptionOptOutAt/beforeOrOn/2024-05-25/new",
+      "field": "subscriptionOptOutAt",
+      "operator": "beforeOrOn",
+      "profile": "new",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"subscription_opt_out_at\"}, 1716681600000]}]}",
+      "expected": false
+    },
+    {
+      "id": "subscriptionOptOutAt/beforeOrOn/2024-05-25/renewed",
+      "field": "subscriptionOptOutAt",
+      "operator": "beforeOrOn",
+      "profile": "renewed",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"subscription_opt_out_at\"}, 1716681600000]}]}",
+      "expected": false
+    },
+    {
+      "id": "subscriptionOptOutAt/beforeOrOn/2024-05-25/first_purchase",
+      "field": "subscriptionOptOutAt",
+      "operator": "beforeOrOn",
+      "profile": "first_purchase",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"subscription_opt_out_at\"}, 1716681600000]}]}",
+      "expected": false
+    },
+    {
+      "id": "subscriptionOptOutAt/beforeOrOn/2024-05-25/unavailable",
+      "field": "subscriptionOptOutAt",
+      "operator": "beforeOrOn",
+      "profile": "unavailable",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"subscription_opt_out_at\"}, 1716681600000]}]}",
+      "expected": false
+    },
+    {
+      "id": "subscriptionOptOutAt/beforeOrOn/2024-05-25/renewing_subscription",
+      "field": "subscriptionOptOutAt",
+      "operator": "beforeOrOn",
+      "profile": "renewing_subscription",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"subscription_opt_out_at\"}, 1716681600000]}]}",
+      "expected": false
+    },
+    {
+      "id": "subscriptionOptOutAt/beforeOrOn/2024-05-25/older_trial",
+      "field": "subscriptionOptOutAt",
+      "operator": "beforeOrOn",
+      "profile": "older_trial",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"subscription_opt_out_at\"}, 1716681600000]}]}",
+      "expected": true
+    },
+    {
+      "id": "subscriptionOptOutAt/beforeOrOn/2024-05-25/latest_trial_cancelled",
+      "field": "subscriptionOptOutAt",
+      "operator": "beforeOrOn",
+      "profile": "latest_trial_cancelled",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"subscription_opt_out_at\"}, 1716681600000]}]}",
+      "expected": true
+    },
+    {
+      "id": "subscriptionOptOutAt/beforeOrOn/2024-05-25/cancelled_after_latest_trial",
+      "field": "subscriptionOptOutAt",
+      "operator": "beforeOrOn",
+      "profile": "cancelled_after_latest_trial",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"subscription_opt_out_at\"}, 1716681600000]}]}",
+      "expected": false
+    },
+    {
+      "id": "subscriptionOptOutAt/beforeOrOn/2024-05-30/new",
+      "field": "subscriptionOptOutAt",
+      "operator": "beforeOrOn",
+      "profile": "new",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"subscription_opt_out_at\"}, 1717113600000]}]}",
+      "expected": false
+    },
+    {
+      "id": "subscriptionOptOutAt/beforeOrOn/2024-05-30/renewed",
+      "field": "subscriptionOptOutAt",
+      "operator": "beforeOrOn",
+      "profile": "renewed",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"subscription_opt_out_at\"}, 1717113600000]}]}",
+      "expected": false
+    },
+    {
+      "id": "subscriptionOptOutAt/beforeOrOn/2024-05-30/first_purchase",
+      "field": "subscriptionOptOutAt",
+      "operator": "beforeOrOn",
+      "profile": "first_purchase",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"subscription_opt_out_at\"}, 1717113600000]}]}",
+      "expected": false
+    },
+    {
+      "id": "subscriptionOptOutAt/beforeOrOn/2024-05-30/unavailable",
+      "field": "subscriptionOptOutAt",
+      "operator": "beforeOrOn",
+      "profile": "unavailable",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"subscription_opt_out_at\"}, 1717113600000]}]}",
+      "expected": false
+    },
+    {
+      "id": "subscriptionOptOutAt/beforeOrOn/2024-05-30/renewing_subscription",
+      "field": "subscriptionOptOutAt",
+      "operator": "beforeOrOn",
+      "profile": "renewing_subscription",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"subscription_opt_out_at\"}, 1717113600000]}]}",
+      "expected": false
+    },
+    {
+      "id": "subscriptionOptOutAt/beforeOrOn/2024-05-30/older_trial",
+      "field": "subscriptionOptOutAt",
+      "operator": "beforeOrOn",
+      "profile": "older_trial",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"subscription_opt_out_at\"}, 1717113600000]}]}",
+      "expected": true
+    },
+    {
+      "id": "subscriptionOptOutAt/beforeOrOn/2024-05-30/latest_trial_cancelled",
+      "field": "subscriptionOptOutAt",
+      "operator": "beforeOrOn",
+      "profile": "latest_trial_cancelled",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"subscription_opt_out_at\"}, 1717113600000]}]}",
+      "expected": true
+    },
+    {
+      "id": "subscriptionOptOutAt/beforeOrOn/2024-05-30/cancelled_after_latest_trial",
+      "field": "subscriptionOptOutAt",
+      "operator": "beforeOrOn",
+      "profile": "cancelled_after_latest_trial",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"subscription_opt_out_at\"}, 1717113600000]}]}",
+      "expected": false
+    },
+    {
+      "id": "subscriptionOptOutAt/on/2024-05-18/new",
+      "field": "subscriptionOptOutAt",
+      "operator": "on",
+      "profile": "new",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"subscription_opt_out_at\"}, 1715990400000]}]}, {\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"subscription_opt_out_at\"}, 1716076800000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "subscriptionOptOutAt/on/2024-05-18/renewed",
+      "field": "subscriptionOptOutAt",
+      "operator": "on",
+      "profile": "renewed",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"subscription_opt_out_at\"}, 1715990400000]}]}, {\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"subscription_opt_out_at\"}, 1716076800000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "subscriptionOptOutAt/on/2024-05-18/first_purchase",
+      "field": "subscriptionOptOutAt",
+      "operator": "on",
+      "profile": "first_purchase",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"subscription_opt_out_at\"}, 1715990400000]}]}, {\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"subscription_opt_out_at\"}, 1716076800000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "subscriptionOptOutAt/on/2024-05-18/unavailable",
+      "field": "subscriptionOptOutAt",
+      "operator": "on",
+      "profile": "unavailable",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"subscription_opt_out_at\"}, 1715990400000]}]}, {\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"subscription_opt_out_at\"}, 1716076800000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "subscriptionOptOutAt/on/2024-05-18/renewing_subscription",
+      "field": "subscriptionOptOutAt",
+      "operator": "on",
+      "profile": "renewing_subscription",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"subscription_opt_out_at\"}, 1715990400000]}]}, {\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"subscription_opt_out_at\"}, 1716076800000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "subscriptionOptOutAt/on/2024-05-18/older_trial",
+      "field": "subscriptionOptOutAt",
+      "operator": "on",
+      "profile": "older_trial",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"subscription_opt_out_at\"}, 1715990400000]}]}, {\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"subscription_opt_out_at\"}, 1716076800000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "subscriptionOptOutAt/on/2024-05-18/latest_trial_cancelled",
+      "field": "subscriptionOptOutAt",
+      "operator": "on",
+      "profile": "latest_trial_cancelled",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"subscription_opt_out_at\"}, 1715990400000]}]}, {\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"subscription_opt_out_at\"}, 1716076800000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "subscriptionOptOutAt/on/2024-05-18/cancelled_after_latest_trial",
+      "field": "subscriptionOptOutAt",
+      "operator": "on",
+      "profile": "cancelled_after_latest_trial",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"subscription_opt_out_at\"}, 1715990400000]}]}, {\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"subscription_opt_out_at\"}, 1716076800000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "subscriptionOptOutAt/on/2024-05-25/new",
+      "field": "subscriptionOptOutAt",
+      "operator": "on",
+      "profile": "new",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"subscription_opt_out_at\"}, 1716595200000]}]}, {\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"subscription_opt_out_at\"}, 1716681600000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "subscriptionOptOutAt/on/2024-05-25/renewed",
+      "field": "subscriptionOptOutAt",
+      "operator": "on",
+      "profile": "renewed",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"subscription_opt_out_at\"}, 1716595200000]}]}, {\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"subscription_opt_out_at\"}, 1716681600000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "subscriptionOptOutAt/on/2024-05-25/first_purchase",
+      "field": "subscriptionOptOutAt",
+      "operator": "on",
+      "profile": "first_purchase",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"subscription_opt_out_at\"}, 1716595200000]}]}, {\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"subscription_opt_out_at\"}, 1716681600000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "subscriptionOptOutAt/on/2024-05-25/unavailable",
+      "field": "subscriptionOptOutAt",
+      "operator": "on",
+      "profile": "unavailable",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"subscription_opt_out_at\"}, 1716595200000]}]}, {\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"subscription_opt_out_at\"}, 1716681600000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "subscriptionOptOutAt/on/2024-05-25/renewing_subscription",
+      "field": "subscriptionOptOutAt",
+      "operator": "on",
+      "profile": "renewing_subscription",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"subscription_opt_out_at\"}, 1716595200000]}]}, {\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"subscription_opt_out_at\"}, 1716681600000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "subscriptionOptOutAt/on/2024-05-25/older_trial",
+      "field": "subscriptionOptOutAt",
+      "operator": "on",
+      "profile": "older_trial",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"subscription_opt_out_at\"}, 1716595200000]}]}, {\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"subscription_opt_out_at\"}, 1716681600000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "subscriptionOptOutAt/on/2024-05-25/latest_trial_cancelled",
+      "field": "subscriptionOptOutAt",
+      "operator": "on",
+      "profile": "latest_trial_cancelled",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"subscription_opt_out_at\"}, 1716595200000]}]}, {\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"subscription_opt_out_at\"}, 1716681600000]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "subscriptionOptOutAt/on/2024-05-25/cancelled_after_latest_trial",
+      "field": "subscriptionOptOutAt",
+      "operator": "on",
+      "profile": "cancelled_after_latest_trial",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"subscription_opt_out_at\"}, 1716595200000]}]}, {\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"subscription_opt_out_at\"}, 1716681600000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "subscriptionOptOutAt/on/2024-05-30/new",
+      "field": "subscriptionOptOutAt",
+      "operator": "on",
+      "profile": "new",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"subscription_opt_out_at\"}, 1717027200000]}]}, {\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"subscription_opt_out_at\"}, 1717113600000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "subscriptionOptOutAt/on/2024-05-30/renewed",
+      "field": "subscriptionOptOutAt",
+      "operator": "on",
+      "profile": "renewed",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"subscription_opt_out_at\"}, 1717027200000]}]}, {\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"subscription_opt_out_at\"}, 1717113600000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "subscriptionOptOutAt/on/2024-05-30/first_purchase",
+      "field": "subscriptionOptOutAt",
+      "operator": "on",
+      "profile": "first_purchase",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"subscription_opt_out_at\"}, 1717027200000]}]}, {\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"subscription_opt_out_at\"}, 1717113600000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "subscriptionOptOutAt/on/2024-05-30/unavailable",
+      "field": "subscriptionOptOutAt",
+      "operator": "on",
+      "profile": "unavailable",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"subscription_opt_out_at\"}, 1717027200000]}]}, {\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"subscription_opt_out_at\"}, 1717113600000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "subscriptionOptOutAt/on/2024-05-30/renewing_subscription",
+      "field": "subscriptionOptOutAt",
+      "operator": "on",
+      "profile": "renewing_subscription",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"subscription_opt_out_at\"}, 1717027200000]}]}, {\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"subscription_opt_out_at\"}, 1717113600000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "subscriptionOptOutAt/on/2024-05-30/older_trial",
+      "field": "subscriptionOptOutAt",
+      "operator": "on",
+      "profile": "older_trial",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"subscription_opt_out_at\"}, 1717027200000]}]}, {\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"subscription_opt_out_at\"}, 1717113600000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "subscriptionOptOutAt/on/2024-05-30/latest_trial_cancelled",
+      "field": "subscriptionOptOutAt",
+      "operator": "on",
+      "profile": "latest_trial_cancelled",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"subscription_opt_out_at\"}, 1717027200000]}]}, {\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"subscription_opt_out_at\"}, 1717113600000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "subscriptionOptOutAt/on/2024-05-30/cancelled_after_latest_trial",
+      "field": "subscriptionOptOutAt",
+      "operator": "on",
+      "profile": "cancelled_after_latest_trial",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"subscription_opt_out_at\"}, 1717027200000]}]}, {\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"subscription_opt_out_at\"}, 1717113600000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "subscriptionOptOutAt/after/2024-05-18/new",
+      "field": "subscriptionOptOutAt",
+      "operator": "after",
+      "profile": "new",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"subscription_opt_out_at\"}, 1716076800000]}]}",
+      "expected": false
+    },
+    {
+      "id": "subscriptionOptOutAt/after/2024-05-18/renewed",
+      "field": "subscriptionOptOutAt",
+      "operator": "after",
+      "profile": "renewed",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"subscription_opt_out_at\"}, 1716076800000]}]}",
+      "expected": false
+    },
+    {
+      "id": "subscriptionOptOutAt/after/2024-05-18/first_purchase",
+      "field": "subscriptionOptOutAt",
+      "operator": "after",
+      "profile": "first_purchase",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"subscription_opt_out_at\"}, 1716076800000]}]}",
+      "expected": false
+    },
+    {
+      "id": "subscriptionOptOutAt/after/2024-05-18/unavailable",
+      "field": "subscriptionOptOutAt",
+      "operator": "after",
+      "profile": "unavailable",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"subscription_opt_out_at\"}, 1716076800000]}]}",
+      "expected": false
+    },
+    {
+      "id": "subscriptionOptOutAt/after/2024-05-18/renewing_subscription",
+      "field": "subscriptionOptOutAt",
+      "operator": "after",
+      "profile": "renewing_subscription",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"subscription_opt_out_at\"}, 1716076800000]}]}",
+      "expected": false
+    },
+    {
+      "id": "subscriptionOptOutAt/after/2024-05-18/older_trial",
+      "field": "subscriptionOptOutAt",
+      "operator": "after",
+      "profile": "older_trial",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"subscription_opt_out_at\"}, 1716076800000]}]}",
+      "expected": false
+    },
+    {
+      "id": "subscriptionOptOutAt/after/2024-05-18/latest_trial_cancelled",
+      "field": "subscriptionOptOutAt",
+      "operator": "after",
+      "profile": "latest_trial_cancelled",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"subscription_opt_out_at\"}, 1716076800000]}]}",
+      "expected": true
+    },
+    {
+      "id": "subscriptionOptOutAt/after/2024-05-18/cancelled_after_latest_trial",
+      "field": "subscriptionOptOutAt",
+      "operator": "after",
+      "profile": "cancelled_after_latest_trial",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"subscription_opt_out_at\"}, 1716076800000]}]}",
+      "expected": true
+    },
+    {
+      "id": "subscriptionOptOutAt/after/2024-05-25/new",
+      "field": "subscriptionOptOutAt",
+      "operator": "after",
+      "profile": "new",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"subscription_opt_out_at\"}, 1716681600000]}]}",
+      "expected": false
+    },
+    {
+      "id": "subscriptionOptOutAt/after/2024-05-25/renewed",
+      "field": "subscriptionOptOutAt",
+      "operator": "after",
+      "profile": "renewed",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"subscription_opt_out_at\"}, 1716681600000]}]}",
+      "expected": false
+    },
+    {
+      "id": "subscriptionOptOutAt/after/2024-05-25/first_purchase",
+      "field": "subscriptionOptOutAt",
+      "operator": "after",
+      "profile": "first_purchase",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"subscription_opt_out_at\"}, 1716681600000]}]}",
+      "expected": false
+    },
+    {
+      "id": "subscriptionOptOutAt/after/2024-05-25/unavailable",
+      "field": "subscriptionOptOutAt",
+      "operator": "after",
+      "profile": "unavailable",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"subscription_opt_out_at\"}, 1716681600000]}]}",
+      "expected": false
+    },
+    {
+      "id": "subscriptionOptOutAt/after/2024-05-25/renewing_subscription",
+      "field": "subscriptionOptOutAt",
+      "operator": "after",
+      "profile": "renewing_subscription",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"subscription_opt_out_at\"}, 1716681600000]}]}",
+      "expected": false
+    },
+    {
+      "id": "subscriptionOptOutAt/after/2024-05-25/older_trial",
+      "field": "subscriptionOptOutAt",
+      "operator": "after",
+      "profile": "older_trial",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"subscription_opt_out_at\"}, 1716681600000]}]}",
+      "expected": false
+    },
+    {
+      "id": "subscriptionOptOutAt/after/2024-05-25/latest_trial_cancelled",
+      "field": "subscriptionOptOutAt",
+      "operator": "after",
+      "profile": "latest_trial_cancelled",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"subscription_opt_out_at\"}, 1716681600000]}]}",
+      "expected": false
+    },
+    {
+      "id": "subscriptionOptOutAt/after/2024-05-25/cancelled_after_latest_trial",
+      "field": "subscriptionOptOutAt",
+      "operator": "after",
+      "profile": "cancelled_after_latest_trial",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"subscription_opt_out_at\"}, 1716681600000]}]}",
+      "expected": true
+    },
+    {
+      "id": "subscriptionOptOutAt/after/2024-05-30/new",
+      "field": "subscriptionOptOutAt",
+      "operator": "after",
+      "profile": "new",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"subscription_opt_out_at\"}, 1717113600000]}]}",
+      "expected": false
+    },
+    {
+      "id": "subscriptionOptOutAt/after/2024-05-30/renewed",
+      "field": "subscriptionOptOutAt",
+      "operator": "after",
+      "profile": "renewed",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"subscription_opt_out_at\"}, 1717113600000]}]}",
+      "expected": false
+    },
+    {
+      "id": "subscriptionOptOutAt/after/2024-05-30/first_purchase",
+      "field": "subscriptionOptOutAt",
+      "operator": "after",
+      "profile": "first_purchase",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"subscription_opt_out_at\"}, 1717113600000]}]}",
+      "expected": false
+    },
+    {
+      "id": "subscriptionOptOutAt/after/2024-05-30/unavailable",
+      "field": "subscriptionOptOutAt",
+      "operator": "after",
+      "profile": "unavailable",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"subscription_opt_out_at\"}, 1717113600000]}]}",
+      "expected": false
+    },
+    {
+      "id": "subscriptionOptOutAt/after/2024-05-30/renewing_subscription",
+      "field": "subscriptionOptOutAt",
+      "operator": "after",
+      "profile": "renewing_subscription",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"subscription_opt_out_at\"}, 1717113600000]}]}",
+      "expected": false
+    },
+    {
+      "id": "subscriptionOptOutAt/after/2024-05-30/older_trial",
+      "field": "subscriptionOptOutAt",
+      "operator": "after",
+      "profile": "older_trial",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"subscription_opt_out_at\"}, 1717113600000]}]}",
+      "expected": false
+    },
+    {
+      "id": "subscriptionOptOutAt/after/2024-05-30/latest_trial_cancelled",
+      "field": "subscriptionOptOutAt",
+      "operator": "after",
+      "profile": "latest_trial_cancelled",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"subscription_opt_out_at\"}, 1717113600000]}]}",
+      "expected": false
+    },
+    {
+      "id": "subscriptionOptOutAt/after/2024-05-30/cancelled_after_latest_trial",
+      "field": "subscriptionOptOutAt",
+      "operator": "after",
+      "profile": "cancelled_after_latest_trial",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"subscription_opt_out_at\"}, 1717113600000]}]}",
+      "expected": true
+    },
+    {
+      "id": "subscriptionOptOutAt/afterOrOn/2024-05-18/new",
+      "field": "subscriptionOptOutAt",
+      "operator": "afterOrOn",
+      "profile": "new",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"subscription_opt_out_at\"}, 1715990400000]}]}",
+      "expected": false
+    },
+    {
+      "id": "subscriptionOptOutAt/afterOrOn/2024-05-18/renewed",
+      "field": "subscriptionOptOutAt",
+      "operator": "afterOrOn",
+      "profile": "renewed",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"subscription_opt_out_at\"}, 1715990400000]}]}",
+      "expected": false
+    },
+    {
+      "id": "subscriptionOptOutAt/afterOrOn/2024-05-18/first_purchase",
+      "field": "subscriptionOptOutAt",
+      "operator": "afterOrOn",
+      "profile": "first_purchase",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"subscription_opt_out_at\"}, 1715990400000]}]}",
+      "expected": false
+    },
+    {
+      "id": "subscriptionOptOutAt/afterOrOn/2024-05-18/unavailable",
+      "field": "subscriptionOptOutAt",
+      "operator": "afterOrOn",
+      "profile": "unavailable",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"subscription_opt_out_at\"}, 1715990400000]}]}",
+      "expected": false
+    },
+    {
+      "id": "subscriptionOptOutAt/afterOrOn/2024-05-18/renewing_subscription",
+      "field": "subscriptionOptOutAt",
+      "operator": "afterOrOn",
+      "profile": "renewing_subscription",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"subscription_opt_out_at\"}, 1715990400000]}]}",
+      "expected": false
+    },
+    {
+      "id": "subscriptionOptOutAt/afterOrOn/2024-05-18/older_trial",
+      "field": "subscriptionOptOutAt",
+      "operator": "afterOrOn",
+      "profile": "older_trial",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"subscription_opt_out_at\"}, 1715990400000]}]}",
+      "expected": false
+    },
+    {
+      "id": "subscriptionOptOutAt/afterOrOn/2024-05-18/latest_trial_cancelled",
+      "field": "subscriptionOptOutAt",
+      "operator": "afterOrOn",
+      "profile": "latest_trial_cancelled",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"subscription_opt_out_at\"}, 1715990400000]}]}",
+      "expected": true
+    },
+    {
+      "id": "subscriptionOptOutAt/afterOrOn/2024-05-18/cancelled_after_latest_trial",
+      "field": "subscriptionOptOutAt",
+      "operator": "afterOrOn",
+      "profile": "cancelled_after_latest_trial",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"subscription_opt_out_at\"}, 1715990400000]}]}",
+      "expected": true
+    },
+    {
+      "id": "subscriptionOptOutAt/afterOrOn/2024-05-25/new",
+      "field": "subscriptionOptOutAt",
+      "operator": "afterOrOn",
+      "profile": "new",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"subscription_opt_out_at\"}, 1716595200000]}]}",
+      "expected": false
+    },
+    {
+      "id": "subscriptionOptOutAt/afterOrOn/2024-05-25/renewed",
+      "field": "subscriptionOptOutAt",
+      "operator": "afterOrOn",
+      "profile": "renewed",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"subscription_opt_out_at\"}, 1716595200000]}]}",
+      "expected": false
+    },
+    {
+      "id": "subscriptionOptOutAt/afterOrOn/2024-05-25/first_purchase",
+      "field": "subscriptionOptOutAt",
+      "operator": "afterOrOn",
+      "profile": "first_purchase",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"subscription_opt_out_at\"}, 1716595200000]}]}",
+      "expected": false
+    },
+    {
+      "id": "subscriptionOptOutAt/afterOrOn/2024-05-25/unavailable",
+      "field": "subscriptionOptOutAt",
+      "operator": "afterOrOn",
+      "profile": "unavailable",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"subscription_opt_out_at\"}, 1716595200000]}]}",
+      "expected": false
+    },
+    {
+      "id": "subscriptionOptOutAt/afterOrOn/2024-05-25/renewing_subscription",
+      "field": "subscriptionOptOutAt",
+      "operator": "afterOrOn",
+      "profile": "renewing_subscription",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"subscription_opt_out_at\"}, 1716595200000]}]}",
+      "expected": false
+    },
+    {
+      "id": "subscriptionOptOutAt/afterOrOn/2024-05-25/older_trial",
+      "field": "subscriptionOptOutAt",
+      "operator": "afterOrOn",
+      "profile": "older_trial",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"subscription_opt_out_at\"}, 1716595200000]}]}",
+      "expected": false
+    },
+    {
+      "id": "subscriptionOptOutAt/afterOrOn/2024-05-25/latest_trial_cancelled",
+      "field": "subscriptionOptOutAt",
+      "operator": "afterOrOn",
+      "profile": "latest_trial_cancelled",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"subscription_opt_out_at\"}, 1716595200000]}]}",
+      "expected": true
+    },
+    {
+      "id": "subscriptionOptOutAt/afterOrOn/2024-05-25/cancelled_after_latest_trial",
+      "field": "subscriptionOptOutAt",
+      "operator": "afterOrOn",
+      "profile": "cancelled_after_latest_trial",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"subscription_opt_out_at\"}, 1716595200000]}]}",
+      "expected": true
+    },
+    {
+      "id": "subscriptionOptOutAt/afterOrOn/2024-05-30/new",
+      "field": "subscriptionOptOutAt",
+      "operator": "afterOrOn",
+      "profile": "new",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"subscription_opt_out_at\"}, 1717027200000]}]}",
+      "expected": false
+    },
+    {
+      "id": "subscriptionOptOutAt/afterOrOn/2024-05-30/renewed",
+      "field": "subscriptionOptOutAt",
+      "operator": "afterOrOn",
+      "profile": "renewed",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"subscription_opt_out_at\"}, 1717027200000]}]}",
+      "expected": false
+    },
+    {
+      "id": "subscriptionOptOutAt/afterOrOn/2024-05-30/first_purchase",
+      "field": "subscriptionOptOutAt",
+      "operator": "afterOrOn",
+      "profile": "first_purchase",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"subscription_opt_out_at\"}, 1717027200000]}]}",
+      "expected": false
+    },
+    {
+      "id": "subscriptionOptOutAt/afterOrOn/2024-05-30/unavailable",
+      "field": "subscriptionOptOutAt",
+      "operator": "afterOrOn",
+      "profile": "unavailable",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"subscription_opt_out_at\"}, 1717027200000]}]}",
+      "expected": false
+    },
+    {
+      "id": "subscriptionOptOutAt/afterOrOn/2024-05-30/renewing_subscription",
+      "field": "subscriptionOptOutAt",
+      "operator": "afterOrOn",
+      "profile": "renewing_subscription",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"subscription_opt_out_at\"}, 1717027200000]}]}",
+      "expected": false
+    },
+    {
+      "id": "subscriptionOptOutAt/afterOrOn/2024-05-30/older_trial",
+      "field": "subscriptionOptOutAt",
+      "operator": "afterOrOn",
+      "profile": "older_trial",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"subscription_opt_out_at\"}, 1717027200000]}]}",
+      "expected": false
+    },
+    {
+      "id": "subscriptionOptOutAt/afterOrOn/2024-05-30/latest_trial_cancelled",
+      "field": "subscriptionOptOutAt",
+      "operator": "afterOrOn",
+      "profile": "latest_trial_cancelled",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"subscription_opt_out_at\"}, 1717027200000]}]}",
+      "expected": false
+    },
+    {
+      "id": "subscriptionOptOutAt/afterOrOn/2024-05-30/cancelled_after_latest_trial",
+      "field": "subscriptionOptOutAt",
+      "operator": "afterOrOn",
+      "profile": "cancelled_after_latest_trial",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"subscription_opt_out_at\"}, 1717027200000]}]}",
+      "expected": true
+    },
+    {
+      "id": "subscriptionOptOutAt/within/{\"direction\": \"last\", \"value\": 14, \"unit\": \"days\"}/new",
+      "field": "subscriptionOptOutAt",
+      "operator": "within",
+      "profile": "new",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"subscription_opt_out_at\"}, {\"-\": [{\"rc.rootVar\": \"evaluated_at\"}, 1209600000]}]}, {\"<=\": [{\"var\": \"subscription_opt_out_at\"}, {\"rc.rootVar\": \"evaluated_at\"}]}]}",
+      "expected": false
+    },
+    {
+      "id": "subscriptionOptOutAt/within/{\"direction\": \"last\", \"value\": 14, \"unit\": \"days\"}/renewed",
+      "field": "subscriptionOptOutAt",
+      "operator": "within",
+      "profile": "renewed",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"subscription_opt_out_at\"}, {\"-\": [{\"rc.rootVar\": \"evaluated_at\"}, 1209600000]}]}, {\"<=\": [{\"var\": \"subscription_opt_out_at\"}, {\"rc.rootVar\": \"evaluated_at\"}]}]}",
+      "expected": false
+    },
+    {
+      "id": "subscriptionOptOutAt/within/{\"direction\": \"last\", \"value\": 14, \"unit\": \"days\"}/first_purchase",
+      "field": "subscriptionOptOutAt",
+      "operator": "within",
+      "profile": "first_purchase",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"subscription_opt_out_at\"}, {\"-\": [{\"rc.rootVar\": \"evaluated_at\"}, 1209600000]}]}, {\"<=\": [{\"var\": \"subscription_opt_out_at\"}, {\"rc.rootVar\": \"evaluated_at\"}]}]}",
+      "expected": false
+    },
+    {
+      "id": "subscriptionOptOutAt/within/{\"direction\": \"last\", \"value\": 14, \"unit\": \"days\"}/unavailable",
+      "field": "subscriptionOptOutAt",
+      "operator": "within",
+      "profile": "unavailable",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"subscription_opt_out_at\"}, {\"-\": [{\"rc.rootVar\": \"evaluated_at\"}, 1209600000]}]}, {\"<=\": [{\"var\": \"subscription_opt_out_at\"}, {\"rc.rootVar\": \"evaluated_at\"}]}]}",
+      "expected": false
+    },
+    {
+      "id": "subscriptionOptOutAt/within/{\"direction\": \"last\", \"value\": 14, \"unit\": \"days\"}/renewing_subscription",
+      "field": "subscriptionOptOutAt",
+      "operator": "within",
+      "profile": "renewing_subscription",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"subscription_opt_out_at\"}, {\"-\": [{\"rc.rootVar\": \"evaluated_at\"}, 1209600000]}]}, {\"<=\": [{\"var\": \"subscription_opt_out_at\"}, {\"rc.rootVar\": \"evaluated_at\"}]}]}",
+      "expected": false
+    },
+    {
+      "id": "subscriptionOptOutAt/within/{\"direction\": \"last\", \"value\": 14, \"unit\": \"days\"}/older_trial",
+      "field": "subscriptionOptOutAt",
+      "operator": "within",
+      "profile": "older_trial",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"subscription_opt_out_at\"}, {\"-\": [{\"rc.rootVar\": \"evaluated_at\"}, 1209600000]}]}, {\"<=\": [{\"var\": \"subscription_opt_out_at\"}, {\"rc.rootVar\": \"evaluated_at\"}]}]}",
+      "expected": false
+    },
+    {
+      "id": "subscriptionOptOutAt/within/{\"direction\": \"last\", \"value\": 14, \"unit\": \"days\"}/latest_trial_cancelled",
+      "field": "subscriptionOptOutAt",
+      "operator": "within",
+      "profile": "latest_trial_cancelled",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"subscription_opt_out_at\"}, {\"-\": [{\"rc.rootVar\": \"evaluated_at\"}, 1209600000]}]}, {\"<=\": [{\"var\": \"subscription_opt_out_at\"}, {\"rc.rootVar\": \"evaluated_at\"}]}]}",
+      "expected": true
+    },
+    {
+      "id": "subscriptionOptOutAt/within/{\"direction\": \"last\", \"value\": 14, \"unit\": \"days\"}/cancelled_after_latest_trial",
+      "field": "subscriptionOptOutAt",
+      "operator": "within",
+      "profile": "cancelled_after_latest_trial",
+      "predicate": "{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"subscription_opt_out_at\"}, {\"-\": [{\"rc.rootVar\": \"evaluated_at\"}, 1209600000]}]}, {\"<=\": [{\"var\": \"subscription_opt_out_at\"}, {\"rc.rootVar\": \"evaluated_at\"}]}]}",
+      "expected": true
+    },
+    {
+      "id": "subscriptionOptOutAt/notWithin/{\"direction\": \"last\", \"value\": 14, \"unit\": \"days\"}/new",
+      "field": "subscriptionOptOutAt",
+      "operator": "notWithin",
+      "profile": "new",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"subscription_opt_out_at\", null]}, null]}, {\"!\": [{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"subscription_opt_out_at\"}, {\"-\": [{\"rc.rootVar\": \"evaluated_at\"}, 1209600000]}]}, {\"<=\": [{\"var\": \"subscription_opt_out_at\"}, {\"rc.rootVar\": \"evaluated_at\"}]}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "subscriptionOptOutAt/notWithin/{\"direction\": \"last\", \"value\": 14, \"unit\": \"days\"}/renewed",
+      "field": "subscriptionOptOutAt",
+      "operator": "notWithin",
+      "profile": "renewed",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"subscription_opt_out_at\", null]}, null]}, {\"!\": [{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"subscription_opt_out_at\"}, {\"-\": [{\"rc.rootVar\": \"evaluated_at\"}, 1209600000]}]}, {\"<=\": [{\"var\": \"subscription_opt_out_at\"}, {\"rc.rootVar\": \"evaluated_at\"}]}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "subscriptionOptOutAt/notWithin/{\"direction\": \"last\", \"value\": 14, \"unit\": \"days\"}/first_purchase",
+      "field": "subscriptionOptOutAt",
+      "operator": "notWithin",
+      "profile": "first_purchase",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"subscription_opt_out_at\", null]}, null]}, {\"!\": [{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"subscription_opt_out_at\"}, {\"-\": [{\"rc.rootVar\": \"evaluated_at\"}, 1209600000]}]}, {\"<=\": [{\"var\": \"subscription_opt_out_at\"}, {\"rc.rootVar\": \"evaluated_at\"}]}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "subscriptionOptOutAt/notWithin/{\"direction\": \"last\", \"value\": 14, \"unit\": \"days\"}/unavailable",
+      "field": "subscriptionOptOutAt",
+      "operator": "notWithin",
+      "profile": "unavailable",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"subscription_opt_out_at\", null]}, null]}, {\"!\": [{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"subscription_opt_out_at\"}, {\"-\": [{\"rc.rootVar\": \"evaluated_at\"}, 1209600000]}]}, {\"<=\": [{\"var\": \"subscription_opt_out_at\"}, {\"rc.rootVar\": \"evaluated_at\"}]}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "subscriptionOptOutAt/notWithin/{\"direction\": \"last\", \"value\": 14, \"unit\": \"days\"}/renewing_subscription",
+      "field": "subscriptionOptOutAt",
+      "operator": "notWithin",
+      "profile": "renewing_subscription",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"subscription_opt_out_at\", null]}, null]}, {\"!\": [{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"subscription_opt_out_at\"}, {\"-\": [{\"rc.rootVar\": \"evaluated_at\"}, 1209600000]}]}, {\"<=\": [{\"var\": \"subscription_opt_out_at\"}, {\"rc.rootVar\": \"evaluated_at\"}]}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "subscriptionOptOutAt/notWithin/{\"direction\": \"last\", \"value\": 14, \"unit\": \"days\"}/older_trial",
+      "field": "subscriptionOptOutAt",
+      "operator": "notWithin",
+      "profile": "older_trial",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"subscription_opt_out_at\", null]}, null]}, {\"!\": [{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"subscription_opt_out_at\"}, {\"-\": [{\"rc.rootVar\": \"evaluated_at\"}, 1209600000]}]}, {\"<=\": [{\"var\": \"subscription_opt_out_at\"}, {\"rc.rootVar\": \"evaluated_at\"}]}]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "subscriptionOptOutAt/notWithin/{\"direction\": \"last\", \"value\": 14, \"unit\": \"days\"}/latest_trial_cancelled",
+      "field": "subscriptionOptOutAt",
+      "operator": "notWithin",
+      "profile": "latest_trial_cancelled",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"subscription_opt_out_at\", null]}, null]}, {\"!\": [{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"subscription_opt_out_at\"}, {\"-\": [{\"rc.rootVar\": \"evaluated_at\"}, 1209600000]}]}, {\"<=\": [{\"var\": \"subscription_opt_out_at\"}, {\"rc.rootVar\": \"evaluated_at\"}]}]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "subscriptionOptOutAt/notWithin/{\"direction\": \"last\", \"value\": 14, \"unit\": \"days\"}/cancelled_after_latest_trial",
+      "field": "subscriptionOptOutAt",
+      "operator": "notWithin",
+      "profile": "cancelled_after_latest_trial",
+      "predicate": "{\"or\": [{\"==\": [{\"var\": [\"subscription_opt_out_at\", null]}, null]}, {\"!\": [{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"subscription_opt_out_at\"}, {\"-\": [{\"rc.rootVar\": \"evaluated_at\"}, 1209600000]}]}, {\"<=\": [{\"var\": \"subscription_opt_out_at\"}, {\"rc.rootVar\": \"evaluated_at\"}]}]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "subscriptionOptOutAt/between/{\"from\": \"2024-05-18\", \"to\": \"2024-05-25\"}/new",
+      "field": "subscriptionOptOutAt",
+      "operator": "between",
+      "profile": "new",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"subscription_opt_out_at\"}, 1715990400000]}]}, {\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"subscription_opt_out_at\"}, 1716681600000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "subscriptionOptOutAt/between/{\"from\": \"2024-05-18\", \"to\": \"2024-05-25\"}/renewed",
+      "field": "subscriptionOptOutAt",
+      "operator": "between",
+      "profile": "renewed",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"subscription_opt_out_at\"}, 1715990400000]}]}, {\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"subscription_opt_out_at\"}, 1716681600000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "subscriptionOptOutAt/between/{\"from\": \"2024-05-18\", \"to\": \"2024-05-25\"}/first_purchase",
+      "field": "subscriptionOptOutAt",
+      "operator": "between",
+      "profile": "first_purchase",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"subscription_opt_out_at\"}, 1715990400000]}]}, {\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"subscription_opt_out_at\"}, 1716681600000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "subscriptionOptOutAt/between/{\"from\": \"2024-05-18\", \"to\": \"2024-05-25\"}/unavailable",
+      "field": "subscriptionOptOutAt",
+      "operator": "between",
+      "profile": "unavailable",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"subscription_opt_out_at\"}, 1715990400000]}]}, {\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"subscription_opt_out_at\"}, 1716681600000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "subscriptionOptOutAt/between/{\"from\": \"2024-05-18\", \"to\": \"2024-05-25\"}/renewing_subscription",
+      "field": "subscriptionOptOutAt",
+      "operator": "between",
+      "profile": "renewing_subscription",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"subscription_opt_out_at\"}, 1715990400000]}]}, {\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"subscription_opt_out_at\"}, 1716681600000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "subscriptionOptOutAt/between/{\"from\": \"2024-05-18\", \"to\": \"2024-05-25\"}/older_trial",
+      "field": "subscriptionOptOutAt",
+      "operator": "between",
+      "profile": "older_trial",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"subscription_opt_out_at\"}, 1715990400000]}]}, {\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"subscription_opt_out_at\"}, 1716681600000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "subscriptionOptOutAt/between/{\"from\": \"2024-05-18\", \"to\": \"2024-05-25\"}/latest_trial_cancelled",
+      "field": "subscriptionOptOutAt",
+      "operator": "between",
+      "profile": "latest_trial_cancelled",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"subscription_opt_out_at\"}, 1715990400000]}]}, {\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"subscription_opt_out_at\"}, 1716681600000]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "subscriptionOptOutAt/between/{\"from\": \"2024-05-18\", \"to\": \"2024-05-25\"}/cancelled_after_latest_trial",
+      "field": "subscriptionOptOutAt",
+      "operator": "between",
+      "profile": "cancelled_after_latest_trial",
+      "predicate": "{\"and\": [{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"subscription_opt_out_at\"}, 1715990400000]}]}, {\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"subscription_opt_out_at\"}, 1716681600000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "subscriptionOptOutAt/notBetween/{\"from\": \"2024-05-18\", \"to\": \"2024-05-25\"}/new",
+      "field": "subscriptionOptOutAt",
+      "operator": "notBetween",
+      "profile": "new",
+      "predicate": "{\"or\": [{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"subscription_opt_out_at\"}, 1715990400000]}]}, {\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"subscription_opt_out_at\"}, 1716681600000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "subscriptionOptOutAt/notBetween/{\"from\": \"2024-05-18\", \"to\": \"2024-05-25\"}/renewed",
+      "field": "subscriptionOptOutAt",
+      "operator": "notBetween",
+      "profile": "renewed",
+      "predicate": "{\"or\": [{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"subscription_opt_out_at\"}, 1715990400000]}]}, {\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"subscription_opt_out_at\"}, 1716681600000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "subscriptionOptOutAt/notBetween/{\"from\": \"2024-05-18\", \"to\": \"2024-05-25\"}/first_purchase",
+      "field": "subscriptionOptOutAt",
+      "operator": "notBetween",
+      "profile": "first_purchase",
+      "predicate": "{\"or\": [{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"subscription_opt_out_at\"}, 1715990400000]}]}, {\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"subscription_opt_out_at\"}, 1716681600000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "subscriptionOptOutAt/notBetween/{\"from\": \"2024-05-18\", \"to\": \"2024-05-25\"}/unavailable",
+      "field": "subscriptionOptOutAt",
+      "operator": "notBetween",
+      "profile": "unavailable",
+      "predicate": "{\"or\": [{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"subscription_opt_out_at\"}, 1715990400000]}]}, {\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"subscription_opt_out_at\"}, 1716681600000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "subscriptionOptOutAt/notBetween/{\"from\": \"2024-05-18\", \"to\": \"2024-05-25\"}/renewing_subscription",
+      "field": "subscriptionOptOutAt",
+      "operator": "notBetween",
+      "profile": "renewing_subscription",
+      "predicate": "{\"or\": [{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"subscription_opt_out_at\"}, 1715990400000]}]}, {\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"subscription_opt_out_at\"}, 1716681600000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "subscriptionOptOutAt/notBetween/{\"from\": \"2024-05-18\", \"to\": \"2024-05-25\"}/older_trial",
+      "field": "subscriptionOptOutAt",
+      "operator": "notBetween",
+      "profile": "older_trial",
+      "predicate": "{\"or\": [{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"subscription_opt_out_at\"}, 1715990400000]}]}, {\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"subscription_opt_out_at\"}, 1716681600000]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "subscriptionOptOutAt/notBetween/{\"from\": \"2024-05-18\", \"to\": \"2024-05-25\"}/latest_trial_cancelled",
+      "field": "subscriptionOptOutAt",
+      "operator": "notBetween",
+      "profile": "latest_trial_cancelled",
+      "predicate": "{\"or\": [{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"subscription_opt_out_at\"}, 1715990400000]}]}, {\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"subscription_opt_out_at\"}, 1716681600000]}]}]}",
+      "expected": false
+    },
+    {
+      "id": "subscriptionOptOutAt/notBetween/{\"from\": \"2024-05-18\", \"to\": \"2024-05-25\"}/cancelled_after_latest_trial",
+      "field": "subscriptionOptOutAt",
+      "operator": "notBetween",
+      "profile": "cancelled_after_latest_trial",
+      "predicate": "{\"or\": [{\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\"<\": [{\"var\": \"subscription_opt_out_at\"}, 1715990400000]}]}, {\"and\": [{\"!=\": [{\"var\": \"subscription_opt_out_at\"}, null]}, {\">=\": [{\"var\": \"subscription_opt_out_at\"}, 1716681600000]}]}]}",
+      "expected": true
+    },
+    {
+      "id": "subscriptionOptOutAt/isEmpty//new",
+      "field": "subscriptionOptOutAt",
+      "operator": "isEmpty",
+      "profile": "new",
+      "predicate": "{\"==\": [{\"var\": [\"subscription_opt_out_at\", null]}, null]}",
+      "expected": true
+    },
+    {
+      "id": "subscriptionOptOutAt/isEmpty//renewed",
+      "field": "subscriptionOptOutAt",
+      "operator": "isEmpty",
+      "profile": "renewed",
+      "predicate": "{\"==\": [{\"var\": [\"subscription_opt_out_at\", null]}, null]}",
+      "expected": true
+    },
+    {
+      "id": "subscriptionOptOutAt/isEmpty//first_purchase",
+      "field": "subscriptionOptOutAt",
+      "operator": "isEmpty",
+      "profile": "first_purchase",
+      "predicate": "{\"==\": [{\"var\": [\"subscription_opt_out_at\", null]}, null]}",
+      "expected": true
+    },
+    {
+      "id": "subscriptionOptOutAt/isEmpty//unavailable",
+      "field": "subscriptionOptOutAt",
+      "operator": "isEmpty",
+      "profile": "unavailable",
+      "predicate": "{\"==\": [{\"var\": [\"subscription_opt_out_at\", null]}, null]}",
+      "expected": true
+    },
+    {
+      "id": "subscriptionOptOutAt/isEmpty//renewing_subscription",
+      "field": "subscriptionOptOutAt",
+      "operator": "isEmpty",
+      "profile": "renewing_subscription",
+      "predicate": "{\"==\": [{\"var\": [\"subscription_opt_out_at\", null]}, null]}",
+      "expected": true
+    },
+    {
+      "id": "subscriptionOptOutAt/isEmpty//older_trial",
+      "field": "subscriptionOptOutAt",
+      "operator": "isEmpty",
+      "profile": "older_trial",
+      "predicate": "{\"==\": [{\"var\": [\"subscription_opt_out_at\", null]}, null]}",
+      "expected": false
+    },
+    {
+      "id": "subscriptionOptOutAt/isEmpty//latest_trial_cancelled",
+      "field": "subscriptionOptOutAt",
+      "operator": "isEmpty",
+      "profile": "latest_trial_cancelled",
+      "predicate": "{\"==\": [{\"var\": [\"subscription_opt_out_at\", null]}, null]}",
+      "expected": false
+    },
+    {
+      "id": "subscriptionOptOutAt/isEmpty//cancelled_after_latest_trial",
+      "field": "subscriptionOptOutAt",
+      "operator": "isEmpty",
+      "profile": "cancelled_after_latest_trial",
+      "predicate": "{\"==\": [{\"var\": [\"subscription_opt_out_at\", null]}, null]}",
+      "expected": false
+    },
+    {
+      "id": "subscriptionOptOutAt/isNotEmpty//new",
+      "field": "subscriptionOptOutAt",
+      "operator": "isNotEmpty",
+      "profile": "new",
+      "predicate": "{\"!=\": [{\"var\": [\"subscription_opt_out_at\", null]}, null]}",
+      "expected": false
+    },
+    {
+      "id": "subscriptionOptOutAt/isNotEmpty//renewed",
+      "field": "subscriptionOptOutAt",
+      "operator": "isNotEmpty",
+      "profile": "renewed",
+      "predicate": "{\"!=\": [{\"var\": [\"subscription_opt_out_at\", null]}, null]}",
+      "expected": false
+    },
+    {
+      "id": "subscriptionOptOutAt/isNotEmpty//first_purchase",
+      "field": "subscriptionOptOutAt",
+      "operator": "isNotEmpty",
+      "profile": "first_purchase",
+      "predicate": "{\"!=\": [{\"var\": [\"subscription_opt_out_at\", null]}, null]}",
+      "expected": false
+    },
+    {
+      "id": "subscriptionOptOutAt/isNotEmpty//unavailable",
+      "field": "subscriptionOptOutAt",
+      "operator": "isNotEmpty",
+      "profile": "unavailable",
+      "predicate": "{\"!=\": [{\"var\": [\"subscription_opt_out_at\", null]}, null]}",
+      "expected": false
+    },
+    {
+      "id": "subscriptionOptOutAt/isNotEmpty//renewing_subscription",
+      "field": "subscriptionOptOutAt",
+      "operator": "isNotEmpty",
+      "profile": "renewing_subscription",
+      "predicate": "{\"!=\": [{\"var\": [\"subscription_opt_out_at\", null]}, null]}",
+      "expected": false
+    },
+    {
+      "id": "subscriptionOptOutAt/isNotEmpty//older_trial",
+      "field": "subscriptionOptOutAt",
+      "operator": "isNotEmpty",
+      "profile": "older_trial",
+      "predicate": "{\"!=\": [{\"var\": [\"subscription_opt_out_at\", null]}, null]}",
+      "expected": true
+    },
+    {
+      "id": "subscriptionOptOutAt/isNotEmpty//latest_trial_cancelled",
+      "field": "subscriptionOptOutAt",
+      "operator": "isNotEmpty",
+      "profile": "latest_trial_cancelled",
+      "predicate": "{\"!=\": [{\"var\": [\"subscription_opt_out_at\", null]}, null]}",
+      "expected": true
+    },
+    {
+      "id": "subscriptionOptOutAt/isNotEmpty//cancelled_after_latest_trial",
+      "field": "subscriptionOptOutAt",
+      "operator": "isNotEmpty",
+      "profile": "cancelled_after_latest_trial",
+      "predicate": "{\"!=\": [{\"var\": [\"subscription_opt_out_at\", null]}, null]}",
+      "expected": true
+    }
+  ]
+}
