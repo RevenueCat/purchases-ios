@@ -189,6 +189,78 @@ extension View {
         onDismiss: (() -> Void)? = nil
     ) -> some View {
         return self.presentPaywallIfNeeded(
+            requiredEntitlementIdentifier: requiredEntitlementIdentifier,
+            offering: offering,
+            fonts: fonts,
+            presentationMode: presentationMode,
+            myAppPurchaseLogic: myAppPurchaseLogic,
+            purchaseStarted: purchaseStarted,
+            purchaseCompleted: purchaseCompleted,
+            purchaseCancelled: purchaseCancelled,
+            restoreStarted: restoreStarted,
+            restoreCompleted: restoreCompleted,
+            purchaseFailure: purchaseFailure,
+            restoreFailure: restoreFailure,
+            webCheckoutOpened: webCheckoutOpened,
+            urlOpened: urlOpened,
+            onInteraction: onInteraction,
+            onFlowEvent: nil,
+            onDismiss: onDismiss
+        )
+    }
+
+    /// Presents a paywall when the required entitlement is inactive and reports Flow events.
+    ///
+    /// If customer information cannot be loaded, the paywall is not presented.
+    ///
+    /// ```swift
+    /// content.presentPaywallIfNeeded(requiredEntitlementIdentifier: "pro", onFlowEvent: { event in
+    ///     print(event.rawProperties)
+    /// })
+    /// ```
+    ///
+    /// - Parameters:
+    ///   - requiredEntitlementIdentifier: The entitlement that must be inactive to present the paywall.
+    ///   - offering: The offering to present. If `nil`, the current offering is used.
+    ///     An explicit offering takes precedence over the offering configured in an active experiment.
+    ///   - fonts: The font provider used to render the paywall.
+    ///   - presentationMode: How the paywall is displayed. Defaults to `.sheet`.
+    ///   - myAppPurchaseLogic: The app’s purchase and restore handlers when the app completes purchases.
+    ///   - purchaseStarted: Called with the selected package when a purchase starts.
+    ///   - purchaseCompleted: Called with the updated customer information after a successful purchase.
+    ///   - purchaseCancelled: Called when the customer cancels a purchase.
+    ///   - restoreStarted: Called when a restore starts.
+    ///   - restoreCompleted: Called with the updated customer information after a successful restore.
+    ///   - purchaseFailure: Called with the error when a purchase fails.
+    ///   - restoreFailure: Called with the error when a restore fails.
+    ///   - webCheckoutOpened: Called when the paywall opens an external web checkout.
+    ///   - urlOpened: Called with the URL after the paywall successfully opens it.
+    ///   - onInteraction: Called when the customer interacts with a paywall control.
+    ///     See ``PaywallInteractionEvent``.
+    ///   - onFlowEvent: Called on the main actor for Flow step and paywall lifecycle events.
+    ///     Pass `nil` to omit a handler for this presentation. See ``FlowEvent``.
+    ///   - onDismiss: Called when the paywall and any exit offer have been fully dismissed.
+    /// - Returns: A view that presents the paywall and delivers the supplied callbacks.
+    public func presentPaywallIfNeeded(
+        requiredEntitlementIdentifier: String,
+        offering: Offering? = nil,
+        fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
+        presentationMode: PaywallPresentationMode = .default,
+        myAppPurchaseLogic: MyAppPurchaseLogic? = nil,
+        purchaseStarted: PurchaseOfPackageStartedHandler? = nil,
+        purchaseCompleted: PurchaseOrRestoreCompletedHandler? = nil,
+        purchaseCancelled: PurchaseCancelledHandler? = nil,
+        restoreStarted: RestoreStartedHandler? = nil,
+        restoreCompleted: PurchaseOrRestoreCompletedHandler? = nil,
+        purchaseFailure: PurchaseFailureHandler? = nil,
+        restoreFailure: PurchaseFailureHandler? = nil,
+        webCheckoutOpened: WebCheckoutOpenedHandler? = nil,
+        urlOpened: URLOpenedHandler? = nil,
+        onInteraction: PaywallInteractionHandler? = nil,
+        onFlowEvent: FlowEventHandler?,
+        onDismiss: (() -> Void)? = nil
+    ) -> some View {
+        return self.presentPaywallIfNeeded(
             offering: offering,
             fonts: fonts,
             presentationMode: presentationMode,
@@ -209,6 +281,7 @@ extension View {
             webCheckoutOpened: webCheckoutOpened,
             urlOpened: urlOpened,
             onInteraction: onInteraction,
+            onFlowEvent: onFlowEvent,
             onDismiss: onDismiss
         )
     }
@@ -372,6 +445,81 @@ extension View {
             webCheckoutOpened: webCheckoutOpened,
             urlOpened: urlOpened,
             onInteraction: onInteraction,
+            onFlowEvent: nil,
+            onDismiss: onDismiss
+        )
+    }
+
+    /// Presents a paywall based on the supplied condition and reports Flow events.
+    ///
+    /// If customer information cannot be loaded, the paywall is not presented.
+    ///
+    /// ```swift
+    /// content.presentPaywallIfNeeded(
+    ///     shouldDisplay: { $0.entitlements["pro"]?.isActive != true },
+    ///     onFlowEvent: { event in print(event.rawProperties) }
+    /// )
+    /// ```
+    ///
+    /// - Parameters:
+    ///   - offering: The offering to present. If `nil`, the current offering is used.
+    ///     An explicit offering takes precedence over the offering configured in an active experiment.
+    ///   - fonts: The font provider used to render the paywall.
+    ///   - presentationMode: How the paywall is displayed. Defaults to `.sheet`.
+    ///   - myAppPurchaseLogic: The app’s purchase and restore handlers when the app completes purchases.
+    ///   - shouldDisplay: A predicate that receives the current customer information.
+    ///     Return `true` to present the paywall.
+    ///   - purchaseStarted: Called with the selected package when a purchase starts.
+    ///   - purchaseCompleted: Called with the updated customer information after a successful purchase.
+    ///   - purchaseCancelled: Called when the customer cancels a purchase.
+    ///   - restoreStarted: Called when a restore starts.
+    ///   - restoreCompleted: Called with the updated customer information after a successful restore.
+    ///   - purchaseFailure: Called with the error when a purchase fails.
+    ///   - restoreFailure: Called with the error when a restore fails.
+    ///   - webCheckoutOpened: Called when the paywall opens an external web checkout.
+    ///   - urlOpened: Called with the URL after the paywall successfully opens it.
+    ///   - onInteraction: Called when the customer interacts with a paywall control.
+    ///     See ``PaywallInteractionEvent``.
+    ///   - onFlowEvent: Called on the main actor for Flow step and paywall lifecycle events.
+    ///     Pass `nil` to omit a handler for this presentation. See ``FlowEvent``.
+    ///   - onDismiss: Called when the paywall and any exit offer have been fully dismissed.
+    /// - Returns: A view that presents the paywall and delivers the supplied callbacks.
+    public func presentPaywallIfNeeded(
+        offering: Offering? = nil,
+        fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
+        presentationMode: PaywallPresentationMode = .default,
+        myAppPurchaseLogic: MyAppPurchaseLogic? = nil,
+        shouldDisplay: @escaping @Sendable (CustomerInfo) -> Bool,
+        purchaseStarted: PurchaseOfPackageStartedHandler? = nil,
+        purchaseCompleted: PurchaseOrRestoreCompletedHandler? = nil,
+        purchaseCancelled: PurchaseCancelledHandler? = nil,
+        restoreStarted: RestoreStartedHandler? = nil,
+        restoreCompleted: PurchaseOrRestoreCompletedHandler? = nil,
+        purchaseFailure: PurchaseFailureHandler? = nil,
+        restoreFailure: PurchaseFailureHandler? = nil,
+        webCheckoutOpened: WebCheckoutOpenedHandler? = nil,
+        urlOpened: URLOpenedHandler? = nil,
+        onInteraction: PaywallInteractionHandler? = nil,
+        onFlowEvent: FlowEventHandler?,
+        onDismiss: (() -> Void)? = nil
+    ) -> some View {
+        return self.presentPaywallIfNeeded(
+            offering: offering,
+            fonts: fonts,
+            presentationMode: presentationMode,
+            myAppPurchaseLogic: myAppPurchaseLogic,
+            shouldDisplay: shouldDisplay,
+            purchaseStarted: purchaseStarted,
+            purchaseCompleted: purchaseCompleted,
+            purchaseCancelled: purchaseCancelled,
+            restoreStarted: restoreStarted,
+            restoreCompleted: restoreCompleted,
+            purchaseFailure: purchaseFailure,
+            restoreFailure: restoreFailure,
+            webCheckoutOpened: webCheckoutOpened,
+            urlOpened: urlOpened,
+            onInteraction: onInteraction,
+            onFlowEvent: onFlowEvent,
             onDismiss: onDismiss,
             customerInfoFetcher: {
                 guard Purchases.isConfigured else {
@@ -492,6 +640,75 @@ extension View {
         onInteraction: PaywallInteractionHandler? = nil,
         onDismiss: (() -> Void)? = nil
     ) -> some View {
+        return self.presentPaywall(
+            offering: offering,
+            fonts: fonts,
+            presentationMode: presentationMode,
+            myAppPurchaseLogic: myAppPurchaseLogic,
+            purchaseStarted: purchaseStarted,
+            purchaseCompleted: purchaseCompleted,
+            purchaseCancelled: purchaseCancelled,
+            restoreStarted: restoreStarted,
+            restoreCompleted: restoreCompleted,
+            purchaseFailure: purchaseFailure,
+            restoreFailure: restoreFailure,
+            webCheckoutOpened: webCheckoutOpened,
+            urlOpened: urlOpened,
+            onInteraction: onInteraction,
+            onFlowEvent: nil,
+            onDismiss: onDismiss
+        )
+    }
+
+    /// Presents a paywall when the offering binding is non-nil and reports Flow events.
+    ///
+    /// Set the binding to an offering when the paywall should appear.
+    /// The modifier clears the binding when the paywall and any exit offer have been dismissed.
+    ///
+    /// ```swift
+    /// content.presentPaywall(offering: $offeringToPresent, onFlowEvent: { event in
+    ///     print(event.rawProperties)
+    /// })
+    /// ```
+    ///
+    /// - Parameters:
+    ///   - offering: A binding to the offering to present. A `nil` value leaves the paywall hidden.
+    ///   - fonts: The font provider used to render the paywall.
+    ///   - presentationMode: How the paywall is displayed. Defaults to `.sheet`.
+    ///   - myAppPurchaseLogic: The app’s purchase and restore handlers when the app completes purchases.
+    ///   - purchaseStarted: Called with the selected package when a purchase starts.
+    ///   - purchaseCompleted: Called with the updated customer information after a successful purchase.
+    ///   - purchaseCancelled: Called when the customer cancels a purchase.
+    ///   - restoreStarted: Called when a restore starts.
+    ///   - restoreCompleted: Called with the updated customer information after a successful restore.
+    ///   - purchaseFailure: Called with the error when a purchase fails.
+    ///   - restoreFailure: Called with the error when a restore fails.
+    ///   - webCheckoutOpened: Called when the paywall opens an external web checkout.
+    ///   - urlOpened: Called with the URL after the paywall successfully opens it.
+    ///   - onInteraction: Called when the customer interacts with a paywall control.
+    ///     See ``PaywallInteractionEvent``.
+    ///   - onFlowEvent: Called on the main actor for Flow step and paywall lifecycle events.
+    ///     Pass `nil` to omit a handler for this presentation. See ``FlowEvent``.
+    ///   - onDismiss: Called when the paywall and any exit offer have been fully dismissed.
+    /// - Returns: A view that presents the paywall and delivers the supplied callbacks.
+    public func presentPaywall(
+        offering: Binding<Offering?>,
+        fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
+        presentationMode: PaywallPresentationMode = .default,
+        myAppPurchaseLogic: MyAppPurchaseLogic? = nil,
+        purchaseStarted: PurchaseOfPackageStartedHandler? = nil,
+        purchaseCompleted: PurchaseOrRestoreCompletedHandler? = nil,
+        purchaseCancelled: PurchaseCancelledHandler? = nil,
+        restoreStarted: RestoreStartedHandler? = nil,
+        restoreCompleted: PurchaseOrRestoreCompletedHandler? = nil,
+        purchaseFailure: PurchaseFailureHandler? = nil,
+        restoreFailure: PurchaseFailureHandler? = nil,
+        webCheckoutOpened: WebCheckoutOpenedHandler? = nil,
+        urlOpened: URLOpenedHandler? = nil,
+        onInteraction: PaywallInteractionHandler? = nil,
+        onFlowEvent: FlowEventHandler?,
+        onDismiss: (() -> Void)? = nil
+    ) -> some View {
         return self.modifier(PresentingPaywallBindingModifier(
             offering: offering,
             myAppPurchaseLogic: myAppPurchaseLogic,
@@ -508,7 +725,7 @@ extension View {
             webCheckoutOpened: webCheckoutOpened,
             urlOpened: urlOpened,
             onInteraction: onInteraction,
-            onFlowEvent: nil
+            onFlowEvent: onFlowEvent
         ))
     }
 

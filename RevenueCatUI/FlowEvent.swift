@@ -15,13 +15,14 @@ import Foundation
 
 // swiftlint:disable missing_docs
 
-typealias FlowEventHandler = @MainActor @Sendable (_ event: FlowEvent) -> Void
+public typealias FlowEventHandler = @MainActor @Sendable (_ event: FlowEvent) -> Void
 
 /// A flow step or paywall lifecycle event.
 ///
 /// A flow is the whole paywall experience, from one step to many. A paywall shown without a flow reports only
 /// `paywall_impression` and `paywall_close`.
-final class FlowEvent: NSObject, @unchecked Sendable {
+@objc(RCFlowEvent)
+public final class FlowEvent: NSObject, @unchecked Sendable {
 
     /// The event as snake-case keys (``Key/name``) for analytics SDKs; keys that do not apply are absent.
     @objc public let rawProperties: [String: Any]

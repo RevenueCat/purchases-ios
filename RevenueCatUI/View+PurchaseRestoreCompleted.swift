@@ -537,6 +537,22 @@ extension View {
     public func onPaywallInteraction(_ handler: @escaping PaywallInteractionHandler) -> some View {
         self.environment(\.paywallInteractionNotifier, .init(handler))
     }
+
+    /// Invokes the given closure when the user starts or completes a flow step, closes the flow,
+    /// or a paywall step is shown or closed.
+    ///
+    /// Example:
+    /// ```swift
+    ///  PaywallView()
+    ///     .onFlowEvent { event in
+    ///         if let type = event.property(for: FlowEvent.Keys.eventType) {
+    ///             analytics.track(type, properties: event.rawProperties)
+    ///         }
+    ///     }
+    /// ```
+    public func onFlowEvent(_ handler: @escaping FlowEventHandler) -> some View {
+        self.environment(\.flowEventNotifier, .init(handler))
+    }
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)

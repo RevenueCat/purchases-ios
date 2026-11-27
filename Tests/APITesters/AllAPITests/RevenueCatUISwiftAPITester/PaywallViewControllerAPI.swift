@@ -316,6 +316,9 @@ final class Delegate: PaywallViewControllerDelegate {
                                didTrackInteraction event: PaywallInteractionEvent) {}
 
     func paywallViewController(_ controller: PaywallViewController,
+                               didTrackFlowEvent event: FlowEvent) {}
+
+    func paywallViewController(_ controller: PaywallViewController,
                                didFailPurchasingWith error: NSError) {}
 
     func paywallViewControllerDidStartRestore(_ controller: PaywallViewController) {}

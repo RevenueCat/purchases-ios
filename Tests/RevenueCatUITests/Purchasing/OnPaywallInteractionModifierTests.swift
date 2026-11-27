@@ -65,6 +65,32 @@ final class OnPaywallInteractionModifierTests: TestCase {
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@MainActor
+final class OnFlowEventModifierTests: TestCase {
+
+    func testOnFlowEventReceivesEventsTrackedByThePaywallPurchaseHandler() async {
+        let purchaseHandler = PurchaseHandler.mock()
+        let received: Atomic<[String]> = .init([])
+
+        let view = Color.clear
+            .modifier(PaywallFlowEventsModifier(purchaseHandler: purchaseHandler))
+            .onFlowEvent { event in
+                received.modify { $0.append(event.property(for: FlowEvent.Keys.stepId) ?? "") }
+            }
+
+        let window = OnPaywallInteractionModifierTests.host(view)
+        defer {
+            window.isHidden = true
+            window.rootViewController = nil
+        }
+        purchaseHandler.track(WorkflowEvent.stepStarted(.init(), .init(workflowId: "wf_1", stepId: "step_1")))
+
+        await expect(received.value).toEventually(equal(["step_1"]))
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private struct ProbeView: View {
 
     @Environment(\.paywallInteractionNotifier) private var paywallInteractionNotifier

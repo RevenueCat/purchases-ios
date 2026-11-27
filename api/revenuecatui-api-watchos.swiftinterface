@@ -135,6 +135,54 @@ extension SwiftUICore.View {
   @_Concurrency.MainActor @preconcurrency public func customPaywallVariables(_ variables: [Swift.String : RevenueCatUI.CustomVariableValue]) -> some SwiftUICore.View
   
 }
+public typealias FlowEventHandler = @_Concurrency.MainActor @Sendable (_ event: RevenueCatUI.FlowEvent) -> Swift.Void
+@_hasMissingDesignatedInitializers @objc(RCFlowEvent) final public class FlowEvent : ObjectiveC.NSObject, @unchecked Swift.Sendable {
+  @objc final public let rawProperties: [Swift.String : Any]
+  final public func property<Value>(for key: RevenueCatUI.FlowEvent.Key<Value>) -> Value?
+  @objc override final public func isEqual(_ object: Any?) -> Swift.Bool
+  @objc override final public var hash: Swift.Int {
+    @objc get
+  }
+  @objc override final public var description: Swift.String {
+    @objc get
+  }
+  public struct Key<Value> : Swift.Sendable {
+    public let name: Swift.String
+  }
+  public struct Keys {
+    public static let eventType: RevenueCatUI.FlowEvent.Key<Swift.String>
+    public static let timestamp: RevenueCatUI.FlowEvent.Key<Swift.UInt64>
+    public static let flowId: RevenueCatUI.FlowEvent.Key<Swift.String>
+    public static let flowName: RevenueCatUI.FlowEvent.Key<Swift.String>
+    public static let stepId: RevenueCatUI.FlowEvent.Key<Swift.String>
+    public static let stepType: RevenueCatUI.FlowEvent.Key<Swift.String>
+    public static let screenType: RevenueCatUI.FlowEvent.Key<[Swift.String]>
+    public static let screenName: RevenueCatUI.FlowEvent.Key<Swift.String>
+    public static let traceId: RevenueCatUI.FlowEvent.Key<Swift.String>
+    public static let locale: RevenueCatUI.FlowEvent.Key<Swift.String>
+    public static let experimentId: RevenueCatUI.FlowEvent.Key<Swift.String>
+    public static let experimentVariant: RevenueCatUI.FlowEvent.Key<Swift.String>
+    public static let fromStepId: RevenueCatUI.FlowEvent.Key<Swift.String>
+    public static let toStepId: RevenueCatUI.FlowEvent.Key<Swift.String>
+    public static let entryReason: RevenueCatUI.FlowEvent.Key<Swift.String>
+    public static let isFirstStep: RevenueCatUI.FlowEvent.Key<Swift.Bool>
+    public static let isLastStep: RevenueCatUI.FlowEvent.Key<Swift.Bool>
+    public static let paywallId: RevenueCatUI.FlowEvent.Key<Swift.String>
+    public static let offeringId: RevenueCatUI.FlowEvent.Key<Swift.String>
+    public static let paywallRevision: RevenueCatUI.FlowEvent.Key<Swift.Int>
+    public static let sessionId: RevenueCatUI.FlowEvent.Key<Swift.String>
+    public static let displayMode: RevenueCatUI.FlowEvent.Key<Swift.String>
+    public static let darkMode: RevenueCatUI.FlowEvent.Key<Swift.Bool>
+  }
+  public struct EventTypes {
+    public static let flowStepStarted: Swift.String
+    public static let flowStepCompleted: Swift.String
+    public static let flowClose: Swift.String
+    public static let paywallImpression: Swift.String
+    public static let paywallClose: Swift.String
+  }
+  @objc deinit
+}
 public struct ResumeAction : Swift.Sendable {
   public init(action: @escaping @Sendable (Swift.Bool) -> Swift.Void)
   @_Concurrency.MainActor public func resume(shouldProceed: Swift.Bool)
@@ -282,6 +330,8 @@ extension SwiftUICore.View {
   
   @_Concurrency.MainActor @preconcurrency public func presentPaywallIfNeeded(requiredEntitlementIdentifier: Swift.String, offering: RevenueCat.Offering? = nil, fonts: any RevenueCatUI.PaywallFontProvider = DefaultPaywallFontProvider(), presentationMode: RevenueCatUI.PaywallPresentationMode = .default, myAppPurchaseLogic: RevenueCatUI.MyAppPurchaseLogic? = nil, purchaseStarted: RevenueCatUI.PurchaseOfPackageStartedHandler? = nil, purchaseCompleted: RevenueCatUI.PurchaseOrRestoreCompletedHandler? = nil, purchaseCancelled: RevenueCatUI.PurchaseCancelledHandler? = nil, restoreStarted: RevenueCatUI.RestoreStartedHandler? = nil, restoreCompleted: RevenueCatUI.PurchaseOrRestoreCompletedHandler? = nil, purchaseFailure: RevenueCatUI.PurchaseFailureHandler? = nil, restoreFailure: RevenueCatUI.PurchaseFailureHandler? = nil, webCheckoutOpened: RevenueCatUI.WebCheckoutOpenedHandler? = nil, urlOpened: RevenueCatUI.URLOpenedHandler? = nil, onInteraction: RevenueCatUI.PaywallInteractionHandler? = nil, onDismiss: (() -> Swift.Void)? = nil) -> some SwiftUICore.View
   
+  @_Concurrency.MainActor @preconcurrency public func presentPaywallIfNeeded(requiredEntitlementIdentifier: Swift.String, offering: RevenueCat.Offering? = nil, fonts: any RevenueCatUI.PaywallFontProvider = DefaultPaywallFontProvider(), presentationMode: RevenueCatUI.PaywallPresentationMode = .default, myAppPurchaseLogic: RevenueCatUI.MyAppPurchaseLogic? = nil, purchaseStarted: RevenueCatUI.PurchaseOfPackageStartedHandler? = nil, purchaseCompleted: RevenueCatUI.PurchaseOrRestoreCompletedHandler? = nil, purchaseCancelled: RevenueCatUI.PurchaseCancelledHandler? = nil, restoreStarted: RevenueCatUI.RestoreStartedHandler? = nil, restoreCompleted: RevenueCatUI.PurchaseOrRestoreCompletedHandler? = nil, purchaseFailure: RevenueCatUI.PurchaseFailureHandler? = nil, restoreFailure: RevenueCatUI.PurchaseFailureHandler? = nil, webCheckoutOpened: RevenueCatUI.WebCheckoutOpenedHandler? = nil, urlOpened: RevenueCatUI.URLOpenedHandler? = nil, onInteraction: RevenueCatUI.PaywallInteractionHandler? = nil, onFlowEvent: RevenueCatUI.FlowEventHandler?, onDismiss: (() -> Swift.Void)? = nil) -> some SwiftUICore.View
+  
   @available(iOS, deprecated: 1, renamed: "presentPaywallIfNeeded(offering:fonts:presentationMode:shouldDisplay:purchaseStarted:purchaseCompleted:purchaseCancelled:restoreStarted:restoreCompleted:purchaseFailure:restoreFailure:onDismiss:)")
   @available(tvOS, deprecated: 1, renamed: "presentPaywallIfNeeded(offering:fonts:presentationMode:shouldDisplay:purchaseStarted:purchaseCompleted:purchaseCancelled:restoreStarted:restoreCompleted:purchaseFailure:restoreFailure:onDismiss:)")
   @available(watchOS, deprecated: 1, renamed: "presentPaywallIfNeeded(offering:fonts:presentationMode:shouldDisplay:purchaseStarted:purchaseCompleted:purchaseCancelled:restoreStarted:restoreCompleted:purchaseFailure:restoreFailure:onDismiss:)")
@@ -291,7 +341,11 @@ extension SwiftUICore.View {
   
   @_Concurrency.MainActor @preconcurrency public func presentPaywallIfNeeded(offering: RevenueCat.Offering? = nil, fonts: any RevenueCatUI.PaywallFontProvider = DefaultPaywallFontProvider(), presentationMode: RevenueCatUI.PaywallPresentationMode = .default, myAppPurchaseLogic: RevenueCatUI.MyAppPurchaseLogic? = nil, shouldDisplay: @escaping @Sendable (RevenueCat.CustomerInfo) -> Swift.Bool, purchaseStarted: RevenueCatUI.PurchaseOfPackageStartedHandler? = nil, purchaseCompleted: RevenueCatUI.PurchaseOrRestoreCompletedHandler? = nil, purchaseCancelled: RevenueCatUI.PurchaseCancelledHandler? = nil, restoreStarted: RevenueCatUI.RestoreStartedHandler? = nil, restoreCompleted: RevenueCatUI.PurchaseOrRestoreCompletedHandler? = nil, purchaseFailure: RevenueCatUI.PurchaseFailureHandler? = nil, restoreFailure: RevenueCatUI.PurchaseFailureHandler? = nil, webCheckoutOpened: RevenueCatUI.WebCheckoutOpenedHandler? = nil, urlOpened: RevenueCatUI.URLOpenedHandler? = nil, onInteraction: RevenueCatUI.PaywallInteractionHandler? = nil, onDismiss: (() -> Swift.Void)? = nil) -> some SwiftUICore.View
   
+  @_Concurrency.MainActor @preconcurrency public func presentPaywallIfNeeded(offering: RevenueCat.Offering? = nil, fonts: any RevenueCatUI.PaywallFontProvider = DefaultPaywallFontProvider(), presentationMode: RevenueCatUI.PaywallPresentationMode = .default, myAppPurchaseLogic: RevenueCatUI.MyAppPurchaseLogic? = nil, shouldDisplay: @escaping @Sendable (RevenueCat.CustomerInfo) -> Swift.Bool, purchaseStarted: RevenueCatUI.PurchaseOfPackageStartedHandler? = nil, purchaseCompleted: RevenueCatUI.PurchaseOrRestoreCompletedHandler? = nil, purchaseCancelled: RevenueCatUI.PurchaseCancelledHandler? = nil, restoreStarted: RevenueCatUI.RestoreStartedHandler? = nil, restoreCompleted: RevenueCatUI.PurchaseOrRestoreCompletedHandler? = nil, purchaseFailure: RevenueCatUI.PurchaseFailureHandler? = nil, restoreFailure: RevenueCatUI.PurchaseFailureHandler? = nil, webCheckoutOpened: RevenueCatUI.WebCheckoutOpenedHandler? = nil, urlOpened: RevenueCatUI.URLOpenedHandler? = nil, onInteraction: RevenueCatUI.PaywallInteractionHandler? = nil, onFlowEvent: RevenueCatUI.FlowEventHandler?, onDismiss: (() -> Swift.Void)? = nil) -> some SwiftUICore.View
+  
   @_Concurrency.MainActor @preconcurrency public func presentPaywall(offering: SwiftUICore.Binding<RevenueCat.Offering?>, fonts: any RevenueCatUI.PaywallFontProvider = DefaultPaywallFontProvider(), presentationMode: RevenueCatUI.PaywallPresentationMode = .default, myAppPurchaseLogic: RevenueCatUI.MyAppPurchaseLogic? = nil, purchaseStarted: RevenueCatUI.PurchaseOfPackageStartedHandler? = nil, purchaseCompleted: RevenueCatUI.PurchaseOrRestoreCompletedHandler? = nil, purchaseCancelled: RevenueCatUI.PurchaseCancelledHandler? = nil, restoreStarted: RevenueCatUI.RestoreStartedHandler? = nil, restoreCompleted: RevenueCatUI.PurchaseOrRestoreCompletedHandler? = nil, purchaseFailure: RevenueCatUI.PurchaseFailureHandler? = nil, restoreFailure: RevenueCatUI.PurchaseFailureHandler? = nil, webCheckoutOpened: RevenueCatUI.WebCheckoutOpenedHandler? = nil, urlOpened: RevenueCatUI.URLOpenedHandler? = nil, onInteraction: RevenueCatUI.PaywallInteractionHandler? = nil, onDismiss: (() -> Swift.Void)? = nil) -> some SwiftUICore.View
+  
+  @_Concurrency.MainActor @preconcurrency public func presentPaywall(offering: SwiftUICore.Binding<RevenueCat.Offering?>, fonts: any RevenueCatUI.PaywallFontProvider = DefaultPaywallFontProvider(), presentationMode: RevenueCatUI.PaywallPresentationMode = .default, myAppPurchaseLogic: RevenueCatUI.MyAppPurchaseLogic? = nil, purchaseStarted: RevenueCatUI.PurchaseOfPackageStartedHandler? = nil, purchaseCompleted: RevenueCatUI.PurchaseOrRestoreCompletedHandler? = nil, purchaseCancelled: RevenueCatUI.PurchaseCancelledHandler? = nil, restoreStarted: RevenueCatUI.RestoreStartedHandler? = nil, restoreCompleted: RevenueCatUI.PurchaseOrRestoreCompletedHandler? = nil, purchaseFailure: RevenueCatUI.PurchaseFailureHandler? = nil, restoreFailure: RevenueCatUI.PurchaseFailureHandler? = nil, webCheckoutOpened: RevenueCatUI.WebCheckoutOpenedHandler? = nil, urlOpened: RevenueCatUI.URLOpenedHandler? = nil, onInteraction: RevenueCatUI.PaywallInteractionHandler? = nil, onFlowEvent: RevenueCatUI.FlowEventHandler?, onDismiss: (() -> Swift.Void)? = nil) -> some SwiftUICore.View
   
 }
 public typealias PurchaseOrRestoreCompletedHandler = @_Concurrency.MainActor @Sendable (RevenueCat.CustomerInfo) -> Swift.Void
@@ -370,6 +424,8 @@ extension SwiftUICore.View {
   @_Concurrency.MainActor @preconcurrency public func onRequestedDismissal(_ action: @escaping () -> Swift.Void) -> some SwiftUICore.View
   
   @_Concurrency.MainActor @preconcurrency public func onPaywallInteraction(_ handler: @escaping RevenueCatUI.PaywallInteractionHandler) -> some SwiftUICore.View
+  
+  @_Concurrency.MainActor @preconcurrency public func onFlowEvent(_ handler: @escaping RevenueCatUI.FlowEventHandler) -> some SwiftUICore.View
   
 }
 @available(iOS 15.0, macOS 12.0, watchOS 8.0, *)

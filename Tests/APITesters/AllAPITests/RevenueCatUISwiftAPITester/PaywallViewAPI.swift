@@ -70,6 +70,47 @@ struct App: View {
         PaywallInteractionEvent.ComponentTypes.packageSelectionSheet,
         PaywallInteractionEvent.ComponentTypes.purchaseButton
     ]
+    private var flowEvent: FlowEventHandler = { (event: FlowEvent) in
+        let _: [String: Any] = event.rawProperties
+        let _: String? = event.property(for: FlowEvent.Keys.eventType)
+        let _: Int? = event.property(for: FlowEvent.Keys.paywallRevision)
+        let _: UInt64? = event.property(for: FlowEvent.Keys.timestamp)
+        let _: Bool? = event.property(for: FlowEvent.Keys.isFirstStep)
+        let _: [String]? = event.property(for: FlowEvent.Keys.screenType)
+        let _: String = FlowEvent.Keys.eventType.name
+    }
+    private let flowEventKeys: [Any] = [
+        FlowEvent.Keys.eventType,
+        FlowEvent.Keys.timestamp,
+        FlowEvent.Keys.flowId,
+        FlowEvent.Keys.flowName,
+        FlowEvent.Keys.stepId,
+        FlowEvent.Keys.stepType,
+        FlowEvent.Keys.screenType,
+        FlowEvent.Keys.screenName,
+        FlowEvent.Keys.traceId,
+        FlowEvent.Keys.locale,
+        FlowEvent.Keys.experimentId,
+        FlowEvent.Keys.experimentVariant,
+        FlowEvent.Keys.fromStepId,
+        FlowEvent.Keys.toStepId,
+        FlowEvent.Keys.entryReason,
+        FlowEvent.Keys.isFirstStep,
+        FlowEvent.Keys.isLastStep,
+        FlowEvent.Keys.paywallId,
+        FlowEvent.Keys.offeringId,
+        FlowEvent.Keys.paywallRevision,
+        FlowEvent.Keys.sessionId,
+        FlowEvent.Keys.displayMode,
+        FlowEvent.Keys.darkMode
+    ]
+    private let flowEventTypes: [String] = [
+        FlowEvent.EventTypes.flowStepStarted,
+        FlowEvent.EventTypes.flowStepCompleted,
+        FlowEvent.EventTypes.flowClose,
+        FlowEvent.EventTypes.paywallImpression,
+        FlowEvent.EventTypes.paywallClose
+    ]
     private var restoreStarted: RestoreStartedHandler = { }
     private var failureHandler: PurchaseFailureHandler = { (_: NSError) in }
 
@@ -236,6 +277,7 @@ struct App: View {
                                     webCheckoutOpened: self.webCheckoutOpened,
                                     urlOpened: self.urlOpened,
                                     onInteraction: self.interaction,
+                                    onFlowEvent: self.flowEvent,
                                     onDismiss: nil)
     }
 
@@ -357,7 +399,23 @@ struct App: View {
                                     webCheckoutOpened: self.webCheckoutOpened,
                                     urlOpened: self.urlOpened,
                                     onInteraction: self.interaction,
+                                    onFlowEvent: self.flowEvent,
                                     onDismiss: nil)
+    }
+
+    var checkTrailingDismissalClosure: some View {
+        let shouldDisplay: @Sendable (CustomerInfo) -> Bool = { _ in false }
+
+        return Text("")
+            .presentPaywallIfNeeded(requiredEntitlementIdentifier: "", onInteraction: self.interaction) {
+                self.paywallDismissed()
+            }
+            .presentPaywallIfNeeded(shouldDisplay: shouldDisplay, onInteraction: self.interaction) {
+                self.paywallDismissed()
+            }
+            .presentPaywall(offering: self.$offeringBinding, onInteraction: self.interaction) {
+                self.paywallDismissed()
+            }
     }
 
     @State private var offeringBinding: Offering?
@@ -414,6 +472,8 @@ struct App: View {
                             urlOpened: self.urlOpened)
             .presentPaywall(offering: self.$offeringBinding,
                             onInteraction: self.interaction)
+            .presentPaywall(offering: self.$offeringBinding,
+                            onFlowEvent: self.flowEvent)
             .presentPaywall(offering: self.$offeringBinding,
                             fonts: self.fonts,
                             presentationMode: .sheet,
@@ -860,6 +920,7 @@ struct App: View {
             .onWebCheckoutOpened(self.webCheckoutOpened)
             .onURLOpened(self.urlOpened)
             .onPaywallInteraction(self.interaction)
+            .onFlowEvent(self.flowEvent)
             .onRestoreStarted(self.restoreStarted)
             .onRestoreCompleted(self.purchaseOrRestoreCompleted)
             .onRequestedDismissal(self.requestedDismissal)
