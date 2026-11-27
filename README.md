@@ -125,6 +125,8 @@ This repository is published from the `main` branch and release tags of RevenueC
 
 See the [contributing guide](https://github.com/RevenueCat/purchases-ios/blob/main/Contributing/CONTRIBUTING.md).
 
+For iOS paywalls and workflows, use unit tests for SDK logic, PaywallFixtures for offline interaction tests, and Emerge snapshots for visual changes. Maestro checks complete app flows. PerformanceTests measures peak memory. The workflow runner measures main-thread CPU during presentation and navigation. See the [iOS test guide](Contributing/TESTING.md) for local commands and PR checks.
+
 ## License
 
 MIT. See [LICENSE](https://github.com/RevenueCat/purchases-ios/blob/main/LICENSE).

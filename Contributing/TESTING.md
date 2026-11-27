@@ -1,12 +1,15 @@
 # Where to test behavior
 
-- **PerformanceTests (memory)**: Memory regressions and changes to memory-sensitive SDK paths. Use `Tests/PerformanceTests/` and the [memory baseline instructions](../AGENTS.md#performance-tests).
-- **Workflow CPU benchmark**: CPU regressions during workflow presentation and navigation. Use the [workflow benchmark instructions](#workflow-cpu-benchmark).
-- **Unit tests**: Logic, state changes, and serialization. Use `Tests/UnitTests/` for the core SDK, `Tests/StoreKitUnitTests/` for StoreKit, and `Tests/RevenueCatUITests/` for RevenueCatUI logic.
-- **PaywallFixtures**: Paywall UI behavior with fixed data and no backend dependency. Examples include carousel pages across tabs, package selection, gestures, and accessibility. Add fixtures in `Tests/TestingApps/PaywallFixtures/` and XCUITests in `Tests/TestingApps/PaywallFixturesUITests/`.
-- **Maestro**: Complete app flows, such as purchases, entitlement updates, and workflow navigation. Use the app and YAML flows in `Projects/AutomatedSDKTestsApp/`.
-- **Snapshot tests**: Visual appearance, such as layout, colors, and text styles. Use the snapshot tests in `Tests/RevenueCatUITests/`.
-- **Manual checks**: Behavior that the automated tests cannot verify, such as actual VoiceOver speech and focus order.
+| What changed? | How to check it | When it runs on a PR |
+| --- | --- | --- |
+| SDK logic, state, or serialization | Choose [UnitTests](../Tests/UnitTests/), [StoreKitUnitTests](../Tests/StoreKitUnitTests/), or [RevenueCatUITests](../Tests/RevenueCatUITests/). Generate the target with Tuist, such as `tuist generate UnitTests`. Run the affected tests in Xcode. | The reduced suite runs core and RevenueCatUI tests on each push. |
+| Paywall interaction or accessibility | PaywallFixtures tests run without a network connection. They use local offerings and customer data and simulate purchases. Add a [local fixture](../Tests/TestingApps/PaywallFixtures/) and an [XCUITest](../Tests/TestingApps/PaywallFixturesUITests/) for behavior such as package selection after a tab change. Run `tuist generate PaywallFixturesUITests`, then `bundle exec fastlane ios paywall_accessibility_ui_tests`. | The full suite runs the job. To request it separately, comment `@RCGitBot please test run-paywall-accessibility-ui-tests`. |
+| Paywall appearance | Use [RevenueCatUI snapshot tests](../Tests/RevenueCatUITests/) for layout, colors, and text styles. Open **Snapshot Test &#124; Emerge** on the PR to compare images. | Each push starts the PaywallsTester preview job. The full suite also uploads V1 and V2 template screenshots. |
+| Complete app flows | Use [Maestro flows](../Projects/AutomatedSDKTestsApp/maestro/) for purchases, entitlement updates, and workflow navigation. | The full suite runs Maestro. For workflow navigation, comment `@RCGitBot please test run-workflow-maestro-tests`. |
+| Peak memory | Run the [PerformanceTests](../Tests/PerformanceTests/) scheme against its checked-in baseline. See the [local command and baseline procedure](../AGENTS.md#performance-tests). | `performance-tests` runs on each push. |
+| Main-thread CPU during workflow navigation | Run the [workflow CPU benchmark](#workflow-cpu-benchmark) on the same machine before and after the change. | It runs automatically on `main`. For a PR comparison, comment `@RCGitBot please test workflow-instruments`. |
+
+See [development setup](DEVELOPMENT.md) for local test dependencies. To request the full suite on a PR, comment `@RCGitBot please test`. Check actual VoiceOver speech and focus order manually.
 
 ## Workflow CPU benchmark
 

@@ -140,7 +140,7 @@ When logging to the debug console, follow the pattern with the strings in Revenu
 
 Tests use **XCTest**, **Nimble**, **swift-snapshot-testing**, and **OHHTTPStubs**. Test targets live under `Tests/` — explore subdirectories directly for the current layout.
 
-Before you add or change a test, read [Contributing/TESTING.md](Contributing/TESTING.md).
+Choose the test that can reproduce the change. Use unit tests for SDK logic, PaywallFixtures for offline interaction tests, Emerge snapshots for appearance, and Maestro for complete app flows. Use PerformanceTests for peak memory and the workflow CPU runner for presentation or navigation costs. See the [iOS test guide](Contributing/TESTING.md) for test locations, local commands, and PR checks.
 
 ### Performance tests
 
