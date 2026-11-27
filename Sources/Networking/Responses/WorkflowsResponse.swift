@@ -251,7 +251,7 @@ import Foundation
 @_spi(Internal) public struct PublishedWorkflow {
 
     public let id: String
-    let displayName: String
+    public let displayName: String
     public let initialStepId: String
     /// Set when the first screen is audience-routed. `initialStepId` names this branch's fallback.
     public let initialTrigger: WorkflowTriggerAction?

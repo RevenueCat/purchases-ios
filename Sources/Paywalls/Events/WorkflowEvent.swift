@@ -55,9 +55,13 @@ extension WorkflowEvent {
         /// Not sent to the backend; used for local context only.
         public var workflowType: String?
         /// Not sent to the backend; used for local context only.
+        public var workflowName: String?
+        /// Not sent to the backend; used for local context only.
         public var stepType: String?
         /// Not sent to the backend; used for local context only.
         public var screenType: [String]
+        /// Not sent to the backend; used for local context only.
+        public var screenName: String?
         /// Set for `stepStarted` events; the step navigated from, if any.
         public var fromStepId: String?
         /// Set for `stepCompleted` events; the step navigated to, if any.
@@ -76,8 +80,10 @@ extension WorkflowEvent {
             localeIdentifier: String = Locale.current.identifier,
             traceId: String? = nil,
             workflowType: String? = nil,
+            workflowName: String? = nil,
             stepType: String? = nil,
             screenType: [String] = [],
+            screenName: String? = nil,
             fromStepId: String? = nil,
             toStepId: String? = nil,
             entryReason: String? = nil,
@@ -92,8 +98,10 @@ extension WorkflowEvent {
             self.localeIdentifier = localeIdentifier
             self.traceId = traceId
             self.workflowType = workflowType
+            self.workflowName = workflowName
             self.stepType = stepType
             self.screenType = screenType
+            self.screenName = screenName
             self.fromStepId = fromStepId
             self.toStepId = toStepId
             self.entryReason = entryReason

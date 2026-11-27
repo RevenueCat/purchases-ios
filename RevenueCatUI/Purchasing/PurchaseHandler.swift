@@ -51,6 +51,7 @@ final class PurchaseHandler: ObservableObject {
     private let customerCenterPreviewURLHandler: (@Sendable (URL) async throws -> Void)?
     let resolveBranch: @Sendable (WorkflowBranch) async -> WorkflowStepID
     private let paywallEventTracker: PaywallEventTracker
+    private var flowEventNotifier = FlowEventNotifier()
     private let keyWindowFocusResigner: KeyWindowFocusResigning
 
     #if (canImport(UIKit) && !os(watchOS)) || canImport(AppKit)
@@ -1227,7 +1228,7 @@ extension PurchaseHandler {
 
     func trackPaywallImpression(_ eventData: PaywallEvent.Data) {
         self.activePaywallSessionID = eventData.sessionIdentifier
-        self.paywallEventTracker.trackPaywallImpression(eventData)
+        self.paywallEventTracker.trackPaywallImpression(eventData, flowEventNotifier: self.flowEventNotifier)
     }
 
     /// Clears the active paywall session (without discarding its tracked events) so subsequent purchase
@@ -1254,7 +1255,8 @@ extension PurchaseHandler {
             return false
         }
         // Keep `activePaywallSessionID` set after close so `trackExitOffer` can still resolve paywall data.
-        return self.paywallEventTracker.trackPaywallClose(sessionID: sessionID)
+        return self.paywallEventTracker.trackPaywallClose(sessionID: sessionID,
+                                                          flowEventNotifier: self.flowEventNotifier)
     }
 
     /// Tracks a paywall close for a specific session, regardless of which session is currently active.
@@ -1264,7 +1266,8 @@ extension PurchaseHandler {
     /// - Returns: whether the event was tracked
     @discardableResult
     func trackPaywallClose(sessionID: PaywallEvent.SessionID) -> Bool {
-        return self.paywallEventTracker.trackPaywallClose(sessionID: sessionID)
+        return self.paywallEventTracker.trackPaywallClose(sessionID: sessionID,
+                                                          flowEventNotifier: self.flowEventNotifier)
     }
 
     /// - Returns: whether the event was tracked
@@ -1285,9 +1288,13 @@ extension PurchaseHandler {
         return self.paywallEventTracker.createPurchaseInitiatedEvent(package: package, sessionID: sessionID)
     }
 
+    func setFlowEventNotifier(_ notifier: FlowEventNotifier) {
+        self.flowEventNotifier = notifier
+    }
+
     /// Tracks a workflow step lifecycle event. Dispatched on the same background path as paywall events.
     func track(_ event: WorkflowEvent) {
-        self.paywallEventTracker.track(event)
+        self.paywallEventTracker.track(event, flowEventNotifier: self.flowEventNotifier)
     }
 
     /// Tracks a purchase error event.
@@ -1414,7 +1421,7 @@ private extension PurchaseHandler {
     }
 
     func track(_ event: PaywallEvent) {
-        self.paywallEventTracker.track(event)
+        self.paywallEventTracker.track(event, flowEventNotifier: self.flowEventNotifier)
     }
 
 }
@@ -1672,16 +1679,16 @@ extension EnvironmentValues {
     }
 }
 
-/// Lightweight wrapper so views can report paywall interactions without depending on the full `PurchaseHandler`.
-struct PaywallInteractionNotifier: Sendable {
+/// Lightweight wrapper so views can report paywall events without depending on the full `PurchaseHandler`.
+struct EventNotifier<Event: Sendable>: Sendable {
 
-    let handler: PaywallInteractionHandler?
+    let handler: (@MainActor @Sendable (Event) -> Void)?
 
-    init(_ handler: PaywallInteractionHandler? = nil) {
+    init(_ handler: (@MainActor @Sendable (Event) -> Void)? = nil) {
         self.handler = handler
     }
 
-    func callAsFunction(_ event: PaywallInteractionEvent) {
+    func callAsFunction(_ event: Event) {
         guard let handler = self.handler else { return }
         Task { @MainActor in
             handler(event)
@@ -1689,6 +1696,9 @@ struct PaywallInteractionNotifier: Sendable {
     }
 
 }
+
+typealias PaywallInteractionNotifier = EventNotifier<PaywallInteractionEvent>
+typealias FlowEventNotifier = EventNotifier<FlowEvent>
 
 /// `EnvironmentKey` for storing the notifier for paywall interactions.
 struct PaywallInteractionNotifierKey: EnvironmentKey {
@@ -1700,6 +1710,18 @@ extension EnvironmentValues {
     var paywallInteractionNotifier: PaywallInteractionNotifier {
         get { self[PaywallInteractionNotifierKey.self] }
         set { self[PaywallInteractionNotifierKey.self] = newValue }
+    }
+}
+
+struct FlowEventNotifierKey: EnvironmentKey {
+    static let defaultValue: FlowEventNotifier = .init()
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension EnvironmentValues {
+    var flowEventNotifier: FlowEventNotifier {
+        get { self[FlowEventNotifierKey.self] }
+        set { self[FlowEventNotifierKey.self] = newValue }
     }
 }
 

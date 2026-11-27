@@ -550,6 +550,14 @@ internal extension View {
         }
     }
 
+    func onFlowEvent(ifSet handler: FlowEventHandler?) -> some View {
+        self.transformEnvironment(\.flowEventNotifier) { current in
+            if let handler {
+                current = .init(handler)
+            }
+        }
+    }
+
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -679,6 +687,22 @@ struct PaywallURLEventsModifier: ViewModifier {
                     }
                 }
         }
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@MainActor
+struct PaywallFlowEventsModifier: ViewModifier {
+
+    let purchaseHandler: PurchaseHandler
+
+    @Environment(\.flowEventNotifier) private var flowEventNotifier
+
+    func body(content: Content) -> some View {
+        self.purchaseHandler.setFlowEventNotifier(self.flowEventNotifier)
+        // SwiftUI never calls `body` for a modifier that returns `content` unchanged.
+        return content.environment(\.flowEventNotifier, self.flowEventNotifier)
     }
 
 }

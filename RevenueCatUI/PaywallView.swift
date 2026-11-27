@@ -335,6 +335,7 @@ public struct PaywallView: View {
             // and pulling down in the paywall would execute the parent's refreshable action
             .refreshableDisabled()
             .modifier(PaywallURLEventsModifier(purchaseHandler: self.purchaseHandler))
+            .modifier(PaywallFlowEventsModifier(purchaseHandler: self.purchaseHandler))
             // Publish outside SDK-owned navigation, which consumes preferences from its content.
             .preference(key: PurchaseInProgressPreferenceKey.self,
                         value: self.purchaseHandler.packageBeingPurchased)

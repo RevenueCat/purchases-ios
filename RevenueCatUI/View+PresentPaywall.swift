@@ -402,6 +402,7 @@ extension View {
         webCheckoutOpened: WebCheckoutOpenedHandler? = nil,
         urlOpened: URLOpenedHandler? = nil,
         onInteraction: PaywallInteractionHandler? = nil,
+        onFlowEvent: FlowEventHandler? = nil,
         onDismiss: (() -> Void)? = nil,
         customerInfoFetcher: @escaping CustomerInfoFetcher
     ) -> some View {
@@ -421,6 +422,7 @@ extension View {
                 webCheckoutOpened: webCheckoutOpened,
                 urlOpened: urlOpened,
                 onInteraction: onInteraction,
+                onFlowEvent: onFlowEvent,
                 content: .optionalOffering(offering),
                 fontProvider: fonts,
                 customerInfoFetcher: customerInfoFetcher,
@@ -505,7 +507,8 @@ extension View {
             onDismiss: onDismiss,
             webCheckoutOpened: webCheckoutOpened,
             urlOpened: urlOpened,
-            onInteraction: onInteraction
+            onInteraction: onInteraction,
+            onFlowEvent: nil
         ))
     }
 
@@ -532,6 +535,7 @@ private struct PresentingPaywallModifier: ViewModifier {
     var webCheckoutOpened: WebCheckoutOpenedHandler?
     var urlOpened: URLOpenedHandler?
     var onInteraction: PaywallInteractionHandler?
+    var onFlowEvent: FlowEventHandler?
 
     var content: PaywallViewConfiguration.Content
     var fontProvider: PaywallFontProvider
@@ -554,6 +558,7 @@ private struct PresentingPaywallModifier: ViewModifier {
         webCheckoutOpened: WebCheckoutOpenedHandler?,
         urlOpened: URLOpenedHandler?,
         onInteraction: PaywallInteractionHandler?,
+        onFlowEvent: FlowEventHandler?,
         content: PaywallViewConfiguration.Content,
         fontProvider: PaywallFontProvider,
         customerInfoFetcher: @escaping View.CustomerInfoFetcher,
@@ -573,6 +578,7 @@ private struct PresentingPaywallModifier: ViewModifier {
         self.webCheckoutOpened = webCheckoutOpened
         self.urlOpened = urlOpened
         self.onInteraction = onInteraction
+        self.onFlowEvent = onFlowEvent
         self.content = content
         self.fontProvider = fontProvider
         self.customerInfoFetcher = customerInfoFetcher
@@ -727,7 +733,7 @@ private struct PresentingPaywallModifier: ViewModifier {
         .onURLOpened { url in
             self.urlOpened?(url)
         }
-        .onPaywallInteraction(ifSet: self.onInteraction)
+        .paywallEventHandlers(interaction: self.onInteraction, flowEvent: self.onFlowEvent)
         .interactiveDismissDisabled(self.purchaseHandler.actionInProgress)
         .workflowExitOfferSource(presenter: self.exitOfferPresenter) {
             await self.purchaseHandler.resolveOffering(for: self.content)
@@ -849,7 +855,7 @@ private struct PresentingPaywallModifier: ViewModifier {
         .onURLOpened { url in
             self.urlOpened?(url)
         }
-        .onPaywallInteraction(ifSet: self.onInteraction)
+        .paywallEventHandlers(interaction: self.onInteraction, flowEvent: self.onFlowEvent)
         .interactiveDismissDisabled(self.purchaseHandler.actionInProgress)
     }
 
@@ -889,6 +895,7 @@ private struct PresentingPaywallBindingModifier: ViewModifier {
     var webCheckoutOpened: WebCheckoutOpenedHandler?
     var urlOpened: URLOpenedHandler?
     var onInteraction: PaywallInteractionHandler?
+    var onFlowEvent: FlowEventHandler?
 
     /// Owns the exit-offer lifecycle (sourcing + presentation state + transitions).
     @StateObject
@@ -920,7 +927,8 @@ private struct PresentingPaywallBindingModifier: ViewModifier {
         onDismiss: (() -> Void)?,
         webCheckoutOpened: WebCheckoutOpenedHandler?,
         urlOpened: URLOpenedHandler?,
-        onInteraction: PaywallInteractionHandler?
+        onInteraction: PaywallInteractionHandler?,
+        onFlowEvent: FlowEventHandler?
     ) {
         self._offering = offering
         self.presentationMode = presentationMode
@@ -936,6 +944,7 @@ private struct PresentingPaywallBindingModifier: ViewModifier {
         self.webCheckoutOpened = webCheckoutOpened
         self.urlOpened = urlOpened
         self.onInteraction = onInteraction
+        self.onFlowEvent = onFlowEvent
         let handler = PurchaseHandler.default(myAppPurchaseLogic: myAppPurchaseLogic)
         self._purchaseHandler = .init(wrappedValue: handler)
         self._exitOfferPresenter = .init(wrappedValue: ExitOfferPresenter(purchaseHandler: handler))
@@ -1023,7 +1032,7 @@ private struct PresentingPaywallBindingModifier: ViewModifier {
         .onURLOpened { url in
             self.urlOpened?(url)
         }
-        .onPaywallInteraction(ifSet: self.onInteraction)
+        .paywallEventHandlers(interaction: self.onInteraction, flowEvent: self.onFlowEvent)
         .interactiveDismissDisabled(self.purchaseHandler.actionInProgress)
         .workflowExitOfferSource(presenter: self.exitOfferPresenter) {
             offering
@@ -1076,7 +1085,7 @@ private struct PresentingPaywallBindingModifier: ViewModifier {
         .onURLOpened { url in
             self.urlOpened?(url)
         }
-        .onPaywallInteraction(ifSet: self.onInteraction)
+        .paywallEventHandlers(interaction: self.onInteraction, flowEvent: self.onFlowEvent)
         .interactiveDismissDisabled(self.purchaseHandler.actionInProgress)
     }
 
@@ -1151,6 +1160,20 @@ internal final class PromoOfferCacheOwner: ObservableObject {
     init(cache: PaywallPromoOfferCache) {
         self.cache = cache
     }
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private extension View {
+
+    func paywallEventHandlers(
+        interaction: PaywallInteractionHandler?,
+        flowEvent: FlowEventHandler?
+    ) -> some View {
+        self
+            .onPaywallInteraction(ifSet: interaction)
+            .onFlowEvent(ifSet: flowEvent)
+    }
+
 }
 
 #endif

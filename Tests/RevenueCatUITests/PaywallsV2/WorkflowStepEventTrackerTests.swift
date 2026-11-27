@@ -215,6 +215,30 @@ final class WorkflowStepEventTrackerTests: TestCase {
         expect(self.recorded.allSatisfy { $0.data.experiment == nil }) == true
     }
 
+    // MARK: - Step context
+
+    func testStepEventsCarryTheFlowNameStepTypeScreenTypeAndScreenName() throws {
+        let workflow = try Self.makeScreenTaggedWorkflow()
+        let tracker = self.makeTracker(workflow: workflow)
+        let intro = try XCTUnwrap(workflow.steps["intro"])
+        let paywall = try XCTUnwrap(workflow.steps["paywall"])
+
+        tracker.trackNavigation(from: intro, to: paywall, entryReason: .forward)
+
+        expect(self.recorded).to(haveCount(2))
+        let completedIntro = try XCTUnwrap(Self.completedData(self.recorded[0]))
+        expect(completedIntro.workflowName) == "Test Workflow"
+        expect(completedIntro.stepType) == "screen"
+        expect(completedIntro.screenType) == []
+        expect(completedIntro.screenName).to(beNil())
+
+        let startedPaywall = try XCTUnwrap(Self.startedData(self.recorded[1]))
+        expect(startedPaywall.workflowName) == "Test Workflow"
+        expect(startedPaywall.stepType) == "screen"
+        expect(startedPaywall.screenType) == ["paywall"]
+        expect(startedPaywall.screenName) == "Offer"
+    }
+
     // MARK: - Fallback copies
 
     func testFallbackCopyEventsReportTheRawIdAndTheOriginalStepId() throws {
@@ -345,6 +369,66 @@ private extension WorkflowStepEventTrackerTests {
             "step_2": { "id": "step_2", "type": "screen", "triggers": [], "trigger_actions": {} }
           },
           "screens": {},
+          "ui_config": {
+            "app": { "colors": {}, "fonts": {} },
+            "localizations": {}
+          }
+        }
+        """
+        let data = try XCTUnwrap(json.data(using: .utf8))
+        return try JSONDecoder.default.decode(PublishedWorkflow.self, from: data)
+    }
+
+    /// `intro` has no screen and no `screen_type`; `paywall` shows the "Offer" screen tagged as a paywall.
+    static func makeScreenTaggedWorkflow() throws -> PublishedWorkflow {
+        let json = """
+        {
+          "id": "wf_test",
+          "display_name": "Test Workflow",
+          "initial_step_id": "intro",
+          "steps": {
+            "intro": {
+              "id": "intro",
+              "type": "screen",
+              "triggers": [
+                {"name":"Button","type":"on_press","action_id":"btn","component_id":"btn"}
+              ],
+              "trigger_actions": { "btn": {"type":"step","step_id":"paywall"} }
+            },
+            "paywall": {
+              "id": "paywall",
+              "type": "screen",
+              "screen_id": "pw_1",
+              "metadata": { "screen_type": ["paywall"] }
+            }
+          },
+          "screens": {
+            "pw_1": {
+              "name": "Offer",
+              "offering_identifier": "offering_a",
+              "template_name": "componentsTest",
+              "asset_base_url": "https://assets.pawwalls.com",
+              "default_locale": "en_US",
+              "components_localizations": {},
+              "components_config": {
+                "base": {
+                  "stack": {
+                    "type": "stack",
+                    "components": [],
+                    "dimension": { "type": "vertical", "alignment": "center", "distribution": "center" },
+                    "size": { "width": { "type": "fill" }, "height": { "type": "fill" } },
+                    "margin": {},
+                    "padding": {},
+                    "spacing": 0
+                  },
+                  "background": {
+                    "type": "color",
+                    "value": { "light": { "type": "hex", "value": "#220000ff" } }
+                  }
+                }
+              }
+            }
+          },
           "ui_config": {
             "app": { "colors": {}, "fonts": {} },
             "localizations": {}

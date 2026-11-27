@@ -126,6 +126,102 @@ class PaywallEventTrackerTests: TestCase {
         expect(trackedWorkflowEvents.value) == [event]
     }
 
+    func testFlowEventsMirrorTrackedImpressionAndDeduplicatedClose() async throws {
+        let (tracker, _) = Self.makeTracker()
+        let received: Atomic<[FlowEvent]> = .init([])
+        let notifier = FlowEventNotifier { event in received.modify { $0.append(event) } }
+        var eventData = Self.makeEventData()
+        eventData.workflowId = "wf_1"
+        eventData.stepId = "step_1"
+        eventData.traceId = "trace_1"
+
+        tracker.trackPaywallImpression(eventData, flowEventNotifier: notifier)
+        tracker.track(.cancel(.init(), eventData), flowEventNotifier: notifier)
+        tracker.trackPaywallClose(sessionID: eventData.sessionIdentifier, flowEventNotifier: notifier)
+        tracker.trackPaywallClose(sessionID: eventData.sessionIdentifier, flowEventNotifier: notifier)
+
+        await expect(received.value.map { $0.property(for: FlowEvent.Keys.eventType) })
+            .toEventually(equal([FlowEvent.EventTypes.paywallImpression, FlowEvent.EventTypes.paywallClose]),
+                          timeout: .seconds(2))
+        let impression = try XCTUnwrap(received.value.first)
+        let expectedKeys: Set<String> = [
+            "event_type", "timestamp", "locale", "offering_id", "paywall_revision", "session_id",
+            "display_mode", "dark_mode", "flow_id", "step_id", "trace_id"
+        ]
+        expect(Set(impression.rawProperties.keys)) == expectedKeys
+            .union(eventData.paywallIdentifier == nil ? [] : ["paywall_id"])
+        expect(impression.property(for: FlowEvent.Keys.sessionId)) == eventData.sessionIdentifier.uuidString
+        expect(impression.property(for: FlowEvent.Keys.offeringId)) == eventData.offeringIdentifier
+        expect(impression.property(for: FlowEvent.Keys.flowId)) == "wf_1"
+        expect(impression.property(for: FlowEvent.Keys.stepId)) == "step_1"
+        expect(impression.property(for: FlowEvent.Keys.traceId)) == "trace_1"
+    }
+
+    func testFlowEventsMirrorTrackedWorkflowEventsWithFlowNaming() async throws {
+        let (tracker, _) = Self.makeTracker()
+        let received: Atomic<[FlowEvent]> = .init([])
+        let notifier = FlowEventNotifier { event in received.modify { $0.append(event) } }
+
+        tracker.track(WorkflowEvent.stepStarted(.init(), .init(
+            workflowId: "wf_1",
+            stepId: "step_2",
+            localeIdentifier: "en_US",
+            traceId: "trace_1",
+            workflowName: "Onboarding",
+            stepType: "screen",
+            screenType: ["paywall"],
+            screenName: "Offer",
+            fromStepId: "step_1",
+            entryReason: "forward",
+            isFirstStep: false,
+            isLastStep: true,
+            workflowBlobRef: "blob",
+            fallbackOriginalStepId: "step_0",
+            experiment: .init(experimentId: "exp_1", experimentVariant: "b")
+        )), flowEventNotifier: notifier)
+        tracker.track(WorkflowEvent.stepCompleted(.init(), .init(workflowId: "wf_1", stepId: "step_2")),
+                      flowEventNotifier: notifier)
+        tracker.track(WorkflowEvent.close(.init(), .init(workflowId: "wf_1", stepId: "step_2")),
+                      flowEventNotifier: notifier)
+
+        await expect(received.value.map { $0.property(for: FlowEvent.Keys.eventType) })
+            .toEventually(equal([
+                FlowEvent.EventTypes.flowStepStarted,
+                FlowEvent.EventTypes.flowStepCompleted,
+                FlowEvent.EventTypes.flowClose
+            ]), timeout: .seconds(2))
+        let started = try XCTUnwrap(received.value.first)
+        expect(Set(started.rawProperties.keys)) == [
+            "event_type", "timestamp", "flow_id", "flow_name", "step_id", "locale", "trace_id", "step_type",
+            "screen_type", "screen_name", "from_step_id", "entry_reason", "is_first_step", "is_last_step",
+            "experiment_id", "experiment_variant"
+        ]
+        expect(started.property(for: FlowEvent.Keys.screenType)) == ["paywall"]
+        expect(started.property(for: FlowEvent.Keys.entryReason)) == "forward"
+        expect(started.property(for: FlowEvent.Keys.isLastStep)) == true
+        expect(received.value[1].rawProperties.keys).toNot(contain("to_step_id", "screen_type"))
+    }
+
+    func testFlowEventsReachOnlyTheHandlerOfThePurchaseHandlerThatTrackedThem() async {
+        let (tracker, _) = Self.makeTracker()
+        let firstHandler = Self.makePurchaseHandler(sharing: tracker)
+        let secondHandler = Self.makePurchaseHandler(sharing: tracker)
+        let first: Atomic<[String]> = .init([])
+        let second: Atomic<[String]> = .init([])
+        firstHandler.setFlowEventNotifier(.init { event in
+            first.modify { $0.append(event.property(for: FlowEvent.Keys.stepId) ?? "") }
+        })
+        secondHandler.setFlowEventNotifier(.init { event in
+            second.modify { $0.append(event.property(for: FlowEvent.Keys.stepId) ?? "") }
+        })
+
+        firstHandler.track(WorkflowEvent.stepStarted(.init(), .init(workflowId: "wf_1", stepId: "first")))
+        secondHandler.track(WorkflowEvent.stepStarted(.init(), .init(workflowId: "wf_2", stepId: "second")))
+
+        await expect(first.value).toEventually(equal(["first"]), timeout: .seconds(2))
+        await expect(second.value).toEventually(equal(["second"]), timeout: .seconds(2))
+    }
+
     func testTrackExitOfferDoesNotPreventTrackPaywallClose() async throws {
         let (tracker, trackedEvents) = Self.makeTracker()
         let sessionID = Self.eventData.sessionIdentifier
@@ -649,6 +745,20 @@ private extension PaywallEventTrackerTests {
         locale: .init(identifier: "en_US"),
         darkMode: false,
         source: nil
+        )
+    }
+
+    static func makePurchaseHandler(sharing tracker: PaywallEventTracker) -> PurchaseHandler {
+        return PurchaseHandler(
+            purchases: MockPurchases(
+                purchase: { _, _, _ in
+                    (transaction: nil, customerInfo: TestData.customerInfo, userCancelled: false)
+                },
+                restorePurchases: { TestData.customerInfo },
+                trackEvent: { _ in },
+                customerInfo: { TestData.customerInfo }
+            ),
+            eventTracker: tracker
         )
     }
 
