@@ -2214,6 +2214,87 @@ extension WorkflowPaywallViewTests {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension WorkflowPaywallViewTests {
 
+    #if os(iOS)
+    @MainActor
+    func testNamedWorkflowPaywallReportsImpressionAndCloseThroughOnFlowEvent() async throws {
+        let suiteName = UUID().uuidString
+        let userDefaults = try XCTUnwrap(UserDefaults(suiteName: suiteName))
+        let originalProxyURL = Purchases.proxyURL
+        let animationsEnabled = UIView.areAnimationsEnabled
+
+        Purchases.clearSingleton()
+        Purchases.proxyURL = try XCTUnwrap(URL(string: "http://127.0.0.1:1"))
+        defer {
+            Purchases.clearSingleton()
+            Purchases.proxyURL = originalProxyURL
+            userDefaults.removePersistentDomain(forName: suiteName)
+            UIView.setAnimationsEnabled(animationsEnabled)
+        }
+        Purchases.configure(with: Configuration.Builder(withAPIKey: "test_flow_event_callbacks")
+            .with(userDefaults: userDefaults)
+            .with(dangerousSettings: DangerousSettings(uiPreviewMode: true)))
+
+        let fixture = try Self.makeContext(
+            singleStepFallbackId: nil,
+            initialScreenJSON: Self.makeScreenJSON(extraKeysJSON: #""name": "Premium offer""#),
+            initialStepJSON: """
+            "step_initial": {
+                "id": "step_initial",
+                "type": "screen",
+                "screen_id": "screen_initial",
+                "metadata": { "screen_type": ["paywall"] }
+            },
+            """
+        )
+        let context = try WorkflowPreview.makeContext(
+            workflow: fixture.workflow,
+            offerings: [fixture.initialOffering],
+            uiConfig: fixture.uiConfig
+        )
+        let impression = expectation(description: "Paywall impression callback")
+        let close = expectation(description: "Paywall close callback")
+        let callbacks: Atomic<[FlowEvent]> = .init([])
+
+        // Inject the Flow fixture using the SDK's preview initializer so the test can exercise
+        // the app-facing callback with real rendered content and without fetching a backend Flow.
+        do {
+            let dispose = try PaywallView(
+                workflowContext: context,
+                introEligibility: .producing(eligibility: .eligible)
+            )
+            .onFlowEvent { event in
+                switch event.property(for: FlowEvent.Keys.eventType) {
+                case FlowEvent.EventTypes.paywallImpression:
+                    callbacks.modify { $0.append(event) }
+                    impression.fulfill()
+                case FlowEvent.EventTypes.paywallClose:
+                    callbacks.modify { $0.append(event) }
+                    close.fulfill()
+                default:
+                    break
+                }
+            }
+            .addToHierarchy()
+            defer { dispose() }
+
+            await self.fulfillment(of: [impression], timeout: 3)
+        }
+
+        await self.fulfillment(of: [close], timeout: 3)
+        let events = callbacks.value
+        XCTAssertEqual(events.compactMap { $0.property(for: FlowEvent.Keys.eventType) }, [
+            FlowEvent.EventTypes.paywallImpression, FlowEvent.EventTypes.paywallClose
+        ])
+        XCTAssertEqual(events.compactMap { $0.property(for: FlowEvent.Keys.stepId) }, [
+            "step_initial", "step_initial"
+        ])
+        XCTAssertEqual(events.compactMap { $0.property(for: FlowEvent.Keys.flowName) }, ["Test", "Test"])
+        XCTAssertEqual(events.compactMap { $0.property(for: FlowEvent.Keys.screenName) }, [
+            "Premium offer", "Premium offer"
+        ])
+    }
+    #endif
+
     /// `PaywallsV2View`'s `traceId` defaults to `nil`, so dropping the argument would compile silently.
     @MainActor
     func testPaywallEventCarriesTheSameTraceIdAsTheWorkflowEvent() async throws {
