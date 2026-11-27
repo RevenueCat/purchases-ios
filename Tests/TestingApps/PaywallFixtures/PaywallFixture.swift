@@ -53,6 +53,8 @@ enum PaywallFixture: String, CaseIterable {
     /// A button opening a bottom sheet, for checking what is reachable while it is up.
     case sheetOverContent = "sheet_over_content"
     case tabsAndSharedSheets = "tabs_and_shared_sheets"
+    case fillCarousel = "fill_carousel"
+    case scrollingFillCarousel = "scrolling_fill_carousel"
     case carouselTabs = "carousel_tabs"
     case nestedBillingTabs = "nested_billing_tabs"
 
@@ -68,6 +70,10 @@ enum PaywallFixture: String, CaseIterable {
         switch self {
         case .nestedBillingTabs:
             return "Nested billing tabs across tiers"
+        case .fillCarousel:
+            return "Fill carousel height"
+        case .scrollingFillCarousel:
+            return "Fill carousel in a scrolling stack"
         case .carouselTabs:
             return "Carousel pages across tabs"
         case .iconOnlyButton:
@@ -105,6 +111,10 @@ enum PaywallFixture: String, CaseIterable {
         switch self {
         case .nestedBillingTabs:
             return Self.nestedBillingTabsComponentsData()
+        case .fillCarousel:
+            return Self.fillCarouselComponentsData(inScrollingStack: false)
+        case .scrollingFillCarousel:
+            return Self.fillCarouselComponentsData(inScrollingStack: true)
         case .carouselTabs:
             return Self.carouselTabsComponentsData()
         case .iconOnlyButton:
@@ -146,7 +156,7 @@ enum PaywallFixture: String, CaseIterable {
     /// A component referencing a package the offering lacks renders with no product.
     var packages: [Package] {
         switch self {
-        case .iconOnlyButton, .fixedPillOverflowScroll, .carouselTabs:
+        case .iconOnlyButton, .fixedPillOverflowScroll, .carouselTabs, .fillCarousel, .scrollingFillCarousel:
             return [Self.monthlyPackage(offeringIdentifier: self.rawValue)]
         case .spokenTextAndLinks, .sheetOverContent:
             return [Self.annualPackage(offeringIdentifier: self.rawValue)]

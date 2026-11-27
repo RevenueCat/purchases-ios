@@ -23,7 +23,18 @@ private struct PaywallAncestorScrollsVerticallyKey: EnvironmentKey {
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private struct PaywallProposesFillHeightKey: EnvironmentKey {
+    static let defaultValue: Bool = false
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension EnvironmentValues {
+
+    /// A vertical Fill stack is trying its layout that fits without scrolling.
+    var paywallProposesFillHeight: Bool {
+        get { self[PaywallProposesFillHeightKey.self] }
+        set { self[PaywallProposesFillHeightKey.self] = newValue }
+    }
 
     /// `true` when the paywall root stack is a z-layer (used to enable z-layer scrolling in bounded containers).
     var paywallRootStackIsZLayer: Bool {
@@ -60,6 +71,9 @@ private struct PaywallVerticalScrollContainer<Content: View>: View {
 
     var body: some View {
         content
+            .transformEnvironment(\.paywallProposesFillHeight) { proposesFillHeight in
+                if self.axis == .vertical { proposesFillHeight = false }
+            }
             .environment(
                 \.paywallAncestorScrollsVertically,
                 self.ancestorScrollsVertically || self.axis == .vertical

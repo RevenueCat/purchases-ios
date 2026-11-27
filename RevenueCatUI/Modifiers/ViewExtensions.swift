@@ -153,6 +153,9 @@ extension View {
                 ViewThatFits(in: axis.scrollViewAxis) {
                     // When content is short: expand to fill space with alignment
                     self
+                        .transformEnvironment(\.paywallProposesFillHeight) { proposesFillHeight in
+                            if axis == .vertical { proposesFillHeight = true }
+                        }
                         .frame(
                             maxWidth: axis == .horizontal ? .infinity : nil,
                             maxHeight: axis == .vertical ? .infinity : nil,

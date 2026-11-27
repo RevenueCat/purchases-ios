@@ -49,10 +49,13 @@ struct CarouselComponentView: View {
     @Environment(\.componentInteractionLogger)
     private var componentInteractionLogger
 
+    @Environment(\.paywallProposesFillHeight)
+    private var parentProposesFillHeight
+
     let viewModel: CarouselComponentViewModel
     let onDismiss: () -> Void
 
-    @State private var carouselHeight: CGFloat = 0
+    @State private var carouselWidth: CGFloat = 0
 
     var body: some View {
         let isEligibleForIntroOffer = self.introOfferEligibilityContext.isEligible(
@@ -72,41 +75,41 @@ struct CarouselComponentView: View {
             colorScheme: colorScheme
         ) { style in
             if style.visible {
-                GeometryReader { reader in
-                    CarouselView(
-                        width: reader.size.width,
-                        pageAlignment: style.pageAlignment,
-                        pages: self.viewModel.pageStackViewModels.map({ stackViewModel in
-                            StackComponentView(
-                                viewModel: stackViewModel,
-                                onDismiss: self.onDismiss
-                            )
-                        }),
-                        initialIndex: self.viewModel.startPageIndex(initialPageIndex: style.initialPageIndex),
-                        loop: style.loop,
-                        spacing: style.pageSpacing,
-                        cardWidth: reader.size.width - (style.pagePeek * 2) - (style.pageSpacing * 2),
-                        pageControl: style.pageControl,
-                        msTimePerSlide: style.autoAdvance?.msTimePerPage,
-                        msTransitionTime: style.autoAdvance?.msTransitionTime,
-                        autoAdvanceTransitionType: style.autoAdvance?.transitionType,
-                        onPageIndexChange: { pageIndex in
-                            self.viewModel.lastVisiblePageIndex = pageIndex
-                        },
-                        onUserInitiatedPageIndexChange: { originPageIndex, destinationPageIndex in
-                            self.trackCarouselComponentInteraction(
-                                originPageIndex: originPageIndex,
-                                destinationPageIndex: destinationPageIndex,
-                                defaultPageIndex: style.initialPageIndex
-                            )
-                        }
-                    ).clipped()
-                }
-                // Need to set height since geometry reader has no intrinsic height
-                .frame(height: carouselHeight)
-                .onPreferenceChange(HeightPreferenceKey.self) { newHeight in
-                    self.carouselHeight = newHeight
-                }
+                CarouselView(
+                    width: self.carouselWidth,
+                    pageAlignment: style.pageAlignment,
+                    pages: self.viewModel.pageStackViewModels.map({ stackViewModel in
+                        StackComponentView(
+                            viewModel: stackViewModel,
+                            onDismiss: self.onDismiss
+                        )
+                    }),
+                    initialIndex: self.viewModel.startPageIndex(initialPageIndex: style.initialPageIndex),
+                    loop: style.loop,
+                    spacing: style.pageSpacing,
+                    cardWidth: max(0, self.carouselWidth - (style.pagePeek * 2) - (style.pageSpacing * 2)),
+                    pageControl: style.pageControl,
+                    msTimePerSlide: style.autoAdvance?.msTimePerPage,
+                    msTransitionTime: style.autoAdvance?.msTransitionTime,
+                    autoAdvanceTransitionType: style.autoAdvance?.transitionType,
+                    onPageIndexChange: { pageIndex in
+                        self.viewModel.lastVisiblePageIndex = pageIndex
+                    },
+                    onUserInitiatedPageIndexChange: { originPageIndex, destinationPageIndex in
+                        self.trackCarouselComponentInteraction(
+                            originPageIndex: originPageIndex,
+                            destinationPageIndex: destinationPageIndex,
+                            defaultPageIndex: style.initialPageIndex
+                        )
+                    }
+                )
+                .clipped()
+                // Let a Fill carousel shrink during ViewThatFits' ideal-size check. Its pages
+                // receive the available height when placed, so their own feature lists can scroll.
+                .frame(idealHeight: style.size.height.isFill && self.parentProposesFillHeight ? 0 : nil)
+                .fixedSize(horizontal: false, vertical: !style.size.height.isFill)
+                .frame(minWidth: 0, maxWidth: .infinity)
+                .onWidthChange { self.carouselWidth = $0 }
                 #if DEBUG
                 .onAppear {
                     self.viewModel.onViewAppear?()
@@ -163,13 +166,6 @@ struct CarouselComponentView: View {
         ))
     }
 
-}
-
-struct HeightPreferenceKey: PreferenceKey {
-    static var defaultValue: CGFloat = 0
-    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
-        value = max(value, nextValue())
-    }
 }
 
 /// A wrapper to give each page copy a stable, unique identity.
@@ -374,9 +370,6 @@ private struct CarouselView<Content: View>: View {
                 )
             }
         }
-        .background(GeometryReader { geo in
-            Color.clear.preference(key: HeightPreferenceKey.self, value: geo.size.height)
-        })
         .onAppear {
             setupData()
             startAutoPlayIfNeeded()
