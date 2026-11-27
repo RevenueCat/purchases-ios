@@ -878,13 +878,12 @@ platform :ios do
     scan(scan_options)
   end
 
-  # Screen reader behavior can only be asserted against the real accessibility tree, which SwiftUI
-  # builds for an assistive technology client and not under XCTest. Needs no API key: the paywall
-  # under test is one of PaywallsTester's local sample paywalls.
-  desc "Runs the paywall accessibility UI tests"
-  lane :paywall_accessibility_ui_tests do
+  # The whole PaywallFixturesUITests scheme: package selection, tabs, accessibility, and the rest.
+  # Needs no API key. The paywalls are local fixtures.
+  desc "Runs the PaywallFixtures UI tests"
+  lane :paywall_fixtures_ui_tests do
     scan(
-      step_name: "scan - paywall accessibility UI tests",
+      step_name: "scan - paywall fixture UI tests",
       workspace: "RevenueCat-Tuist.xcworkspace",
       scheme: "PaywallFixturesUITests",
       device: ENV['SCAN_DEVICE'] || "iPhone 16 Pro",
@@ -893,7 +892,7 @@ platform :ios do
       output_types: 'junit',
       result_bundle: true,
       configuration: 'Debug',
-      output_directory: "fastlane/test_output/paywall_accessibility",
+      output_directory: "fastlane/test_output/paywall_fixtures",
       number_of_retries: 2
     )
   end
