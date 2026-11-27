@@ -41,7 +41,8 @@ class ExternalPurchaseCustomLinkTests: TestCase {
             throw XCTSkip("Requires StoreKit's external purchase custom link API")
         }
 
-        expect(ExternalPurchaseNoticeType.browser.storeKitNoticeType) == .browser
+        let url = try XCTUnwrap(URL(string: "https://pay.rev.cat/checkout"))
+        expect(ExternalPurchaseNoticeType.browser(destinationURL: url).storeKitNoticeType) == .browser
         expect(ExternalPurchaseNoticeType.withinApp.storeKitNoticeType) == .withinApp
     }
 
@@ -52,6 +53,38 @@ class ExternalPurchaseCustomLinkTests: TestCase {
 
         expect(ExternalPurchaseNoticeResult(.continued)) == .continued
         expect(ExternalPurchaseNoticeResult(.cancelled)) == .cancelled
+    }
+
+    #endif
+
+    #if compiler(>=6.4) && canImport(StoreKit, _version: 816.1.12)
+
+    func testNoticeTypeMapsToStoreKitExternalPurchaseTypeWithTheDestinationURL() throws {
+        guard #available(anyAppleOS 27.2, *) else {
+            throw XCTSkip("Requires StoreKit's 27.2 external purchase APIs")
+        }
+
+        let url = try XCTUnwrap(URL(string: "https://pay.rev.cat/checkout?rc_source=paywall#step"))
+        expect(ExternalPurchaseNoticeType.browser(destinationURL: url).storeKitExternalPurchaseType)
+            == .outOfApp(destinationURL: url)
+        expect(ExternalPurchaseNoticeType.withinApp.storeKitExternalPurchaseType) == .withinApp
+    }
+
+    func testTokenTypeMapsToStoreKitTokenType() throws {
+        guard #available(anyAppleOS 27.2, *) else {
+            throw XCTSkip("Requires StoreKit's 27.2 external purchase APIs")
+        }
+
+        expect(ExternalPurchaseTokenType.inApp.storeKitTokenType) == .withinApp
+        expect(ExternalPurchaseTokenType.linkOut.storeKitTokenType) == .outOfApp
+    }
+
+    func testStoreKitTokenTypePreservesUnrecognizedRawValues() throws {
+        guard #available(anyAppleOS 27.2, *) else {
+            throw XCTSkip("Requires StoreKit's 27.2 external purchase APIs")
+        }
+
+        expect(ExternalPurchaseTokenType(rawValue: "SOMETHING_ELSE").storeKitTokenType.rawValue) == "SOMETHING_ELSE"
     }
 
     #endif

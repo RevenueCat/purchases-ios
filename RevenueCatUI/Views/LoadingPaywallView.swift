@@ -204,7 +204,7 @@ private final class LoadingPaywallPurchases: PaywallPurchasesType {
 
     var useExternalPurchaseCustomLinks: Bool { false }
 
-    func prepareExternalPurchaseLink() async -> ExternalPurchaseLinkResult {
+    func prepareExternalPurchaseLink(destinationURL: URL) async -> ExternalPurchaseLinkResult {
         fatalError("Should not be able to purchase")
     }
 
