@@ -59,14 +59,18 @@ struct PurchaseButtonComponentView: View {
 
     /// Show activity indicator only if purchase action in purchase handler
     var showActivityIndicatorOverContent: Bool {
-        guard let actionType = self.purchaseHandler.actionTypeInProgress else {
+        return Self.shouldShowActivityIndicator(for: self.purchaseHandler.actionTypeInProgress)
+    }
+
+    static func shouldShowActivityIndicator(for actionType: PurchaseHandler.ActionType?) -> Bool {
+        guard let actionType else {
             return false
         }
 
         switch actionType {
         case .purchase, .pendingPurchaseContinuation, .externalPurchasePreparation:
             return true
-        case .restore:
+        case .restore, .pendingRestoreContinuation:
             return false
         }
     }

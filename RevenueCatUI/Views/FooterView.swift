@@ -223,7 +223,7 @@ private struct RestorePurchasesButton: View {
 
             if let interceptor = self.restoreInitiatedAction {
                 Logger.debug(Strings.restore_purchases_gate_start)
-                let result = await self.purchaseHandler.withPendingPurchaseContinuation {
+                let result = await self.purchaseHandler.withPendingRestoreContinuation {
                     await withCheckedContinuation { continuation in
                         interceptor(resume: ResumeAction { shouldProceed in
                             Logger.debug(Strings.restore_purchases_gate_finish(with: shouldProceed))

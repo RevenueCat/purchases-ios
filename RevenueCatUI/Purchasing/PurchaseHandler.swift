@@ -34,6 +34,8 @@ final class PurchaseHandler: ObservableObject {
 
         /// This is a pre-purchase or redeem code step where consuming applications can perform work
         case pendingPurchaseContinuation
+        /// This is a pre-restore step where consuming applications can perform work
+        case pendingRestoreContinuation
         case purchase
         case restore
 
@@ -410,16 +412,36 @@ extension PurchaseHandler {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension PurchaseHandler {
     func withPendingPurchaseContinuation<T>(_ continuation: () async throws -> T) async rethrows -> T {
+        return try await self.withPendingContinuation(.pendingPurchaseContinuation, continuation)
+    }
+
+    func withPendingRestoreContinuation<T>(_ continuation: () async throws -> T) async rethrows -> T {
+        return try await self.withPendingContinuation(.pendingRestoreContinuation, continuation)
+    }
+
+    private func withPendingContinuation<T>(
+        _ actionType: ActionType,
+        _ continuation: () async throws -> T
+    ) async rethrows -> T {
         await MainActor.run {
-            startAction(.pendingPurchaseContinuation)
+            self.startAction(actionType)
         }
-        let result = try await continuation()
-        await MainActor.run {
-            if actionTypeInProgress == .pendingPurchaseContinuation {
-                self.actionTypeInProgress = nil
+        do {
+            let result = try await continuation()
+            await MainActor.run {
+                if self.actionTypeInProgress == actionType {
+                    self.actionTypeInProgress = nil
+                }
             }
+            return result
+        } catch {
+            await MainActor.run {
+                if self.actionTypeInProgress == actionType {
+                    self.actionTypeInProgress = nil
+                }
+            }
+            throw error
         }
-        return result
     }
 
     /// Asks the app's purchase interceptor, if it set one, whether the purchase of `package` may go ahead.
