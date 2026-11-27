@@ -80,16 +80,18 @@ class PerformanceBaselineHelperTest < Minitest::Test
     workflow_jobs('run-all-tests')
   end
 
-  def test_merge_gates_require_danger
-    assert_includes pr_workflow_jobs.fetch('all-tasks-succeeded').fetch('requires'), 'danger'
-    assert_includes workflow_jobs('release-or-main').fetch('revenuecat/tag-current-branch').fetch('requires'), 'danger'
+  def test_merge_gates_require_danger_and_the_export_dry_run
+    pr_gate = pr_workflow_jobs.fetch('all-tasks-succeeded').fetch('requires')
+    tagging = workflow_jobs('release-or-main').fetch('revenuecat/tag-current-branch').fetch('requires')
+    [pr_gate, tagging].each do |requires|
+      assert_includes requires, 'danger'
+      assert_includes requires, 'export-to-public-dry-run'
+    end
   end
 
-  def test_release_pr_merge_gate_waits_for_the_release
-    refute_includes workflow_jobs('release-or-main').keys, 'all-tasks-succeeded'
-    deploy_jobs = workflow_jobs('deploy-tag')
-    assert_includes deploy_jobs.fetch('all-tasks-succeeded').fetch('requires'), 'make-release'
-    assert_equal %w[all-tasks-succeeded], deploy_jobs.fetch('revenuecat/merge-release-pr').fetch('requires')
+  def test_release_pr_merge_gate_waits_for_the_tag
+    assert_equal %w[revenuecat/tag-current-branch], workflow_jobs('release-or-main').fetch('all-tasks-succeeded').fetch('requires')
+    refute_includes workflow_jobs('deploy-tag').keys, 'all-tasks-succeeded'
   end
 
   def test_pr_merge_gate_requires_the_memory_benchmark
