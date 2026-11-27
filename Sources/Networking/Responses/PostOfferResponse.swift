@@ -35,7 +35,27 @@ struct PostOfferResponse {
 
     }
 
-    let offers: [Offer]
+    /// Keep identities even when a signing payload is malformed, so duplicate responses still fail closed.
+    struct Entry {
+
+        let offerIdentifier: String?
+        let productIdentifier: String?
+        let result: Result<Offer, Error>
+
+    }
+
+    let offers: [Entry]
+}
+
+extension PostOfferResponse.Entry: Decodable {
+
+    init(from decoder: Decoder) throws {
+        let container = try? decoder.container(keyedBy: PostOfferResponse.Offer.CodingKeys.self)
+        self.offerIdentifier = try? container?.decode(String.self, forKey: .offerIdentifier)
+        self.productIdentifier = try? container?.decode(String.self, forKey: .productIdentifier)
+        self.result = Result { try PostOfferResponse.Offer(from: decoder) }
+    }
+
 }
 
 extension PostOfferResponse.Offer.SignatureData: Decodable {}
