@@ -78,15 +78,24 @@ struct ButtonComponentView: View {
 
     /// Show activity indicator only if restore action in purchase handler
     var showActivityIndicatorOverContent: Bool {
-        guard self.viewModel.isRestoreAction,
-                let actionType = self.purchaseHandler.actionTypeInProgress else {
+        return Self.shouldShowActivityIndicator(
+            isRestoreAction: self.viewModel.isRestoreAction,
+            for: self.purchaseHandler.actionTypeInProgress
+        )
+    }
+
+    static func shouldShowActivityIndicator(
+        isRestoreAction: Bool,
+        for actionType: PurchaseHandler.ActionType?
+    ) -> Bool {
+        guard isRestoreAction, let actionType else {
             return false
         }
 
         switch actionType {
-        case .purchase, .externalPurchasePreparation:
+        case .purchase, .pendingPurchaseContinuation, .externalPurchasePreparation:
             return false
-        case .restore, .pendingPurchaseContinuation:
+        case .restore, .pendingRestoreContinuation:
             return true
         }
     }
@@ -331,7 +340,7 @@ struct ButtonComponentView: View {
 
         if let interceptor = self.restoreInitiatedAction {
             Logger.debug(Strings.restore_purchases_gate_start)
-            let result = await self.purchaseHandler.withPendingPurchaseContinuation {
+            let result = await self.purchaseHandler.withPendingRestoreContinuation {
                 await withCheckedContinuation { continuation in
                     interceptor(resume: ResumeAction { shouldProceed in
                         Logger.debug(Strings.restore_purchases_gate_finish(with: shouldProceed))

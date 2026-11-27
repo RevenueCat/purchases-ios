@@ -914,6 +914,92 @@ class PurchaseHandlerTests: TestCase {
         expect(handler.actionInProgress) == false
     }
 
+    func testPendingPurchaseContinuationSetsAndClearsActionType() async throws {
+        let handler: PurchaseHandler = .mock()
+
+        await handler.withPendingPurchaseContinuation {
+            expect(handler.actionTypeInProgress) == .pendingPurchaseContinuation
+            expect(handler.actionInProgress) == true
+        }
+
+        expect(handler.actionTypeInProgress).to(beNil())
+        expect(handler.actionInProgress) == false
+    }
+
+    func testPendingRestoreContinuationSetsAndClearsActionType() async throws {
+        let handler: PurchaseHandler = .mock()
+
+        await handler.withPendingRestoreContinuation {
+            expect(handler.actionTypeInProgress) == .pendingRestoreContinuation
+            expect(handler.actionInProgress) == true
+        }
+
+        expect(handler.actionTypeInProgress).to(beNil())
+        expect(handler.actionInProgress) == false
+    }
+
+    func testPendingContinuationClearsActionTypeWhenThrowing() async {
+        struct ContinuationError: Error {}
+
+        let handler: PurchaseHandler = .mock()
+
+        do {
+            try await handler.withPendingRestoreContinuation {
+                expect(handler.actionTypeInProgress) == .pendingRestoreContinuation
+                throw ContinuationError()
+            }
+            XCTFail("Expected continuation error to be rethrown")
+        } catch is ContinuationError {
+            // Expected
+        } catch {
+            XCTFail("Unexpected error: \(error)")
+        }
+
+        expect(handler.actionTypeInProgress).to(beNil())
+        expect(handler.actionInProgress) == false
+    }
+
+    #if !os(tvOS)
+    func testPaywallsV2ButtonIndicatorsAreIsolatedBetweenPendingPurchaseAndRestore() {
+        expect(PurchaseButtonComponentView.shouldShowActivityIndicator(for: .pendingPurchaseContinuation)) == true
+        expect(PurchaseButtonComponentView.shouldShowActivityIndicator(for: .pendingRestoreContinuation)) == false
+        expect(PurchaseButtonComponentView.shouldShowActivityIndicator(for: .purchase)) == true
+        expect(PurchaseButtonComponentView.shouldShowActivityIndicator(for: .restore)) == false
+        expect(PurchaseButtonComponentView.shouldShowActivityIndicator(for: nil)) == false
+
+        expect(
+            ButtonComponentView.shouldShowActivityIndicator(
+                isRestoreAction: true,
+                for: .pendingRestoreContinuation
+            )
+        ) == true
+        expect(
+            ButtonComponentView.shouldShowActivityIndicator(
+                isRestoreAction: true,
+                for: .pendingPurchaseContinuation
+            )
+        ) == false
+        expect(
+            ButtonComponentView.shouldShowActivityIndicator(
+                isRestoreAction: true,
+                for: .restore
+            )
+        ) == true
+        expect(
+            ButtonComponentView.shouldShowActivityIndicator(
+                isRestoreAction: true,
+                for: .purchase
+            )
+        ) == false
+        expect(
+            ButtonComponentView.shouldShowActivityIndicator(
+                isRestoreAction: false,
+                for: .pendingRestoreContinuation
+            )
+        ) == false
+    }
+    #endif
+
     func testRestorePurchases() async throws {
         let handler: PurchaseHandler = .mock()
         let result = try await handler.restorePurchases()
