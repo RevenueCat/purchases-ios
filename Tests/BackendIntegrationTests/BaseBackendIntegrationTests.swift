@@ -53,7 +53,13 @@ class BaseBackendIntegrationTests: TestCase {
     private let eligibilityWarmups = EligibilityWarmupTracker()
     private var purchasesInstances: [WeakBox<Purchases>] = []
 
-    var forceServerErrorStrategy: ForceServerErrorStrategy?
+    private nonisolated let _enableReceiptFetchRetry: Atomic<Bool> = true
+    private nonisolated let _forceServerErrorStrategy: Atomic<ForceServerErrorStrategy?> = nil
+
+    nonisolated var forceServerErrorStrategy: ForceServerErrorStrategy? {
+        get { self._forceServerErrorStrategy.value }
+        set { self._forceServerErrorStrategy.value = newValue }
+    }
 
     static var isSandbox: Bool = true {
         didSet {
@@ -68,7 +74,10 @@ class BaseBackendIntegrationTests: TestCase {
     class var responseVerificationMode: Signing.ResponseVerificationMode {
         return .enforced(Signing.loadPublicKey())
     }
-    var enableReceiptFetchRetry: Bool = true
+    nonisolated var enableReceiptFetchRetry: Bool {
+        get { self._enableReceiptFetchRetry.value }
+        set { self._enableReceiptFetchRetry.value = newValue }
+    }
 
     var apiKey: String { return Constants.apiKey }
     var proxyURL: String? { return Constants.proxyURL }
