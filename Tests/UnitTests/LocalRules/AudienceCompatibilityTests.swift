@@ -25,11 +25,16 @@ struct AudienceCompatibilityTests {
         try #require(!requiredFields.isEmpty)
         let required = bundle.coverage.filter { requiredFields.contains($0.field) }
         #expect(Set(required.map(\.field)) == requiredFields)
-        let incomplete = required.filter { $0.status != "covered" }
-        #expect(
-            incomplete.isEmpty,
-            "\(incomplete.map { "\($0.field)/\($0.operator): \($0.status)" }.joined(separator: "\n"))"
-        )
+        for row in required {
+            let condition = "\(row.field)/\(row.operator)"
+            if row.field == "customerId", ["isEmpty", "isNotEmpty"].contains(row.operator) {
+                let cases = bundle.cases.filter { $0.field == row.field && $0.operator == row.operator }
+                #expect(row.status == "unverified", "\(condition)")
+                #expect(Set(cases.map(\.expected)) == [row.operator == "isNotEmpty"], "\(condition)")
+            } else {
+                #expect(row.status == "covered", "\(condition): \(row.status)")
+            }
+        }
     }
 
     private static func loadBundle() throws -> CompatibilityBundle {
@@ -104,6 +109,8 @@ private struct CompatibilityCoverage: Decodable {
 private struct CompatibilityCase: Decodable, LocalRule {
 
     let id: String
+    let field: String
+    let `operator`: String
     let profile: String
     let predicate: String
     let expected: Bool
@@ -123,7 +130,7 @@ private struct CompatibilityProfile: Decodable {
     let device: Device
     let storeCountry: String?
     let attributes: [String: Attribute]
-    let customerInfo: [String: AnyDecodable]
+    let customerInfo: [String: AnyDecodable]?
     let subscriberDimensions: SubscriberDimensions
 
     struct Device: Decodable, Sendable {
@@ -144,7 +151,9 @@ private struct CompatibilityProfile: Decodable {
         let device = self.device
         let storeCountry = self.storeCountry
         let clock = MockDateProvider(stubbedNow: Date(timeIntervalSince1970: self.evaluatedAt))
-        let customerInfo = try CustomerInfo(data: self.customerInfo.mapValues(\.asAny), dateProvider: clock)
+        let customerInfo = try self.customerInfo.map { payload in
+            try CustomerInfo(data: payload.mapValues(\.asAny), dateProvider: clock)
+        }
         let attributes = self.attributes.reduce(into: SubscriberAttribute.Dictionary()) { result, item in
             result[item.key] = SubscriberAttribute(
                 withKey: item.key, value: item.value.value, isSynced: true,
@@ -163,7 +172,11 @@ private struct CompatibilityProfile: Decodable {
                 ),
                 StoreDimensionProvider(storefrontCountryCodeProvider: { storeCountry }),
                 CustomerInfoDimensionProvider(
-                    currentAppUserIDProvider: { user }, customerInfoProvider: { _ in customerInfo }
+                    currentAppUserIDProvider: { user },
+                    customerInfoProvider: { _ in
+                        guard let customerInfo else { throw URLError(.notConnectedToInternet) }
+                        return customerInfo
+                    }
                 ),
                 SubscriberAttributesDimensionProvider(attributesProvider: { attributes }),
                 SubscriberDimensionsProvider(
