@@ -64,10 +64,9 @@ final class BackgroundStyleTests: TestCase {
                 fitMode: .fill
             )
         )
-        var appearCount = 0
-        let view = Color.clear
+        let renderCounter = RenderCounter()
+        let view = RenderProbe(counter: renderCounter)
             .frame(width: 100, height: 60)
-            .onAppear { appearCount += 1 }
             .backgroundStyle(.video(viewModel, nil))
             .environmentObject(PackageContext(package: nil, variableContext: .init(packages: [])))
             .environmentObject(IntroOfferEligibilityContext(introEligibilityChecker: BaseSnapshotTest.eligibleChecker))
@@ -79,7 +78,7 @@ final class BackgroundStyleTests: TestCase {
             window.rootViewController = nil
         }
 
-        XCTAssertEqual(appearCount, 1)
+        XCTAssertEqual(renderCounter.count, 1)
     }
 
     private static func host<Content: View>(_ view: Content) -> UIWindow {
@@ -122,6 +121,25 @@ final class BackgroundStyleTests: TestCase {
             return pixels[index] > 200 && pixels[index + 1] < 50 && pixels[index + 2] < 50
         }.count
     }
+
+}
+
+private struct RenderProbe: UIViewRepresentable {
+
+    let counter: RenderCounter
+
+    func makeUIView(context: Context) -> UIView {
+        counter.count += 1
+        return UIView()
+    }
+
+    func updateUIView(_ uiView: UIView, context: Context) {}
+
+}
+
+private final class RenderCounter {
+
+    var count = 0
 
 }
 
