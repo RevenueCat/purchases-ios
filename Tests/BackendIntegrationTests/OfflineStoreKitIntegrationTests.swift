@@ -149,6 +149,11 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
         self.setLongestTestSessionTimeRate(self.testSession)
         try await self.purchaseMonthlyOffering()
 
+        // StoreKit 1 can trigger another receipt post after the purchase callback returns.
+        // Drain it while online so the offline request below cannot join that operation.
+        try self.purchases.invalidateCustomerInfoCache()
+        await self.waitForPendingCustomerInfoRequests()
+
         try self.purchases.invalidateCustomerInfoCache()
         self.serverDown()
 
