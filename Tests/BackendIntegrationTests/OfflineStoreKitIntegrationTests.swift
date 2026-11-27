@@ -382,13 +382,15 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
 
         // 1 POST receipt for the original transaction
         let regex = "Enqueing network operation 'PostReceiptDataOperation' with cache key: .*-\(transactionId)'"
-        self.logger.verifyMessageWasLogged(regexPattern: regex,
-                                           level: .verbose)
+        // The original transaction is posted after the renewal, so it can still be in flight
+        // once `Transaction.unfinished` is empty.
+        try await self.logger.verifyMessageIsEventuallyLogged(regexPattern: regex,
+                                                              level: .verbose)
 
         // 1 POST receipt for the renewal (regex: the cache key does not end with the original transactionId)
         let regex2 = "Enqueing network operation 'PostReceiptDataOperation' with cache key: (?!.*-\(transactionId)'$).*"
-        self.logger.verifyMessageWasLogged(regexPattern: regex2,
-                                           level: .verbose)
+        try await self.logger.verifyMessageIsEventuallyLogged(regexPattern: regex2,
+                                                              level: .verbose)
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
