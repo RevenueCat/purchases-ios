@@ -57,6 +57,9 @@ extension FeatureEventsRequest {
         var resultingPackageIdentifier: String?
         var currentProductIdentifier: String?
         var resultingProductIdentifier: String?
+        var msSinceConfigure: Int?
+        var loadingDurationMs: Int?
+        var loadingIncompleteReason: String?
 
     }
 
@@ -103,6 +106,7 @@ extension FeatureEventsRequest.PaywallEvent {
     enum EventType: String {
 
         case impression = "paywall_impression"
+        case loaded = "paywall_loaded"
         case cancel = "paywall_cancel"
         case close = "paywall_close"
         case exitOffer = "paywall_exit_offer"
@@ -187,7 +191,10 @@ extension FeatureEventsRequest.PaywallEvent {
             currentPackageIdentifier: componentInteractionData?.currentPackageIdentifier,
             resultingPackageIdentifier: componentInteractionData?.resultingPackageIdentifier,
             currentProductIdentifier: componentInteractionData?.currentProductIdentifier,
-            resultingProductIdentifier: componentInteractionData?.resultingProductIdentifier
+            resultingProductIdentifier: componentInteractionData?.resultingProductIdentifier,
+            msSinceConfigure: data.msSinceConfigure,
+            loadingDurationMs: data.loadingDurationMs,
+            loadingIncompleteReason: data.loadingIncompleteReason
         )
     }
 
@@ -201,6 +208,7 @@ private extension PaywallEvent {
     var eventType: FeatureEventsRequest.PaywallEvent.EventType {
         switch self {
         case .impression: return .impression
+        case .loaded: return .loaded
         case .cancel: return .cancel
         case .close: return .close
         case .exitOffer: return .exitOffer
@@ -261,6 +269,9 @@ extension FeatureEventsRequest.PaywallEvent: Encodable {
         case resultingPackageIdentifier = "resultingPackageId"
         case currentProductIdentifier = "currentProductId"
         case resultingProductIdentifier = "resultingProductId"
+        case msSinceConfigure
+        case loadingDurationMs
+        case loadingIncompleteReason
 
     }
 
